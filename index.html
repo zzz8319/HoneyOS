@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;700;800&family=Noto+Sans+JP:wght@400;500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; }
+  input, select, textarea { font-family: inherit; }
+  input::placeholder, textarea::placeholder { opacity: .55; }
+  ::-webkit-scrollbar { width: 0; height: 0; }
+  @keyframes scrIn { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
+  @keyframes scrInBack { from { opacity: 0; transform: translateX(-24px); } to { opacity: 1; transform: none; } }
+  @keyframes liveBlink { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+</style>
+</helmet>
+
+<div style="min-height:100vh; box-sizing:border-box; background:#E8E5DE; padding:40px 24px 64px; display:flex; flex-direction:column; align-items:center; gap:20px; font-family:'Noto Sans JP', system-ui, sans-serif;">
+
+  <div style="text-align:center;">
+    <div style="font-size:12px; letter-spacing:.18em; color:#a89c89; font-weight:700;">🐝 HONEYOS — PROTOTYPE</div>
+    <div style="font-size:24px; font-weight:800; color:#33302a; margin-top:7px;">全28画面プロトタイプ</div>
+    <div style="font-size:13px; color:#7c766a; margin-top:6px; max-width:440px; line-height:1.7;">下のチップで全画面へジャンプ。アプリ内のボタン・カードをタップして実際の遷移も体験できます。</div>
+  </div>
+
+  <div style="display:flex; flex-wrap:wrap; gap:6px; background:#fff; padding:6px; border-radius:20px; box-shadow:0 1px 4px rgba(0,0,0,.08); justify-content:center; max-width:560px;">
+    <button onClick="{{ thHoney }}" style="{{ segHoney }}"><span style="width:13px; height:13px; border-radius:50%; background:#E8961B;"></span>はちみつ</button>
+    <button onClick="{{ thCharcoal }}" style="{{ segCharcoal }}"><span style="width:13px; height:13px; border-radius:50%; background:#15120C; box-shadow:inset 0 0 0 2px #F5B72E;"></span>チャコール</button>
+    <button onClick="{{ thSage }}" style="{{ segSage }}"><span style="width:13px; height:13px; border-radius:50%; background:#5E7C4E;"></span>セージ</button>
+    <button onClick="{{ thKraft }}" style="{{ segKraft }}"><span style="width:13px; height:13px; border-radius:50%; background:#C2693B;"></span>クラフト</button>
+    <button onClick="{{ thSky }}" style="{{ segSky }}"><span style="width:13px; height:13px; border-radius:50%; background:#2D7FF0;"></span>スカイ</button>
+    <button onClick="{{ thBlossom }}" style="{{ segBlossom }}"><span style="width:13px; height:13px; border-radius:50%; background:#D86B96;"></span>ブロッサム</button>
+  </div>
+
+  <div style="background:#0c0c0e; padding:10px; border-radius:54px; box-shadow:0 34px 70px rgba(0,0,0,.30), 0 0 0 2px rgba(0,0,0,.22);">
+    <div style="position:relative; width:372px; height:806px; border-radius:44px; overflow:hidden; background:{{ t.bg }};">
+
+      <div style="position:absolute; top:11px; left:50%; transform:translateX(-50%); width:116px; height:34px; border-radius:20px; background:#000; z-index:50;"></div>
+
+      <div style="position:absolute; top:0; left:0; right:0; height:54px; display:flex; align-items:center; justify-content:space-between; padding:17px 28px 0; z-index:40; pointer-events:none;">
+        <span style="font-size:15px; font-weight:700; color:{{ statusColor }}; font-family:-apple-system, system-ui;">9:41</span>
+        <span style="display:flex; align-items:center; gap:6px;">
+          <svg width="17" height="11" viewBox="0 0 17 11"><rect x="0" y="7" width="3" height="4" rx="1" fill="{{ statusColor }}"></rect><rect x="4.5" y="5" width="3" height="6" rx="1" fill="{{ statusColor }}"></rect><rect x="9" y="2.5" width="3" height="8.5" rx="1" fill="{{ statusColor }}"></rect><rect x="13.5" y="0" width="3" height="11" rx="1" fill="{{ statusColor }}"></rect></svg>
+          <svg width="16" height="11" viewBox="0 0 16 11" fill="{{ statusColor }}"><path d="M8 2.2c2.1 0 4 .8 5.4 2.1l1.1-1.1C13.9 1.6 11.1.4 8 .4 4.9.4 2.1 1.6.5 3.2l1.1 1.1C3 3 4.9 2.2 8 2.2z"></path><path d="M8 6c1 0 2 .4 2.7 1.1l1.1-1.1C10.8 5 9.4 4.4 8 4.4c-1.4 0-2.8.6-3.8 1.6l1.1 1.1C6 6.4 7 6 8 6z"></path><circle cx="8" cy="9.4" r="1.3"></circle></svg>
+          <svg width="25" height="12" viewBox="0 0 25 12"><rect x="0.5" y="0.5" width="21" height="11" rx="3" fill="none" stroke="{{ statusColor }}" stroke-opacity="0.4"></rect><rect x="2" y="2" width="16" height="8" rx="1.6" fill="{{ statusColor }}"></rect><rect x="23" y="3.5" width="1.6" height="5" rx="0.8" fill="{{ statusColor }}" opacity="0.4"></rect></svg>
+        </span>
+      </div>
+
+      <div style="position:absolute; inset:0;">
+
+        <!-- ===== AUTH / ONBOARDING ===== -->
+        <sc-if value="{{ scLogin }}" hint-placeholder-val="{{ true }}">
+          <div data-screen-label="SCR-001 ログイン" style="position:absolute; inset:0; overflow-y:auto; background:{{ t.bg }}; font-family:{{ t.font }}; padding:78px 28px 40px; display:flex; flex-direction:column; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:40px;"><span style="font-size:30px;">🐝</span><span style="font-size:22px; font-weight:800; color:{{ t.text }};">HoneyOS</span></div>
+            <div style="font-size:26px; font-weight:800; color:{{ t.text }}; margin-bottom:30px;">ログイン</div>
+            <div style="margin-bottom:18px;"><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">メールアドレス</label><input type="email" value="{{ f.loginEmail }}" onInput="{{ h.loginEmail }}" placeholder="you@example.com" style="width:100%; padding:14px 16px; font-size:16px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:14px; outline:none;" style-focus="border-color:{{ t.primary }};"></div>
+            <div style="margin-bottom:10px;"><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">パスワード</label><input type="password" value="{{ f.loginPw }}" onInput="{{ h.loginPw }}" placeholder="••••••••" style="width:100%; padding:14px 16px; font-size:16px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:14px; outline:none;" style-focus="border-color:{{ t.primary }};"></div>
+            <div style="text-align:right; margin-bottom:26px;"><span style="font-size:13px; color:{{ t.primary }}; font-weight:600; cursor:pointer;">パスワードをお忘れですか？</span></div>
+            <button onClick="{{ submitLogin }}" style="width:100%; padding:16px; font-size:16px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};" style-active="transform:translateY(1px);">ログイン</button>
+            <div style="margin-top:auto; padding-top:30px; text-align:center; font-size:14px; color:{{ t.textMuted }};">アカウントをお持ちでない方は <span onClick="{{ goRegister }}" style="color:{{ t.primary }}; font-weight:700; cursor:pointer;">新規登録</span></div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ scRegister }}" hint-placeholder-val="{{ false }}">
+          <div data-screen-label="SCR-002 新規登録" style="position:absolute; inset:0; overflow-y:auto; background:{{ t.bg }}; font-family:{{ t.font }}; padding:78px 28px 40px; display:flex; flex-direction:column; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:32px;"><span style="font-size:30px;">🐝</span><span style="font-size:22px; font-weight:800; color:{{ t.text }};">HoneyOS</span></div>
+            <div style="font-size:26px; font-weight:800; color:{{ t.text }}; margin-bottom:26px;">新規登録</div>
+            <div style="margin-bottom:16px;"><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">お名前</label><input type="text" value="{{ f.regName }}" onInput="{{ h.regName }}" placeholder="山田 太郎" style="width:100%; padding:14px 16px; font-size:16px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:14px; outline:none;" style-focus="border-color:{{ t.primary }};"></div>
+            <div style="margin-bottom:16px;"><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">メールアドレス</label><input type="email" value="{{ f.regEmail }}" onInput="{{ h.regEmail }}" placeholder="you@example.com" style="width:100%; padding:14px 16px; font-size:16px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:14px; outline:none;" style-focus="border-color:{{ t.primary }};"></div>
+            <div style="margin-bottom:16px;"><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">パスワード</label><input type="password" value="{{ f.regPw }}" onInput="{{ h.regPw }}" placeholder="8文字以上" style="width:100%; padding:14px 16px; font-size:16px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:14px; outline:none;" style-focus="border-color:{{ t.primary }};"></div>
+            <div style="margin-bottom:26px;"><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">養蜂場名 <span style="color:{{ t.textMuted }}; font-weight:400;">（任意）</span></label><input type="text" value="{{ f.regFarm }}" onInput="{{ h.regFarm }}" placeholder="第一養蜂場" style="width:100%; padding:14px 16px; font-size:16px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:14px; outline:none;" style-focus="border-color:{{ t.primary }};"></div>
+            <button onClick="{{ submitRegister }}" style="width:100%; padding:16px; font-size:16px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};" style-active="transform:translateY(1px);">登録する</button>
+            <div style="margin-top:auto; padding-top:26px; text-align:center; font-size:14px; color:{{ t.textMuted }};">すでにアカウントをお持ちの方は <span onClick="{{ goLogin }}" style="color:{{ t.primary }}; font-weight:700; cursor:pointer;">ログイン</span></div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ scOb1 }}" hint-placeholder-val="{{ false }}">
+          <div data-screen-label="SCR-003 オンボーディング①" style="position:absolute; inset:0; background:{{ t.bg }}; font-family:{{ t.font }}; padding:66px 30px 40px; display:flex; flex-direction:column; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
+            <div style="display:flex; justify-content:flex-end;"><span onClick="{{ skipOb }}" style="font-size:14px; color:{{ t.textMuted }}; font-weight:600; cursor:pointer;">スキップ</span></div>
+            <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:22px;"><div style="width:168px; height:168px; border-radius:50%; background:{{ t.chipBg }}; display:flex; align-items:center; justify-content:center; font-size:76px;">🐝</div><div style="font-size:27px; font-weight:800; color:{{ t.text }}; line-height:1.45;">ようこそ<br>HoneyOS へ</div><div style="font-size:15px; color:{{ t.textMuted }}; line-height:1.9;">養蜂管理をもっと簡単に、<br>もっとスマートに。</div></div>
+            <div style="display:flex; gap:8px; justify-content:center; margin-bottom:24px;"><span style="width:24px; height:8px; border-radius:99px; background:{{ t.primary }};"></span><span style="width:8px; height:8px; border-radius:99px; background:{{ t.border }};"></span><span style="width:8px; height:8px; border-radius:99px; background:{{ t.border }};"></span></div>
+            <button onClick="{{ goOb2 }}" style="width:100%; padding:16px; font-size:16px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};" style-active="transform:translateY(1px);">次へ</button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ scOb2 }}" hint-placeholder-val="{{ false }}">
+          <div data-screen-label="SCR-004 オンボーディング②" style="position:absolute; inset:0; background:{{ t.bg }}; font-family:{{ t.font }}; padding:66px 30px 40px; display:flex; flex-direction:column; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
+            <div style="display:flex; justify-content:flex-end;"><span onClick="{{ skipOb }}" style="font-size:14px; color:{{ t.textMuted }}; font-weight:600; cursor:pointer;">スキップ</span></div>
+            <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:22px;"><div style="width:168px; height:168px; border-radius:50%; background:{{ t.chipBg }}; display:flex; align-items:center; justify-content:center; font-size:76px;">🏡</div><div style="font-size:27px; font-weight:800; color:{{ t.text }}; line-height:1.45;">養蜂場を<br>登録しましょう</div><div style="font-size:15px; color:{{ t.textMuted }}; line-height:1.9;">養蜂場の名前と場所を登録して<br>蜂群の管理を始めましょう。</div></div>
+            <div style="display:flex; gap:8px; justify-content:center; margin-bottom:24px;"><span style="width:8px; height:8px; border-radius:99px; background:{{ t.border }};"></span><span style="width:24px; height:8px; border-radius:99px; background:{{ t.primary }};"></span><span style="width:8px; height:8px; border-radius:99px; background:{{ t.border }};"></span></div>
+            <button onClick="{{ goOb3 }}" style="width:100%; padding:16px; font-size:16px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};" style-active="transform:translateY(1px);">次へ</button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ scOb3 }}" hint-placeholder-val="{{ false }}">
+          <div data-screen-label="SCR-005 オンボーディング③" style="position:absolute; inset:0; background:{{ t.bg }}; font-family:{{ t.font }}; padding:66px 30px 40px; display:flex; flex-direction:column; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
+            <div style="display:flex; justify-content:flex-end;"><span onClick="{{ startApp }}" style="font-size:14px; color:{{ t.textMuted }}; font-weight:600; cursor:pointer;">後で設定する</span></div>
+            <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:22px;"><div style="width:168px; height:168px; border-radius:50%; background:{{ t.chipBg }}; display:flex; align-items:center; justify-content:center; font-size:72px;">📡</div><div style="font-size:27px; font-weight:800; color:{{ t.text }}; line-height:1.45;">センサーを<br>接続しましょう</div><div style="font-size:15px; color:{{ t.textMuted }}; line-height:1.9;">IoTセンサーを登録すると、重量・温度を<br>リアルタイムでモニタリングできます。</div></div>
+            <div style="display:flex; gap:8px; justify-content:center; margin-bottom:24px;"><span style="width:8px; height:8px; border-radius:99px; background:{{ t.border }};"></span><span style="width:8px; height:8px; border-radius:99px; background:{{ t.border }};"></span><span style="width:24px; height:8px; border-radius:99px; background:{{ t.primary }};"></span></div>
+            <button onClick="{{ startApp }}" style="width:100%; padding:16px; font-size:16px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};" style-active="transform:translateY(1px);">始める</button>
+          </div>
+        </sc-if>
+
+        <!-- ===== APP SHELL ===== -->
+        <sc-if value="{{ scApp }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute; inset:0; display:flex; flex-direction:column; background:{{ t.bg }}; font-family:{{ t.font }};">
+            <div style="flex:1; overflow-y:auto;">
+
+              <!-- SCR-006 DASHBOARD -->
+              <sc-if value="{{ vHome }}" hint-placeholder-val="{{ true }}">
+                <div data-screen-label="SCR-006 ダッシュボード" style="padding:64px 20px 24px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
+                  <div style="display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:22px;">
+                    <div><div style="font-size:22px; font-weight:800; color:{{ t.text }};">ダッシュボード</div><div style="font-size:13px; color:{{ t.textMuted }}; margin-top:3px;">2026年6月22日（日）</div></div>
+                    <button onClick="{{ goNotif }}" style="position:relative; width:42px; height:42px; border-radius:50%; background:{{ t.surface }}; border:1px solid {{ t.border }}; display:flex; align-items:center; justify-content:center; color:{{ t.text }}; cursor:pointer;"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.7 21a2 2 0 0 1-3.4 0"></path></svg><sc-if value="{{ hasUnread }}" hint-placeholder-val="{{ true }}"><span style="position:absolute; top:8px; right:9px; width:9px; height:9px; border-radius:50%; background:{{ t.danger }}; border:2px solid {{ t.surface }};"></span></sc-if></button>
+                  </div>
+                  <div style="font-size:12px; font-weight:700; letter-spacing:.08em; color:{{ t.textMuted }}; margin-bottom:10px;">概要</div>
+                  <div style="display:flex; gap:10px; margin-bottom:10px;">
+                    <div style="flex:1; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px;"><div style="font-size:12px; color:{{ t.textMuted }};">管理蜂群数</div><div style="margin-top:8px;"><span style="font-size:28px; font-weight:800; color:{{ t.text }};">24</span><span style="font-size:14px; color:{{ t.textMuted }}; margin-left:3px;">群</span></div></div>
+                    <div style="flex:1; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px;"><div style="font-size:12px; color:{{ t.textMuted }};">今月の収量</div><div style="margin-top:8px; display:flex; align-items:baseline; flex-wrap:wrap;"><span style="font-size:28px; font-weight:800; color:{{ t.text }};">458</span><span style="font-size:14px; color:{{ t.textMuted }}; margin-left:3px;">kg</span><span style="font-size:12px; font-weight:700; color:{{ t.accent }}; background:{{ t.chipBg }}; padding:2px 7px; border-radius:999px; margin-left:6px;">+12%</span></div></div>
+                  </div>
+                  <div onClick="{{ goFarmDetail }}" style="background:{{ t.warnBg }}; border:1px solid {{ t.warn }}; border-radius:{{ t.radius }}px; padding:14px 16px; display:flex; align-items:center; gap:12px; margin-bottom:26px; cursor:pointer;"><span style="font-size:22px;">⚠️</span><div style="flex:1;"><div style="font-size:14px; font-weight:700; color:{{ t.text }};">要注意の蜂群が 2群 あります</div><div style="font-size:12px; color:{{ t.textMuted }}; margin-top:2px;">A-02・A-08 を確認してください</div></div><span style="color:{{ t.textMuted }};">›</span></div>
+                  <div style="font-size:12px; font-weight:700; letter-spacing:.08em; color:{{ t.textMuted }}; margin-bottom:10px;">本日の作業</div>
+                  <div style="display:flex; gap:10px; margin-bottom:26px;">
+                    <div onClick="{{ goInspStart }}" style="flex:1; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:14px; text-align:center; cursor:pointer;"><div style="font-size:22px;">🔍</div><div style="margin-top:6px;"><span style="font-size:22px; font-weight:800; color:{{ t.text }};">3</span><span style="font-size:12px; color:{{ t.textMuted }};">件</span></div><div style="font-size:12px; color:{{ t.textMuted }}; margin-top:2px;">内検</div></div>
+                    <div onClick="{{ goTasks }}" style="flex:1; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:14px; text-align:center; cursor:pointer;"><div style="font-size:22px;">🍼</div><div style="margin-top:6px;"><span style="font-size:22px; font-weight:800; color:{{ t.text }};">4</span><span style="font-size:12px; color:{{ t.textMuted }};">件</span></div><div style="font-size:12px; color:{{ t.textMuted }}; margin-top:2px;">給餌</div></div>
+                    <div onClick="{{ goTasks }}" style="flex:1; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:14px; text-align:center; cursor:pointer;"><div style="font-size:22px;">🍯</div><div style="margin-top:6px;"><span style="font-size:22px; font-weight:800; color:{{ t.text }};">2</span><span style="font-size:12px; color:{{ t.textMuted }};">件</span></div><div style="font-size:12px; color:{{ t.textMuted }}; margin-top:2px;">採蜜</div></div>
+                  </div>
+                  <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:18px;">
+                    <div style="display:flex; align-items:flex-start; justify-content:space-between;"><div><div style="font-size:13px; color:{{ t.textMuted }};">採蜜量の推移（今月）</div><div style="margin-top:5px; display:flex; align-items:baseline;"><span style="font-size:24px; font-weight:800; color:{{ t.text }};">458</span><span style="font-size:13px; color:{{ t.textMuted }}; margin-left:3px;">kg</span><span style="font-size:12px; font-weight:700; color:{{ t.accent }}; background:{{ t.chipBg }}; padding:2px 7px; border-radius:999px; margin-left:6px;">+12%</span></div></div><span onClick="{{ goReport }}" style="font-size:13px; color:{{ t.primary }}; font-weight:600; cursor:pointer; flex-shrink:0;">もっと見る ›</span></div>
+                    <div style="margin-top:14px;"><svg viewBox="0 0 320 124" width="100%" style="display:block;"><defs><linearGradient id="cg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="{{ t.primary }}" stop-opacity="0.28"></stop><stop offset="100%" stop-color="{{ t.primary }}" stop-opacity="0"></stop></linearGradient></defs><path d="M0,96 C28,92 44,80 66,82 C92,84 100,60 128,62 C156,64 166,42 192,48 C220,54 230,32 256,36 C282,40 298,24 306,22 L320,20 L320,124 L0,124 Z" fill="url(#cg)"></path><path d="M0,96 C28,92 44,80 66,82 C92,84 100,60 128,62 C156,64 166,42 192,48 C220,54 230,32 256,36 C282,40 298,24 306,22" fill="none" stroke="{{ t.primary }}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="306" cy="22" r="4.5" fill="{{ t.primary }}" stroke="{{ t.surface }}" stroke-width="2.5"></circle></svg></div>
+                    <div style="display:flex; justify-content:space-between; margin-top:8px; font-size:11px; color:{{ t.textMuted }};"><span>第1週</span><span>第2週</span><span>第3週</span><span>第4週</span></div>
+                  </div>
+                </div>
+              </sc-if>
+
+              <!-- SCR-007 NOTIF -->
+              <sc-if value="{{ vNotif }}" hint-placeholder-val="{{ false }}">
+                <div data-screen-label="SCR-007 通知センター" style="padding:64px 16px 16px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
+                  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; padding:0 4px;"><div style="display:flex; align-items:center; gap:10px;"><button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button><span style="font-size:22px; font-weight:800; color:{{ t.text }};">通知センター</span></div><span onClick="{{ markAllRead }}" style="font-size:13px; color:{{ t.primary }}; font-weight:700; cursor:pointer;">すべて既読</span></div>
+                  <div style="display:flex; flex-direction:column; gap:8px;">
+                    <sc-for list="{{ notifs }}" as="n" hint-placeholder-count="4">
+                      <div style="display:flex; gap:12px; align-items:flex-start; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:14px; opacity:{{ n.opacity }};"><div style="width:38px; height:38px; border-radius:10px; background:{{ n.bg }}; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">{{ n.icon }}</div><div style="flex:1; min-width:0;"><div style="display:flex; align-items:center; justify-content:space-between; gap:8px;"><span style="font-size:13px; font-weight:700; color:{{ n.color }};">{{ n.tag }}</span><span style="font-size:11px; color:{{ t.textMuted }}; flex-shrink:0;">{{ n.time }}</span></div><div style="font-size:14px; color:{{ t.text }}; margin-top:3px; line-height:1.5;">{{ n.text }}</div></div><sc-if value="{{ n.unread }}" hint-placeholder-val="{{ false }}"><span style="width:8px; height:8px; border-radius:50%; background:{{ t.danger }}; flex-shrink:0; margin-top:6px;"></span></sc-if></div>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-if>
+
+              <!-- SCR-008 FARMS LIST -->
+              <sc-if value="{{ vFarms }}" hint-placeholder-val="{{ false }}">
+                <div data-screen-label="SCR-008 養蜂場一覧" style="padding:64px 16px 16px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
+                  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; padding:0 4px;"><span style="font-size:22px; font-weight:800; color:{{ t.text }};">養蜂場一覧</span><button onClick="{{ goFarmMap }}" style="padding:7px 13px; font-size:13px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primary }}; background:{{ t.chipBg }}; border:none; border-radius:999px; cursor:pointer; display:flex; align-items:center; gap:5px;">🗺️ マップ</button></div>
+                  <div style="display:flex; flex-direction:column; gap:10px;">
+                    <sc-for list="{{ farms }}" as="fm" hint-placeholder-count="3">
+                      <div onClick="{{ fm.open }}" style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; cursor:pointer; display:flex; align-items:center; gap:14px;"><div style="width:48px; height:48px; border-radius:14px; background:{{ t.chipBg }}; display:flex; align-items:center; justify-content:center; font-size:24px; flex-shrink:0;">🏡</div><div style="flex:1; min-width:0;"><div style="font-size:16px; font-weight:800; color:{{ t.text }};">{{ fm.name }}</div><div style="font-size:13px; color:{{ t.textMuted }}; margin-top:3px;">蜂群：{{ fm.colonies }}群　収量：{{ fm.yield }}kg</div></div><span style="font-size:12px; font-weight:700; color:{{ fm.deltaColor }}; background:{{ fm.deltaBg }}; padding:3px 8px; border-radius:999px; flex-shrink:0;">{{ fm.delta }}</span></div>
+                    </sc-for>
+                    <button onClick="{{ noop }}" style="margin-top:4px; padding:15px; font-size:15px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primary }}; background:transparent; border:1.5px dashed {{ t.border }}; border-radius:{{ t.radius }}px; cursor:pointer;">＋ 養蜂場を追加</button>
+                  </div>
+                </div>
+              </sc-if>
+
+              <!-- SCR-009 FARM DETAIL -->
+              <sc-if value="{{ vFarmDetail }}" hint-placeholder-val="{{ false }}">
+                <div data-screen-label="SCR-009 養蜂場詳細" style="padding:60px 16px 16px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
+                  <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px;"><button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button><span style="font-size:20px; font-weight:800; color:{{ t.text }};">第一養蜂場</span></div>
+                  <div style="display:flex; gap:6px; background:{{ t.surfaceAlt }}; border:1px solid {{ t.border }}; padding:5px; border-radius:14px; margin-bottom:18px;"><button onClick="{{ segTabOverview }}" style="{{ fdSegOverview }}">概要</button><button onClick="{{ segTabStats }}" style="{{ fdSegStats }}">統計</button><button onClick="{{ segTabMembers }}" style="{{ fdSegMembers }}">メンバー</button></div>
+                  <div style="display:flex; gap:10px; margin-bottom:18px;">
+                    <div style="flex:1; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:14px;"><div style="font-size:12px; color:{{ t.textMuted }};">蜂群数</div><div style="margin-top:6px;"><span style="font-size:22px; font-weight:800; color:{{ t.text }};">12</span><span style="font-size:12px; color:{{ t.textMuted }};"> 群</span></div></div>
+                    <div style="flex:1; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:14px;"><div style="font-size:12px; color:{{ t.textMuted }};">今月収量</div><div style="margin-top:6px;"><span style="font-size:22px; font-weight:800; color:{{ t.text }};">245</span><span style="font-size:12px; color:{{ t.textMuted }};"> kg</span></div></div>
+                    <div style="flex:1; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:14px;"><div style="font-size:12px; color:{{ t.textMuted }};">前月比</div><div style="margin-top:6px;"><span style="font-size:22px; font-weight:800; color:{{ t.accent }};">+15</span><span style="font-size:12px; color:{{ t.textMuted }};"> %</span></div></div>
+                  </div>
+                  <div style="font-size:13px; font-weight:700; color:{{ t.textMuted }}; margin-bottom:10px;">配置図　<span style="font-weight:400; font-size:12px;">（タップで蜂群詳細）</span></div>
+                  <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:14px;">
+                    <sc-for list="{{ colonies }}" as="c" hint-placeholder-count="12">
+                      <div onClick="{{ c.open }}" style="aspect-ratio:1; border-radius:12px; background:{{ c.bg }}; border:1.5px solid {{ c.border }}; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer;"><span style="font-size:13px; font-weight:800; color:{{ c.fg }};">{{ c.id }}</span><span style="width:7px; height:7px; border-radius:50%; background:{{ c.dot }}; margin-top:4px;"></span></div>
+                    </sc-for>
+                  </div>
+                  <div style="display:flex; gap:16px; font-size:12px; color:{{ t.textMuted }};"><span style="display:flex; align-items:center; gap:5px;"><span style="width:9px; height:9px; border-radius:50%; background:{{ t.ok }};"></span>正常</span><span style="display:flex; align-items:center; gap:5px;"><span style="width:9px; height:9px; border-radius:50%; background:{{ t.warn }};"></span>注意</span><span style="display:flex; align-items:center; gap:5px;"><span style="width:9px; height:9px; border-radius:50%; background:{{ t.danger }};"></span>異常</span></div>
+                </div>
+              </sc-if>
+
+              <!-- SCR-010 FARM MAP -->
+              <sc-if value="{{ vFarmMap }}" hint-placeholder-val="{{ false }}">
+                <div data-screen-label="SCR-010 養蜂場マップ" style="padding:60px 16px 16px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
+                  <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px;"><button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button><span style="font-size:20px; font-weight:800; color:{{ t.text }};">養蜂場マップ</span></div>
+                  <div style="position:relative; border-radius:{{ t.radius }}px; overflow:hidden; border:1px solid {{ t.border }}; background:linear-gradient(135deg,{{ t.surfaceAlt }},{{ t.chipBg }}); height:300px; margin-bottom:14px;">
+                    <svg viewBox="0 0 340 300" width="100%" height="100%" style="position:absolute; inset:0; opacity:.4;"><path d="M0,210 Q90,170 170,200 T340,180" fill="none" stroke="{{ t.primary }}" stroke-width="2"></path><path d="M40,0 L70,300" stroke="{{ t.border }}" stroke-width="14" opacity=".6"></path><path d="M0,120 L340,90" stroke="{{ t.border }}" stroke-width="20" opacity=".5"></path></svg>
+                    <sc-for list="{{ mapPins }}" as="p" hint-placeholder-count="12">
+                      <div onClick="{{ p.open }}" style="position:absolute; left:{{ p.x }}%; top:{{ p.y }}%; transform:translate(-50%,-100%); cursor:pointer; display:flex; flex-direction:column; align-items:center;"><span style="background:{{ p.color }}; color:#fff; font-size:10px; font-weight:800; padding:3px 7px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,.25); white-space:nowrap;">{{ p.id }}</span><span style="width:0; height:0; border-left:5px solid transparent; border-right:5px solid transparent; border-top:6px solid {{ p.color }};"></span></div>
+                    </sc-for>
+                  </div>
+                  <div style="display:flex; gap:16px; font-size:12px; color:{{ t.textMuted }}; justify-content:center;"><span style="display:flex; align-items:center; gap:5px;"><span style="width:9px; height:9px; border-radius:50%; background:{{ t.ok }};"></span>正常</span><span style="display:flex; align-items:center; gap:5px;"><span style="width:9px; height:9px; border-radius:50%; background:{{ t.warn }};"></span>注意</span><span style="display:flex; align-items:center; gap:5px;"><span style="width:9px; height:9px; border-radius:50%; background:{{ t.danger }};"></span>異常</span></div>
+                </div>
+              </sc-if>
+
+              <!-- SCR-011 INSPECTION START -->
+              <sc-if value="{{ vInspStart }}" hint-placeholder-val="{{ false }}">
+                <div data-screen-label="SCR-011 内検開始" style="padding:60px 16px 16px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
+                  <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px;"><button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button><span style="font-size:20px; font-weight:800; color:{{ t.text }};">内検を開始</span></div>
+                  <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; margin-bottom:16px;"><div style="font-size:13px; font-weight:700; color:{{ t.textMuted }}; margin-bottom:10px;">巣箱情報</div><div style="display:flex; flex-direction:column; gap:8px; font-size:14px;"><div style="display:flex; justify-content:space-between;"><span style="color:{{ t.textMuted }};">巣箱名</span><span style="color:{{ t.text }}; font-weight:700;">A-01（自宅蜂場）</span></div><div style="display:flex; justify-content:space-between;"><span style="color:{{ t.textMuted }};">設置場所</span><span style="color:{{ t.text }};">山田町</span></div><div style="display:flex; justify-content:space-between;"><span style="color:{{ t.textMuted }};">前回内検日</span><span style="color:{{ t.text }};">2026/05/28</span></div></div></div>
+                  <div style="display:flex; gap:10px; margin-bottom:16px;"><div style="flex:1.4;"><label style="display:block; font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:6px;">日時</label><div style="padding:13px 14px; font-size:14px; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px;">2026/06/08 09:30</div></div><div style="flex:1;"><label style="display:block; font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:6px;">気温</label><div style="padding:13px 14px; font-size:14px; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px;">23.5 ℃</div></div></div>
+                  <label style="display:block; font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:8px;">天気</label>
+                  <div style="display:flex; gap:8px; margin-bottom:18px;"><button onClick="{{ wSun }}" style="{{ wxSun }}">☀️ 晴れ</button><button onClick="{{ wCloud }}" style="{{ wxCloud }}">⛅ 曇り</button><button onClick="{{ wRain }}" style="{{ wxRain }}">🌧️ 雨</button></div>
+                  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;"><label style="font-size:12px; font-weight:600; color:{{ t.textMuted }};">検査する枠を選択（最大10枠）</label><span onClick="{{ selectAllFrames }}" style="font-size:12px; font-weight:700; color:{{ t.primary }}; cursor:pointer;">全枠選択</span></div>
+                  <div style="display:grid; grid-template-columns:repeat(5,1fr); gap:8px; margin-bottom:22px;">
+                    <sc-for list="{{ frameChips }}" as="fr" hint-placeholder-count="10">
+                      <div onClick="{{ fr.toggle }}" style="aspect-ratio:1; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:800; cursor:pointer; background:{{ fr.bg }}; color:{{ fr.fg }}; border:1.5px solid {{ fr.border }};">{{ fr.n }}</div>
+                    </sc-for>
+                  </div>
+                  <button onClick="{{ goInspCapture }}" style="width:100%; padding:16px; font-size:16px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};" style-active="transform:translateY(1px);">内検を開始する（{{ selectedCount }}枠）</button>
+                </div>
+              </sc-if>
+
+              <!-- SCR-012 CAPTURE -->
+              <sc-if value="{{ vInspCapture }}" hint-placeholder-val="{{ false }}">
+                <div data-screen-label="SCR-012 撮影" style="padding:60px 16px 16px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
+                  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;"><div style="display:flex; align-items:center; gap:10px;"><button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button><span style="font-size:18px; font-weight:800; color:{{ t.text }};">撮影</span></div><span style="font-size:13px; font-weight:700; color:{{ t.primary }}; background:{{ t.chipBg }}; padding:4px 10px; border-radius:999px;">3 / 10 枠目</span></div>
+                  <div style="display:flex; gap:8px; margin-bottom:14px;"><button onClick="{{ faceA }}" style="{{ segFaceA }}">表面（Face A）</button><button onClick="{{ faceB }}" style="{{ segFaceB }}">裏面（Face B）</button></div>
+                  <div style="position:relative; aspect-ratio:3/4; border-radius:{{ t.radius }}px; overflow:hidden; background:radial-gradient(circle at 50% 40%, #c79a4e, #6e4f23); display:flex; align-items:center; justify-content:center; margin-bottom:16px; border:1px solid {{ t.border }};">
+                    <svg viewBox="0 0 200 260" width="100%" height="100%" style="position:absolute; inset:0; opacity:.55;"><defs><pattern id="hex" width="22" height="19" patternUnits="userSpaceOnUse" patternTransform="scale(1.1)"><path d="M11 0 L22 5.5 L22 13.5 L11 19 L0 13.5 L0 5.5 Z" fill="none" stroke="#3d2a10" stroke-width="1.2"></path></pattern></defs><rect width="200" height="260" fill="url(#hex)"></rect></svg>
+                    <div style="position:absolute; inset:14px; border:2px solid rgba(255,255,255,.7); border-radius:14px;"></div>
+                    <div style="position:absolute; top:22px; left:22px; right:22px; display:flex; justify-content:space-between; align-items:center;"><span style="display:flex; align-items:center; gap:6px; background:rgba(0,0,0,.45); color:#fff; font-size:11px; font-weight:700; padding:4px 9px; border-radius:999px;"><span style="width:7px; height:7px; border-radius:50%; background:#ff5b5b; animation:liveBlink 1.4s infinite;"></span>3 / 10 枠目</span><span style="background:rgba(0,0,0,.45); color:#fff; font-size:11px; font-weight:700; padding:4px 9px; border-radius:999px;">{{ faceLabel }}</span></div>
+                    <span style="font-size:60px; filter:drop-shadow(0 2px 6px rgba(0,0,0,.4));">🐝</span>
+                  </div>
+                  <div style="display:flex; gap:10px;"><button onClick="{{ noop }}" style="flex:1; padding:15px; font-size:15px; font-weight:700; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:14px; cursor:pointer;">撮り直す</button><button onClick="{{ goInspFrame }}" style="flex:1.3; padding:15px; font-size:15px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};">使用する</button></div>
+                </div>
+              </sc-if>
+
+              <!-- SCR-013 FRAME VIEWER -->
+              <sc-if value="{{ vInspFrame }}" hint-placeholder-val="{{ false }}">
+                <div data-screen-label="SCR-013 枠ビューア" style="padding:60px 16px 16px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
+                  <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;"><button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button><span style="font-size:18px; font-weight:800; color:{{ t.text }};">枠ビューア</span><span style="margin-left:auto; font-size:13px; color:{{ t.textMuted }};">3 / 10 枠目</span></div>
+                  <div style="position:relative; aspect-ratio:4/3; border-radius:{{ t.radius }}px; overflow:hidden; background:radial-gradient(circle at 50% 40%, #c79a4e, #6e4f23); margin-bottom:12px; border:1px solid {{ t.border }};">
+                    <svg viewBox="0 0 260 200" width="100%" height="100%" style="position:absolute; inset:0; opacity:.55;"><defs><pattern id="hex2" width="22" height="19" patternUnits="userSpaceOnUse"><path d="M11 0 L22 5.5 L22 13.5 L11 19 L0 13.5 L0 5.5 Z" fill="none" stroke="#3d2a10" stroke-width="1.2"></path></pattern></defs><rect width="260" height="200" fill="url(#hex2)"></rect></svg>
+                    <div style="position:absolute; top:12px; right:12px; display:flex; flex-direction:column; gap:6px;"><span style="width:34px; height:34px; border-radius:9px; background:rgba(0,0,0,.5); color:#fff; display:flex; align-items:center; justify-content:center; font-size:18px;">＋</span><span style="width:34px; height:34px; border-radius:9px; background:rgba(0,0,0,.5); color:#fff; display:flex; align-items:center; justify-content:center; font-size:18px;">−</span></div>
+                    <span style="position:absolute; bottom:12px; left:12px; background:rgba(0,0,0,.5); color:#fff; font-size:11px; font-weight:700; padding:4px 9px; border-radius:999px;">100%</span>
+                  </div>
+                  <div style="display:flex; gap:8px; margin-bottom:14px;"><button onClick="{{ faceA }}" style="{{ segFaceA }}">表面</button><button onClick="{{ faceB }}" style="{{ segFaceB }}">裏面</button></div>
+                  <label style="display:block; font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">メモ入力（任意）</label>
+                  <textarea value="{{ f.frameMemo }}" onInput="{{ h.frameMemo }}" placeholder="左側に花粉が多い印象..." rows="2" style="width:100%; padding:13px 14px; font-size:14px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px; outline:none; resize:none; margin-bottom:16px;" style-focus="border-color:{{ t.primary }};"></textarea>
+                  <button onClick="{{ goInspAI }}" style="width:100%; padding:16px; font-size:16px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }}; display:flex; align-items:center; justify-content:center; gap:8px;" style-active="transform:translateY(1px);">✨ AIで解析する</button>
+                  <button onClick="{{ goInspSummary }}" style="width:100%; margin-top:10px; padding:13px; font-size:14px; font-weight:700; font-family:{{ t.font }}; color:{{ t.textMuted }}; background:transparent; border:none; cursor:pointer;">記録なしで次へ</button>
+                </div>
+              </sc-if>
+
+              <!-- SCR-014 AI ANALYSIS -->
+              <sc-if value="{{ vInspAI }}" hint-placeholder-val="{{ false }}">
+                <div data-screen-label="SCR-014 AI解析入力" style="padding:60px 16px 16px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
+                  <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;"><button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button><span style="font-size:18px; font-weight:800; color:{{ t.text }};">AI解析結果</span><span style="margin-left:auto; font-size:12px; color:{{ t.textMuted }};">3 / 10 枠（表面）</span></div>
+                  <div style="display:flex; align-items:center; gap:8px; background:{{ t.chipBg }}; border-radius:12px; padding:10px 14px; margin-bottom:14px;"><span style="font-size:18px;">✨</span><span style="font-size:13px; font-weight:700; color:{{ t.chipText }};">AI判定結果（信頼度付き）</span></div>
+                  <div style="display:flex; flex-direction:column; gap:7px; margin-bottom:16px;">
+                    <sc-for list="{{ aiResults }}" as="r" hint-placeholder-count="9">
+                      <div style="display:flex; align-items:center; gap:10px; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:12px; padding:12px 14px;"><span style="font-size:16px; width:22px; text-align:center;">{{ r.icon }}</span><span style="flex:1; font-size:14px; color:{{ t.text }};">{{ r.label }}</span><span style="font-size:14px; font-weight:800; color:{{ t.text }};">{{ r.value }}</span><span style="font-size:11px; font-weight:700; color:{{ r.confColor }}; background:{{ r.confBg }}; padding:2px 8px; border-radius:999px; width:30px; text-align:center;">{{ r.conf }}</span></div>
+                    </sc-for>
+                  </div>
+                  <label style="display:block; font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">メモ（自由記述）</label>
+                  <textarea value="{{ f.aiMemo }}" onInput="{{ h.aiMemo }}" placeholder="右下に女王蜂の疑いあり？" rows="2" style="width:100%; padding:13px 14px; font-size:14px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px; outline:none; resize:none; margin-bottom:16px;" style-focus="border-color:{{ t.primary }};"></textarea>
+                  <div style="display:flex; gap:10px;"><button onClick="{{ back }}" style="flex:1; padding:15px; font-size:15px; font-weight:700; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:14px; cursor:pointer;">キャンセル</button><button onClick="{{ goInspSummary }}" style="flex:1.4; padding:15px; font-size:15px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};">保存して次へ</button></div>
+                </div>
+              </sc-if>
+
+              <!-- SCR-015 SUMMARY -->
+              <sc-if value="{{ vInspSummary }}" hint-placeholder-val="{{ false }}">
+                <div data-screen-label="SCR-015 内検サマリー" style="padding:60px 16px 16px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
+                  <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;"><button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button><span style="font-size:20px; font-weight:800; color:{{ t.text }};">内検サマリー</span></div>
+                  <div style="font-size:14px; font-weight:700; color:{{ t.text }};">A-01（自宅蜂場）</div>
+                  <div style="font-size:13px; color:{{ t.textMuted }}; margin-bottom:16px;">2026/06/08 09:30 ・ 晴れ ・ 23.5℃</div>
+                  <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; margin-bottom:14px;">
+                    <div style="font-size:13px; font-weight:700; color:{{ t.textMuted }}; margin-bottom:12px;">全体の健康スコア</div>
+                    <div style="display:grid; grid-template-columns:repeat(5,1fr); gap:7px;">
+                      <sc-for list="{{ scoreCells }}" as="s" hint-placeholder-count="10">
+                        <div style="aspect-ratio:1; border-radius:10px; background:{{ s.bg }}; display:flex; flex-direction:column; align-items:center; justify-content:center;"><span style="font-size:11px; color:{{ s.fg }}; opacity:.8;">{{ s.n }}</span><span style="font-size:13px; font-weight:800; color:{{ s.fg }};">{{ s.score }}</span></div>
+                      </sc-for>
+                    </div>
+                  </div>
+                  <div style="display:flex; gap:10px; margin-bottom:14px;">
+                    <div style="flex:1; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px;"><div style="font-size:12px; color:{{ t.textMuted }};">総合評価</div><div style="font-size:18px; font-weight:800; color:{{ t.text }}; margin-top:5px;">良好</div><div style="font-size:15px; margin-top:2px;">⭐⭐⭐⭐☆</div></div>
+                    <div style="flex:1; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px;"><div style="font-size:12px; color:{{ t.textMuted }};">前回比</div><div style="font-size:24px; font-weight:800; color:{{ t.accent }}; margin-top:5px;">+8 ↑</div></div>
+                  </div>
+                  <div style="background:{{ t.dangerBg }}; border:1px solid {{ t.danger }}; border-radius:{{ t.radius }}px; padding:14px 16px; margin-bottom:14px;"><div style="font-size:13px; font-weight:800; color:{{ t.danger }}; margin-bottom:8px;">⚠️ 要注意アラート</div><div style="font-size:14px; color:{{ t.text }}; line-height:1.9;">▲ ヴァロア検出（枠5）<br>▲ 女王セル疑い（枠7）</div></div>
+                  <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; margin-bottom:18px;"><div style="font-size:13px; font-weight:800; color:{{ t.text }}; margin-bottom:10px; display:flex; align-items:center; gap:6px;">✨ 推奨アクション（AI提案）</div><div style="display:flex; flex-direction:column; gap:9px;"><div style="display:flex; gap:10px; font-size:14px; color:{{ t.text }};"><span style="font-weight:800; color:{{ t.primary }};">1.</span>ヴァロア対策を実施</div><div style="display:flex; gap:10px; font-size:14px; color:{{ t.text }};"><span style="font-weight:800; color:{{ t.primary }};">2.</span>女王セルの経過観察</div><div style="display:flex; gap:10px; font-size:14px; color:{{ t.text }};"><span style="font-weight:800; color:{{ t.primary }};">3.</span>蜜箱を整備（2週間後）</div></div></div>
+                  <div style="display:flex; gap:10px;"><button onClick="{{ goInspHistory }}" style="flex:1.4; padding:16px; font-size:15px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};">保存する</button><button onClick="{{ noop }}" style="flex:1; padding:16px; font-size:14px; font-weight:700; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:14px; cursor:pointer;">PDF共有</button></div>
+                </div>
+              </sc-if>
+
+              <!-- SCR-016 INSPECTION HISTORY -->
+              <sc-if value="{{ vInspHistory }}" hint-placeholder-val="{{ false }}">
+                <div data-screen-label="SCR-016 内検履歴ダッシュボード" style="padding:60px 16px 16px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
+                  <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px;"><button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button><span style="font-size:20px; font-weight:800; color:{{ t.text }};">内検履歴</span></div>
+                  <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; margin-bottom:14px;">
+                    <div style="font-size:13px; font-weight:700; color:{{ t.text }}; margin-bottom:12px;">2026年6月</div>
+                    <div style="display:grid; grid-template-columns:repeat(7,1fr); gap:5px; text-align:center;">
+                      <span style="font-size:11px; color:{{ t.danger }};">日</span><span style="font-size:11px; color:{{ t.textMuted }};">月</span><span style="font-size:11px; color:{{ t.textMuted }};">火</span><span style="font-size:11px; color:{{ t.textMuted }};">水</span><span style="font-size:11px; color:{{ t.textMuted }};">木</span><span style="font-size:11px; color:{{ t.textMuted }};">金</span><span style="font-size:11px; color:{{ t.primary }};">土</span>
+                      <sc-for list="{{ calCells }}" as="d" hint-placeholder-count="35">
+                        <div style="aspect-ratio:1; display:flex; align-items:center; justify-content:center; font-size:12px; border-radius:8px; color:{{ d.fg }}; background:{{ d.bg }}; font-weight:{{ d.weight }};">{{ d.label }}</div>
+                      </sc-for>
+                    </div>
+                  </div>
+                  <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; margin-bottom:14px;">
+                    <div style="font-size:13px; font-weight:700; color:{{ t.text }}; margin-bottom:10px;">健康スコアのトレンド</div>
+                    <svg viewBox="0 0 300 110" width="100%" style="display:block;"><polyline points="{{ healthTrendPts }}" fill="none" stroke="{{ t.primary }}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></polyline><sc-for list="{{ healthDots }}" as="hd" hint-placeholder-count="5"><circle cx="{{ hd.x }}" cy="{{ hd.y }}" r="4" fill="{{ t.primary }}"></circle></sc-for></svg>
+                    <div style="display:flex; justify-content:space-between; margin-top:6px; font-size:10px; color:{{ t.textMuted }};"><span>5/8</span><span>5/15</span><span>5/22</span><span>5/28</span><span>6/8</span></div>
+                  </div>
+                  <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; margin-bottom:14px;">
+                    <div style="font-size:13px; font-weight:700; color:{{ t.text }}; margin-bottom:12px;">枠別ヒートマップ（直近3回）</div>
+                    <div style="display:grid; grid-template-columns:48px 1fr 1fr 1fr; gap:6px; align-items:center;">
+                      <span></span><span style="font-size:11px; color:{{ t.textMuted }}; text-align:center;">5/22</span><span style="font-size:11px; color:{{ t.textMuted }}; text-align:center;">5/28</span><span style="font-size:11px; color:{{ t.textMuted }}; text-align:center;">6/8</span>
+                      <sc-for list="{{ heatRows }}" as="hr" hint-placeholder-count="4">
+                        <span style="font-size:12px; color:{{ t.text }}; font-weight:700;">{{ hr.label }}</span>
+                        <div style="height:30px; border-radius:7px; background:{{ hr.c0 }};"></div>
+                        <div style="height:30px; border-radius:7px; background:{{ hr.c1 }};"></div>
+                        <div style="height:30px; border-radius:7px; background:{{ hr.c2 }};"></div>
+                      </sc-for>
+                    </div>
+                  </div>
+                  <div style="display:flex; gap:10px;"><button onClick="{{ noop }}" style="flex:1; padding:14px; font-size:14px; font-weight:700; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:14px; cursor:pointer;">アラート履歴</button><button onClick="{{ noop }}" style="flex:1; padding:14px; font-size:14px; font-weight:700; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:14px; cursor:pointer;">CSV出力</button></div>
+                </div>
+              </sc-if>
+
+              <!-- SCR-017 SENSOR DETAIL -->
+              <sc-if value="{{ vSensor }}" hint-placeholder-val="{{ false }}">
+                <div data-screen-label="SCR-017 センサー詳細" style="padding:60px 16px 16px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
+                  <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;"><button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button><span style="font-size:20px; font-weight:800; color:{{ t.text }};">センサー詳細（A-01）</span></div>
+                  <div style="font-size:12px; color:{{ t.textMuted }}; margin:0 0 16px 44px;">最終更新：2026/06/08 08:30</div>
+                  <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px;">
+                    <div onClick="{{ goWeight }}" style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; cursor:pointer;"><div style="display:flex; align-items:center; gap:6px; font-size:12px; color:{{ t.textMuted }};">⚖️ 重量</div><div style="margin-top:7px;"><span style="font-size:24px; font-weight:800; color:{{ t.text }};">38.5</span><span style="font-size:13px; color:{{ t.textMuted }};"> kg</span></div><div style="font-size:12px; font-weight:700; color:{{ t.accent }}; margin-top:2px;">+1.2kg ↑</div></div>
+                    <div onClick="{{ goTemp }}" style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; cursor:pointer;"><div style="display:flex; align-items:center; gap:6px; font-size:12px; color:{{ t.textMuted }};">🌡️ 温度</div><div style="margin-top:7px;"><span style="font-size:24px; font-weight:800; color:{{ t.text }};">35.2</span><span style="font-size:13px; color:{{ t.textMuted }};"> ℃</span></div><div style="font-size:12px; color:{{ t.textMuted }}; margin-top:2px;">適正範囲内</div></div>
+                    <div onClick="{{ goHumid }}" style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; cursor:pointer;"><div style="display:flex; align-items:center; gap:6px; font-size:12px; color:{{ t.textMuted }};">💧 湿度</div><div style="margin-top:7px;"><span style="font-size:24px; font-weight:800; color:{{ t.text }};">58</span><span style="font-size:13px; color:{{ t.textMuted }};"> %</span></div><div style="font-size:12px; color:{{ t.textMuted }}; margin-top:2px;">平均 56%</div></div>
+                    <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px;"><div style="display:flex; align-items:center; gap:6px; font-size:12px; color:{{ t.textMuted }};">🌬️ CO₂</div><div style="margin-top:7px;"><span style="font-size:24px; font-weight:800; color:{{ t.text }};">1200</span><span style="font-size:13px; color:{{ t.textMuted }};"> ppm</span></div><div style="font-size:12px; color:{{ t.textMuted }}; margin-top:2px;">正常</div></div>
+                  </div>
+                  <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px;"><div style="font-size:13px; font-weight:700; color:{{ t.text }}; margin-bottom:10px;">直近データ（24時間）</div><svg viewBox="0 0 300 90" width="100%" style="display:block;"><defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="{{ t.primary }}" stop-opacity="0.25"></stop><stop offset="100%" stop-color="{{ t.primary }}" stop-opacity="0"></stop></linearGradient></defs><path d="{{ sensorArea }}" fill="url(#sg)"></path><path d="{{ sensorLine }}" fill="none" stroke="{{ t.primary }}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></div>
+                </div>
+              </sc-if>
+
+              <!-- SCR-018/019/020 GRAPHS -->
+              <sc-if value="{{ vGraph }}" hint-placeholder-val="{{ false }}">
+                <div data-screen-label="SCR-018-020 センサーグラフ" style="padding:60px 16px 16px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
+                  <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px;"><button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button><span style="font-size:20px; font-weight:800; color:{{ t.text }};">{{ graphTitle }}</span></div>
+                  <div style="display:flex; gap:6px; background:{{ t.surfaceAlt }}; border:1px solid {{ t.border }}; padding:5px; border-radius:12px; margin-bottom:18px;"><button onClick="{{ pDay }}" style="{{ segDay }}">日</button><button onClick="{{ pWeek }}" style="{{ segWeek }}">週</button><button onClick="{{ pMonth }}" style="{{ segMonth }}">月</button><button onClick="{{ pYear }}" style="{{ segYear }}">年</button></div>
+                  <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:18px;">
+                    <div style="display:flex; align-items:baseline; gap:8px;"><span style="font-size:34px; font-weight:800; color:{{ t.text }};">{{ graphValue }}</span><span style="font-size:15px; color:{{ t.textMuted }};">{{ graphUnit }}</span></div>
+                    <div style="font-size:12px; color:{{ t.textMuted }}; margin-bottom:4px;">2026/06/08 08:30</div>
+                    <div style="font-size:13px; font-weight:700; color:{{ t.accent }}; margin-bottom:16px;">{{ graphStat }}</div>
+                    <svg viewBox="0 0 300 150" width="100%" style="display:block;"><defs><linearGradient id="gg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="{{ graphColor }}" stop-opacity="0.28"></stop><stop offset="100%" stop-color="{{ graphColor }}" stop-opacity="0"></stop></linearGradient></defs><line x1="0" y1="40" x2="300" y2="40" stroke="{{ t.border }}" stroke-width="1"></line><line x1="0" y1="80" x2="300" y2="80" stroke="{{ t.border }}" stroke-width="1"></line><line x1="0" y1="120" x2="300" y2="120" stroke="{{ t.border }}" stroke-width="1"></line><path d="{{ graphArea }}" fill="url(#gg)"></path><path d="{{ graphLine }}" fill="none" stroke="{{ graphColor }}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="{{ graphLastX }}" cy="{{ graphLastY }}" r="5" fill="{{ graphColor }}" stroke="{{ t.surface }}" stroke-width="2.5"></circle></svg>
+                    <div style="display:flex; justify-content:space-between; margin-top:8px; font-size:11px; color:{{ t.textMuted }};"><sc-for list="{{ graphLabels }}" as="gl" hint-placeholder-count="5"><span>{{ gl }}</span></sc-for></div>
+                  </div>
+                </div>
+              </sc-if>
+
+              <!-- SCR-021 CAMERA -->
+              <sc-if value="{{ vCamera }}" hint-placeholder-val="{{ false }}">
+                <div data-screen-label="SCR-021 カメラ画像" style="padding:60px 16px 16px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
+                  <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;"><button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button><span style="font-size:20px; font-weight:800; color:{{ t.text }};">カメラ画像（A-01）</span></div>
+                  <div style="position:relative; aspect-ratio:4/3; border-radius:{{ t.radius }}px; overflow:hidden; background:radial-gradient(circle at 50% 45%, #b98a3e, #5e4420); margin-bottom:14px; border:1px solid {{ t.border }};">
+                    <svg viewBox="0 0 260 200" width="100%" height="100%" style="position:absolute; inset:0; opacity:.5;"><defs><pattern id="hex3" width="22" height="19" patternUnits="userSpaceOnUse"><path d="M11 0 L22 5.5 L22 13.5 L11 19 L0 13.5 L0 5.5 Z" fill="none" stroke="#3d2a10" stroke-width="1.2"></path></pattern></defs><rect width="260" height="200" fill="url(#hex3)"></rect></svg>
+                    <span style="position:absolute; top:12px; left:12px; display:flex; align-items:center; gap:6px; background:rgba(0,0,0,.5); color:#fff; font-size:11px; font-weight:700; padding:4px 10px; border-radius:999px;"><span style="width:7px; height:7px; border-radius:50%; background:#ff5b5b; animation:liveBlink 1.4s infinite;"></span>ライブ映像</span>
+                    <span style="position:absolute; top:46%; left:30%; font-size:24px;">🐝</span><span style="position:absolute; top:38%; left:58%; font-size:20px;">🐝</span><span style="position:absolute; top:62%; left:48%; font-size:26px;">🐝</span><span style="position:absolute; top:54%; left:72%; font-size:18px;">🐝</span>
+                  </div>
+                  <div style="font-size:13px; font-weight:700; color:{{ t.textMuted }}; margin-bottom:10px;">撮影履歴</div>
+                  <div style="display:flex; gap:8px; margin-bottom:18px;"><sc-for list="{{ camThumbs }}" as="ct" hint-placeholder-count="4"><div style="flex:1; aspect-ratio:1; border-radius:12px; background:radial-gradient(circle, #c79a4e, #6e4f23); border:1px solid {{ t.border }};"></div></sc-for></div>
+                  <button onClick="{{ goAiDiagnosis }}" style="width:100%; padding:16px; font-size:16px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }}; display:flex; align-items:center; justify-content:center; gap:8px;" style-active="transform:translateY(1px);">✨ AI診断を開始する</button>
+                </div>
+              </sc-if>
+
+              <!-- SCR-022 AI DIAGNOSIS -->
+              <sc-if value="{{ vAiDiagnosis }}" hint-placeholder-val="{{ false }}">
+                <div data-screen-label="SCR-022 AI診断結果" style="padding:60px 16px 16px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
+                  <div style="display:flex; align-items:center; gap:10px; margin-bottom:18px;"><button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button><span style="font-size:20px; font-weight:800; color:{{ t.text }};">AI診断結果</span></div>
+                  <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:22px; text-align:center; margin-bottom:12px;">
+                    <div style="font-size:13px; color:{{ t.textMuted }}; margin-bottom:14px;">分蜂リスク</div>
+                    <div style="position:relative; width:150px; height:150px; margin:0 auto;"><svg viewBox="0 0 120 120" width="150" height="150"><circle cx="60" cy="60" r="50" fill="none" stroke="{{ t.border }}" stroke-width="11"></circle><circle cx="60" cy="60" r="50" fill="none" stroke="{{ t.danger }}" stroke-width="11" stroke-linecap="round" stroke-dasharray="314" stroke-dashoffset="53" transform="rotate(-90 60 60)"></circle></svg><div style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;"><span style="font-size:36px; font-weight:800; color:{{ t.text }};">83%</span><span style="font-size:13px; font-weight:800; color:{{ t.danger }}; background:{{ t.dangerBg }}; padding:2px 12px; border-radius:999px; margin-top:4px;">高</span></div></div>
+                  </div>
+                  <div style="display:flex; gap:10px; margin-bottom:12px;">
+                    <div style="flex:1; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px;"><div style="font-size:12px; color:{{ t.textMuted }};">異常検知</div><div style="font-size:18px; font-weight:800; color:{{ t.ok }}; margin-top:5px;">なし</div></div>
+                    <div style="flex:1; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px;"><div style="font-size:12px; color:{{ t.textMuted }};">信頼度</div><div style="font-size:18px; font-weight:800; color:{{ t.text }}; margin-top:5px;">高</div></div>
+                  </div>
+                  <div style="background:{{ t.warnBg }}; border:1px solid {{ t.warn }}; border-radius:{{ t.radius }}px; padding:16px; margin-bottom:18px;"><div style="font-size:12px; color:{{ t.textMuted }};">推定原因</div><div style="font-size:15px; font-weight:700; color:{{ t.text }}; margin-top:4px;">群過密・分蜂前兆</div></div>
+                  <button onClick="{{ goAiRecommend }}" style="width:100%; padding:16px; font-size:16px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};" style-active="transform:translateY(1px);">推奨アクションを確認</button>
+                </div>
+              </sc-if>
+
+              <!-- SCR-023 AI RECOMMEND -->
+              <sc-if value="{{ vAiRecommend }}" hint-placeholder-val="{{ false }}">
+                <div data-screen-label="SCR-023 AI推奨作業" style="padding:60px 16px 16px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
+                  <div style="display:flex; align-items:center; gap:10px; margin-bottom:18px;"><button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button><span style="font-size:20px; font-weight:800; color:{{ t.text }};">AI推奨作業（A-01）</span></div>
+                  <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px;">
+                    <sc-for list="{{ recActions }}" as="ra" hint-placeholder-count="3">
+                      <div style="display:flex; gap:14px; align-items:flex-start; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-left:4px solid {{ ra.barColor }}; border-radius:{{ t.radius }}px; padding:16px;"><div style="width:30px; height:30px; border-radius:50%; background:{{ t.chipBg }}; color:{{ t.chipText }}; display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:800; flex-shrink:0;">{{ ra.num }}</div><div style="flex:1;"><div style="font-size:15px; font-weight:800; color:{{ t.text }};">{{ ra.title }}</div><div style="font-size:13px; color:{{ ra.tagColor }}; font-weight:700; margin-top:3px;">{{ ra.tag }}</div></div></div>
+                    </sc-for>
+                  </div>
+                  <button onClick="{{ goWorkRecord }}" style="width:100%; padding:16px; font-size:16px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};" style-active="transform:translateY(1px);">作業を記録する</button>
+                </div>
+              </sc-if>
+
+              <!-- SCR-024 TASKS -->
+              <sc-if value="{{ vTasks }}" hint-placeholder-val="{{ false }}">
+                <div data-screen-label="SCR-024 タスク一覧" style="padding:64px 16px 16px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
+                  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; padding:0 4px;"><span style="font-size:22px; font-weight:800; color:{{ t.text }};">タスク一覧</span><button onClick="{{ goInspStart }}" style="padding:7px 13px; font-size:13px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primary }}; background:{{ t.chipBg }}; border:none; border-radius:999px; cursor:pointer;">🔍 内検</button></div>
+                  <div style="display:flex; gap:6px; background:{{ t.surfaceAlt }}; border:1px solid {{ t.border }}; padding:5px; border-radius:12px; margin-bottom:16px;"><button onClick="{{ tfToday }}" style="{{ taskSegToday }}">本日</button><button onClick="{{ tfWeek }}" style="{{ taskSegWeek }}">今週</button><button onClick="{{ tfAll }}" style="{{ taskSegAll }}">すべて</button></div>
+                  <div style="display:flex; flex-direction:column; gap:8px;">
+                    <sc-for list="{{ tasksView }}" as="tk" hint-placeholder-count="4">
+                      <div onClick="{{ tk.open }}" style="display:flex; align-items:center; gap:13px; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:14px; cursor:pointer;"><div style="width:40px; height:40px; border-radius:11px; background:{{ tk.iconBg }}; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">{{ tk.icon }}</div><div style="flex:1; min-width:0;"><div style="font-size:14px; font-weight:700; color:{{ t.text }};">{{ tk.colony }}　{{ tk.type }}</div><div style="font-size:12px; color:{{ t.textMuted }}; margin-top:2px;">{{ tk.when }}</div></div><span style="font-size:11px; font-weight:700; color:{{ tk.statusColor }}; background:{{ tk.statusBg }}; padding:4px 10px; border-radius:999px; flex-shrink:0;">{{ tk.status }}</span></div>
+                    </sc-for>
+                    <button onClick="{{ goTaskCreate }}" style="margin-top:4px; padding:15px; font-size:15px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primary }}; background:transparent; border:1.5px dashed {{ t.border }}; border-radius:{{ t.radius }}px; cursor:pointer;">＋ タスクを追加</button>
+                  </div>
+                </div>
+              </sc-if>
+
+              <!-- SCR-025 TASK CREATE -->
+              <sc-if value="{{ vTaskCreate }}" hint-placeholder-val="{{ false }}">
+                <div data-screen-label="SCR-025 タスク作成" style="padding:60px 16px 16px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
+                  <div style="display:flex; align-items:center; gap:10px; margin-bottom:20px;"><button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button><span style="font-size:20px; font-weight:800; color:{{ t.text }};">タスク作成</span></div>
+                  <div style="display:flex; flex-direction:column; gap:16px; margin-bottom:24px;">
+                    <div><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">作業種別</label><select value="{{ f.taskType }}" onChange="{{ h.taskType }}" style="width:100%; padding:14px 16px; font-size:15px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px; outline:none;"><option>給餌</option><option>内検</option><option>採蜜</option><option>治療</option></select></div>
+                    <div><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">対象蜂群</label><select value="{{ f.taskColony }}" onChange="{{ h.taskColony }}" style="width:100%; padding:14px 16px; font-size:15px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px; outline:none;"><option>A-02</option><option>A-03</option><option>A-05</option><option>A-07</option></select></div>
+                    <div><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">実施日時</label><div style="padding:14px 16px; font-size:15px; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px;">2026/06/09 09:00</div></div>
+                    <div><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">担当者</label><div style="padding:14px 16px; font-size:15px; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px;">自分</div></div>
+                    <div><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">メモ</label><textarea value="{{ f.taskMemo }}" onInput="{{ h.taskMemo }}" placeholder="砂糖水 2L 給餌" rows="2" style="width:100%; padding:14px 16px; font-size:15px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px; outline:none; resize:none;" style-focus="border-color:{{ t.primary }};"></textarea></div>
+                  </div>
+                  <button onClick="{{ goTasks }}" style="width:100%; padding:16px; font-size:16px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};" style-active="transform:translateY(1px);">作成する</button>
+                </div>
+              </sc-if>
+
+              <!-- SCR-026 WORK RECORD -->
+              <sc-if value="{{ vWorkRecord }}" hint-placeholder-val="{{ false }}">
+                <div data-screen-label="SCR-026 作業記録入力" style="padding:60px 16px 16px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
+                  <div style="display:flex; align-items:center; gap:10px; margin-bottom:20px;"><button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button><span style="font-size:20px; font-weight:800; color:{{ t.text }};">作業記録入力</span></div>
+                  <div style="display:flex; flex-direction:column; gap:16px; margin-bottom:24px;">
+                    <div><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">作業種別</label><select value="{{ f.recType }}" onChange="{{ h.recType }}" style="width:100%; padding:14px 16px; font-size:15px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px; outline:none;"><option>給餌</option><option>内検</option><option>採蜜</option><option>治療</option></select></div>
+                    <div><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">対象蜂群</label><select value="{{ f.recColony }}" onChange="{{ h.recColony }}" style="width:100%; padding:14px 16px; font-size:15px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px; outline:none;"><option>A-02</option><option>A-01</option><option>A-03</option></select></div>
+                    <div><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">実施日時</label><div style="padding:14px 16px; font-size:15px; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px;">2026/06/08 09:00</div></div>
+                    <div><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">メモ</label><textarea value="{{ f.recMemo }}" onInput="{{ h.recMemo }}" placeholder="砂糖水 2L 給餌" rows="2" style="width:100%; padding:14px 16px; font-size:15px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px; outline:none; resize:none;" style-focus="border-color:{{ t.primary }};"></textarea></div>
+                    <div><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">写真</label><div style="display:flex; gap:8px;"><div style="width:74px; height:74px; border-radius:12px; border:1.5px dashed {{ t.border }}; display:flex; align-items:center; justify-content:center; font-size:24px; color:{{ t.textMuted }}; cursor:pointer;">＋</div><div style="width:74px; height:74px; border-radius:12px; background:radial-gradient(circle,#c79a4e,#6e4f23);"></div></div></div>
+                  </div>
+                  <button onClick="{{ goWorkHistory }}" style="width:100%; padding:16px; font-size:16px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};" style-active="transform:translateY(1px);">保存する</button>
+                </div>
+              </sc-if>
+
+              <!-- SCR-027 WORK HISTORY -->
+              <sc-if value="{{ vWorkHistory }}" hint-placeholder-val="{{ false }}">
+                <div data-screen-label="SCR-027 作業履歴" style="padding:60px 16px 16px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
+                  <div style="display:flex; align-items:center; gap:10px; margin-bottom:18px;"><button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button><span style="font-size:20px; font-weight:800; color:{{ t.text }};">作業履歴（A-01）</span></div>
+                  <div style="position:relative; padding-left:22px; margin-bottom:18px;">
+                    <div style="position:absolute; left:5px; top:6px; bottom:6px; width:2px; background:{{ t.border }};"></div>
+                    <div style="display:flex; flex-direction:column; gap:14px;">
+                      <sc-for list="{{ workHist }}" as="w" hint-placeholder-count="4">
+                        <div style="position:relative;"><span style="position:absolute; left:-22px; top:4px; width:12px; height:12px; border-radius:50%; background:{{ t.primary }}; border:2px solid {{ t.bg }};"></span><div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:14px;"><div style="display:flex; align-items:center; justify-content:space-between;"><span style="font-size:14px; font-weight:700; color:{{ t.text }};">{{ w.date }}　{{ w.type }}</span><span style="font-size:11px; font-weight:700; color:{{ t.ok }}; background:{{ t.chipBg }}; padding:3px 9px; border-radius:999px;">完了</span></div><div style="font-size:13px; color:{{ t.textMuted }}; margin-top:5px;">{{ w.detail }}</div></div></div>
+                      </sc-for>
+                    </div>
+                  </div>
+                  <button onClick="{{ goWorkRecord }}" style="width:100%; padding:15px; font-size:15px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primary }}; background:transparent; border:1.5px dashed {{ t.border }}; border-radius:{{ t.radius }}px; cursor:pointer;">＋ 作業を記録</button>
+                </div>
+              </sc-if>
+
+              <!-- SCR-028 REPORT -->
+              <sc-if value="{{ vReport }}" hint-placeholder-val="{{ false }}">
+                <div data-screen-label="SCR-028 レポート" style="padding:64px 16px 16px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
+                  <div style="font-size:22px; font-weight:800; color:{{ t.text }}; margin-bottom:16px; padding:0 4px;">レポート</div>
+                  <div style="display:flex; gap:6px; background:{{ t.surfaceAlt }}; border:1px solid {{ t.border }}; padding:5px; border-radius:12px; margin-bottom:16px;"><button onClick="{{ rMonth }}" style="{{ repSegMonth }}">月次</button><button onClick="{{ rWeek }}" style="{{ repSegWeek }}">週次</button><button onClick="{{ rYear }}" style="{{ repSegYear }}">年次</button></div>
+                  <div style="display:flex; gap:10px; margin-bottom:14px;">
+                    <div style="flex:1; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:14px;"><div style="font-size:11px; color:{{ t.textMuted }};">総収量</div><div style="margin-top:6px;"><span style="font-size:20px; font-weight:800; color:{{ t.text }};">458</span><span style="font-size:11px; color:{{ t.textMuted }};">kg</span></div><div style="font-size:11px; font-weight:700; color:{{ t.accent }};">+12%</div></div>
+                    <div style="flex:1; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:14px;"><div style="font-size:11px; color:{{ t.textMuted }};">収益</div><div style="margin-top:6px;"><span style="font-size:20px; font-weight:800; color:{{ t.text }};">91</span><span style="font-size:11px; color:{{ t.textMuted }};">万</span></div><div style="font-size:11px; font-weight:700; color:{{ t.accent }};">+8%</div></div>
+                    <div style="flex:1; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:14px;"><div style="font-size:11px; color:{{ t.textMuted }};">コスト</div><div style="margin-top:6px;"><span style="font-size:20px; font-weight:800; color:{{ t.text }};">23</span><span style="font-size:11px; color:{{ t.textMuted }};">万</span></div><div style="font-size:11px; color:{{ t.textMuted }};">前月同等</div></div>
+                  </div>
+                  <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; margin-bottom:14px;">
+                    <div style="font-size:13px; font-weight:700; color:{{ t.text }}; margin-bottom:14px;">養蜂場別収量</div>
+                    <div style="display:flex; flex-direction:column; gap:12px;">
+                      <sc-for list="{{ reportFarms }}" as="rf" hint-placeholder-count="3">
+                        <div><div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:5px;"><span style="color:{{ t.text }}; font-weight:600;">{{ rf.name }}</span><span style="color:{{ t.textMuted }};">{{ rf.kg }}kg</span></div><div style="height:9px; border-radius:99px; background:{{ t.surfaceAlt }}; overflow:hidden;"><div style="height:100%; width:{{ rf.pct }}%; background:{{ t.primary }}; border-radius:99px;"></div></div></div>
+                      </sc-for>
+                    </div>
+                  </div>
+                  <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; margin-bottom:18px;">
+                    <div style="font-size:13px; font-weight:700; color:{{ t.text }}; margin-bottom:12px;">蜂群健康スコア推移</div>
+                    <svg viewBox="0 0 300 110" width="100%" style="display:block;"><defs><linearGradient id="rg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="{{ t.accent }}" stop-opacity="0.25"></stop><stop offset="100%" stop-color="{{ t.accent }}" stop-opacity="0"></stop></linearGradient></defs><path d="{{ reportArea }}" fill="url(#rg)"></path><path d="{{ reportLine }}" fill="none" stroke="{{ t.accent }}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                  </div>
+                  <div style="display:flex; gap:10px;"><button onClick="{{ noop }}" style="flex:1.4; padding:15px; font-size:14px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};">PDFを出力</button><button onClick="{{ noop }}" style="flex:1; padding:15px; font-size:14px; font-weight:700; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:14px; cursor:pointer;">CSV</button></div>
+                </div>
+              </sc-if>
+
+              <!-- SETTINGS -->
+              <sc-if value="{{ vSettings }}" hint-placeholder-val="{{ false }}">
+                <div data-screen-label="設定" style="padding:64px 16px 16px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
+                  <div style="font-size:22px; font-weight:800; color:{{ t.text }}; margin-bottom:18px; padding:0 4px;">設定</div>
+                  <div style="display:flex; align-items:center; gap:14px; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; margin-bottom:16px;"><div style="width:52px; height:52px; border-radius:50%; background:{{ t.chipBg }}; display:flex; align-items:center; justify-content:center; font-size:24px;">🧑‍🌾</div><div><div style="font-size:16px; font-weight:800; color:{{ t.text }};">山田 太郎</div><div style="font-size:13px; color:{{ t.textMuted }}; margin-top:2px;">第一養蜂場・管理者</div></div></div>
+                  <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; overflow:hidden; margin-bottom:16px;">
+                    <sc-for list="{{ settingsRows }}" as="sr" hint-placeholder-count="5">
+                      <div style="display:flex; align-items:center; gap:12px; padding:15px 16px; border-bottom:1px solid {{ t.border }};"><span style="font-size:18px; width:24px; text-align:center;">{{ sr.icon }}</span><span style="flex:1; font-size:14px; color:{{ t.text }};">{{ sr.label }}</span><span style="color:{{ t.textMuted }};">›</span></div>
+                    </sc-for>
+                  </div>
+                  <button onClick="{{ logout }}" style="width:100%; padding:15px; font-size:15px; font-weight:700; font-family:{{ t.font }}; color:{{ t.danger }}; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:14px; cursor:pointer;">ログアウト</button>
+                </div>
+              </sc-if>
+
+            </div>
+
+            <!-- BOTTOM NAV -->
+            <div style="display:flex; background:{{ t.navBarBg }}; border-top:1px solid {{ t.border }}; padding:8px 6px 26px;">
+              <button onClick="{{ tabHome }}" style="flex:1; background:none; border:none; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; color:{{ nc.home }};"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"></path><path d="M5 9.5V20h5v-6h4v6h5V9.5"></path></svg><span style="font-size:10px; font-weight:700;">ホーム</span></button>
+              <button onClick="{{ tabFarms }}" style="flex:1; background:none; border:none; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; color:{{ nc.farms }};"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="7" height="7" rx="1.6"></rect><rect x="14" y="4" width="7" height="7" rx="1.6"></rect><rect x="3" y="14" width="7" height="7" rx="1.6"></rect><rect x="14" y="14" width="7" height="7" rx="1.6"></rect></svg><span style="font-size:10px; font-weight:700;">養蜂場</span></button>
+              <button onClick="{{ tabTasks }}" style="flex:1; background:none; border:none; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; color:{{ nc.tasks }};"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2.4"></rect><path d="M9 4V3h6v1"></path><path d="M8.5 13l2 2 4-4.5"></path></svg><span style="font-size:10px; font-weight:700;">作業</span></button>
+              <button onClick="{{ tabReport }}" style="flex:1; background:none; border:none; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; color:{{ nc.analytics }};"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20V12"></path><path d="M12 20V5"></path><path d="M19 20v-5"></path></svg><span style="font-size:10px; font-weight:700;">分析</span></button>
+              <button onClick="{{ tabSettings }}" style="flex:1; background:none; border:none; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; color:{{ nc.settings }};"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h9"></path><circle cx="16" cy="7" r="2.4"></circle><path d="M18.5 7H20"></path><path d="M4 17h5"></path><circle cx="11" cy="17" r="2.4"></circle><path d="M13.5 17H20"></path></svg><span style="font-size:10px; font-weight:700;">設定</span></button>
+            </div>
+          </div>
+        </sc-if>
+
+      </div>
+
+      <div style="position:absolute; bottom:7px; left:50%; transform:translateX(-50%); width:128px; height:5px; border-radius:99px; background:{{ t.homeBar }}; z-index:60; pointer-events:none;"></div>
+    </div>
+  </div>
+
+  <!-- JUMP CHIPS -->
+  <div style="max-width:600px; width:100%; display:flex; flex-direction:column; gap:10px;">
+    <div style="display:flex; flex-direction:column; gap:6px;"><span style="font-size:11px; font-weight:800; letter-spacing:.1em; color:#a89c89;">① 認証・オンボーディング</span><div style="display:flex; flex-wrap:wrap; gap:6px;"><button onClick="{{ jLogin }}" style="{{ chip }}">001 ログイン</button><button onClick="{{ jRegister }}" style="{{ chip }}">002 新規登録</button><button onClick="{{ jOb1 }}" style="{{ chip }}">003 オンボ①</button><button onClick="{{ jOb2 }}" style="{{ chip }}">004 オンボ②</button><button onClick="{{ jOb3 }}" style="{{ chip }}">005 オンボ③</button></div></div>
+    <div style="display:flex; flex-direction:column; gap:6px;"><span style="font-size:11px; font-weight:800; letter-spacing:.1em; color:#a89c89;">② ダッシュボード・通知　③ 養蜂場管理</span><div style="display:flex; flex-wrap:wrap; gap:6px;"><button onClick="{{ jDash }}" style="{{ chip }}">006 ダッシュボード</button><button onClick="{{ jNotif }}" style="{{ chip }}">007 通知センター</button><button onClick="{{ jFarms }}" style="{{ chip }}">008 養蜂場一覧</button><button onClick="{{ jFarmDetail }}" style="{{ chip }}">009 養蜂場詳細</button><button onClick="{{ jFarmMap }}" style="{{ chip }}">010 養蜂場マップ</button></div></div>
+    <div style="display:flex; flex-direction:column; gap:6px;"><span style="font-size:11px; font-weight:800; letter-spacing:.1em; color:#a89c89;">④ 内検フロー</span><div style="display:flex; flex-wrap:wrap; gap:6px;"><button onClick="{{ jInspStart }}" style="{{ chip }}">011 内検開始</button><button onClick="{{ jInspCapture }}" style="{{ chip }}">012 撮影</button><button onClick="{{ jInspFrame }}" style="{{ chip }}">013 枠ビューア</button><button onClick="{{ jInspAI }}" style="{{ chip }}">014 AI解析</button><button onClick="{{ jInspSummary }}" style="{{ chip }}">015 サマリー</button><button onClick="{{ jInspHistory }}" style="{{ chip }}">016 履歴</button></div></div>
+    <div style="display:flex; flex-direction:column; gap:6px;"><span style="font-size:11px; font-weight:800; letter-spacing:.1em; color:#a89c89;">⑤ センサー・グラフ　⑥ カメラ・AI診断</span><div style="display:flex; flex-wrap:wrap; gap:6px;"><button onClick="{{ jSensor }}" style="{{ chip }}">017 センサー詳細</button><button onClick="{{ jWeight }}" style="{{ chip }}">018 重量グラフ</button><button onClick="{{ jTemp }}" style="{{ chip }}">019 温度グラフ</button><button onClick="{{ jHumid }}" style="{{ chip }}">020 湿度グラフ</button><button onClick="{{ jCamera }}" style="{{ chip }}">021 カメラ画像</button><button onClick="{{ jAiDiagnosis }}" style="{{ chip }}">022 AI診断結果</button><button onClick="{{ jAiRecommend }}" style="{{ chip }}">023 AI推奨作業</button></div></div>
+    <div style="display:flex; flex-direction:column; gap:6px;"><span style="font-size:11px; font-weight:800; letter-spacing:.1em; color:#a89c89;">⑦ 作業管理　⑧ レポート</span><div style="display:flex; flex-wrap:wrap; gap:6px;"><button onClick="{{ jTasks }}" style="{{ chip }}">024 タスク一覧</button><button onClick="{{ jTaskCreate }}" style="{{ chip }}">025 タスク作成</button><button onClick="{{ jWorkRecord }}" style="{{ chip }}">026 作業記録</button><button onClick="{{ jWorkHistory }}" style="{{ chip }}">027 作業履歴</button><button onClick="{{ jReport }}" style="{{ chip }}">028 レポート</button></div></div>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    theme: 'honey', screen: 'login', view: 'home', hist: [], anim: 'scrIn',
+    fdTab: 'overview', weather: 'sun', face: 'A',
+    frames: { 1:true, 2:true, 3:true }, graphKind: 'weight', period: 'week',
+    taskFilter: 'today', reportPeriod: 'month', reads: {},
+    f: { loginEmail:'', loginPw:'', regName:'', regEmail:'', regPw:'', regFarm:'', frameMemo:'', aiMemo:'', taskType:'給餌', taskColony:'A-02', taskMemo:'', recType:'給餌', recColony:'A-02', recMemo:'' },
+  };
+
+  THEMES = {
+    honey: { bg:'#FBF4E6', surface:'#FFFFFF', surfaceAlt:'#FFFBF1', primary:'#E8961B', primaryText:'#FFFFFF', primaryShadow:'rgba(232,150,27,.32)', accent:'#E8961B', text:'#3D2F17', textMuted:'#A38F6E', border:'#F0E4CA', ok:'#3E9D6B', warn:'#C98A00', warnBg:'#FCF1D6', danger:'#D9534F', dangerBg:'#FBE8E7', font:"'M PLUS Rounded 1c', system-ui, sans-serif", radius:20, statusBarDark:false, chipBg:'#FFF1D6', chipText:'#9A6B00', navBarBg:'#FFFFFF', homeBar:'rgba(0,0,0,.25)' },
+    charcoal: { bg:'#15120C', surface:'#211C13', surfaceAlt:'#2A2417', primary:'#F5B72E', primaryText:'#1A1505', primaryShadow:'rgba(245,183,46,.3)', accent:'#F5B72E', text:'#F6F0E2', textMuted:'#A99D86', border:'#322B1E', ok:'#5CC98C', warn:'#F5B72E', warnBg:'rgba(245,183,46,.14)', danger:'#FF7A6E', dangerBg:'rgba(255,122,110,.14)', font:"'Noto Sans JP', system-ui, sans-serif", radius:18, statusBarDark:true, chipBg:'rgba(245,183,46,.16)', chipText:'#F5B72E', navBarBg:'#1B1710', homeBar:'rgba(255,255,255,.6)' },
+    sage: { bg:'#EEF0E8', surface:'#FFFFFF', surfaceAlt:'#F5F7EF', primary:'#5E7C4E', primaryText:'#FFFFFF', primaryShadow:'rgba(94,124,78,.28)', accent:'#C58A1A', text:'#2B3024', textMuted:'#7C8470', border:'#DCE1D1', ok:'#5E7C4E', warn:'#C58A1A', warnBg:'#F6EBD4', danger:'#C2645B', dangerBg:'#F2E2DF', font:"'Zen Kaku Gothic New', system-ui, sans-serif", radius:14, statusBarDark:false, chipBg:'#E8EEE0', chipText:'#4A6440', navBarBg:'#FFFFFF', homeBar:'rgba(0,0,0,.22)' },
+    kraft: { bg:'#EAE0CC', surface:'#F6EFDF', surfaceAlt:'#F0E7D2', primary:'#C2693B', primaryText:'#FBF5EA', primaryShadow:'rgba(194,105,59,.3)', accent:'#A8541F', text:'#3B2A1B', textMuted:'#917A5C', border:'#D8C9A8', ok:'#6E8B4A', warn:'#C28A1E', warnBg:'#EFE2BE', danger:'#B5502F', dangerBg:'#EBD6C4', font:"'Zen Kaku Gothic New', system-ui, sans-serif", radius:6, statusBarDark:false, chipBg:'#E6D6B6', chipText:'#8C5024', navBarBg:'#F0E7D2', homeBar:'rgba(0,0,0,.25)' },
+    sky: { bg:'#F4F7FB', surface:'#FFFFFF', surfaceAlt:'#F7FAFF', primary:'#2D7FF0', primaryText:'#FFFFFF', primaryShadow:'rgba(45,127,240,.26)', accent:'#0E9F6E', text:'#1B2A41', textMuted:'#8896AB', border:'#E4EAF2', ok:'#0E9F6E', warn:'#E0962A', warnBg:'#FBEFD9', danger:'#E5484D', dangerBg:'#FBE3E4', font:"'Noto Sans JP', system-ui, sans-serif", radius:18, statusBarDark:false, chipBg:'#E5F0FE', chipText:'#1F66C7', navBarBg:'#FFFFFF', homeBar:'rgba(0,0,0,.2)' },
+    blossom: { bg:'#FBF1F5', surface:'#FFFFFF', surfaceAlt:'#FFF6FA', primary:'#D86B96', primaryText:'#FFFFFF', primaryShadow:'rgba(216,107,150,.28)', accent:'#C98A2E', text:'#43293A', textMuted:'#A98AA0', border:'#F2DEE7', ok:'#5BA889', warn:'#D29A33', warnBg:'#FAEDD4', danger:'#D85A6E', dangerBg:'#FBE2E6', font:"'M PLUS Rounded 1c', system-ui, sans-serif", radius:24, statusBarDark:false, chipBg:'#FBE3EC', chipText:'#B84E78', navBarBg:'#FFFFFF', homeBar:'rgba(0,0,0,.2)' },
+  };
+
+  NOTIFS = [
+    { id:'n1', tag:'A-02', text:'分蜂予兆が検出されました', time:'10分前', kind:'danger', icon:'⚠️', unreadDefault:true },
+    { id:'n2', tag:'A-08', text:'重量の急激な変化を検出しました', time:'1時間前', kind:'warn', icon:'📈', unreadDefault:true },
+    { id:'n3', tag:'A-05', text:'温度が高くなりすぎています', time:'2時間前', kind:'warn', icon:'🌡️', unreadDefault:true },
+    { id:'n4', tag:'A-03', text:'内検の時間間隔です', time:'10時間前', kind:'info', icon:'🔍', unreadDefault:false },
+    { id:'n5', tag:'レポート', text:'本日の作業レポートが生成されました', time:'昨日', kind:'info', icon:'📄', unreadDefault:false },
+  ];
+  FARMS = [
+    { id:'f1', name:'第一養蜂場', colonies:12, yield:245, delta:'+15%', up:true },
+    { id:'f2', name:'第二養蜂場', colonies:6, yield:158, delta:'安定', up:null },
+    { id:'f3', name:'第三養蜂場', colonies:4, yield:55, delta:'+4%', up:true },
+  ];
+  COLONY_STATUS = ['ok','ok','warn','ok','ok','ok','ok','danger','ok','ok','ok','ok'];
+  TASKS = [
+    { id:'t1', colony:'A-02', type:'給餌', icon:'🍼', when:'今日 09:00', status:'未着手', sk:'todo', scope:'today' },
+    { id:'t2', colony:'A-03', type:'内検', icon:'🔍', when:'今日 10:00', status:'未着手', sk:'todo', scope:'today' },
+    { id:'t3', colony:'A-05', type:'採蜜', icon:'🍯', when:'今日 13:00', status:'完了', sk:'done', scope:'today' },
+    { id:'t4', colony:'A-07', type:'内検', icon:'🔍', when:'明日 09:00', status:'予定', sk:'plan', scope:'week' },
+    { id:'t5', colony:'A-04', type:'治療', icon:'💊', when:'6/11 11:00', status:'予定', sk:'plan', scope:'week' },
+  ];
+  AI_RESULTS = [
+    { icon:'🍯', label:'封蓋率', value:'72%', conf:'高' }, { icon:'🟩', label:'育児域面積比', value:'58%', conf:'高' },
+    { icon:'🌸', label:'花粉の有無', value:'あり', conf:'高' }, { icon:'🍯', label:'蜜域面積比', value:'21%', conf:'中' },
+    { icon:'🥚', label:'卵の有無', value:'あり', conf:'高' }, { icon:'🐛', label:'幼虫の有無', value:'あり', conf:'高' },
+    { icon:'🦠', label:'ヴァロア検出', value:'なし', conf:'高' }, { icon:'👑', label:'女王確認', value:'不明', conf:'中' },
+    { icon:'💯', label:'健康スコア', value:'85/100', conf:'高' },
+  ];
+  REC_ACTIONS = [
+    { num:1, title:'王台の除去', tag:'今すぐ実施を推奨', urgency:'high' },
+    { num:2, title:'箱の整備', tag:'分蜂に備えて事前に実施', urgency:'mid' },
+    { num:3, title:'給餌の確認', tag:'経過観察（2週間後）', urgency:'low' },
+  ];
+  WORK_HIST = [
+    { date:'2026/05/12', type:'給餌', detail:'砂糖水 2L 給餌' },
+    { date:'2026/05/08', type:'内検', detail:'異常なし・健康スコア 82' },
+    { date:'2026/05/01', type:'採蜜', detail:'採蜜量：12.5kg' },
+    { date:'2026/04/25', type:'給餌', detail:'砂糖水 2L 給餌' },
+  ];
+  REPORT_FARMS = [ { name:'第一養蜂場', kg:245 }, { name:'第二養蜂場', kg:158 }, { name:'第三養蜂場', kg:55 } ];
+  SETTINGS = [
+    { icon:'🏡', label:'養蜂場の管理' }, { icon:'📡', label:'センサー・デバイス' }, { icon:'🔔', label:'通知設定' },
+    { icon:'👥', label:'メンバー管理' }, { icon:'🔒', label:'アカウント' },
+  ];
+  GRAPH = {
+    weight: { title:'重量グラフ（A-01）', value:'38.5', unit:'kg', color:'#E8961B',
+      day:{ data:[36.8,37.1,37.0,37.6,38.0,38.2,38.5], labels:['0時','4時','8時','12時','16時','20時','現在'], stat:'前日比 +1.2 kg ↑' },
+      week:{ data:[34.2,35.1,35.8,36.4,37.2,37.9,38.5], labels:['月','火','水','木','金','土','日'], stat:'前週比 +4.3 kg ↑' },
+      month:{ data:[30,31.5,33,34.6,36,37.4,38.5], labels:['第1週','','','','','','現在'], stat:'前月比 +8.5 kg ↑' },
+      year:{ data:[22,26,31,29,34,37,38.5], labels:['1月','3月','5月','7月','9月','11月','現在'], stat:'年間 +16.5 kg ↑' } },
+    temp: { title:'温度グラフ（A-01）', value:'35.2', unit:'℃', color:'#E0762A',
+      day:{ data:[31.5,30.8,32.4,34.8,35.6,34.2,35.2], labels:['0時','4時','8時','12時','16時','20時','現在'], stat:'平均 32.1 ℃' },
+      week:{ data:[32.1,33.0,31.6,34.2,33.8,34.9,35.2], labels:['月','火','水','木','金','土','日'], stat:'平均 33.5 ℃' },
+      month:{ data:[30,31,32.5,33,34,34.8,35.2], labels:['第1週','','','','','','現在'], stat:'平均 32.8 ℃' },
+      year:{ data:[18,22,28,35,33,26,35.2], labels:['1月','3月','5月','7月','9月','11月','現在'], stat:'年間平均 28.4 ℃' } },
+    humid: { title:'湿度グラフ（A-01）', value:'58', unit:'%', color:'#2D9FB8',
+      day:{ data:[62,60,59,55,54,57,58], labels:['0時','4時','8時','12時','16時','20時','現在'], stat:'平均 56 %' },
+      week:{ data:[55,57,60,58,56,59,58], labels:['月','火','水','木','金','土','日'], stat:'平均 57 %' },
+      month:{ data:[52,54,56,57,58,57,58], labels:['第1週','','','','','','現在'], stat:'平均 55 %' },
+      year:{ data:[48,52,58,64,60,54,58], labels:['1月','3月','5月','7月','9月','11月','現在'], stat:'年間平均 56 %' } },
+  };
+
+  GROUP = {
+    home:'home', notif:'home',
+    farms:'farms', farmDetail:'farms', farmMap:'farms', sensor:'farms', weight:'farms', temp:'farms', humid:'farms', camera:'farms', aiDiagnosis:'farms', aiRecommend:'farms',
+    tasks:'tasks', taskCreate:'tasks', workRecord:'tasks', workHistory:'tasks', inspStart:'tasks', inspCapture:'tasks', inspFrame:'tasks', inspAI:'tasks', inspSummary:'tasks', inspHistory:'tasks',
+    report:'analytics', settings:'settings',
+  };
+
+  go(screen) { this.setState({ screen, anim: 'scrIn' }); }
+  nav(view) { this.setState(s => ({ screen:'app', view, hist:[...s.hist, s.view], anim:'scrIn' })); }
+  back() { this.setState(s => { const h=[...s.hist]; const prev=h.pop()||'home'; return { hist:h, view:prev, anim:'scrInBack' }; }); }
+  tab(view) { this.setState({ screen:'app', view, hist:[], anim:'scrIn' }); }
+  jump(view) { this.setState({ screen:'app', view, hist:[], anim:'scrIn' }); }
+  setTheme(theme) { this.setState({ theme }); }
+  field(k) { return (e) => { const v=e.target.value; this.setState(s => ({ f:{ ...s.f, [k]:v } })); }; }
+  toggleFrame(n) { this.setState(s => { const fr={...s.frames}; if(fr[n]) delete fr[n]; else fr[n]=true; return { frames:fr }; }); }
+  selectAll() { const fr={}; for(let i=1;i<=10;i++) fr[i]=true; this.setState({ frames:fr }); }
+  markAllRead() { const r={...this.state.reads}; this.NOTIFS.forEach(n=>{ r[n.id]=true; }); this.setState({ reads:r }); }
+  logout() { this.setState({ screen:'login', view:'home', hist:[], anim:'scrInBack', reads:{} }); }
+
+  linePath(vals, w, h, pad, close) {
+    const max=Math.max(...vals), min=Math.min(...vals); const rng=(max-min)||1; const n=vals.length;
+    const pts=vals.map((v,i)=>{ const x=pad+(w-2*pad)*i/(n-1); const y=h-pad-(h-2*pad)*(v-min)/rng; return [x,y]; });
+    let d=pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ');
+    if(close) d+=' L'+pts[n-1][0].toFixed(1)+','+h+' L'+pts[0][0].toFixed(1)+','+h+' Z';
+    return { d, last: pts[n-1] };
+  }
+  polyPts(vals, w, h, pad) {
+    const max=Math.max(...vals), min=Math.min(...vals); const rng=(max-min)||1; const n=vals.length;
+    return vals.map((v,i)=>{ const x=pad+(w-2*pad)*i/(n-1); const y=h-pad-(h-2*pad)*(v-min)/rng; return [x,y]; });
+  }
+
+  renderVals() {
+    const t = this.THEMES[this.state.theme] || this.THEMES.honey;
+    const s = this.state; const v = s.view; const sc = s.screen; const app = sc==='app';
+    const grp = app ? (this.GROUP[v]||'home') : null;
+    const nc = { home:grp==='home'?t.primary:t.textMuted, farms:grp==='farms'?t.primary:t.textMuted, tasks:grp==='tasks'?t.primary:t.textMuted, analytics:grp==='analytics'?t.primary:t.textMuted, settings:grp==='settings'?t.primary:t.textMuted };
+
+    const seg = (active) => 'display:flex; align-items:center; gap:7px; padding:8px 14px; border:none; border-radius:999px; cursor:pointer; font-size:13px; font-weight:700; font-family:inherit; background:'+(active?'#2A2520':'transparent')+'; color:'+(active?'#fff':'#8a8276')+';';
+    const pill = (active) => 'flex:1; padding:9px; border:none; border-radius:9px; cursor:pointer; font-size:13px; font-weight:700; font-family:'+t.font+'; background:'+(active?t.surface:'transparent')+'; color:'+(active?t.text:t.textMuted)+'; box-shadow:'+(active?'0 1px 3px rgba(0,0,0,.1)':'none')+';';
+    const wxBtn = (active) => 'flex:1; padding:12px; border-radius:12px; cursor:pointer; font-size:14px; font-weight:700; font-family:'+t.font+'; background:'+(active?t.chipBg:t.surface)+'; color:'+(active?t.chipText:t.textMuted)+'; border:1.5px solid '+(active?t.primary:t.border)+';';
+
+    const confColor = (c) => c==='高' ? t.ok : t.warn;
+    const confBg = (c) => c==='高' ? t.chipBg : t.warnBg;
+
+    // notifs
+    const kindMap = { danger:{color:t.danger,bg:t.dangerBg}, warn:{color:t.warn,bg:t.warnBg}, info:{color:t.primary,bg:t.chipBg} };
+    const notifs = this.NOTIFS.map(n=>{ const unread=n.unreadDefault && !s.reads[n.id]; const km=kindMap[n.kind]; return {...n, unread, color:km.color, bg:km.bg, opacity:unread?1:0.62}; });
+    const hasUnread = notifs.some(n=>n.unread);
+
+    // farms
+    const farms = this.FARMS.map(fm=>({ ...fm, deltaColor:fm.up===null?t.textMuted:t.accent, deltaBg:fm.up===null?t.surfaceAlt:t.chipBg, open:()=>this.nav('farmDetail') }));
+
+    // colony cells + map pins
+    const stColor = { ok:t.ok, warn:t.warn, danger:t.danger };
+    const stCellBg = { ok:t.surface, warn:t.warnBg, danger:t.dangerBg };
+    const colonies = this.COLONY_STATUS.map((st,i)=>{ const id='A-'+String(i+1).padStart(2,'0'); return { id, bg:stCellBg[st], border:st==='ok'?t.border:stColor[st], fg:t.text, dot:stColor[st], open:()=>this.nav('sensor') }; });
+    const mapXY = [[18,40],[38,32],[58,38],[78,30],[28,58],[50,55],[70,60],[86,48],[22,76],[44,74],[64,78],[82,70]];
+    const mapPins = this.COLONY_STATUS.map((st,i)=>({ id:'A-'+String(i+1).padStart(2,'0'), x:mapXY[i][0], y:mapXY[i][1], color:stColor[st], open:()=>this.nav('sensor') }));
+
+    // inspection frames
+    const frameChips = []; for(let i=1;i<=10;i++){ const on=!!s.frames[i]; frameChips.push({ n:i, toggle:()=>this.toggleFrame(i), bg:on?t.primary:t.surface, fg:on?t.primaryText:t.textMuted, border:on?t.primary:t.border }); }
+    const selectedCount = Object.keys(s.frames).length;
+    const aiResults = this.AI_RESULTS.map(r=>({ ...r, confColor:confColor(r.conf), confBg:confBg(r.conf) }));
+
+    // summary score cells
+    const scoreVals = [85,78,90,72,88,80,68,82,91,76];
+    const scoreColor = (n)=> n>=85?t.ok : n>=75?t.warn : t.danger;
+    const scoreCells = scoreVals.map((sv,i)=>({ n:i+1, score:sv, bg:scoreColor(sv), fg:'#fff' }));
+
+    // calendar June 2026 (starts Monday=1). June 1 2026 is Monday. Build 35 cells.
+    const inspectionDays = { 8:true, 15:true, 22:true, 28:true };
+    const calCells = [];
+    // June 2026: 1st is Monday -> offset 1 (Sun col empty)
+    for(let i=0;i<1;i++) calCells.push({ label:'', bg:'transparent', fg:t.textMuted, weight:400 });
+    for(let d=1;d<=30;d++){ const ins=inspectionDays[d]; calCells.push({ label:String(d), bg:ins?t.primary:'transparent', fg:ins?'#fff':t.text, weight:ins?800:400 }); }
+
+    // health trend
+    const healthVals=[68,72,78,80,85];
+    const htPts=this.polyPts(healthVals,300,110,12);
+    const healthTrendPts = htPts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ');
+    const healthDots = htPts.map(p=>({ x:p[0].toFixed(1), y:p[1].toFixed(1) }));
+
+    // heatmap
+    const heat = [ {label:'枠1',v:[80,84,88]}, {label:'枠2',v:[70,74,80]}, {label:'枠5',v:[60,52,48]}, {label:'枠7',v:[75,68,62]} ];
+    const heatColor = (n)=>{ if(n>=80) return t.ok; if(n>=65) return t.warn; return t.danger; };
+    const heatRows = heat.map(h=>({ label:h.label, c0:heatColor(h.v[0]), c1:heatColor(h.v[1]), c2:heatColor(h.v[2]) }));
+
+    // sensor mini chart
+    const sm=this.linePath([37.6,37.8,37.7,38.0,38.1,38.3,38.2,38.5],300,90,8,false);
+    const sma=this.linePath([37.6,37.8,37.7,38.0,38.1,38.3,38.2,38.5],300,90,8,true);
+
+    // graph (period-driven)
+    const gk=this.GRAPH[s.graphKind]; const gd=gk[s.period];
+    const gl=this.linePath(gd.data,300,150,12,false); const ga=this.linePath(gd.data,300,150,12,true);
+
+    // report trend
+    const rt=this.linePath([72,75,78,80,82,84,86],300,110,12,false); const rta=this.linePath([72,75,78,80,82,84,86],300,110,12,true);
+    const maxKg=Math.max(...this.REPORT_FARMS.map(r=>r.kg));
+    const reportFarms=this.REPORT_FARMS.map(r=>({ ...r, pct:Math.round(r.kg/maxKg*100) }));
+
+    // tasks filtered
+    const skMap = { todo:{c:t.warn,b:t.warnBg}, done:{c:t.ok,b:t.chipBg}, plan:{c:t.textMuted,b:t.surfaceAlt} };
+    const tasksView = this.TASKS.filter(tk=> s.taskFilter==='all' ? true : s.taskFilter==='week' ? true : tk.scope==='today').map(tk=>({ ...tk, iconBg:t.chipBg, statusColor:skMap[tk.sk].c, statusBg:skMap[tk.sk].b, open:()=>this.nav('workRecord') }));
+
+    const recActions = this.REC_ACTIONS.map(ra=>{ const cmap={high:{bar:t.danger,tag:t.danger},mid:{bar:t.warn,tag:t.warn},low:{bar:t.ok,tag:t.textMuted}}; return { ...ra, barColor:cmap[ra.urgency].bar, tagColor:cmap[ra.urgency].tag }; });
+
+    const backBtn = 'width:34px; height:34px; border-radius:50%; background:'+t.surface+'; border:1px solid '+t.border+'; display:flex; align-items:center; justify-content:center; cursor:pointer; color:'+t.text+'; flex-shrink:0;';
+    const chip = 'padding:8px 12px; background:#fff; border:1px solid #d8d3c8; border-radius:999px; font-size:12px; color:#5c564a; font-weight:600; cursor:pointer; font-family:inherit; white-space:nowrap;';
+
+    return {
+      t, anim:s.anim, statusColor: t.statusBarDark ? '#FFFFFF' : '#1d1d1f', f:s.f, backBtn, chip, noop:()=>{},
+      h: { loginEmail:this.field('loginEmail'), loginPw:this.field('loginPw'), regName:this.field('regName'), regEmail:this.field('regEmail'), regPw:this.field('regPw'), regFarm:this.field('regFarm'), frameMemo:this.field('frameMemo'), aiMemo:this.field('aiMemo'), taskType:this.field('taskType'), taskColony:this.field('taskColony'), taskMemo:this.field('taskMemo'), recType:this.field('recType'), recColony:this.field('recColony'), recMemo:this.field('recMemo') },
+      // screen flags
+      scLogin:sc==='login', scRegister:sc==='register', scOb1:sc==='ob1', scOb2:sc==='ob2', scOb3:sc==='ob3', scApp:app,
+      vHome:app&&v==='home', vNotif:app&&v==='notif', vFarms:app&&v==='farms', vFarmDetail:app&&v==='farmDetail', vFarmMap:app&&v==='farmMap',
+      vInspStart:app&&v==='inspStart', vInspCapture:app&&v==='inspCapture', vInspFrame:app&&v==='inspFrame', vInspAI:app&&v==='inspAI', vInspSummary:app&&v==='inspSummary', vInspHistory:app&&v==='inspHistory',
+      vSensor:app&&v==='sensor', vGraph:app&&(v==='weight'||v==='temp'||v==='humid'), vCamera:app&&v==='camera', vAiDiagnosis:app&&v==='aiDiagnosis', vAiRecommend:app&&v==='aiRecommend',
+      vTasks:app&&v==='tasks', vTaskCreate:app&&v==='taskCreate', vWorkRecord:app&&v==='workRecord', vWorkHistory:app&&v==='workHistory', vReport:app&&v==='report', vSettings:app&&v==='settings',
+      nc, notifs, hasUnread, farms, colonies, mapPins, frameChips, selectedCount, aiResults, scoreCells, calCells, healthTrendPts, healthDots, heatRows, tasksView, recActions, reportFarms,
+      workHist:this.WORK_HIST, settingsRows:this.SETTINGS,
+      sensorLine:sm.d, sensorArea:sma.d,
+      faceLabel: s.face==='A'?'表面 A':'裏面 B',
+      // graph
+      graphTitle:gk.title, graphValue:gk.value, graphUnit:gk.unit, graphColor:gk.color, graphStat:gd.stat, graphLabels:gd.labels, graphLine:gl.d, graphArea:ga.d, graphLastX:gl.last[0].toFixed(1), graphLastY:gl.last[1].toFixed(1),
+      reportLine:rt.d, reportArea:rta.d,
+      // theme segs
+      segHoney:seg(s.theme==='honey'), segCharcoal:seg(s.theme==='charcoal'), segSage:seg(s.theme==='sage'), segKraft:seg(s.theme==='kraft'), segSky:seg(s.theme==='sky'), segBlossom:seg(s.theme==='blossom'),
+      thHoney:()=>this.setTheme('honey'), thCharcoal:()=>this.setTheme('charcoal'), thSage:()=>this.setTheme('sage'), thKraft:()=>this.setTheme('kraft'), thSky:()=>this.setTheme('sky'), thBlossom:()=>this.setTheme('blossom'),
+      // farm detail tabs
+      fdSegOverview:pill(s.fdTab==='overview'), fdSegStats:pill(s.fdTab==='stats'), fdSegMembers:pill(s.fdTab==='members'),
+      segTabOverview:()=>this.setState({fdTab:'overview'}), segTabStats:()=>this.setState({fdTab:'stats'}), segTabMembers:()=>this.setState({fdTab:'members'}),
+      // weather + face
+      wxSun:wxBtn(s.weather==='sun'), wxCloud:wxBtn(s.weather==='cloud'), wxRain:wxBtn(s.weather==='rain'),
+      wSun:()=>this.setState({weather:'sun'}), wCloud:()=>this.setState({weather:'cloud'}), wRain:()=>this.setState({weather:'rain'}),
+      segFaceA:pill(s.face==='A'), segFaceB:pill(s.face==='B'), faceA:()=>this.setState({face:'A'}), faceB:()=>this.setState({face:'B'}),
+      selectAllFrames:()=>this.selectAll(),
+      // period segs
+      segDay:pill(s.period==='day'), segWeek:pill(s.period==='week'), segMonth:pill(s.period==='month'), segYear:pill(s.period==='year'),
+      pDay:()=>this.setState({period:'day'}), pWeek:()=>this.setState({period:'week'}), pMonth:()=>this.setState({period:'month'}), pYear:()=>this.setState({period:'year'}),
+      // task filter
+      taskSegToday:pill(s.taskFilter==='today'), taskSegWeek:pill(s.taskFilter==='week'), taskSegAll:pill(s.taskFilter==='all'),
+      tfToday:()=>this.setState({taskFilter:'today'}), tfWeek:()=>this.setState({taskFilter:'week'}), tfAll:()=>this.setState({taskFilter:'all'}),
+      // report period
+      repSegMonth:pill(s.reportPeriod==='month'), repSegWeek:pill(s.reportPeriod==='week'), repSegYear:pill(s.reportPeriod==='year'),
+      rMonth:()=>this.setState({reportPeriod:'month'}), rWeek:()=>this.setState({reportPeriod:'week'}), rYear:()=>this.setState({reportPeriod:'year'}),
+      // auth nav
+      goRegister:()=>this.go('register'), goLogin:()=>this.go('login'),
+      submitLogin:()=>this.tab('home'), submitRegister:()=>this.go('ob1'),
+      goOb2:()=>this.go('ob2'), goOb3:()=>this.go('ob3'), skipOb:()=>this.tab('home'), startApp:()=>this.tab('home'),
+      // in-app nav
+      back:()=>this.back(),
+      goNotif:()=>this.nav('notif'), markAllRead:()=>this.markAllRead(),
+      goFarmDetail:()=>this.nav('farmDetail'), goFarmMap:()=>this.nav('farmMap'),
+      goInspStart:()=>this.nav('inspStart'), goInspCapture:()=>this.nav('inspCapture'), goInspFrame:()=>this.nav('inspFrame'), goInspAI:()=>this.nav('inspAI'), goInspSummary:()=>this.nav('inspSummary'), goInspHistory:()=>this.tab('tasks'),
+      goWeight:()=>this.navGraph('weight'), goTemp:()=>this.navGraph('temp'), goHumid:()=>this.navGraph('humid'),
+      goAiDiagnosis:()=>this.nav('aiDiagnosis'), goAiRecommend:()=>this.nav('aiRecommend'),
+      goReport:()=>this.tab('report'), goTasks:()=>this.tab('tasks'), goTaskCreate:()=>this.nav('taskCreate'), goWorkRecord:()=>this.nav('workRecord'), goWorkHistory:()=>this.nav('workHistory'),
+      // tabs
+      tabHome:()=>this.tab('home'), tabFarms:()=>this.tab('farms'), tabTasks:()=>this.tab('tasks'), tabReport:()=>this.tab('report'), tabSettings:()=>this.tab('settings'),
+      logout:()=>this.logout(),
+      // jump chips
+      jLogin:()=>this.go('login'), jRegister:()=>this.go('register'), jOb1:()=>this.go('ob1'), jOb2:()=>this.go('ob2'), jOb3:()=>this.go('ob3'),
+      jDash:()=>this.jump('home'), jNotif:()=>this.jump('notif'), jFarms:()=>this.jump('farms'), jFarmDetail:()=>this.jump('farmDetail'), jFarmMap:()=>this.jump('farmMap'),
+      jInspStart:()=>this.jump('inspStart'), jInspCapture:()=>this.jump('inspCapture'), jInspFrame:()=>this.jump('inspFrame'), jInspAI:()=>this.jump('inspAI'), jInspSummary:()=>this.jump('inspSummary'), jInspHistory:()=>this.jump('inspHistory'),
+      jSensor:()=>this.jump('sensor'), jWeight:()=>this.jumpGraph('weight'), jTemp:()=>this.jumpGraph('temp'), jHumid:()=>this.jumpGraph('humid'), jCamera:()=>this.jump('camera'), jAiDiagnosis:()=>this.jump('aiDiagnosis'), jAiRecommend:()=>this.jump('aiRecommend'),
+      jTasks:()=>this.jump('tasks'), jTaskCreate:()=>this.jump('taskCreate'), jWorkRecord:()=>this.jump('workRecord'), jWorkHistory:()=>this.jump('workHistory'), jReport:()=>this.jump('report'),
+    };
+  }
+  navGraph(kind) { this.setState(s=>({ screen:'app', graphKind:kind, view:kind, hist:[...s.hist, s.view], anim:'scrIn' })); }
+  jumpGraph(kind) { this.setState({ screen:'app', graphKind:kind, view:kind, hist:[], anim:'scrIn' }); }
+}
+</script>
+</body>
+</html>
