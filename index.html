@@ -206,8 +206,10 @@
               <sc-if value="{{ vInspStart }}" hint-placeholder-val="{{ false }}">
                 <div data-screen-label="SCR-011 内検開始" style="padding:60px 16px 16px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
                   <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px;"><button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button><span style="font-size:20px; font-weight:800; color:{{ t.text }};">内検を開始</span></div>
-                  <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; margin-bottom:16px;"><div style="font-size:13px; font-weight:700; color:{{ t.textMuted }}; margin-bottom:10px;">巣箱情報</div><div style="display:flex; flex-direction:column; gap:8px; font-size:14px;"><div style="display:flex; justify-content:space-between;"><span style="color:{{ t.textMuted }};">巣箱名</span><span style="color:{{ t.text }}; font-weight:700;">A-01（自宅蜂場）</span></div><div style="display:flex; justify-content:space-between;"><span style="color:{{ t.textMuted }};">設置場所</span><span style="color:{{ t.text }};">山田町</span></div><div style="display:flex; justify-content:space-between;"><span style="color:{{ t.textMuted }};">前回内検日</span><span style="color:{{ t.text }};">2026/05/28</span></div></div></div>
-                  <div style="display:flex; gap:10px; margin-bottom:16px;"><div style="flex:1.4;"><label style="display:block; font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:6px;">日時</label><div style="padding:13px 14px; font-size:14px; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px;">2026/06/08 09:30</div></div><div style="flex:1;"><label style="display:block; font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:6px;">気温</label><div style="padding:13px 14px; font-size:14px; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px;">23.5 ℃</div></div></div>
+                  <div style="margin-bottom:16px;"><label style="display:block; font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:6px;">対象巣箱</label><select onChange="{{ setInspColony }}" style="width:100%; padding:13px 14px; font-size:15px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px; outline:none;">
+                    <sc-for list="{{ coloniesOpts }}" as="col"><option>{{ col }}</option></sc-for>
+                  </select></div>
+                  <div style="display:flex; gap:10px; margin-bottom:16px;"><div style="flex:1.4;"><label style="display:block; font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:6px;">日時</label><div style="padding:13px 14px; font-size:14px; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px;">{{ inspSummaryDate }}</div></div></div>
                   <label style="display:block; font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:8px;">天気</label>
                   <div style="display:flex; gap:8px; margin-bottom:18px;"><button onClick="{{ wSun }}" style="{{ wxSun }}">☀️ 晴れ</button><button onClick="{{ wCloud }}" style="{{ wxCloud }}">⛅ 曇り</button><button onClick="{{ wRain }}" style="{{ wxRain }}">🌧️ 雨</button></div>
                   <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;"><label style="font-size:12px; font-weight:600; color:{{ t.textMuted }};">検査する枠を選択（最大10枠）</label><span onClick="{{ selectAllFrames }}" style="font-size:12px; font-weight:700; color:{{ t.primary }}; cursor:pointer;">全枠選択</span></div>
@@ -216,22 +218,20 @@
                       <div onClick="{{ fr.toggle }}" style="aspect-ratio:1; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:800; cursor:pointer; background:{{ fr.bg }}; color:{{ fr.fg }}; border:1.5px solid {{ fr.border }};">{{ fr.n }}</div>
                     </sc-for>
                   </div>
-                  <button onClick="{{ goInspCapture }}" style="width:100%; padding:16px; font-size:16px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};" style-active="transform:translateY(1px);">内検を開始する（{{ selectedCount }}枠）</button>
+                  <button onClick="{{ startInspection }}" style="width:100%; padding:16px; font-size:16px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};" style-active="transform:translateY(1px);">内検を開始する（{{ selectedCount }}枠）</button>
                 </div>
               </sc-if>
 
               <!-- SCR-012 CAPTURE -->
               <sc-if value="{{ vInspCapture }}" hint-placeholder-val="{{ false }}">
-                <div data-screen-label="SCR-012 撮影" style="padding:60px 16px 16px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
-                  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;"><div style="display:flex; align-items:center; gap:10px;"><button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button><span style="font-size:18px; font-weight:800; color:{{ t.text }};">撮影</span></div><span style="font-size:13px; font-weight:700; color:{{ t.primary }}; background:{{ t.chipBg }}; padding:4px 10px; border-radius:999px;">3 / 10 枠目</span></div>
-                  <div style="display:flex; gap:8px; margin-bottom:14px;"><button onClick="{{ faceA }}" style="{{ segFaceA }}">表面（Face A）</button><button onClick="{{ faceB }}" style="{{ segFaceB }}">裏面（Face B）</button></div>
-                  <div style="position:relative; aspect-ratio:3/4; border-radius:{{ t.radius }}px; overflow:hidden; background:radial-gradient(circle at 50% 40%, #c79a4e, #6e4f23); display:flex; align-items:center; justify-content:center; margin-bottom:16px; border:1px solid {{ t.border }};">
-                    <svg viewBox="0 0 200 260" width="100%" height="100%" style="position:absolute; inset:0; opacity:.55;"><defs><pattern id="hex" width="22" height="19" patternUnits="userSpaceOnUse" patternTransform="scale(1.1)"><path d="M11 0 L22 5.5 L22 13.5 L11 19 L0 13.5 L0 5.5 Z" fill="none" stroke="#3d2a10" stroke-width="1.2"></path></pattern></defs><rect width="200" height="260" fill="url(#hex)"></rect></svg>
-                    <div style="position:absolute; inset:14px; border:2px solid rgba(255,255,255,.7); border-radius:14px;"></div>
-                    <div style="position:absolute; top:22px; left:22px; right:22px; display:flex; justify-content:space-between; align-items:center;"><span style="display:flex; align-items:center; gap:6px; background:rgba(0,0,0,.45); color:#fff; font-size:11px; font-weight:700; padding:4px 9px; border-radius:999px;"><span style="width:7px; height:7px; border-radius:50%; background:#ff5b5b; animation:liveBlink 1.4s infinite;"></span>3 / 10 枠目</span><span style="background:rgba(0,0,0,.45); color:#fff; font-size:11px; font-weight:700; padding:4px 9px; border-radius:999px;">{{ faceLabel }}</span></div>
-                    <span style="font-size:60px; filter:drop-shadow(0 2px 6px rgba(0,0,0,.4));">🐝</span>
+                <div data-screen-label="SCR-012 撮影" style="padding:60px 16px 16px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1); display:flex; flex-direction:column; height:100%;">
+                  <div style="display:flex; align-items:center; gap:10px; margin-bottom:24px;"><button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button><span style="font-size:18px; font-weight:800; color:{{ t.text }};">撮影</span></div>
+                  <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:20px; text-align:center; background:{{ t.surface }}; border:1.5px dashed {{ t.border }}; border-radius:{{ t.radius }}px; padding:32px; margin-bottom:24px;">
+                    <div style="font-size:56px;">📷</div>
+                    <div style="font-size:18px; font-weight:800; color:{{ t.text }};">撮影機能は準備中です</div>
+                    <div style="font-size:14px; color:{{ t.textMuted }}; line-height:1.8;">カメラ・AI解析機能は<br>今後のアップデートで追加されます。<br>現在はメモ記録のみ可能です。</div>
                   </div>
-                  <div style="display:flex; gap:10px;"><button onClick="{{ noop }}" style="flex:1; padding:15px; font-size:15px; font-weight:700; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:14px; cursor:pointer;">撮り直す</button><button onClick="{{ goInspFrame }}" style="flex:1.3; padding:15px; font-size:15px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};">使用する</button></div>
+                  <button onClick="{{ goInspFrame }}" style="width:100%; padding:16px; font-size:16px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};" style-active="transform:translateY(1px);">メモ入力へ進む</button>
                 </div>
               </sc-if>
 
@@ -255,40 +255,33 @@
               <!-- SCR-014 AI ANALYSIS -->
               <sc-if value="{{ vInspAI }}" hint-placeholder-val="{{ false }}">
                 <div data-screen-label="SCR-014 AI解析入力" style="padding:60px 16px 16px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
-                  <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;"><button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button><span style="font-size:18px; font-weight:800; color:{{ t.text }};">AI解析結果</span><span style="margin-left:auto; font-size:12px; color:{{ t.textMuted }};">3 / 10 枠（表面）</span></div>
-                  <div style="display:flex; align-items:center; gap:8px; background:{{ t.chipBg }}; border-radius:12px; padding:10px 14px; margin-bottom:14px;"><span style="font-size:18px;">✨</span><span style="font-size:13px; font-weight:700; color:{{ t.chipText }};">AI判定結果（信頼度付き）</span></div>
-                  <div style="display:flex; flex-direction:column; gap:7px; margin-bottom:16px;">
-                    <sc-for list="{{ aiResults }}" as="r" hint-placeholder-count="9">
-                      <div style="display:flex; align-items:center; gap:10px; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:12px; padding:12px 14px;"><span style="font-size:16px; width:22px; text-align:center;">{{ r.icon }}</span><span style="flex:1; font-size:14px; color:{{ t.text }};">{{ r.label }}</span><span style="font-size:14px; font-weight:800; color:{{ t.text }};">{{ r.value }}</span><span style="font-size:11px; font-weight:700; color:{{ r.confColor }}; background:{{ r.confBg }}; padding:2px 8px; border-radius:999px; width:30px; text-align:center;">{{ r.conf }}</span></div>
-                    </sc-for>
+                  <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px;"><button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button><span style="font-size:18px; font-weight:800; color:{{ t.text }};">AI解析</span></div>
+                  <div style="display:flex; flex-direction:column; align-items:center; gap:14px; text-align:center; background:{{ t.surface }}; border:1.5px dashed {{ t.border }}; border-radius:{{ t.radius }}px; padding:28px; margin-bottom:20px;">
+                    <div style="font-size:48px;">✨</div>
+                    <div style="font-size:17px; font-weight:800; color:{{ t.text }};">AI解析機能は準備中です</div>
+                    <div style="font-size:13px; color:{{ t.textMuted }}; line-height:1.8;">画像からの自動解析機能は<br>今後のアップデートで追加されます。</div>
                   </div>
-                  <label style="display:block; font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">メモ（自由記述）</label>
-                  <textarea value="{{ f.aiMemo }}" onInput="{{ h.aiMemo }}" placeholder="右下に女王蜂の疑いあり？" rows="2" style="width:100%; padding:13px 14px; font-size:14px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px; outline:none; resize:none; margin-bottom:16px;" style-focus="border-color:{{ t.primary }};"></textarea>
-                  <div style="display:flex; gap:10px;"><button onClick="{{ back }}" style="flex:1; padding:15px; font-size:15px; font-weight:700; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:14px; cursor:pointer;">キャンセル</button><button onClick="{{ goInspSummary }}" style="flex:1.4; padding:15px; font-size:15px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};">保存して次へ</button></div>
+                  <label style="display:block; font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">気になったことをメモ（任意）</label>
+                  <textarea value="{{ f.aiMemo }}" onInput="{{ h.aiMemo }}" placeholder="右下に女王蜂の疑いあり？" rows="3" style="width:100%; padding:13px 14px; font-size:14px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px; outline:none; resize:none; margin-bottom:16px;" style-focus="border-color:{{ t.primary }};"></textarea>
+                  <div style="display:flex; gap:10px;"><button onClick="{{ back }}" style="flex:1; padding:15px; font-size:15px; font-weight:700; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:14px; cursor:pointer;">戻る</button><button onClick="{{ goInspSummary }}" style="flex:1.4; padding:15px; font-size:15px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};">サマリーへ</button></div>
                 </div>
               </sc-if>
 
               <!-- SCR-015 SUMMARY -->
               <sc-if value="{{ vInspSummary }}" hint-placeholder-val="{{ false }}">
-                <div data-screen-label="SCR-015 内検サマリー" style="padding:60px 16px 16px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
+                <div data-screen-label="SCR-015 内検サマリー" style="padding:60px 16px 24px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1); overflow-y:auto; height:100%;">
                   <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;"><button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button><span style="font-size:20px; font-weight:800; color:{{ t.text }};">内検サマリー</span></div>
-                  <div style="font-size:14px; font-weight:700; color:{{ t.text }};">A-01（自宅蜂場）</div>
-                  <div style="font-size:13px; color:{{ t.textMuted }}; margin-bottom:16px;">2026/06/08 09:30 ・ 晴れ ・ 23.5℃</div>
-                  <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; margin-bottom:14px;">
-                    <div style="font-size:13px; font-weight:700; color:{{ t.textMuted }}; margin-bottom:12px;">全体の健康スコア</div>
-                    <div style="display:grid; grid-template-columns:repeat(5,1fr); gap:7px;">
-                      <sc-for list="{{ scoreCells }}" as="s" hint-placeholder-count="10">
-                        <div style="aspect-ratio:1; border-radius:10px; background:{{ s.bg }}; display:flex; flex-direction:column; align-items:center; justify-content:center;"><span style="font-size:11px; color:{{ s.fg }}; opacity:.8;">{{ s.n }}</span><span style="font-size:13px; font-weight:800; color:{{ s.fg }};">{{ s.score }}</span></div>
-                      </sc-for>
-                    </div>
+                  <div style="font-size:16px; font-weight:800; color:{{ t.text }};">{{ inspSummaryColony }}</div>
+                  <div style="font-size:13px; color:{{ t.textMuted }}; margin-bottom:18px;">{{ inspSummaryDate }} ・ {{ inspSummaryWeather }}</div>
+                  <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; margin-bottom:14px; display:flex; flex-direction:column; gap:12px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-size:13px; color:{{ t.textMuted }};">検査枠</span><span style="font-size:14px; font-weight:700; color:{{ t.text }};">{{ inspSummaryCount }}枠（{{ inspSummaryFrames }}）</span></div>
+                    <div style="height:1px; background:{{ t.border }};"></div>
+                    <div><div style="font-size:12px; color:{{ t.textMuted }}; margin-bottom:5px;">枠メモ</div><div style="font-size:14px; color:{{ t.text }}; line-height:1.7;">{{ inspSummaryFrameMemo }}</div></div>
+                    <div style="height:1px; background:{{ t.border }};"></div>
+                    <div><div style="font-size:12px; color:{{ t.textMuted }}; margin-bottom:5px;">その他メモ</div><div style="font-size:14px; color:{{ t.text }}; line-height:1.7;">{{ inspSummaryAiMemo }}</div></div>
                   </div>
-                  <div style="display:flex; gap:10px; margin-bottom:14px;">
-                    <div style="flex:1; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px;"><div style="font-size:12px; color:{{ t.textMuted }};">総合評価</div><div style="font-size:18px; font-weight:800; color:{{ t.text }}; margin-top:5px;">良好</div><div style="font-size:15px; margin-top:2px;">⭐⭐⭐⭐☆</div></div>
-                    <div style="flex:1; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px;"><div style="font-size:12px; color:{{ t.textMuted }};">前回比</div><div style="font-size:24px; font-weight:800; color:{{ t.accent }}; margin-top:5px;">+8 ↑</div></div>
-                  </div>
-                  <div style="background:{{ t.dangerBg }}; border:1px solid {{ t.danger }}; border-radius:{{ t.radius }}px; padding:14px 16px; margin-bottom:14px;"><div style="font-size:13px; font-weight:800; color:{{ t.danger }}; margin-bottom:8px;">⚠️ 要注意アラート</div><div style="font-size:14px; color:{{ t.text }}; line-height:1.9;">▲ ヴァロア検出（枠5）<br>▲ 女王セル疑い（枠7）</div></div>
-                  <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; margin-bottom:18px;"><div style="font-size:13px; font-weight:800; color:{{ t.text }}; margin-bottom:10px; display:flex; align-items:center; gap:6px;">✨ 推奨アクション（AI提案）</div><div style="display:flex; flex-direction:column; gap:9px;"><div style="display:flex; gap:10px; font-size:14px; color:{{ t.text }};"><span style="font-weight:800; color:{{ t.primary }};">1.</span>ヴァロア対策を実施</div><div style="display:flex; gap:10px; font-size:14px; color:{{ t.text }};"><span style="font-weight:800; color:{{ t.primary }};">2.</span>女王セルの経過観察</div><div style="display:flex; gap:10px; font-size:14px; color:{{ t.text }};"><span style="font-weight:800; color:{{ t.primary }};">3.</span>蜜箱を整備（2週間後）</div></div></div>
-                  <div style="display:flex; gap:10px;"><button onClick="{{ goInspHistory }}" style="flex:1.4; padding:16px; font-size:15px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};">保存する</button><button onClick="{{ noop }}" style="flex:1; padding:16px; font-size:14px; font-weight:700; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:14px; cursor:pointer;">PDF共有</button></div>
+                  <div style="background:{{ t.chipBg }}; border-radius:{{ t.radius }}px; padding:14px 16px; margin-bottom:20px;"><div style="font-size:13px; color:{{ t.chipText }}; line-height:1.7;">✨ AI解析・健康スコアは今後のアップデートで追加されます。</div></div>
+                  <button onClick="{{ saveInspection }}" style="width:100%; padding:16px; font-size:16px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};" style-active="transform:translateY(1px);">保存する</button>
                 </div>
               </sc-if>
 
@@ -305,24 +298,30 @@
                       </sc-for>
                     </div>
                   </div>
-                  <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; margin-bottom:14px;">
-                    <div style="font-size:13px; font-weight:700; color:{{ t.text }}; margin-bottom:10px;">健康スコアのトレンド</div>
-                    <svg viewBox="0 0 300 110" width="100%" style="display:block;"><polyline points="{{ healthTrendPts }}" fill="none" stroke="{{ t.primary }}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></polyline><sc-for list="{{ healthDots }}" as="hd" hint-placeholder-count="5"><circle cx="{{ hd.x }}" cy="{{ hd.y }}" r="4" fill="{{ t.primary }}"></circle></sc-for></svg>
-                    <div style="display:flex; justify-content:space-between; margin-top:6px; font-size:10px; color:{{ t.textMuted }};"><span>5/8</span><span>5/15</span><span>5/22</span><span>5/28</span><span>6/8</span></div>
-                  </div>
-                  <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; margin-bottom:14px;">
-                    <div style="font-size:13px; font-weight:700; color:{{ t.text }}; margin-bottom:12px;">枠別ヒートマップ（直近3回）</div>
-                    <div style="display:grid; grid-template-columns:48px 1fr 1fr 1fr; gap:6px; align-items:center;">
-                      <span></span><span style="font-size:11px; color:{{ t.textMuted }}; text-align:center;">5/22</span><span style="font-size:11px; color:{{ t.textMuted }}; text-align:center;">5/28</span><span style="font-size:11px; color:{{ t.textMuted }}; text-align:center;">6/8</span>
-                      <sc-for list="{{ heatRows }}" as="hr" hint-placeholder-count="4">
-                        <span style="font-size:12px; color:{{ t.text }}; font-weight:700;">{{ hr.label }}</span>
-                        <div style="height:30px; border-radius:7px; background:{{ hr.c0 }};"></div>
-                        <div style="height:30px; border-radius:7px; background:{{ hr.c1 }};"></div>
-                        <div style="height:30px; border-radius:7px; background:{{ hr.c2 }};"></div>
+                  <sc-if value="{{ inspHistoryEmpty }}">
+                    <div style="display:flex; flex-direction:column; align-items:center; gap:12px; padding:32px 16px; text-align:center; background:{{ t.surface }}; border:1.5px dashed {{ t.border }}; border-radius:{{ t.radius }}px; margin-bottom:14px;">
+                      <div style="font-size:40px;">🔍</div>
+                      <div style="font-size:15px; font-weight:700; color:{{ t.text }};">内検記録がありません</div>
+                      <div style="font-size:13px; color:{{ t.textMuted }};">内検を実施して記録を保存すると<br>ここに一覧表示されます。</div>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ !inspHistoryEmpty }}">
+                    <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:14px;">
+                      <sc-for list="{{ inspHistoryItems }}" as="rec">
+                        <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:14px 16px;">
+                          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+                            <span style="font-size:15px; font-weight:800; color:{{ t.text }};">{{ rec.colony }}</span>
+                            <span style="font-size:12px; color:{{ t.textMuted }};">{{ rec.date }}</span>
+                          </div>
+                          <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:6px;">
+                            <span style="font-size:12px; font-weight:700; color:{{ t.chipText }}; background:{{ t.chipBg }}; padding:2px 9px; border-radius:999px;">{{ rec.weather }}</span>
+                            <span style="font-size:12px; font-weight:700; color:{{ t.textMuted }}; background:{{ t.surfaceAlt }}; padding:2px 9px; border-radius:999px;">{{ rec.frames.length }}枠</span>
+                          </div>
+                          <sc-if value="{{ rec.frameMemo }}"><div style="font-size:13px; color:{{ t.textMuted }}; margin-top:4px;">📝 {{ rec.frameMemo }}</div></sc-if>
+                        </div>
                       </sc-for>
                     </div>
-                  </div>
-                  <div style="display:flex; gap:10px;"><button onClick="{{ noop }}" style="flex:1; padding:14px; font-size:14px; font-weight:700; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:14px; cursor:pointer;">アラート履歴</button><button onClick="{{ noop }}" style="flex:1; padding:14px; font-size:14px; font-weight:700; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:14px; cursor:pointer;">CSV出力</button></div>
+                  </sc-if>
                 </div>
               </sc-if>
 
@@ -540,7 +539,10 @@ class Component extends DCLogic {
     taskFilter: 'today', reportPeriod: 'month', reads: {},
     f: { loginEmail:'', loginPw:'', regName:'', regEmail:'', regPw:'', regFarm:'', frameMemo:'', aiMemo:'', taskType:'給餌', taskColony:'A-02', taskMemo:'', recType:'給餌', recColony:'A-02', recMemo:'' },
     loginError: '', regError: '', userName: '',
+    inspColony: 'A-01', inspHistory: [],
   };
+
+  COLONIES = ['A-01','A-02','A-03','A-04','A-05','A-06','A-07','A-08','A-09','A-10','A-11','A-12'];
 
   constructor() {
     super();
@@ -550,6 +552,7 @@ class Component extends DCLogic {
         this.state.screen = 'app';
         this.state.userName = session.name || '';
       }
+      this.state.inspHistory = JSON.parse(localStorage.getItem('honeyos_inspHistory') || '[]');
     } catch(e) { /* localStorage unavailable */ }
   }
 
@@ -664,6 +667,36 @@ class Component extends DCLogic {
     try { localStorage.setItem('honeyos_session', JSON.stringify({ email: user.email, name: user.name })); } catch(e) {}
     this.setState({ loginError: '', userName: user.name });
     this.tab('home');
+  }
+
+  startInspection() {
+    this.setState(s => ({
+      frames: { 1:true, 2:true, 3:true },
+      f: { ...s.f, frameMemo:'', aiMemo:'' },
+    }));
+    this.nav('inspCapture');
+  }
+
+  saveInspection() {
+    const s = this.state;
+    const wxMap = { sun:'晴れ', cloud:'曇り', rain:'雨' };
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('ja-JP', { year:'numeric', month:'2-digit', day:'2-digit' });
+    const timeStr = now.toLocaleTimeString('ja-JP', { hour:'2-digit', minute:'2-digit' });
+    const record = {
+      id: now.getTime(),
+      colony: s.inspColony,
+      date: dateStr,
+      time: timeStr,
+      weather: wxMap[s.weather] || '晴れ',
+      frames: Object.keys(s.frames).map(Number).sort((a,b)=>a-b),
+      frameMemo: s.f.frameMemo.trim(),
+      aiMemo: s.f.aiMemo.trim(),
+    };
+    const updated = [record, ...s.inspHistory];
+    try { localStorage.setItem('honeyos_inspHistory', JSON.stringify(updated)); } catch(e) {}
+    this.setState({ inspHistory: updated });
+    this.tab('tasks');
   }
 
   async submitRegister() {
@@ -816,6 +849,21 @@ class Component extends DCLogic {
       h: (() => { const o = {}; ['loginEmail','loginPw','regName','regEmail','regPw','regFarm','frameMemo','aiMemo','taskType','taskColony','taskMemo','recType','recColony','recMemo'].forEach(k => { o[k] = this.field(k); }); return o; })(),
       // auth
       loginError: s.loginError, regError: s.regError, userName: s.userName,
+      // inspection
+      inspColony: s.inspColony,
+      setInspColony: (e) => this.setState({ inspColony: e.target.value }),
+      coloniesOpts: this.COLONIES,
+      startInspection: () => this.startInspection(),
+      saveInspection: () => this.saveInspection(),
+      inspSummaryColony: s.inspColony,
+      inspSummaryWeather: ({sun:'☀️ 晴れ', cloud:'⛅ 曇り', rain:'🌧️ 雨'})[s.weather] || '晴れ',
+      inspSummaryDate: new Date().toLocaleDateString('ja-JP', { year:'numeric', month:'2-digit', day:'2-digit' }),
+      inspSummaryFrames: Object.keys(s.frames).map(Number).sort((a,b)=>a-b).join('・') + ' 枠',
+      inspSummaryFrameMemo: s.f.frameMemo || '（なし）',
+      inspSummaryAiMemo: s.f.aiMemo || '（なし）',
+      inspSummaryCount: Object.keys(s.frames).length,
+      inspHistoryItems: s.inspHistory,
+      inspHistoryEmpty: s.inspHistory.length === 0,
       // auth nav
       goRegister:()=>this.go('register'), goLogin:()=>this.go('login'),
       submitLogin:()=>this.submitLogin(), submitRegister:()=>this.submitRegister(),
