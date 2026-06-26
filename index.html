@@ -420,12 +420,12 @@
                   <div style="display:flex; align-items:center; gap:10px; margin-bottom:20px;"><button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button><span style="font-size:20px; font-weight:800; color:{{ t.text }};">タスク作成</span></div>
                   <div style="display:flex; flex-direction:column; gap:16px; margin-bottom:24px;">
                     <div><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">作業種別</label><select value="{{ f.taskType }}" onChange="{{ h.taskType }}" style="width:100%; padding:14px 16px; font-size:15px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px; outline:none;"><option>給餌</option><option>内検</option><option>採蜜</option><option>治療</option></select></div>
-                    <div><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">対象蜂群</label><select value="{{ f.taskColony }}" onChange="{{ h.taskColony }}" style="width:100%; padding:14px 16px; font-size:15px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px; outline:none;"><option>A-02</option><option>A-03</option><option>A-05</option><option>A-07</option></select></div>
-                    <div><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">実施日時</label><div style="padding:14px 16px; font-size:15px; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px;">2026/06/09 09:00</div></div>
-                    <div><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">担当者</label><div style="padding:14px 16px; font-size:15px; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px;">自分</div></div>
+                    <div><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">対象蜂群</label><select value="{{ f.taskColony }}" onChange="{{ h.taskColony }}" style="width:100%; padding:14px 16px; font-size:15px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px; outline:none;"><sc-for list="{{ coloniesOpts }}" as="col"><option>{{ col }}</option></sc-for></select></div>
+                    <div><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">実施日時</label><div style="padding:14px 16px; font-size:15px; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px;">{{ taskDateLabel }}</div></div>
+                    <div><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">担当者</label><div style="padding:14px 16px; font-size:15px; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px;">{{ userName }}</div></div>
                     <div><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">メモ</label><textarea value="{{ f.taskMemo }}" onInput="{{ h.taskMemo }}" placeholder="砂糖水 2L 給餌" rows="2" style="width:100%; padding:14px 16px; font-size:15px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px; outline:none; resize:none;" style-focus="border-color:{{ t.primary }};"></textarea></div>
                   </div>
-                  <button onClick="{{ goTasks }}" style="width:100%; padding:16px; font-size:16px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};" style-active="transform:translateY(1px);">作成する</button>
+                  <button onClick="{{ saveTask }}" style="width:100%; padding:16px; font-size:16px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};" style-active="transform:translateY(1px);">作成する</button>
                 </div>
               </sc-if>
 
@@ -435,27 +435,32 @@
                   <div style="display:flex; align-items:center; gap:10px; margin-bottom:20px;"><button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button><span style="font-size:20px; font-weight:800; color:{{ t.text }};">作業記録入力</span></div>
                   <div style="display:flex; flex-direction:column; gap:16px; margin-bottom:24px;">
                     <div><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">作業種別</label><select value="{{ f.recType }}" onChange="{{ h.recType }}" style="width:100%; padding:14px 16px; font-size:15px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px; outline:none;"><option>給餌</option><option>内検</option><option>採蜜</option><option>治療</option></select></div>
-                    <div><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">対象蜂群</label><select value="{{ f.recColony }}" onChange="{{ h.recColony }}" style="width:100%; padding:14px 16px; font-size:15px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px; outline:none;"><option>A-02</option><option>A-01</option><option>A-03</option></select></div>
-                    <div><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">実施日時</label><div style="padding:14px 16px; font-size:15px; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px;">2026/06/08 09:00</div></div>
+                    <div><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">対象蜂群</label><select value="{{ f.recColony }}" onChange="{{ h.recColony }}" style="width:100%; padding:14px 16px; font-size:15px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px; outline:none;"><sc-for list="{{ coloniesOpts }}" as="col"><option>{{ col }}</option></sc-for></select></div>
+                    <div><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">実施日時</label><div style="padding:14px 16px; font-size:15px; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px;">{{ taskDateLabel }}</div></div>
                     <div><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">メモ</label><textarea value="{{ f.recMemo }}" onInput="{{ h.recMemo }}" placeholder="砂糖水 2L 給餌" rows="2" style="width:100%; padding:14px 16px; font-size:15px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px; outline:none; resize:none;" style-focus="border-color:{{ t.primary }};"></textarea></div>
                     <div><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">写真</label><div style="display:flex; gap:8px;"><div style="width:74px; height:74px; border-radius:12px; border:1.5px dashed {{ t.border }}; display:flex; align-items:center; justify-content:center; font-size:24px; color:{{ t.textMuted }}; cursor:pointer;">＋</div><div style="width:74px; height:74px; border-radius:12px; background:radial-gradient(circle,#c79a4e,#6e4f23);"></div></div></div>
                   </div>
-                  <button onClick="{{ goWorkHistory }}" style="width:100%; padding:16px; font-size:16px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};" style-active="transform:translateY(1px);">保存する</button>
+                  <button onClick="{{ saveWorkRecord }}" style="width:100%; padding:16px; font-size:16px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};" style-active="transform:translateY(1px);">保存する</button>
                 </div>
               </sc-if>
 
               <!-- SCR-027 WORK HISTORY -->
               <sc-if value="{{ vWorkHistory }}" hint-placeholder-val="{{ false }}">
                 <div data-screen-label="SCR-027 作業履歴" style="padding:60px 16px 16px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
-                  <div style="display:flex; align-items:center; gap:10px; margin-bottom:18px;"><button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button><span style="font-size:20px; font-weight:800; color:{{ t.text }};">作業履歴（A-01）</span></div>
-                  <div style="position:relative; padding-left:22px; margin-bottom:18px;">
-                    <div style="position:absolute; left:5px; top:6px; bottom:6px; width:2px; background:{{ t.border }};"></div>
-                    <div style="display:flex; flex-direction:column; gap:14px;">
-                      <sc-for list="{{ workHist }}" as="w" hint-placeholder-count="4">
-                        <div style="position:relative;"><span style="position:absolute; left:-22px; top:4px; width:12px; height:12px; border-radius:50%; background:{{ t.primary }}; border:2px solid {{ t.bg }};"></span><div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:14px;"><div style="display:flex; align-items:center; justify-content:space-between;"><span style="font-size:14px; font-weight:700; color:{{ t.text }};">{{ w.date }}　{{ w.type }}</span><span style="font-size:11px; font-weight:700; color:{{ t.ok }}; background:{{ t.chipBg }}; padding:3px 9px; border-radius:999px;">完了</span></div><div style="font-size:13px; color:{{ t.textMuted }}; margin-top:5px;">{{ w.detail }}</div></div></div>
-                      </sc-for>
+                  <div style="display:flex; align-items:center; gap:10px; margin-bottom:18px;"><button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button><span style="font-size:20px; font-weight:800; color:{{ t.text }};">作業履歴</span></div>
+                  <sc-if value="{{ workHistoryEmpty }}">
+                    <div style="text-align:center; padding:48px 16px; color:{{ t.textMuted }}; font-size:15px;">まだ作業記録がありません</div>
+                  </sc-if>
+                  <sc-if value="{{ !workHistoryEmpty }}">
+                    <div style="position:relative; padding-left:22px; margin-bottom:18px;">
+                      <div style="position:absolute; left:5px; top:6px; bottom:6px; width:2px; background:{{ t.border }};"></div>
+                      <div style="display:flex; flex-direction:column; gap:14px;">
+                        <sc-for list="{{ workHistoryItems }}" as="w">
+                          <div style="position:relative;"><span style="position:absolute; left:-22px; top:4px; width:12px; height:12px; border-radius:50%; background:{{ t.primary }}; border:2px solid {{ t.bg }};"></span><div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:14px;"><div style="display:flex; align-items:center; justify-content:space-between;"><span style="font-size:14px; font-weight:700; color:{{ t.text }};">{{ w.date }}　{{ w.type }}</span><span style="font-size:11px; font-weight:700; color:{{ t.ok }}; background:{{ t.chipBg }}; padding:3px 9px; border-radius:999px;">完了</span></div><div style="font-size:13px; color:{{ t.textMuted }}; margin-top:5px;">{{ w.detail }}</div></div></div>
+                        </sc-for>
+                      </div>
                     </div>
-                  </div>
+                  </sc-if>
                   <button onClick="{{ goWorkRecord }}" style="width:100%; padding:15px; font-size:15px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primary }}; background:transparent; border:1.5px dashed {{ t.border }}; border-radius:{{ t.radius }}px; cursor:pointer;">＋ 作業を記録</button>
                 </div>
               </sc-if>
@@ -540,6 +545,7 @@ class Component extends DCLogic {
     f: { loginEmail:'', loginPw:'', regName:'', regEmail:'', regPw:'', regFarm:'', frameMemo:'', aiMemo:'', taskType:'給餌', taskColony:'A-02', taskMemo:'', recType:'給餌', recColony:'A-02', recMemo:'' },
     loginError: '', regError: '', userName: '',
     inspColony: 'A-01', inspHistory: [],
+    workHistory: [],
   };
 
   COLONIES = ['A-01','A-02','A-03','A-04','A-05','A-06','A-07','A-08','A-09','A-10','A-11','A-12'];
@@ -553,6 +559,7 @@ class Component extends DCLogic {
         this.state.userName = session.name || '';
       }
       this.state.inspHistory = JSON.parse(localStorage.getItem('honeyos_inspHistory') || '[]');
+      this.state.workHistory = JSON.parse(localStorage.getItem('honeyos_workHistory') || '[]');
     } catch(e) { /* localStorage unavailable */ }
   }
 
@@ -697,6 +704,52 @@ class Component extends DCLogic {
     try { localStorage.setItem('honeyos_inspHistory', JSON.stringify(updated)); } catch(e) {}
     this.setState({ inspHistory: updated });
     this.tab('tasks');
+  }
+
+  saveTask() {
+    const s = this.state;
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('ja-JP', { year:'numeric', month:'2-digit', day:'2-digit' });
+    const timeStr = now.toLocaleTimeString('ja-JP', { hour:'2-digit', minute:'2-digit' });
+    const record = {
+      id: now.getTime(),
+      type: s.f.taskType,
+      colony: s.f.taskColony,
+      date: dateStr,
+      time: timeStr,
+      memo: s.f.taskMemo.trim(),
+      detail: (s.f.taskColony ? s.f.taskColony + ' ' : '') + (s.f.taskMemo.trim() || s.f.taskType),
+    };
+    const updated = [record, ...s.workHistory];
+    try { localStorage.setItem('honeyos_workHistory', JSON.stringify(updated)); } catch(e) {}
+    this.setState(prev => ({
+      workHistory: updated,
+      f: Object.assign({}, prev.f, { taskType:'給餌', taskColony:this.COLONIES[0], taskMemo:'' }),
+    }));
+    this.tab('tasks');
+  }
+
+  saveWorkRecord() {
+    const s = this.state;
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('ja-JP', { year:'numeric', month:'2-digit', day:'2-digit' });
+    const timeStr = now.toLocaleTimeString('ja-JP', { hour:'2-digit', minute:'2-digit' });
+    const record = {
+      id: now.getTime(),
+      type: s.f.recType,
+      colony: s.f.recColony,
+      date: dateStr,
+      time: timeStr,
+      memo: s.f.recMemo.trim(),
+      detail: (s.f.recColony ? s.f.recColony + ' ' : '') + (s.f.recMemo.trim() || s.f.recType),
+    };
+    const updated = [record, ...s.workHistory];
+    try { localStorage.setItem('honeyos_workHistory', JSON.stringify(updated)); } catch(e) {}
+    this.setState(prev => ({
+      workHistory: updated,
+      f: Object.assign({}, prev.f, { recType:'給餌', recColony:this.COLONIES[0], recMemo:'' }),
+    }));
+    this.nav('workHistory');
   }
 
   async submitRegister() {
@@ -864,6 +917,12 @@ class Component extends DCLogic {
       inspSummaryCount: Object.keys(s.frames).length,
       inspHistoryItems: s.inspHistory,
       inspHistoryEmpty: s.inspHistory.length === 0,
+      workHistoryItems: s.workHistory,
+      workHistoryEmpty: s.workHistory.length === 0,
+      saveTask: () => this.saveTask(),
+      saveWorkRecord: () => this.saveWorkRecord(),
+      coloniesOpts: this.COLONIES,
+      taskDateLabel: new Date().toLocaleDateString('ja-JP', { year:'numeric', month:'2-digit', day:'2-digit' }) + ' ' + new Date().toLocaleTimeString('ja-JP', { hour:'2-digit', minute:'2-digit' }),
       // auth nav
       goRegister:()=>this.go('register'), goLogin:()=>this.go('login'),
       submitLogin:()=>this.submitLogin(), submitRegister:()=>this.submitRegister(),
