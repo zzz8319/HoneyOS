@@ -406,8 +406,11 @@
                   <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; padding:0 4px;"><span style="font-size:22px; font-weight:800; color:{{ t.text }};">タスク一覧</span><button onClick="{{ goInspStart }}" style="padding:7px 13px; font-size:13px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primary }}; background:{{ t.chipBg }}; border:none; border-radius:999px; cursor:pointer;">🔍 内検</button></div>
                   <div style="display:flex; gap:6px; background:{{ t.surfaceAlt }}; border:1px solid {{ t.border }}; padding:5px; border-radius:12px; margin-bottom:16px;"><button onClick="{{ tfToday }}" style="{{ taskSegToday }}">本日</button><button onClick="{{ tfWeek }}" style="{{ taskSegWeek }}">今週</button><button onClick="{{ tfAll }}" style="{{ taskSegAll }}">すべて</button></div>
                   <div style="display:flex; flex-direction:column; gap:8px;">
-                    <sc-for list="{{ tasksView }}" as="tk" hint-placeholder-count="4">
-                      <div onClick="{{ tk.open }}" style="display:flex; align-items:center; gap:13px; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:14px; cursor:pointer;"><div style="width:40px; height:40px; border-radius:11px; background:{{ tk.iconBg }}; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">{{ tk.icon }}</div><div style="flex:1; min-width:0;"><div style="font-size:14px; font-weight:700; color:{{ t.text }};">{{ tk.colony }}　{{ tk.type }}</div><div style="font-size:12px; color:{{ t.textMuted }}; margin-top:2px;">{{ tk.when }}</div></div><span style="font-size:11px; font-weight:700; color:{{ tk.statusColor }}; background:{{ tk.statusBg }}; padding:4px 10px; border-radius:999px; flex-shrink:0;">{{ tk.status }}</span></div>
+                    <sc-if value="{{ tasksEmpty }}">
+                      <div style="text-align:center; padding:40px 16px; color:{{ t.textMuted }}; font-size:15px;">タスクがありません</div>
+                    </sc-if>
+                    <sc-for list="{{ tasksView }}" as="tk">
+                      <div onClick="{{ tk.open }}" style="display:flex; align-items:center; gap:13px; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:14px; cursor:pointer;"><div style="width:40px; height:40px; border-radius:11px; background:{{ tk.iconBg }}; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">{{ tk.icon }}</div><div style="flex:1; min-width:0;"><div style="font-size:14px; font-weight:700; color:{{ t.text }};">{{ tk.colony }}　{{ tk.type }}</div><div style="font-size:12px; color:{{ t.textMuted }}; margin-top:2px;">{{ tk.when }}</div><sc-if value="{{ tk.memo }}"><div style="font-size:12px; color:{{ t.textMuted }}; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ tk.memo }}</div></sc-if></div><span style="font-size:11px; font-weight:700; color:{{ tk.statusColor }}; background:{{ tk.statusBg }}; padding:4px 10px; border-radius:999px; flex-shrink:0;">{{ tk.status }}</span></div>
                     </sc-for>
                     <button onClick="{{ goTaskCreate }}" style="margin-top:4px; padding:15px; font-size:15px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primary }}; background:transparent; border:1.5px dashed {{ t.border }}; border-radius:{{ t.radius }}px; cursor:pointer;">＋ タスクを追加</button>
                   </div>
@@ -855,7 +858,19 @@ class Component extends DCLogic {
 
     // tasks filtered
     const skMap = { todo:{c:t.warn,b:t.warnBg}, done:{c:t.ok,b:t.chipBg}, plan:{c:t.textMuted,b:t.surfaceAlt} };
-    const tasksView = this.TASKS.filter(tk=> s.taskFilter==='all' ? true : s.taskFilter==='week' ? true : tk.scope==='today').map(tk=>({ ...tk, iconBg:t.chipBg, statusColor:skMap[tk.sk].c, statusBg:skMap[tk.sk].b, open:()=>this.nav('workRecord') }));
+    const typeIcon = { '給餌':'🍼', '内検':'🔍', '採蜜':'🍯', '治療':'💊' };
+    const todayStr = new Date().toLocaleDateString('ja-JP', { year:'numeric', month:'2-digit', day:'2-digit' });
+    const realTasks = s.workHistory.map(w => ({
+      id: 'w' + w.id, colony: w.colony, type: w.type,
+      icon: typeIcon[w.type] || '📝',
+      when: w.date === todayStr ? '今日 ' + w.time : w.date + ' ' + w.time,
+      status: '完了', sk: 'done',
+      scope: w.date === todayStr ? 'today' : 'week',
+      memo: w.memo,
+    }));
+    const allTasks = [...realTasks, ...this.TASKS];
+    const tasksView = allTasks.filter(tk => s.taskFilter==='all' ? true : s.taskFilter==='week' ? true : tk.scope==='today').map(tk=>({ ...tk, iconBg:t.chipBg, statusColor:skMap[tk.sk].c, statusBg:skMap[tk.sk].b, open:()=>this.nav('workRecord') }));
+    const tasksEmpty = tasksView.length === 0;
 
     const recActions = this.REC_ACTIONS.map(ra=>{ const cmap={high:{bar:t.danger,tag:t.danger},mid:{bar:t.warn,tag:t.warn},low:{bar:t.ok,tag:t.textMuted}}; return { ...ra, barColor:cmap[ra.urgency].bar, tagColor:cmap[ra.urgency].tag }; });
 
@@ -871,7 +886,7 @@ class Component extends DCLogic {
       vInspStart:app&&v==='inspStart', vInspCapture:app&&v==='inspCapture', vInspFrame:app&&v==='inspFrame', vInspAI:app&&v==='inspAI', vInspSummary:app&&v==='inspSummary', vInspHistory:app&&v==='inspHistory',
       vSensor:app&&v==='sensor', vGraph:app&&(v==='weight'||v==='temp'||v==='humid'), vCamera:app&&v==='camera', vAiDiagnosis:app&&v==='aiDiagnosis', vAiRecommend:app&&v==='aiRecommend',
       vTasks:app&&v==='tasks', vTaskCreate:app&&v==='taskCreate', vWorkRecord:app&&v==='workRecord', vWorkHistory:app&&v==='workHistory', vReport:app&&v==='report', vSettings:app&&v==='settings',
-      nc, notifs, hasUnread, farms, colonies, mapPins, frameChips, selectedCount, aiResults, scoreCells, calCells, healthTrendPts, healthDots, heatRows, tasksView, recActions, reportFarms,
+      nc, notifs, hasUnread, farms, colonies, mapPins, frameChips, selectedCount, aiResults, scoreCells, calCells, healthTrendPts, healthDots, heatRows, tasksView, tasksEmpty, recActions, reportFarms,
       workHist:this.WORK_HIST, settingsRows:this.SETTINGS,
       sensorLine:sm.d, sensorArea:sma.d,
       faceLabel: s.face==='A'?'表面 A':'裏面 B',
