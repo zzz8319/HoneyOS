@@ -63,7 +63,8 @@
             <div style="font-size:26px; font-weight:800; color:{{ t.text }}; margin-bottom:30px;">ログイン</div>
             <div style="margin-bottom:18px;"><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">メールアドレス</label><input type="email" value="{{ f.loginEmail }}" onInput="{{ h.loginEmail }}" placeholder="you@example.com" style="width:100%; padding:14px 16px; font-size:16px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:14px; outline:none;" style-focus="border-color:{{ t.primary }};"></div>
             <div style="margin-bottom:10px;"><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">パスワード</label><input type="password" value="{{ f.loginPw }}" onInput="{{ h.loginPw }}" placeholder="••••••••" style="width:100%; padding:14px 16px; font-size:16px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:14px; outline:none;" style-focus="border-color:{{ t.primary }};"></div>
-            <div style="text-align:right; margin-bottom:26px;"><span style="font-size:13px; color:{{ t.primary }}; font-weight:600; cursor:pointer;">パスワードをお忘れですか？</span></div>
+            <div style="text-align:right; margin-bottom:18px;"><span style="font-size:13px; color:{{ t.primary }}; font-weight:600; cursor:pointer;">パスワードをお忘れですか？</span></div>
+            <sc-if value="{{ loginError }}"><div style="margin-bottom:14px; padding:12px 14px; background:{{ t.dangerBg }}; border-radius:10px; font-size:13px; color:{{ t.danger }}; font-weight:600;">{{ loginError }}</div></sc-if>
             <button onClick="{{ submitLogin }}" style="width:100%; padding:16px; font-size:16px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};" style-active="transform:translateY(1px);">ログイン</button>
             <div style="margin-top:auto; padding-top:30px; text-align:center; font-size:14px; color:{{ t.textMuted }};">アカウントをお持ちでない方は <span onClick="{{ goRegister }}" style="color:{{ t.primary }}; font-weight:700; cursor:pointer;">新規登録</span></div>
           </div>
@@ -76,7 +77,8 @@
             <div style="margin-bottom:16px;"><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">お名前</label><input type="text" value="{{ f.regName }}" onInput="{{ h.regName }}" placeholder="山田 太郎" style="width:100%; padding:14px 16px; font-size:16px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:14px; outline:none;" style-focus="border-color:{{ t.primary }};"></div>
             <div style="margin-bottom:16px;"><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">メールアドレス</label><input type="email" value="{{ f.regEmail }}" onInput="{{ h.regEmail }}" placeholder="you@example.com" style="width:100%; padding:14px 16px; font-size:16px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:14px; outline:none;" style-focus="border-color:{{ t.primary }};"></div>
             <div style="margin-bottom:16px;"><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">パスワード</label><input type="password" value="{{ f.regPw }}" onInput="{{ h.regPw }}" placeholder="8文字以上" style="width:100%; padding:14px 16px; font-size:16px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:14px; outline:none;" style-focus="border-color:{{ t.primary }};"></div>
-            <div style="margin-bottom:26px;"><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">養蜂場名 <span style="color:{{ t.textMuted }}; font-weight:400;">（任意）</span></label><input type="text" value="{{ f.regFarm }}" onInput="{{ h.regFarm }}" placeholder="第一養蜂場" style="width:100%; padding:14px 16px; font-size:16px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:14px; outline:none;" style-focus="border-color:{{ t.primary }};"></div>
+            <div style="margin-bottom:18px;"><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">養蜂場名 <span style="color:{{ t.textMuted }}; font-weight:400;">（任意）</span></label><input type="text" value="{{ f.regFarm }}" onInput="{{ h.regFarm }}" placeholder="第一養蜂場" style="width:100%; padding:14px 16px; font-size:16px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:14px; outline:none;" style-focus="border-color:{{ t.primary }};"></div>
+            <sc-if value="{{ regError }}"><div style="margin-bottom:14px; padding:12px 14px; background:{{ t.dangerBg }}; border-radius:10px; font-size:13px; color:{{ t.danger }}; font-weight:600;">{{ regError }}</div></sc-if>
             <button onClick="{{ submitRegister }}" style="width:100%; padding:16px; font-size:16px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};" style-active="transform:translateY(1px);">登録する</button>
             <div style="margin-top:auto; padding-top:26px; text-align:center; font-size:14px; color:{{ t.textMuted }};">すでにアカウントをお持ちの方は <span onClick="{{ goLogin }}" style="color:{{ t.primary }}; font-weight:700; cursor:pointer;">ログイン</span></div>
           </div>
@@ -537,7 +539,25 @@ class Component extends DCLogic {
     frames: { 1:true, 2:true, 3:true }, graphKind: 'weight', period: 'week',
     taskFilter: 'today', reportPeriod: 'month', reads: {},
     f: { loginEmail:'', loginPw:'', regName:'', regEmail:'', regPw:'', regFarm:'', frameMemo:'', aiMemo:'', taskType:'給餌', taskColony:'A-02', taskMemo:'', recType:'給餌', recColony:'A-02', recMemo:'' },
+    loginError: '', regError: '', userName: '',
   };
+
+  constructor() {
+    super();
+    try {
+      const session = JSON.parse(localStorage.getItem('honeyos_session') || 'null');
+      if (session && session.email) {
+        this.state.screen = 'app';
+        this.state.userName = session.name || '';
+      }
+    } catch(e) { /* localStorage unavailable */ }
+  }
+
+  async _hashPassword(pw, email) {
+    const data = new TextEncoder().encode(email.toLowerCase() + ':' + pw);
+    const buf = await crypto.subtle.digest('SHA-256', data);
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
 
   THEMES = {
     honey: { bg:'#FBF4E6', surface:'#FFFFFF', surfaceAlt:'#FFFBF1', primary:'#E8961B', primaryText:'#FFFFFF', primaryShadow:'rgba(232,150,27,.32)', accent:'#E8961B', text:'#3D2F17', textMuted:'#A38F6E', border:'#F0E4CA', ok:'#3E9D6B', warn:'#C98A00', warnBg:'#FCF1D6', danger:'#D9534F', dangerBg:'#FBE8E7', font:"'M PLUS Rounded 1c', system-ui, sans-serif", radius:20, statusBarDark:false, chipBg:'#FFF1D6', chipText:'#9A6B00', navBarBg:'#FFFFFF', homeBar:'rgba(0,0,0,.25)' },
@@ -626,7 +646,45 @@ class Component extends DCLogic {
   toggleFrame(n) { this.setState(s => { const fr={...s.frames}; if(fr[n]) delete fr[n]; else fr[n]=true; return { frames:fr }; }); }
   selectAll() { const fr={}; for(let i=1;i<=10;i++) fr[i]=true; this.setState({ frames:fr }); }
   markAllRead() { const r={...this.state.reads}; this.NOTIFS.forEach(n=>{ r[n.id]=true; }); this.setState({ reads:r }); }
-  logout() { this.setState({ screen:'login', view:'home', hist:[], anim:'scrInBack', reads:{} }); }
+  logout() {
+    try { localStorage.removeItem('honeyos_session'); } catch(e) {}
+    this.setState({ screen:'login', view:'home', hist:[], anim:'scrInBack', reads:{}, loginError:'', regError:'', userName:'',
+      f: { loginEmail:'', loginPw:'', regName:'', regEmail:'', regPw:'', regFarm:'', frameMemo:'', aiMemo:'', taskType:'給餌', taskColony:'A-02', taskMemo:'', recType:'給餌', recColony:'A-02', recMemo:'' } });
+  }
+
+  async submitLogin() {
+    const email = this.state.f.loginEmail.trim().toLowerCase();
+    const pw = this.state.f.loginPw;
+    if (!email || !pw) { this.setState({ loginError: 'メールアドレスとパスワードを入力してください' }); return; }
+    if (!email.includes('@') || !email.includes('.')) { this.setState({ loginError: '正しいメールアドレスを入力してください' }); return; }
+    const hash = await this._hashPassword(pw, email);
+    const users = JSON.parse(localStorage.getItem('honeyos_users') || '[]');
+    const user = users.find(u => u.email === email && u.passwordHash === hash);
+    if (!user) { this.setState({ loginError: 'メールアドレスまたはパスワードが正しくありません' }); return; }
+    try { localStorage.setItem('honeyos_session', JSON.stringify({ email: user.email, name: user.name })); } catch(e) {}
+    this.setState({ loginError: '', userName: user.name });
+    this.tab('home');
+  }
+
+  async submitRegister() {
+    const name = this.state.f.regName.trim();
+    const email = this.state.f.regEmail.trim().toLowerCase();
+    const pw = this.state.f.regPw;
+    const farm = this.state.f.regFarm.trim();
+    if (!name || !email || !pw) { this.setState({ regError: '名前・メールアドレス・パスワードは必須です' }); return; }
+    if (!email.includes('@') || !email.includes('.')) { this.setState({ regError: '正しいメールアドレスを入力してください' }); return; }
+    if (pw.length < 8) { this.setState({ regError: 'パスワードは8文字以上で入力してください' }); return; }
+    const users = JSON.parse(localStorage.getItem('honeyos_users') || '[]');
+    if (users.find(u => u.email === email)) { this.setState({ regError: 'このメールアドレスはすでに登録されています' }); return; }
+    const hash = await this._hashPassword(pw, email);
+    const newUser = { email, passwordHash: hash, name, farmName: farm };
+    try {
+      localStorage.setItem('honeyos_users', JSON.stringify([...users, newUser]));
+      localStorage.setItem('honeyos_session', JSON.stringify({ email, name }));
+    } catch(e) {}
+    this.setState({ regError: '', userName: name });
+    this.go('ob1');
+  }
 
   linePath(vals, w, h, pad, close) {
     const max=Math.max(...vals), min=Math.min(...vals); const rng=(max-min)||1; const n=vals.length;
@@ -754,9 +812,13 @@ class Component extends DCLogic {
       // report period
       repSegMonth:pill(s.reportPeriod==='month'), repSegWeek:pill(s.reportPeriod==='week'), repSegYear:pill(s.reportPeriod==='year'),
       rMonth:()=>this.setState({reportPeriod:'month'}), rWeek:()=>this.setState({reportPeriod:'week'}), rYear:()=>this.setState({reportPeriod:'year'}),
+      // field handlers
+      h: (() => { const o = {}; ['loginEmail','loginPw','regName','regEmail','regPw','regFarm','frameMemo','aiMemo','taskType','taskColony','taskMemo','recType','recColony','recMemo'].forEach(k => { o[k] = this.field(k); }); return o; })(),
+      // auth
+      loginError: s.loginError, regError: s.regError, userName: s.userName,
       // auth nav
       goRegister:()=>this.go('register'), goLogin:()=>this.go('login'),
-      submitLogin:()=>this.tab('home'), submitRegister:()=>this.go('ob1'),
+      submitLogin:()=>this.submitLogin(), submitRegister:()=>this.submitRegister(),
       goOb2:()=>this.go('ob2'), goOb3:()=>this.go('ob3'), skipOb:()=>this.tab('home'), startApp:()=>this.tab('home'),
       // in-app nav
       back:()=>this.back(),
