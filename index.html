@@ -23,25 +23,23 @@
   @keyframes scrInBack { from { opacity: 0; transform: translateX(-24px); } to { opacity: 1; transform: none; } }
   @keyframes liveBlink { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
 
-  /* Mobile: full screen app */
+  /* Mobile: full screen app overlaid on top of everything */
   @media (max-width: 480px) {
-    body { background: #000; }
-    #proto-wrapper { display: none !important; }
-    #proto-frame-outer { display: none !important; }
     #app-mobile {
-      display: block !important;
-      position: fixed;
-      inset: 0;
-      overflow: hidden;
+      position: fixed !important;
+      inset: 0 !important;
+      z-index: 9999 !important;
+      overflow: hidden !important;
+      width: 100% !important;
+      height: 100% !important;
     }
-    #app-mobile > * {
+  }
+  /* Desktop: app-mobile is just a normal child inside the phone frame */
+  @media (min-width: 481px) {
+    #app-mobile {
       position: absolute;
       inset: 0;
     }
-  }
-  /* Desktop: show phone frame only */
-  @media (min-width: 481px) {
-    #app-mobile { display: none !important; }
   }
 </style>
 </helmet>
