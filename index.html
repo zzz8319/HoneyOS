@@ -3,7 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="./support.js"></script>
+<script src="./supabase_client.js"></script>
 </head>
 <body>
 <x-dc>
@@ -555,21 +557,28 @@ class Component extends DCLogic {
 
   constructor() {
     super();
-    try {
-      const session = JSON.parse(localStorage.getItem('honeyos_session') || 'null');
-      if (session && session.email) {
-        this.state.screen = 'app';
-        this.state.userName = session.name || '';
-      }
-      this.state.inspHistory = JSON.parse(localStorage.getItem('honeyos_inspHistory') || '[]');
-      this.state.workHistory = JSON.parse(localStorage.getItem('honeyos_workHistory') || '[]');
-    } catch(e) { /* localStorage unavailable */ }
+    // Restore session from Supabase (async, triggers re-render when done)
+    this._initSession();
   }
 
-  async _hashPassword(pw, email) {
-    const data = new TextEncoder().encode(email.toLowerCase() + ':' + pw);
-    const buf = await crypto.subtle.digest('SHA-256', data);
-    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+  async _initSession() {
+    try {
+      const db = window.HoneyDB;
+      if (!db) return;
+      const session = await db.getSession();
+      if (!session) return;
+      const profile = await db.getUserProfile();
+      const [inspHistory, workHistory] = await Promise.all([
+        db.loadInspRecords(),
+        db.loadWorkRecords(),
+      ]);
+      this.setState({
+        screen: 'app',
+        userName: profile ? profile.name : session.user.email,
+        inspHistory,
+        workHistory,
+      });
+    } catch(e) { /* session not available */ }
   }
 
   THEMES = {
@@ -659,9 +668,10 @@ class Component extends DCLogic {
   toggleFrame(n) { this.setState(s => { const fr={...s.frames}; if(fr[n]) delete fr[n]; else fr[n]=true; return { frames:fr }; }); }
   selectAll() { const fr={}; for(let i=1;i<=10;i++) fr[i]=true; this.setState({ frames:fr }); }
   markAllRead() { const r={...this.state.reads}; this.NOTIFS.forEach(n=>{ r[n.id]=true; }); this.setState({ reads:r }); }
-  logout() {
-    try { localStorage.removeItem('honeyos_session'); } catch(e) {}
+  async logout() {
+    try { await window.HoneyDB.signOut(); } catch(e) {}
     this.setState({ screen:'login', view:'home', hist:[], anim:'scrInBack', reads:{}, loginError:'', regError:'', userName:'',
+      inspHistory: [], workHistory: [],
       f: { loginEmail:'', loginPw:'', regName:'', regEmail:'', regPw:'', regFarm:'', frameMemo:'', aiMemo:'', taskType:'給餌', taskColony:'A-02', taskMemo:'', recType:'給餌', recColony:'A-02', recMemo:'' } });
   }
 
@@ -670,13 +680,23 @@ class Component extends DCLogic {
     const pw = this.state.f.loginPw;
     if (!email || !pw) { this.setState({ loginError: 'メールアドレスとパスワードを入力してください' }); return; }
     if (!email.includes('@') || !email.includes('.')) { this.setState({ loginError: '正しいメールアドレスを入力してください' }); return; }
-    const hash = await this._hashPassword(pw, email);
-    const users = JSON.parse(localStorage.getItem('honeyos_users') || '[]');
-    const user = users.find(u => u.email === email && u.passwordHash === hash);
-    if (!user) { this.setState({ loginError: 'メールアドレスまたはパスワードが正しくありません' }); return; }
-    try { localStorage.setItem('honeyos_session', JSON.stringify({ email: user.email, name: user.name })); } catch(e) {}
-    this.setState({ loginError: '', userName: user.name });
-    this.tab('home');
+    try {
+      const data = await window.HoneyDB.signIn(email, pw);
+      const profile = await window.HoneyDB.getUserProfile();
+      const [inspHistory, workHistory] = await Promise.all([
+        window.HoneyDB.loadInspRecords(),
+        window.HoneyDB.loadWorkRecords(),
+      ]);
+      this.setState({ loginError: '', userName: profile ? profile.name : email, inspHistory, workHistory });
+      this.tab('home');
+    } catch(e) {
+      const msg = e.message || '';
+      if (msg.includes('Invalid login') || msg.includes('invalid_credentials')) {
+        this.setState({ loginError: 'メールアドレスまたはパスワードが正しくありません' });
+      } else {
+        this.setState({ loginError: 'ログインに失敗しました: ' + msg });
+      }
+    }
   }
 
   startInspection() {
@@ -687,14 +707,13 @@ class Component extends DCLogic {
     this.nav('inspCapture');
   }
 
-  saveInspection() {
+  async saveInspection() {
     const s = this.state;
     const wxMap = { sun:'晴れ', cloud:'曇り', rain:'雨' };
     const now = new Date();
     const dateStr = now.toLocaleDateString('ja-JP', { year:'numeric', month:'2-digit', day:'2-digit' });
     const timeStr = now.toLocaleTimeString('ja-JP', { hour:'2-digit', minute:'2-digit' });
     const record = {
-      id: now.getTime(),
       colony: s.inspColony,
       date: dateStr,
       time: timeStr,
@@ -703,53 +722,49 @@ class Component extends DCLogic {
       frameMemo: s.f.frameMemo.trim(),
       aiMemo: s.f.aiMemo.trim(),
     };
-    const updated = [record, ...s.inspHistory];
-    try { localStorage.setItem('honeyos_inspHistory', JSON.stringify(updated)); } catch(e) {}
-    this.setState({ inspHistory: updated });
+    try { await window.HoneyDB.saveInspRecord(record); } catch(e) { console.error('saveInspection:', e); }
+    const inspHistory = [{ id: now.getTime(), ...record }, ...s.inspHistory];
+    this.setState({ inspHistory });
     this.tab('tasks');
   }
 
-  saveTask() {
+  async saveTask() {
     const s = this.state;
     const now = new Date();
     const dateStr = now.toLocaleDateString('ja-JP', { year:'numeric', month:'2-digit', day:'2-digit' });
     const timeStr = now.toLocaleTimeString('ja-JP', { hour:'2-digit', minute:'2-digit' });
     const record = {
-      id: now.getTime(),
       type: s.f.taskType,
       colony: s.f.taskColony,
       date: dateStr,
       time: timeStr,
       memo: s.f.taskMemo.trim(),
-      detail: (s.f.taskColony ? s.f.taskColony + ' ' : '') + (s.f.taskMemo.trim() || s.f.taskType),
     };
-    const updated = [record, ...s.workHistory];
-    try { localStorage.setItem('honeyos_workHistory', JSON.stringify(updated)); } catch(e) {}
+    try { await window.HoneyDB.saveWorkRecord(record); } catch(e) { console.error('saveTask:', e); }
+    const entry = { id: now.getTime(), ...record, detail: (record.colony ? record.colony + ' ' : '') + (record.memo || record.type) };
     this.setState(prev => ({
-      workHistory: updated,
+      workHistory: [entry, ...prev.workHistory],
       f: Object.assign({}, prev.f, { taskType:'給餌', taskColony:this.COLONIES[0], taskMemo:'' }),
     }));
     this.tab('tasks');
   }
 
-  saveWorkRecord() {
+  async saveWorkRecord() {
     const s = this.state;
     const now = new Date();
     const dateStr = now.toLocaleDateString('ja-JP', { year:'numeric', month:'2-digit', day:'2-digit' });
     const timeStr = now.toLocaleTimeString('ja-JP', { hour:'2-digit', minute:'2-digit' });
     const record = {
-      id: now.getTime(),
       type: s.f.recType,
       colony: s.f.recColony,
       date: dateStr,
       time: timeStr,
       memo: s.f.recMemo.trim(),
-      detail: (s.f.recColony ? s.f.recColony + ' ' : '') + (s.f.recMemo.trim() || s.f.recType),
     };
-    const updated = [record, ...s.workHistory];
-    try { localStorage.setItem('honeyos_workHistory', JSON.stringify(updated)); } catch(e) {}
+    try { await window.HoneyDB.saveWorkRecord(record); } catch(e) { console.error('saveWorkRecord:', e); }
+    const entry = { id: now.getTime(), ...record, detail: (record.colony ? record.colony + ' ' : '') + (record.memo || record.type) };
     this.setState(prev => ({
-      workHistory: updated,
+      workHistory: [entry, ...prev.workHistory],
       f: Object.assign({}, prev.f, { recType:'給餌', recColony:this.COLONIES[0], recMemo:'' }),
     }));
     this.nav('workHistory');
@@ -763,16 +778,18 @@ class Component extends DCLogic {
     if (!name || !email || !pw) { this.setState({ regError: '名前・メールアドレス・パスワードは必須です' }); return; }
     if (!email.includes('@') || !email.includes('.')) { this.setState({ regError: '正しいメールアドレスを入力してください' }); return; }
     if (pw.length < 8) { this.setState({ regError: 'パスワードは8文字以上で入力してください' }); return; }
-    const users = JSON.parse(localStorage.getItem('honeyos_users') || '[]');
-    if (users.find(u => u.email === email)) { this.setState({ regError: 'このメールアドレスはすでに登録されています' }); return; }
-    const hash = await this._hashPassword(pw, email);
-    const newUser = { email, passwordHash: hash, name, farmName: farm };
     try {
-      localStorage.setItem('honeyos_users', JSON.stringify([...users, newUser]));
-      localStorage.setItem('honeyos_session', JSON.stringify({ email, name }));
-    } catch(e) {}
-    this.setState({ regError: '', userName: name });
-    this.go('ob1');
+      await window.HoneyDB.signUp(email, pw, name, farm);
+      this.setState({ regError: '', userName: name });
+      this.go('ob1');
+    } catch(e) {
+      const msg = e.message || '';
+      if (msg.includes('already registered') || msg.includes('User already registered')) {
+        this.setState({ regError: 'このメールアドレスはすでに登録されています' });
+      } else {
+        this.setState({ regError: '登録に失敗しました: ' + msg });
+      }
+    }
   }
 
   linePath(vals, w, h, pad, close) {
