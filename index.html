@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="./supabase.min.js"></script>
 <script src="./support.js"></script>
 <script src="./supabase_client.js"></script>
 </head>
@@ -22,10 +22,31 @@
   @keyframes scrIn { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
   @keyframes scrInBack { from { opacity: 0; transform: translateX(-24px); } to { opacity: 1; transform: none; } }
   @keyframes liveBlink { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+
+  /* Mobile: full screen app */
+  @media (max-width: 480px) {
+    body { background: #000; }
+    #proto-wrapper { display: none !important; }
+    #proto-frame-outer { display: none !important; }
+    #app-mobile {
+      display: block !important;
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+    }
+    #app-mobile > * {
+      position: absolute;
+      inset: 0;
+    }
+  }
+  /* Desktop: show phone frame only */
+  @media (min-width: 481px) {
+    #app-mobile { display: none !important; }
+  }
 </style>
 </helmet>
 
-<div style="min-height:100vh; box-sizing:border-box; background:#E8E5DE; padding:40px 24px 64px; display:flex; flex-direction:column; align-items:center; gap:20px; font-family:'Noto Sans JP', system-ui, sans-serif;">
+<div id="proto-wrapper" style="min-height:100vh; box-sizing:border-box; background:#E8E5DE; padding:40px 24px 64px; display:flex; flex-direction:column; align-items:center; gap:20px; font-family:'Noto Sans JP', system-ui, sans-serif;">
 
   <div style="text-align:center;">
     <div style="font-size:12px; letter-spacing:.18em; color:#a89c89; font-weight:700;">🐝 HONEYOS — PROTOTYPE</div>
@@ -42,7 +63,7 @@
     <button onClick="{{ thBlossom }}" style="{{ segBlossom }}"><span style="width:13px; height:13px; border-radius:50%; background:#D86B96;"></span>ブロッサム</button>
   </div>
 
-  <div style="background:#0c0c0e; padding:10px; border-radius:54px; box-shadow:0 34px 70px rgba(0,0,0,.30), 0 0 0 2px rgba(0,0,0,.22);">
+  <div id="proto-frame-outer" style="background:#0c0c0e; padding:10px; border-radius:54px; box-shadow:0 34px 70px rgba(0,0,0,.30), 0 0 0 2px rgba(0,0,0,.22);">
     <div style="position:relative; width:372px; height:806px; border-radius:44px; overflow:hidden; background:{{ t.bg }};">
 
       <div style="position:absolute; top:11px; left:50%; transform:translateX(-50%); width:116px; height:34px; border-radius:20px; background:#000; z-index:50;"></div>
@@ -56,7 +77,7 @@
         </span>
       </div>
 
-      <div style="position:absolute; inset:0;">
+      <div id="app-mobile" style="position:absolute; inset:0;">
 
         <!-- ===== AUTH / ONBOARDING ===== -->
         <sc-if value="{{ scLogin }}" hint-placeholder-val="{{ true }}">
@@ -557,6 +578,7 @@ class Component extends DCLogic {
 
   constructor() {
     super();
+    this._fieldBuf = {};
     // Restore session from Supabase (async, triggers re-render when done)
     this._initSession();
   }
@@ -664,7 +686,11 @@ class Component extends DCLogic {
   tab(view) { this.setState({ screen:'app', view, hist:[], anim:'scrIn' }); }
   jump(view) { this.setState({ screen:'app', view, hist:[], anim:'scrIn' }); }
   setTheme(theme) { this.setState({ theme }); }
-  field(k) { return (e) => { const v=e.target.value; this.setState(s => ({ f:{ ...s.f, [k]:v } })); }; }
+  field(k) {
+    // Store in _fieldBuf (no re-render). Read via this.f(k) at submit time.
+    return (e) => { this._fieldBuf[k] = e.target.value; };
+  }
+  f(k) { return this._fieldBuf[k] !== undefined ? this._fieldBuf[k] : this.state.f[k]; }
   toggleFrame(n) { this.setState(s => { const fr={...s.frames}; if(fr[n]) delete fr[n]; else fr[n]=true; return { frames:fr }; }); }
   selectAll() { const fr={}; for(let i=1;i<=10;i++) fr[i]=true; this.setState({ frames:fr }); }
   markAllRead() { const r={...this.state.reads}; this.NOTIFS.forEach(n=>{ r[n.id]=true; }); this.setState({ reads:r }); }
@@ -676,8 +702,8 @@ class Component extends DCLogic {
   }
 
   async submitLogin() {
-    const email = this.state.f.loginEmail.trim().toLowerCase();
-    const pw = this.state.f.loginPw;
+    const email = this.f('loginEmail').trim().toLowerCase();
+    const pw = this.f('loginPw');
     if (!email || !pw) { this.setState({ loginError: 'メールアドレスとパスワードを入力してください' }); return; }
     if (!email.includes('@') || !email.includes('.')) { this.setState({ loginError: '正しいメールアドレスを入力してください' }); return; }
     try {
@@ -719,8 +745,8 @@ class Component extends DCLogic {
       time: timeStr,
       weather: wxMap[s.weather] || '晴れ',
       frames: Object.keys(s.frames).map(Number).sort((a,b)=>a-b),
-      frameMemo: s.f.frameMemo.trim(),
-      aiMemo: s.f.aiMemo.trim(),
+      frameMemo: this.f('frameMemo').trim(),
+      aiMemo: this.f('aiMemo').trim(),
     };
     try { await window.HoneyDB.saveInspRecord(record); } catch(e) { console.error('saveInspection:', e); }
     const inspHistory = [{ id: now.getTime(), ...record }, ...s.inspHistory];
@@ -729,16 +755,15 @@ class Component extends DCLogic {
   }
 
   async saveTask() {
-    const s = this.state;
     const now = new Date();
     const dateStr = now.toLocaleDateString('ja-JP', { year:'numeric', month:'2-digit', day:'2-digit' });
     const timeStr = now.toLocaleTimeString('ja-JP', { hour:'2-digit', minute:'2-digit' });
     const record = {
-      type: s.f.taskType,
-      colony: s.f.taskColony,
+      type: this.f('taskType'),
+      colony: this.f('taskColony'),
       date: dateStr,
       time: timeStr,
-      memo: s.f.taskMemo.trim(),
+      memo: this.f('taskMemo').trim(),
     };
     try { await window.HoneyDB.saveWorkRecord(record); } catch(e) { console.error('saveTask:', e); }
     const entry = { id: now.getTime(), ...record, detail: (record.colony ? record.colony + ' ' : '') + (record.memo || record.type) };
@@ -750,16 +775,15 @@ class Component extends DCLogic {
   }
 
   async saveWorkRecord() {
-    const s = this.state;
     const now = new Date();
     const dateStr = now.toLocaleDateString('ja-JP', { year:'numeric', month:'2-digit', day:'2-digit' });
     const timeStr = now.toLocaleTimeString('ja-JP', { hour:'2-digit', minute:'2-digit' });
     const record = {
-      type: s.f.recType,
-      colony: s.f.recColony,
+      type: this.f('recType'),
+      colony: this.f('recColony'),
       date: dateStr,
       time: timeStr,
-      memo: s.f.recMemo.trim(),
+      memo: this.f('recMemo').trim(),
     };
     try { await window.HoneyDB.saveWorkRecord(record); } catch(e) { console.error('saveWorkRecord:', e); }
     const entry = { id: now.getTime(), ...record, detail: (record.colony ? record.colony + ' ' : '') + (record.memo || record.type) };
@@ -771,10 +795,10 @@ class Component extends DCLogic {
   }
 
   async submitRegister() {
-    const name = this.state.f.regName.trim();
-    const email = this.state.f.regEmail.trim().toLowerCase();
-    const pw = this.state.f.regPw;
-    const farm = this.state.f.regFarm.trim();
+    const name = this.f('regName').trim();
+    const email = this.f('regEmail').trim().toLowerCase();
+    const pw = this.f('regPw');
+    const farm = this.f('regFarm').trim();
     if (!name || !email || !pw) { this.setState({ regError: '名前・メールアドレス・パスワードは必須です' }); return; }
     if (!email.includes('@') || !email.includes('.')) { this.setState({ regError: '正しいメールアドレスを入力してください' }); return; }
     if (pw.length < 8) { this.setState({ regError: 'パスワードは8文字以上で入力してください' }); return; }
