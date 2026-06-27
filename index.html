@@ -3,7 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="./support.js"></script>
+<script src="./supabase_client.js"></script>
 </head>
 <body>
 <x-dc>
@@ -63,7 +65,8 @@
             <div style="font-size:26px; font-weight:800; color:{{ t.text }}; margin-bottom:30px;">ログイン</div>
             <div style="margin-bottom:18px;"><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">メールアドレス</label><input type="email" value="{{ f.loginEmail }}" onInput="{{ h.loginEmail }}" placeholder="you@example.com" style="width:100%; padding:14px 16px; font-size:16px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:14px; outline:none;" style-focus="border-color:{{ t.primary }};"></div>
             <div style="margin-bottom:10px;"><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">パスワード</label><input type="password" value="{{ f.loginPw }}" onInput="{{ h.loginPw }}" placeholder="••••••••" style="width:100%; padding:14px 16px; font-size:16px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:14px; outline:none;" style-focus="border-color:{{ t.primary }};"></div>
-            <div style="text-align:right; margin-bottom:26px;"><span style="font-size:13px; color:{{ t.primary }}; font-weight:600; cursor:pointer;">パスワードをお忘れですか？</span></div>
+            <div style="text-align:right; margin-bottom:18px;"><span style="font-size:13px; color:{{ t.primary }}; font-weight:600; cursor:pointer;">パスワードをお忘れですか？</span></div>
+            <sc-if value="{{ loginError }}"><div style="margin-bottom:14px; padding:12px 14px; background:{{ t.dangerBg }}; border-radius:10px; font-size:13px; color:{{ t.danger }}; font-weight:600;">{{ loginError }}</div></sc-if>
             <button onClick="{{ submitLogin }}" style="width:100%; padding:16px; font-size:16px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};" style-active="transform:translateY(1px);">ログイン</button>
             <div style="margin-top:auto; padding-top:30px; text-align:center; font-size:14px; color:{{ t.textMuted }};">アカウントをお持ちでない方は <span onClick="{{ goRegister }}" style="color:{{ t.primary }}; font-weight:700; cursor:pointer;">新規登録</span></div>
           </div>
@@ -76,7 +79,8 @@
             <div style="margin-bottom:16px;"><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">お名前</label><input type="text" value="{{ f.regName }}" onInput="{{ h.regName }}" placeholder="山田 太郎" style="width:100%; padding:14px 16px; font-size:16px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:14px; outline:none;" style-focus="border-color:{{ t.primary }};"></div>
             <div style="margin-bottom:16px;"><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">メールアドレス</label><input type="email" value="{{ f.regEmail }}" onInput="{{ h.regEmail }}" placeholder="you@example.com" style="width:100%; padding:14px 16px; font-size:16px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:14px; outline:none;" style-focus="border-color:{{ t.primary }};"></div>
             <div style="margin-bottom:16px;"><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">パスワード</label><input type="password" value="{{ f.regPw }}" onInput="{{ h.regPw }}" placeholder="8文字以上" style="width:100%; padding:14px 16px; font-size:16px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:14px; outline:none;" style-focus="border-color:{{ t.primary }};"></div>
-            <div style="margin-bottom:26px;"><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">養蜂場名 <span style="color:{{ t.textMuted }}; font-weight:400;">（任意）</span></label><input type="text" value="{{ f.regFarm }}" onInput="{{ h.regFarm }}" placeholder="第一養蜂場" style="width:100%; padding:14px 16px; font-size:16px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:14px; outline:none;" style-focus="border-color:{{ t.primary }};"></div>
+            <div style="margin-bottom:18px;"><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">養蜂場名 <span style="color:{{ t.textMuted }}; font-weight:400;">（任意）</span></label><input type="text" value="{{ f.regFarm }}" onInput="{{ h.regFarm }}" placeholder="第一養蜂場" style="width:100%; padding:14px 16px; font-size:16px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:14px; outline:none;" style-focus="border-color:{{ t.primary }};"></div>
+            <sc-if value="{{ regError }}"><div style="margin-bottom:14px; padding:12px 14px; background:{{ t.dangerBg }}; border-radius:10px; font-size:13px; color:{{ t.danger }}; font-weight:600;">{{ regError }}</div></sc-if>
             <button onClick="{{ submitRegister }}" style="width:100%; padding:16px; font-size:16px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};" style-active="transform:translateY(1px);">登録する</button>
             <div style="margin-top:auto; padding-top:26px; text-align:center; font-size:14px; color:{{ t.textMuted }};">すでにアカウントをお持ちの方は <span onClick="{{ goLogin }}" style="color:{{ t.primary }}; font-weight:700; cursor:pointer;">ログイン</span></div>
           </div>
@@ -118,7 +122,7 @@
               <sc-if value="{{ vHome }}" hint-placeholder-val="{{ true }}">
                 <div data-screen-label="SCR-006 ダッシュボード" style="padding:64px 20px 24px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
                   <div style="display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:22px;">
-                    <div><div style="font-size:22px; font-weight:800; color:{{ t.text }};">ダッシュボード</div><div style="font-size:13px; color:{{ t.textMuted }}; margin-top:3px;">2026年6月22日（日）</div></div>
+                    <div><div style="font-size:22px; font-weight:800; color:{{ t.text }};">ダッシュボード</div><div style="font-size:13px; color:{{ t.textMuted }}; margin-top:3px;">{{ todayLabel }}</div></div>
                     <button onClick="{{ goNotif }}" style="position:relative; width:42px; height:42px; border-radius:50%; background:{{ t.surface }}; border:1px solid {{ t.border }}; display:flex; align-items:center; justify-content:center; color:{{ t.text }}; cursor:pointer;"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.7 21a2 2 0 0 1-3.4 0"></path></svg><sc-if value="{{ hasUnread }}" hint-placeholder-val="{{ true }}"><span style="position:absolute; top:8px; right:9px; width:9px; height:9px; border-radius:50%; background:{{ t.danger }}; border:2px solid {{ t.surface }};"></span></sc-if></button>
                   </div>
                   <div style="font-size:12px; font-weight:700; letter-spacing:.08em; color:{{ t.textMuted }}; margin-bottom:10px;">概要</div>
@@ -129,9 +133,9 @@
                   <div onClick="{{ goFarmDetail }}" style="background:{{ t.warnBg }}; border:1px solid {{ t.warn }}; border-radius:{{ t.radius }}px; padding:14px 16px; display:flex; align-items:center; gap:12px; margin-bottom:26px; cursor:pointer;"><span style="font-size:22px;">⚠️</span><div style="flex:1;"><div style="font-size:14px; font-weight:700; color:{{ t.text }};">要注意の蜂群が 2群 あります</div><div style="font-size:12px; color:{{ t.textMuted }}; margin-top:2px;">A-02・A-08 を確認してください</div></div><span style="color:{{ t.textMuted }};">›</span></div>
                   <div style="font-size:12px; font-weight:700; letter-spacing:.08em; color:{{ t.textMuted }}; margin-bottom:10px;">本日の作業</div>
                   <div style="display:flex; gap:10px; margin-bottom:26px;">
-                    <div onClick="{{ goInspStart }}" style="flex:1; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:14px; text-align:center; cursor:pointer;"><div style="font-size:22px;">🔍</div><div style="margin-top:6px;"><span style="font-size:22px; font-weight:800; color:{{ t.text }};">3</span><span style="font-size:12px; color:{{ t.textMuted }};">件</span></div><div style="font-size:12px; color:{{ t.textMuted }}; margin-top:2px;">内検</div></div>
-                    <div onClick="{{ goTasks }}" style="flex:1; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:14px; text-align:center; cursor:pointer;"><div style="font-size:22px;">🍼</div><div style="margin-top:6px;"><span style="font-size:22px; font-weight:800; color:{{ t.text }};">4</span><span style="font-size:12px; color:{{ t.textMuted }};">件</span></div><div style="font-size:12px; color:{{ t.textMuted }}; margin-top:2px;">給餌</div></div>
-                    <div onClick="{{ goTasks }}" style="flex:1; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:14px; text-align:center; cursor:pointer;"><div style="font-size:22px;">🍯</div><div style="margin-top:6px;"><span style="font-size:22px; font-weight:800; color:{{ t.text }};">2</span><span style="font-size:12px; color:{{ t.textMuted }};">件</span></div><div style="font-size:12px; color:{{ t.textMuted }}; margin-top:2px;">採蜜</div></div>
+                    <div onClick="{{ goInspStart }}" style="flex:1; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:14px; text-align:center; cursor:pointer;"><div style="font-size:22px;">🔍</div><div style="margin-top:6px;"><span style="font-size:22px; font-weight:800; color:{{ t.text }};">{{ dashInspCount }}</span><span style="font-size:12px; color:{{ t.textMuted }};">件</span></div><div style="font-size:12px; color:{{ t.textMuted }}; margin-top:2px;">内検</div></div>
+                    <div onClick="{{ goTasks }}" style="flex:1; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:14px; text-align:center; cursor:pointer;"><div style="font-size:22px;">🍼</div><div style="margin-top:6px;"><span style="font-size:22px; font-weight:800; color:{{ t.text }};">{{ dashFeedCount }}</span><span style="font-size:12px; color:{{ t.textMuted }};">件</span></div><div style="font-size:12px; color:{{ t.textMuted }}; margin-top:2px;">給餌</div></div>
+                    <div onClick="{{ goTasks }}" style="flex:1; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:14px; text-align:center; cursor:pointer;"><div style="font-size:22px;">🍯</div><div style="margin-top:6px;"><span style="font-size:22px; font-weight:800; color:{{ t.text }};">{{ dashHarvestCount }}</span><span style="font-size:12px; color:{{ t.textMuted }};">件</span></div><div style="font-size:12px; color:{{ t.textMuted }}; margin-top:2px;">採蜜</div></div>
                   </div>
                   <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:18px;">
                     <div style="display:flex; align-items:flex-start; justify-content:space-between;"><div><div style="font-size:13px; color:{{ t.textMuted }};">採蜜量の推移（今月）</div><div style="margin-top:5px; display:flex; align-items:baseline;"><span style="font-size:24px; font-weight:800; color:{{ t.text }};">458</span><span style="font-size:13px; color:{{ t.textMuted }}; margin-left:3px;">kg</span><span style="font-size:12px; font-weight:700; color:{{ t.accent }}; background:{{ t.chipBg }}; padding:2px 7px; border-radius:999px; margin-left:6px;">+12%</span></div></div><span onClick="{{ goReport }}" style="font-size:13px; color:{{ t.primary }}; font-weight:600; cursor:pointer; flex-shrink:0;">もっと見る ›</span></div>
@@ -204,8 +208,10 @@
               <sc-if value="{{ vInspStart }}" hint-placeholder-val="{{ false }}">
                 <div data-screen-label="SCR-011 内検開始" style="padding:60px 16px 16px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
                   <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px;"><button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button><span style="font-size:20px; font-weight:800; color:{{ t.text }};">内検を開始</span></div>
-                  <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; margin-bottom:16px;"><div style="font-size:13px; font-weight:700; color:{{ t.textMuted }}; margin-bottom:10px;">巣箱情報</div><div style="display:flex; flex-direction:column; gap:8px; font-size:14px;"><div style="display:flex; justify-content:space-between;"><span style="color:{{ t.textMuted }};">巣箱名</span><span style="color:{{ t.text }}; font-weight:700;">A-01（自宅蜂場）</span></div><div style="display:flex; justify-content:space-between;"><span style="color:{{ t.textMuted }};">設置場所</span><span style="color:{{ t.text }};">山田町</span></div><div style="display:flex; justify-content:space-between;"><span style="color:{{ t.textMuted }};">前回内検日</span><span style="color:{{ t.text }};">2026/05/28</span></div></div></div>
-                  <div style="display:flex; gap:10px; margin-bottom:16px;"><div style="flex:1.4;"><label style="display:block; font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:6px;">日時</label><div style="padding:13px 14px; font-size:14px; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px;">2026/06/08 09:30</div></div><div style="flex:1;"><label style="display:block; font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:6px;">気温</label><div style="padding:13px 14px; font-size:14px; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px;">23.5 ℃</div></div></div>
+                  <div style="margin-bottom:16px;"><label style="display:block; font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:6px;">対象巣箱</label><select onChange="{{ setInspColony }}" style="width:100%; padding:13px 14px; font-size:15px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px; outline:none;">
+                    <sc-for list="{{ coloniesOpts }}" as="col"><option>{{ col }}</option></sc-for>
+                  </select></div>
+                  <div style="display:flex; gap:10px; margin-bottom:16px;"><div style="flex:1.4;"><label style="display:block; font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:6px;">日時</label><div style="padding:13px 14px; font-size:14px; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px;">{{ inspSummaryDate }}</div></div></div>
                   <label style="display:block; font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:8px;">天気</label>
                   <div style="display:flex; gap:8px; margin-bottom:18px;"><button onClick="{{ wSun }}" style="{{ wxSun }}">☀️ 晴れ</button><button onClick="{{ wCloud }}" style="{{ wxCloud }}">⛅ 曇り</button><button onClick="{{ wRain }}" style="{{ wxRain }}">🌧️ 雨</button></div>
                   <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;"><label style="font-size:12px; font-weight:600; color:{{ t.textMuted }};">検査する枠を選択（最大10枠）</label><span onClick="{{ selectAllFrames }}" style="font-size:12px; font-weight:700; color:{{ t.primary }}; cursor:pointer;">全枠選択</span></div>
@@ -214,22 +220,20 @@
                       <div onClick="{{ fr.toggle }}" style="aspect-ratio:1; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:800; cursor:pointer; background:{{ fr.bg }}; color:{{ fr.fg }}; border:1.5px solid {{ fr.border }};">{{ fr.n }}</div>
                     </sc-for>
                   </div>
-                  <button onClick="{{ goInspCapture }}" style="width:100%; padding:16px; font-size:16px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};" style-active="transform:translateY(1px);">内検を開始する（{{ selectedCount }}枠）</button>
+                  <button onClick="{{ startInspection }}" style="width:100%; padding:16px; font-size:16px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};" style-active="transform:translateY(1px);">内検を開始する（{{ selectedCount }}枠）</button>
                 </div>
               </sc-if>
 
               <!-- SCR-012 CAPTURE -->
               <sc-if value="{{ vInspCapture }}" hint-placeholder-val="{{ false }}">
-                <div data-screen-label="SCR-012 撮影" style="padding:60px 16px 16px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
-                  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;"><div style="display:flex; align-items:center; gap:10px;"><button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button><span style="font-size:18px; font-weight:800; color:{{ t.text }};">撮影</span></div><span style="font-size:13px; font-weight:700; color:{{ t.primary }}; background:{{ t.chipBg }}; padding:4px 10px; border-radius:999px;">3 / 10 枠目</span></div>
-                  <div style="display:flex; gap:8px; margin-bottom:14px;"><button onClick="{{ faceA }}" style="{{ segFaceA }}">表面（Face A）</button><button onClick="{{ faceB }}" style="{{ segFaceB }}">裏面（Face B）</button></div>
-                  <div style="position:relative; aspect-ratio:3/4; border-radius:{{ t.radius }}px; overflow:hidden; background:radial-gradient(circle at 50% 40%, #c79a4e, #6e4f23); display:flex; align-items:center; justify-content:center; margin-bottom:16px; border:1px solid {{ t.border }};">
-                    <svg viewBox="0 0 200 260" width="100%" height="100%" style="position:absolute; inset:0; opacity:.55;"><defs><pattern id="hex" width="22" height="19" patternUnits="userSpaceOnUse" patternTransform="scale(1.1)"><path d="M11 0 L22 5.5 L22 13.5 L11 19 L0 13.5 L0 5.5 Z" fill="none" stroke="#3d2a10" stroke-width="1.2"></path></pattern></defs><rect width="200" height="260" fill="url(#hex)"></rect></svg>
-                    <div style="position:absolute; inset:14px; border:2px solid rgba(255,255,255,.7); border-radius:14px;"></div>
-                    <div style="position:absolute; top:22px; left:22px; right:22px; display:flex; justify-content:space-between; align-items:center;"><span style="display:flex; align-items:center; gap:6px; background:rgba(0,0,0,.45); color:#fff; font-size:11px; font-weight:700; padding:4px 9px; border-radius:999px;"><span style="width:7px; height:7px; border-radius:50%; background:#ff5b5b; animation:liveBlink 1.4s infinite;"></span>3 / 10 枠目</span><span style="background:rgba(0,0,0,.45); color:#fff; font-size:11px; font-weight:700; padding:4px 9px; border-radius:999px;">{{ faceLabel }}</span></div>
-                    <span style="font-size:60px; filter:drop-shadow(0 2px 6px rgba(0,0,0,.4));">🐝</span>
+                <div data-screen-label="SCR-012 撮影" style="padding:60px 16px 16px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1); display:flex; flex-direction:column; height:100%;">
+                  <div style="display:flex; align-items:center; gap:10px; margin-bottom:24px;"><button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button><span style="font-size:18px; font-weight:800; color:{{ t.text }};">撮影</span></div>
+                  <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:20px; text-align:center; background:{{ t.surface }}; border:1.5px dashed {{ t.border }}; border-radius:{{ t.radius }}px; padding:32px; margin-bottom:24px;">
+                    <div style="font-size:56px;">📷</div>
+                    <div style="font-size:18px; font-weight:800; color:{{ t.text }};">撮影機能は準備中です</div>
+                    <div style="font-size:14px; color:{{ t.textMuted }}; line-height:1.8;">カメラ・AI解析機能は<br>今後のアップデートで追加されます。<br>現在はメモ記録のみ可能です。</div>
                   </div>
-                  <div style="display:flex; gap:10px;"><button onClick="{{ noop }}" style="flex:1; padding:15px; font-size:15px; font-weight:700; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:14px; cursor:pointer;">撮り直す</button><button onClick="{{ goInspFrame }}" style="flex:1.3; padding:15px; font-size:15px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};">使用する</button></div>
+                  <button onClick="{{ goInspFrame }}" style="width:100%; padding:16px; font-size:16px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};" style-active="transform:translateY(1px);">メモ入力へ進む</button>
                 </div>
               </sc-if>
 
@@ -253,40 +257,33 @@
               <!-- SCR-014 AI ANALYSIS -->
               <sc-if value="{{ vInspAI }}" hint-placeholder-val="{{ false }}">
                 <div data-screen-label="SCR-014 AI解析入力" style="padding:60px 16px 16px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
-                  <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;"><button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button><span style="font-size:18px; font-weight:800; color:{{ t.text }};">AI解析結果</span><span style="margin-left:auto; font-size:12px; color:{{ t.textMuted }};">3 / 10 枠（表面）</span></div>
-                  <div style="display:flex; align-items:center; gap:8px; background:{{ t.chipBg }}; border-radius:12px; padding:10px 14px; margin-bottom:14px;"><span style="font-size:18px;">✨</span><span style="font-size:13px; font-weight:700; color:{{ t.chipText }};">AI判定結果（信頼度付き）</span></div>
-                  <div style="display:flex; flex-direction:column; gap:7px; margin-bottom:16px;">
-                    <sc-for list="{{ aiResults }}" as="r" hint-placeholder-count="9">
-                      <div style="display:flex; align-items:center; gap:10px; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:12px; padding:12px 14px;"><span style="font-size:16px; width:22px; text-align:center;">{{ r.icon }}</span><span style="flex:1; font-size:14px; color:{{ t.text }};">{{ r.label }}</span><span style="font-size:14px; font-weight:800; color:{{ t.text }};">{{ r.value }}</span><span style="font-size:11px; font-weight:700; color:{{ r.confColor }}; background:{{ r.confBg }}; padding:2px 8px; border-radius:999px; width:30px; text-align:center;">{{ r.conf }}</span></div>
-                    </sc-for>
+                  <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px;"><button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button><span style="font-size:18px; font-weight:800; color:{{ t.text }};">AI解析</span></div>
+                  <div style="display:flex; flex-direction:column; align-items:center; gap:14px; text-align:center; background:{{ t.surface }}; border:1.5px dashed {{ t.border }}; border-radius:{{ t.radius }}px; padding:28px; margin-bottom:20px;">
+                    <div style="font-size:48px;">✨</div>
+                    <div style="font-size:17px; font-weight:800; color:{{ t.text }};">AI解析機能は準備中です</div>
+                    <div style="font-size:13px; color:{{ t.textMuted }}; line-height:1.8;">画像からの自動解析機能は<br>今後のアップデートで追加されます。</div>
                   </div>
-                  <label style="display:block; font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">メモ（自由記述）</label>
-                  <textarea value="{{ f.aiMemo }}" onInput="{{ h.aiMemo }}" placeholder="右下に女王蜂の疑いあり？" rows="2" style="width:100%; padding:13px 14px; font-size:14px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px; outline:none; resize:none; margin-bottom:16px;" style-focus="border-color:{{ t.primary }};"></textarea>
-                  <div style="display:flex; gap:10px;"><button onClick="{{ back }}" style="flex:1; padding:15px; font-size:15px; font-weight:700; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:14px; cursor:pointer;">キャンセル</button><button onClick="{{ goInspSummary }}" style="flex:1.4; padding:15px; font-size:15px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};">保存して次へ</button></div>
+                  <label style="display:block; font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">気になったことをメモ（任意）</label>
+                  <textarea value="{{ f.aiMemo }}" onInput="{{ h.aiMemo }}" placeholder="右下に女王蜂の疑いあり？" rows="3" style="width:100%; padding:13px 14px; font-size:14px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px; outline:none; resize:none; margin-bottom:16px;" style-focus="border-color:{{ t.primary }};"></textarea>
+                  <div style="display:flex; gap:10px;"><button onClick="{{ back }}" style="flex:1; padding:15px; font-size:15px; font-weight:700; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:14px; cursor:pointer;">戻る</button><button onClick="{{ goInspSummary }}" style="flex:1.4; padding:15px; font-size:15px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};">サマリーへ</button></div>
                 </div>
               </sc-if>
 
               <!-- SCR-015 SUMMARY -->
               <sc-if value="{{ vInspSummary }}" hint-placeholder-val="{{ false }}">
-                <div data-screen-label="SCR-015 内検サマリー" style="padding:60px 16px 16px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
+                <div data-screen-label="SCR-015 内検サマリー" style="padding:60px 16px 24px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1); overflow-y:auto; height:100%;">
                   <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;"><button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button><span style="font-size:20px; font-weight:800; color:{{ t.text }};">内検サマリー</span></div>
-                  <div style="font-size:14px; font-weight:700; color:{{ t.text }};">A-01（自宅蜂場）</div>
-                  <div style="font-size:13px; color:{{ t.textMuted }}; margin-bottom:16px;">2026/06/08 09:30 ・ 晴れ ・ 23.5℃</div>
-                  <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; margin-bottom:14px;">
-                    <div style="font-size:13px; font-weight:700; color:{{ t.textMuted }}; margin-bottom:12px;">全体の健康スコア</div>
-                    <div style="display:grid; grid-template-columns:repeat(5,1fr); gap:7px;">
-                      <sc-for list="{{ scoreCells }}" as="s" hint-placeholder-count="10">
-                        <div style="aspect-ratio:1; border-radius:10px; background:{{ s.bg }}; display:flex; flex-direction:column; align-items:center; justify-content:center;"><span style="font-size:11px; color:{{ s.fg }}; opacity:.8;">{{ s.n }}</span><span style="font-size:13px; font-weight:800; color:{{ s.fg }};">{{ s.score }}</span></div>
-                      </sc-for>
-                    </div>
+                  <div style="font-size:16px; font-weight:800; color:{{ t.text }};">{{ inspSummaryColony }}</div>
+                  <div style="font-size:13px; color:{{ t.textMuted }}; margin-bottom:18px;">{{ inspSummaryDate }} ・ {{ inspSummaryWeather }}</div>
+                  <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; margin-bottom:14px; display:flex; flex-direction:column; gap:12px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-size:13px; color:{{ t.textMuted }};">検査枠</span><span style="font-size:14px; font-weight:700; color:{{ t.text }};">{{ inspSummaryCount }}枠（{{ inspSummaryFrames }}）</span></div>
+                    <div style="height:1px; background:{{ t.border }};"></div>
+                    <div><div style="font-size:12px; color:{{ t.textMuted }}; margin-bottom:5px;">枠メモ</div><div style="font-size:14px; color:{{ t.text }}; line-height:1.7;">{{ inspSummaryFrameMemo }}</div></div>
+                    <div style="height:1px; background:{{ t.border }};"></div>
+                    <div><div style="font-size:12px; color:{{ t.textMuted }}; margin-bottom:5px;">その他メモ</div><div style="font-size:14px; color:{{ t.text }}; line-height:1.7;">{{ inspSummaryAiMemo }}</div></div>
                   </div>
-                  <div style="display:flex; gap:10px; margin-bottom:14px;">
-                    <div style="flex:1; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px;"><div style="font-size:12px; color:{{ t.textMuted }};">総合評価</div><div style="font-size:18px; font-weight:800; color:{{ t.text }}; margin-top:5px;">良好</div><div style="font-size:15px; margin-top:2px;">⭐⭐⭐⭐☆</div></div>
-                    <div style="flex:1; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px;"><div style="font-size:12px; color:{{ t.textMuted }};">前回比</div><div style="font-size:24px; font-weight:800; color:{{ t.accent }}; margin-top:5px;">+8 ↑</div></div>
-                  </div>
-                  <div style="background:{{ t.dangerBg }}; border:1px solid {{ t.danger }}; border-radius:{{ t.radius }}px; padding:14px 16px; margin-bottom:14px;"><div style="font-size:13px; font-weight:800; color:{{ t.danger }}; margin-bottom:8px;">⚠️ 要注意アラート</div><div style="font-size:14px; color:{{ t.text }}; line-height:1.9;">▲ ヴァロア検出（枠5）<br>▲ 女王セル疑い（枠7）</div></div>
-                  <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; margin-bottom:18px;"><div style="font-size:13px; font-weight:800; color:{{ t.text }}; margin-bottom:10px; display:flex; align-items:center; gap:6px;">✨ 推奨アクション（AI提案）</div><div style="display:flex; flex-direction:column; gap:9px;"><div style="display:flex; gap:10px; font-size:14px; color:{{ t.text }};"><span style="font-weight:800; color:{{ t.primary }};">1.</span>ヴァロア対策を実施</div><div style="display:flex; gap:10px; font-size:14px; color:{{ t.text }};"><span style="font-weight:800; color:{{ t.primary }};">2.</span>女王セルの経過観察</div><div style="display:flex; gap:10px; font-size:14px; color:{{ t.text }};"><span style="font-weight:800; color:{{ t.primary }};">3.</span>蜜箱を整備（2週間後）</div></div></div>
-                  <div style="display:flex; gap:10px;"><button onClick="{{ goInspHistory }}" style="flex:1.4; padding:16px; font-size:15px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};">保存する</button><button onClick="{{ noop }}" style="flex:1; padding:16px; font-size:14px; font-weight:700; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:14px; cursor:pointer;">PDF共有</button></div>
+                  <div style="background:{{ t.chipBg }}; border-radius:{{ t.radius }}px; padding:14px 16px; margin-bottom:20px;"><div style="font-size:13px; color:{{ t.chipText }}; line-height:1.7;">✨ AI解析・健康スコアは今後のアップデートで追加されます。</div></div>
+                  <button onClick="{{ saveInspection }}" style="width:100%; padding:16px; font-size:16px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};" style-active="transform:translateY(1px);">保存する</button>
                 </div>
               </sc-if>
 
@@ -303,24 +300,30 @@
                       </sc-for>
                     </div>
                   </div>
-                  <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; margin-bottom:14px;">
-                    <div style="font-size:13px; font-weight:700; color:{{ t.text }}; margin-bottom:10px;">健康スコアのトレンド</div>
-                    <svg viewBox="0 0 300 110" width="100%" style="display:block;"><polyline points="{{ healthTrendPts }}" fill="none" stroke="{{ t.primary }}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></polyline><sc-for list="{{ healthDots }}" as="hd" hint-placeholder-count="5"><circle cx="{{ hd.x }}" cy="{{ hd.y }}" r="4" fill="{{ t.primary }}"></circle></sc-for></svg>
-                    <div style="display:flex; justify-content:space-between; margin-top:6px; font-size:10px; color:{{ t.textMuted }};"><span>5/8</span><span>5/15</span><span>5/22</span><span>5/28</span><span>6/8</span></div>
-                  </div>
-                  <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; margin-bottom:14px;">
-                    <div style="font-size:13px; font-weight:700; color:{{ t.text }}; margin-bottom:12px;">枠別ヒートマップ（直近3回）</div>
-                    <div style="display:grid; grid-template-columns:48px 1fr 1fr 1fr; gap:6px; align-items:center;">
-                      <span></span><span style="font-size:11px; color:{{ t.textMuted }}; text-align:center;">5/22</span><span style="font-size:11px; color:{{ t.textMuted }}; text-align:center;">5/28</span><span style="font-size:11px; color:{{ t.textMuted }}; text-align:center;">6/8</span>
-                      <sc-for list="{{ heatRows }}" as="hr" hint-placeholder-count="4">
-                        <span style="font-size:12px; color:{{ t.text }}; font-weight:700;">{{ hr.label }}</span>
-                        <div style="height:30px; border-radius:7px; background:{{ hr.c0 }};"></div>
-                        <div style="height:30px; border-radius:7px; background:{{ hr.c1 }};"></div>
-                        <div style="height:30px; border-radius:7px; background:{{ hr.c2 }};"></div>
+                  <sc-if value="{{ inspHistoryEmpty }}">
+                    <div style="display:flex; flex-direction:column; align-items:center; gap:12px; padding:32px 16px; text-align:center; background:{{ t.surface }}; border:1.5px dashed {{ t.border }}; border-radius:{{ t.radius }}px; margin-bottom:14px;">
+                      <div style="font-size:40px;">🔍</div>
+                      <div style="font-size:15px; font-weight:700; color:{{ t.text }};">内検記録がありません</div>
+                      <div style="font-size:13px; color:{{ t.textMuted }};">内検を実施して記録を保存すると<br>ここに一覧表示されます。</div>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ !inspHistoryEmpty }}">
+                    <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:14px;">
+                      <sc-for list="{{ inspHistoryItems }}" as="rec">
+                        <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:14px 16px;">
+                          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+                            <span style="font-size:15px; font-weight:800; color:{{ t.text }};">{{ rec.colony }}</span>
+                            <span style="font-size:12px; color:{{ t.textMuted }};">{{ rec.date }}</span>
+                          </div>
+                          <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:6px;">
+                            <span style="font-size:12px; font-weight:700; color:{{ t.chipText }}; background:{{ t.chipBg }}; padding:2px 9px; border-radius:999px;">{{ rec.weather }}</span>
+                            <span style="font-size:12px; font-weight:700; color:{{ t.textMuted }}; background:{{ t.surfaceAlt }}; padding:2px 9px; border-radius:999px;">{{ rec.frames.length }}枠</span>
+                          </div>
+                          <sc-if value="{{ rec.frameMemo }}"><div style="font-size:13px; color:{{ t.textMuted }}; margin-top:4px;">📝 {{ rec.frameMemo }}</div></sc-if>
+                        </div>
                       </sc-for>
                     </div>
-                  </div>
-                  <div style="display:flex; gap:10px;"><button onClick="{{ noop }}" style="flex:1; padding:14px; font-size:14px; font-weight:700; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:14px; cursor:pointer;">アラート履歴</button><button onClick="{{ noop }}" style="flex:1; padding:14px; font-size:14px; font-weight:700; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:14px; cursor:pointer;">CSV出力</button></div>
+                  </sc-if>
                 </div>
               </sc-if>
 
@@ -405,8 +408,11 @@
                   <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; padding:0 4px;"><span style="font-size:22px; font-weight:800; color:{{ t.text }};">タスク一覧</span><button onClick="{{ goInspStart }}" style="padding:7px 13px; font-size:13px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primary }}; background:{{ t.chipBg }}; border:none; border-radius:999px; cursor:pointer;">🔍 内検</button></div>
                   <div style="display:flex; gap:6px; background:{{ t.surfaceAlt }}; border:1px solid {{ t.border }}; padding:5px; border-radius:12px; margin-bottom:16px;"><button onClick="{{ tfToday }}" style="{{ taskSegToday }}">本日</button><button onClick="{{ tfWeek }}" style="{{ taskSegWeek }}">今週</button><button onClick="{{ tfAll }}" style="{{ taskSegAll }}">すべて</button></div>
                   <div style="display:flex; flex-direction:column; gap:8px;">
-                    <sc-for list="{{ tasksView }}" as="tk" hint-placeholder-count="4">
-                      <div onClick="{{ tk.open }}" style="display:flex; align-items:center; gap:13px; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:14px; cursor:pointer;"><div style="width:40px; height:40px; border-radius:11px; background:{{ tk.iconBg }}; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">{{ tk.icon }}</div><div style="flex:1; min-width:0;"><div style="font-size:14px; font-weight:700; color:{{ t.text }};">{{ tk.colony }}　{{ tk.type }}</div><div style="font-size:12px; color:{{ t.textMuted }}; margin-top:2px;">{{ tk.when }}</div></div><span style="font-size:11px; font-weight:700; color:{{ tk.statusColor }}; background:{{ tk.statusBg }}; padding:4px 10px; border-radius:999px; flex-shrink:0;">{{ tk.status }}</span></div>
+                    <sc-if value="{{ tasksEmpty }}">
+                      <div style="text-align:center; padding:40px 16px; color:{{ t.textMuted }}; font-size:15px;">タスクがありません</div>
+                    </sc-if>
+                    <sc-for list="{{ tasksView }}" as="tk">
+                      <div onClick="{{ tk.open }}" style="display:flex; align-items:center; gap:13px; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:14px; cursor:pointer;"><div style="width:40px; height:40px; border-radius:11px; background:{{ tk.iconBg }}; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">{{ tk.icon }}</div><div style="flex:1; min-width:0;"><div style="font-size:14px; font-weight:700; color:{{ t.text }};">{{ tk.colony }}　{{ tk.type }}</div><div style="font-size:12px; color:{{ t.textMuted }}; margin-top:2px;">{{ tk.when }}</div><sc-if value="{{ tk.memo }}"><div style="font-size:12px; color:{{ t.textMuted }}; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ tk.memo }}</div></sc-if></div><span style="font-size:11px; font-weight:700; color:{{ tk.statusColor }}; background:{{ tk.statusBg }}; padding:4px 10px; border-radius:999px; flex-shrink:0;">{{ tk.status }}</span></div>
                     </sc-for>
                     <button onClick="{{ goTaskCreate }}" style="margin-top:4px; padding:15px; font-size:15px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primary }}; background:transparent; border:1.5px dashed {{ t.border }}; border-radius:{{ t.radius }}px; cursor:pointer;">＋ タスクを追加</button>
                   </div>
@@ -419,12 +425,12 @@
                   <div style="display:flex; align-items:center; gap:10px; margin-bottom:20px;"><button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button><span style="font-size:20px; font-weight:800; color:{{ t.text }};">タスク作成</span></div>
                   <div style="display:flex; flex-direction:column; gap:16px; margin-bottom:24px;">
                     <div><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">作業種別</label><select value="{{ f.taskType }}" onChange="{{ h.taskType }}" style="width:100%; padding:14px 16px; font-size:15px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px; outline:none;"><option>給餌</option><option>内検</option><option>採蜜</option><option>治療</option></select></div>
-                    <div><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">対象蜂群</label><select value="{{ f.taskColony }}" onChange="{{ h.taskColony }}" style="width:100%; padding:14px 16px; font-size:15px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px; outline:none;"><option>A-02</option><option>A-03</option><option>A-05</option><option>A-07</option></select></div>
-                    <div><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">実施日時</label><div style="padding:14px 16px; font-size:15px; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px;">2026/06/09 09:00</div></div>
-                    <div><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">担当者</label><div style="padding:14px 16px; font-size:15px; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px;">自分</div></div>
+                    <div><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">対象蜂群</label><select value="{{ f.taskColony }}" onChange="{{ h.taskColony }}" style="width:100%; padding:14px 16px; font-size:15px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px; outline:none;"><sc-for list="{{ coloniesOpts }}" as="col"><option>{{ col }}</option></sc-for></select></div>
+                    <div><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">実施日時</label><div style="padding:14px 16px; font-size:15px; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px;">{{ taskDateLabel }}</div></div>
+                    <div><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">担当者</label><div style="padding:14px 16px; font-size:15px; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px;">{{ userName }}</div></div>
                     <div><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">メモ</label><textarea value="{{ f.taskMemo }}" onInput="{{ h.taskMemo }}" placeholder="砂糖水 2L 給餌" rows="2" style="width:100%; padding:14px 16px; font-size:15px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px; outline:none; resize:none;" style-focus="border-color:{{ t.primary }};"></textarea></div>
                   </div>
-                  <button onClick="{{ goTasks }}" style="width:100%; padding:16px; font-size:16px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};" style-active="transform:translateY(1px);">作成する</button>
+                  <button onClick="{{ saveTask }}" style="width:100%; padding:16px; font-size:16px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};" style-active="transform:translateY(1px);">作成する</button>
                 </div>
               </sc-if>
 
@@ -434,27 +440,32 @@
                   <div style="display:flex; align-items:center; gap:10px; margin-bottom:20px;"><button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button><span style="font-size:20px; font-weight:800; color:{{ t.text }};">作業記録入力</span></div>
                   <div style="display:flex; flex-direction:column; gap:16px; margin-bottom:24px;">
                     <div><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">作業種別</label><select value="{{ f.recType }}" onChange="{{ h.recType }}" style="width:100%; padding:14px 16px; font-size:15px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px; outline:none;"><option>給餌</option><option>内検</option><option>採蜜</option><option>治療</option></select></div>
-                    <div><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">対象蜂群</label><select value="{{ f.recColony }}" onChange="{{ h.recColony }}" style="width:100%; padding:14px 16px; font-size:15px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px; outline:none;"><option>A-02</option><option>A-01</option><option>A-03</option></select></div>
-                    <div><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">実施日時</label><div style="padding:14px 16px; font-size:15px; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px;">2026/06/08 09:00</div></div>
+                    <div><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">対象蜂群</label><select value="{{ f.recColony }}" onChange="{{ h.recColony }}" style="width:100%; padding:14px 16px; font-size:15px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px; outline:none;"><sc-for list="{{ coloniesOpts }}" as="col"><option>{{ col }}</option></sc-for></select></div>
+                    <div><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">実施日時</label><div style="padding:14px 16px; font-size:15px; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px;">{{ taskDateLabel }}</div></div>
                     <div><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">メモ</label><textarea value="{{ f.recMemo }}" onInput="{{ h.recMemo }}" placeholder="砂糖水 2L 給餌" rows="2" style="width:100%; padding:14px 16px; font-size:15px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px; outline:none; resize:none;" style-focus="border-color:{{ t.primary }};"></textarea></div>
                     <div><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">写真</label><div style="display:flex; gap:8px;"><div style="width:74px; height:74px; border-radius:12px; border:1.5px dashed {{ t.border }}; display:flex; align-items:center; justify-content:center; font-size:24px; color:{{ t.textMuted }}; cursor:pointer;">＋</div><div style="width:74px; height:74px; border-radius:12px; background:radial-gradient(circle,#c79a4e,#6e4f23);"></div></div></div>
                   </div>
-                  <button onClick="{{ goWorkHistory }}" style="width:100%; padding:16px; font-size:16px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};" style-active="transform:translateY(1px);">保存する</button>
+                  <button onClick="{{ saveWorkRecord }}" style="width:100%; padding:16px; font-size:16px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};" style-active="transform:translateY(1px);">保存する</button>
                 </div>
               </sc-if>
 
               <!-- SCR-027 WORK HISTORY -->
               <sc-if value="{{ vWorkHistory }}" hint-placeholder-val="{{ false }}">
                 <div data-screen-label="SCR-027 作業履歴" style="padding:60px 16px 16px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
-                  <div style="display:flex; align-items:center; gap:10px; margin-bottom:18px;"><button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button><span style="font-size:20px; font-weight:800; color:{{ t.text }};">作業履歴（A-01）</span></div>
-                  <div style="position:relative; padding-left:22px; margin-bottom:18px;">
-                    <div style="position:absolute; left:5px; top:6px; bottom:6px; width:2px; background:{{ t.border }};"></div>
-                    <div style="display:flex; flex-direction:column; gap:14px;">
-                      <sc-for list="{{ workHist }}" as="w" hint-placeholder-count="4">
-                        <div style="position:relative;"><span style="position:absolute; left:-22px; top:4px; width:12px; height:12px; border-radius:50%; background:{{ t.primary }}; border:2px solid {{ t.bg }};"></span><div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:14px;"><div style="display:flex; align-items:center; justify-content:space-between;"><span style="font-size:14px; font-weight:700; color:{{ t.text }};">{{ w.date }}　{{ w.type }}</span><span style="font-size:11px; font-weight:700; color:{{ t.ok }}; background:{{ t.chipBg }}; padding:3px 9px; border-radius:999px;">完了</span></div><div style="font-size:13px; color:{{ t.textMuted }}; margin-top:5px;">{{ w.detail }}</div></div></div>
-                      </sc-for>
+                  <div style="display:flex; align-items:center; gap:10px; margin-bottom:18px;"><button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button><span style="font-size:20px; font-weight:800; color:{{ t.text }};">作業履歴</span></div>
+                  <sc-if value="{{ workHistoryEmpty }}">
+                    <div style="text-align:center; padding:48px 16px; color:{{ t.textMuted }}; font-size:15px;">まだ作業記録がありません</div>
+                  </sc-if>
+                  <sc-if value="{{ !workHistoryEmpty }}">
+                    <div style="position:relative; padding-left:22px; margin-bottom:18px;">
+                      <div style="position:absolute; left:5px; top:6px; bottom:6px; width:2px; background:{{ t.border }};"></div>
+                      <div style="display:flex; flex-direction:column; gap:14px;">
+                        <sc-for list="{{ workHistoryItems }}" as="w">
+                          <div style="position:relative;"><span style="position:absolute; left:-22px; top:4px; width:12px; height:12px; border-radius:50%; background:{{ t.primary }}; border:2px solid {{ t.bg }};"></span><div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:14px;"><div style="display:flex; align-items:center; justify-content:space-between;"><span style="font-size:14px; font-weight:700; color:{{ t.text }};">{{ w.date }}　{{ w.type }}</span><span style="font-size:11px; font-weight:700; color:{{ t.ok }}; background:{{ t.chipBg }}; padding:3px 9px; border-radius:999px;">完了</span></div><div style="font-size:13px; color:{{ t.textMuted }}; margin-top:5px;">{{ w.detail }}</div></div></div>
+                        </sc-for>
+                      </div>
                     </div>
-                  </div>
+                  </sc-if>
                   <button onClick="{{ goWorkRecord }}" style="width:100%; padding:15px; font-size:15px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primary }}; background:transparent; border:1.5px dashed {{ t.border }}; border-radius:{{ t.radius }}px; cursor:pointer;">＋ 作業を記録</button>
                 </div>
               </sc-if>
@@ -537,7 +548,38 @@ class Component extends DCLogic {
     frames: { 1:true, 2:true, 3:true }, graphKind: 'weight', period: 'week',
     taskFilter: 'today', reportPeriod: 'month', reads: {},
     f: { loginEmail:'', loginPw:'', regName:'', regEmail:'', regPw:'', regFarm:'', frameMemo:'', aiMemo:'', taskType:'給餌', taskColony:'A-02', taskMemo:'', recType:'給餌', recColony:'A-02', recMemo:'' },
+    loginError: '', regError: '', userName: '',
+    inspColony: 'A-01', inspHistory: [],
+    workHistory: [],
   };
+
+  COLONIES = ['A-01','A-02','A-03','A-04','A-05','A-06','A-07','A-08','A-09','A-10','A-11','A-12'];
+
+  constructor() {
+    super();
+    // Restore session from Supabase (async, triggers re-render when done)
+    this._initSession();
+  }
+
+  async _initSession() {
+    try {
+      const db = window.HoneyDB;
+      if (!db) return;
+      const session = await db.getSession();
+      if (!session) return;
+      const profile = await db.getUserProfile();
+      const [inspHistory, workHistory] = await Promise.all([
+        db.loadInspRecords(),
+        db.loadWorkRecords(),
+      ]);
+      this.setState({
+        screen: 'app',
+        userName: profile ? profile.name : session.user.email,
+        inspHistory,
+        workHistory,
+      });
+    } catch(e) { /* session not available */ }
+  }
 
   THEMES = {
     honey: { bg:'#FBF4E6', surface:'#FFFFFF', surfaceAlt:'#FFFBF1', primary:'#E8961B', primaryText:'#FFFFFF', primaryShadow:'rgba(232,150,27,.32)', accent:'#E8961B', text:'#3D2F17', textMuted:'#A38F6E', border:'#F0E4CA', ok:'#3E9D6B', warn:'#C98A00', warnBg:'#FCF1D6', danger:'#D9534F', dangerBg:'#FBE8E7', font:"'M PLUS Rounded 1c', system-ui, sans-serif", radius:20, statusBarDark:false, chipBg:'#FFF1D6', chipText:'#9A6B00', navBarBg:'#FFFFFF', homeBar:'rgba(0,0,0,.25)' },
@@ -626,7 +668,129 @@ class Component extends DCLogic {
   toggleFrame(n) { this.setState(s => { const fr={...s.frames}; if(fr[n]) delete fr[n]; else fr[n]=true; return { frames:fr }; }); }
   selectAll() { const fr={}; for(let i=1;i<=10;i++) fr[i]=true; this.setState({ frames:fr }); }
   markAllRead() { const r={...this.state.reads}; this.NOTIFS.forEach(n=>{ r[n.id]=true; }); this.setState({ reads:r }); }
-  logout() { this.setState({ screen:'login', view:'home', hist:[], anim:'scrInBack', reads:{} }); }
+  async logout() {
+    try { await window.HoneyDB.signOut(); } catch(e) {}
+    this.setState({ screen:'login', view:'home', hist:[], anim:'scrInBack', reads:{}, loginError:'', regError:'', userName:'',
+      inspHistory: [], workHistory: [],
+      f: { loginEmail:'', loginPw:'', regName:'', regEmail:'', regPw:'', regFarm:'', frameMemo:'', aiMemo:'', taskType:'給餌', taskColony:'A-02', taskMemo:'', recType:'給餌', recColony:'A-02', recMemo:'' } });
+  }
+
+  async submitLogin() {
+    const email = this.state.f.loginEmail.trim().toLowerCase();
+    const pw = this.state.f.loginPw;
+    if (!email || !pw) { this.setState({ loginError: 'メールアドレスとパスワードを入力してください' }); return; }
+    if (!email.includes('@') || !email.includes('.')) { this.setState({ loginError: '正しいメールアドレスを入力してください' }); return; }
+    try {
+      const data = await window.HoneyDB.signIn(email, pw);
+      const profile = await window.HoneyDB.getUserProfile();
+      const [inspHistory, workHistory] = await Promise.all([
+        window.HoneyDB.loadInspRecords(),
+        window.HoneyDB.loadWorkRecords(),
+      ]);
+      this.setState({ loginError: '', userName: profile ? profile.name : email, inspHistory, workHistory });
+      this.tab('home');
+    } catch(e) {
+      const msg = e.message || '';
+      if (msg.includes('Invalid login') || msg.includes('invalid_credentials')) {
+        this.setState({ loginError: 'メールアドレスまたはパスワードが正しくありません' });
+      } else {
+        this.setState({ loginError: 'ログインに失敗しました: ' + msg });
+      }
+    }
+  }
+
+  startInspection() {
+    this.setState(s => ({
+      frames: { 1:true, 2:true, 3:true },
+      f: { ...s.f, frameMemo:'', aiMemo:'' },
+    }));
+    this.nav('inspCapture');
+  }
+
+  async saveInspection() {
+    const s = this.state;
+    const wxMap = { sun:'晴れ', cloud:'曇り', rain:'雨' };
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('ja-JP', { year:'numeric', month:'2-digit', day:'2-digit' });
+    const timeStr = now.toLocaleTimeString('ja-JP', { hour:'2-digit', minute:'2-digit' });
+    const record = {
+      colony: s.inspColony,
+      date: dateStr,
+      time: timeStr,
+      weather: wxMap[s.weather] || '晴れ',
+      frames: Object.keys(s.frames).map(Number).sort((a,b)=>a-b),
+      frameMemo: s.f.frameMemo.trim(),
+      aiMemo: s.f.aiMemo.trim(),
+    };
+    try { await window.HoneyDB.saveInspRecord(record); } catch(e) { console.error('saveInspection:', e); }
+    const inspHistory = [{ id: now.getTime(), ...record }, ...s.inspHistory];
+    this.setState({ inspHistory });
+    this.tab('tasks');
+  }
+
+  async saveTask() {
+    const s = this.state;
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('ja-JP', { year:'numeric', month:'2-digit', day:'2-digit' });
+    const timeStr = now.toLocaleTimeString('ja-JP', { hour:'2-digit', minute:'2-digit' });
+    const record = {
+      type: s.f.taskType,
+      colony: s.f.taskColony,
+      date: dateStr,
+      time: timeStr,
+      memo: s.f.taskMemo.trim(),
+    };
+    try { await window.HoneyDB.saveWorkRecord(record); } catch(e) { console.error('saveTask:', e); }
+    const entry = { id: now.getTime(), ...record, detail: (record.colony ? record.colony + ' ' : '') + (record.memo || record.type) };
+    this.setState(prev => ({
+      workHistory: [entry, ...prev.workHistory],
+      f: Object.assign({}, prev.f, { taskType:'給餌', taskColony:this.COLONIES[0], taskMemo:'' }),
+    }));
+    this.tab('tasks');
+  }
+
+  async saveWorkRecord() {
+    const s = this.state;
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('ja-JP', { year:'numeric', month:'2-digit', day:'2-digit' });
+    const timeStr = now.toLocaleTimeString('ja-JP', { hour:'2-digit', minute:'2-digit' });
+    const record = {
+      type: s.f.recType,
+      colony: s.f.recColony,
+      date: dateStr,
+      time: timeStr,
+      memo: s.f.recMemo.trim(),
+    };
+    try { await window.HoneyDB.saveWorkRecord(record); } catch(e) { console.error('saveWorkRecord:', e); }
+    const entry = { id: now.getTime(), ...record, detail: (record.colony ? record.colony + ' ' : '') + (record.memo || record.type) };
+    this.setState(prev => ({
+      workHistory: [entry, ...prev.workHistory],
+      f: Object.assign({}, prev.f, { recType:'給餌', recColony:this.COLONIES[0], recMemo:'' }),
+    }));
+    this.nav('workHistory');
+  }
+
+  async submitRegister() {
+    const name = this.state.f.regName.trim();
+    const email = this.state.f.regEmail.trim().toLowerCase();
+    const pw = this.state.f.regPw;
+    const farm = this.state.f.regFarm.trim();
+    if (!name || !email || !pw) { this.setState({ regError: '名前・メールアドレス・パスワードは必須です' }); return; }
+    if (!email.includes('@') || !email.includes('.')) { this.setState({ regError: '正しいメールアドレスを入力してください' }); return; }
+    if (pw.length < 8) { this.setState({ regError: 'パスワードは8文字以上で入力してください' }); return; }
+    try {
+      await window.HoneyDB.signUp(email, pw, name, farm);
+      this.setState({ regError: '', userName: name });
+      this.go('ob1');
+    } catch(e) {
+      const msg = e.message || '';
+      if (msg.includes('already registered') || msg.includes('User already registered')) {
+        this.setState({ regError: 'このメールアドレスはすでに登録されています' });
+      } else {
+        this.setState({ regError: '登録に失敗しました: ' + msg });
+      }
+    }
+  }
 
   linePath(vals, w, h, pad, close) {
     const max=Math.max(...vals), min=Math.min(...vals); const rng=(max-min)||1; const n=vals.length;
@@ -711,7 +875,19 @@ class Component extends DCLogic {
 
     // tasks filtered
     const skMap = { todo:{c:t.warn,b:t.warnBg}, done:{c:t.ok,b:t.chipBg}, plan:{c:t.textMuted,b:t.surfaceAlt} };
-    const tasksView = this.TASKS.filter(tk=> s.taskFilter==='all' ? true : s.taskFilter==='week' ? true : tk.scope==='today').map(tk=>({ ...tk, iconBg:t.chipBg, statusColor:skMap[tk.sk].c, statusBg:skMap[tk.sk].b, open:()=>this.nav('workRecord') }));
+    const typeIcon = { '給餌':'🍼', '内検':'🔍', '採蜜':'🍯', '治療':'💊' };
+    const todayStr = new Date().toLocaleDateString('ja-JP', { year:'numeric', month:'2-digit', day:'2-digit' });
+    const realTasks = s.workHistory.map(w => ({
+      id: 'w' + w.id, colony: w.colony, type: w.type,
+      icon: typeIcon[w.type] || '📝',
+      when: w.date === todayStr ? '今日 ' + w.time : w.date + ' ' + w.time,
+      status: '完了', sk: 'done',
+      scope: w.date === todayStr ? 'today' : 'week',
+      memo: w.memo,
+    }));
+    const allTasks = [...realTasks, ...this.TASKS];
+    const tasksView = allTasks.filter(tk => s.taskFilter==='all' ? true : s.taskFilter==='week' ? true : tk.scope==='today').map(tk=>({ ...tk, iconBg:t.chipBg, statusColor:skMap[tk.sk].c, statusBg:skMap[tk.sk].b, open:()=>this.nav('workRecord') }));
+    const tasksEmpty = tasksView.length === 0;
 
     const recActions = this.REC_ACTIONS.map(ra=>{ const cmap={high:{bar:t.danger,tag:t.danger},mid:{bar:t.warn,tag:t.warn},low:{bar:t.ok,tag:t.textMuted}}; return { ...ra, barColor:cmap[ra.urgency].bar, tagColor:cmap[ra.urgency].tag }; });
 
@@ -727,7 +903,7 @@ class Component extends DCLogic {
       vInspStart:app&&v==='inspStart', vInspCapture:app&&v==='inspCapture', vInspFrame:app&&v==='inspFrame', vInspAI:app&&v==='inspAI', vInspSummary:app&&v==='inspSummary', vInspHistory:app&&v==='inspHistory',
       vSensor:app&&v==='sensor', vGraph:app&&(v==='weight'||v==='temp'||v==='humid'), vCamera:app&&v==='camera', vAiDiagnosis:app&&v==='aiDiagnosis', vAiRecommend:app&&v==='aiRecommend',
       vTasks:app&&v==='tasks', vTaskCreate:app&&v==='taskCreate', vWorkRecord:app&&v==='workRecord', vWorkHistory:app&&v==='workHistory', vReport:app&&v==='report', vSettings:app&&v==='settings',
-      nc, notifs, hasUnread, farms, colonies, mapPins, frameChips, selectedCount, aiResults, scoreCells, calCells, healthTrendPts, healthDots, heatRows, tasksView, recActions, reportFarms,
+      nc, notifs, hasUnread, farms, colonies, mapPins, frameChips, selectedCount, aiResults, scoreCells, calCells, healthTrendPts, healthDots, heatRows, tasksView, tasksEmpty, recActions, reportFarms,
       workHist:this.WORK_HIST, settingsRows:this.SETTINGS,
       sensorLine:sm.d, sensorArea:sma.d,
       faceLabel: s.face==='A'?'表面 A':'裏面 B',
@@ -754,9 +930,39 @@ class Component extends DCLogic {
       // report period
       repSegMonth:pill(s.reportPeriod==='month'), repSegWeek:pill(s.reportPeriod==='week'), repSegYear:pill(s.reportPeriod==='year'),
       rMonth:()=>this.setState({reportPeriod:'month'}), rWeek:()=>this.setState({reportPeriod:'week'}), rYear:()=>this.setState({reportPeriod:'year'}),
+      // field handlers
+      h: (() => { const o = {}; ['loginEmail','loginPw','regName','regEmail','regPw','regFarm','frameMemo','aiMemo','taskType','taskColony','taskMemo','recType','recColony','recMemo'].forEach(k => { o[k] = this.field(k); }); return o; })(),
+      // auth
+      loginError: s.loginError, regError: s.regError, userName: s.userName,
+      // inspection
+      inspColony: s.inspColony,
+      setInspColony: (e) => this.setState({ inspColony: e.target.value }),
+      coloniesOpts: this.COLONIES,
+      startInspection: () => this.startInspection(),
+      saveInspection: () => this.saveInspection(),
+      inspSummaryColony: s.inspColony,
+      inspSummaryWeather: ({sun:'☀️ 晴れ', cloud:'⛅ 曇り', rain:'🌧️ 雨'})[s.weather] || '晴れ',
+      inspSummaryDate: new Date().toLocaleDateString('ja-JP', { year:'numeric', month:'2-digit', day:'2-digit' }),
+      inspSummaryFrames: Object.keys(s.frames).map(Number).sort((a,b)=>a-b).join('・') + ' 枠',
+      inspSummaryFrameMemo: s.f.frameMemo || '（なし）',
+      inspSummaryAiMemo: s.f.aiMemo || '（なし）',
+      inspSummaryCount: Object.keys(s.frames).length,
+      inspHistoryItems: s.inspHistory,
+      inspHistoryEmpty: s.inspHistory.length === 0,
+      workHistoryItems: s.workHistory,
+      workHistoryEmpty: s.workHistory.length === 0,
+      // dashboard live stats
+      todayLabel: (() => { const d = new Date(); const days = ['日','月','火','水','木','金','土']; return d.getFullYear() + '年' + (d.getMonth()+1) + '月' + d.getDate() + '日（' + days[d.getDay()] + '）'; })(),
+      dashInspCount: s.inspHistory.filter(r => r.date === todayStr).length,
+      dashFeedCount: s.workHistory.filter(r => r.date === todayStr && r.type === '給餌').length,
+      dashHarvestCount: s.workHistory.filter(r => r.date === todayStr && r.type === '採蜜').length,
+      saveTask: () => this.saveTask(),
+      saveWorkRecord: () => this.saveWorkRecord(),
+      coloniesOpts: this.COLONIES,
+      taskDateLabel: new Date().toLocaleDateString('ja-JP', { year:'numeric', month:'2-digit', day:'2-digit' }) + ' ' + new Date().toLocaleTimeString('ja-JP', { hour:'2-digit', minute:'2-digit' }),
       // auth nav
       goRegister:()=>this.go('register'), goLogin:()=>this.go('login'),
-      submitLogin:()=>this.tab('home'), submitRegister:()=>this.go('ob1'),
+      submitLogin:()=>this.submitLogin(), submitRegister:()=>this.submitRegister(),
       goOb2:()=>this.go('ob2'), goOb3:()=>this.go('ob3'), skipOb:()=>this.tab('home'), startApp:()=>this.tab('home'),
       // in-app nav
       back:()=>this.back(),
