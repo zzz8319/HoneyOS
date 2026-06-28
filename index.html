@@ -25,6 +25,7 @@
 
   /* Mobile: full screen app overlaid on top of everything */
   @media (max-width: 480px) {
+    #desktop-sidebar { display: none !important; }
     #app-mobile {
       position: fixed !important;
       inset: 0 !important;
@@ -34,11 +35,47 @@
       height: 100% !important;
     }
   }
-  /* Desktop: app-mobile is just a normal child inside the phone frame */
+
+  /* Desktop layout */
   @media (min-width: 481px) {
-    #app-mobile {
-      position: absolute;
-      inset: 0;
+    #app-mobile { position: absolute; inset: 0; }
+
+    /* Sidebar nav (only in DOM when logged in via sc-if) */
+    #desktop-sidebar {
+      display: flex;
+      flex-direction: column;
+      width: 240px;
+      min-height: 100vh;
+      flex-shrink: 0;
+      overflow-y: auto;
+    }
+
+    /* When sidebar present: full dashboard layout */
+    #proto-wrapper:has(#desktop-sidebar) {
+      align-items: stretch !important;
+      justify-content: flex-start !important;
+    }
+    #desktop-sidebar ~ #proto-frame-outer {
+      flex: 1;
+      box-shadow: none !important;
+    }
+    #desktop-sidebar ~ #proto-frame-outer #app-frame {
+      width: 100% !important;
+      height: 100vh !important;
+    }
+    /* Hide mobile bottom tab bar on desktop (sidebar handles nav) */
+    #bottom-tabbar { display: none !important; }
+
+    /* Auth screens on desktop: no sidebar, keep frame reasonably sized */
+    #proto-wrapper:not(:has(#desktop-sidebar)) {
+      background: #f7f4f0 !important;
+    }
+    #proto-wrapper:not(:has(#desktop-sidebar)) #proto-frame-outer {
+      box-shadow: none !important;
+    }
+    #proto-wrapper:not(:has(#desktop-sidebar)) #app-frame {
+      width: min(480px, 100vw) !important;
+      height: 100vh !important;
     }
   }
 </style>
@@ -46,8 +83,57 @@
 
 <div id="proto-wrapper" style="min-height:100vh; background:#1a1a1a; display:flex; align-items:center; justify-content:center;">
 
+  <!-- Desktop sidebar – rendered only when logged in (sc-if scApp) -->
+  <sc-if value="{{ scApp }}" hint-placeholder-val="{{ false }}">
+    <div id="desktop-sidebar" style="background:{{ t.surface }}; border-right:1px solid {{ t.border }}; font-family:{{ t.font }};">
+      <!-- Logo -->
+      <div style="padding:28px 20px 20px; border-bottom:1px solid {{ t.border }};">
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:4px;">
+          <span style="font-size:26px;">🐝</span>
+          <span style="font-size:19px; font-weight:800; color:{{ t.text }};">HoneyOS</span>
+        </div>
+        <div style="font-size:12px; color:{{ t.textMuted }}; padding-left:36px;">{{ userFarm }}</div>
+      </div>
+      <!-- Navigation -->
+      <nav style="flex:1; padding:14px 12px; display:flex; flex-direction:column; gap:2px;">
+        <div onClick="{{ tabHome }}" style="display:flex; align-items:center; gap:12px; padding:11px 14px; border-radius:10px; cursor:pointer; background:{{ dkNavHome ? t.chipBg : 'transparent' }}; margin-bottom:1px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="{{ dkNavHome ? t.primary : t.textMuted }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"></path><path d="M5 9.5V20h5v-6h4v6h5V9.5"></path></svg>
+          <span style="font-size:14px; font-weight:{{ dkNavHome ? '700' : '500' }}; color:{{ dkNavHome ? t.primary : t.text }};">ダッシュボード</span>
+        </div>
+        <div onClick="{{ tabFarms }}" style="display:flex; align-items:center; gap:12px; padding:11px 14px; border-radius:10px; cursor:pointer; background:{{ dkNavFarms ? t.chipBg : 'transparent' }}; margin-bottom:1px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="{{ dkNavFarms ? t.primary : t.textMuted }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="7" height="7" rx="1.6"></rect><rect x="14" y="4" width="7" height="7" rx="1.6"></rect><rect x="3" y="14" width="7" height="7" rx="1.6"></rect><rect x="14" y="14" width="7" height="7" rx="1.6"></rect></svg>
+          <span style="font-size:14px; font-weight:{{ dkNavFarms ? '700' : '500' }}; color:{{ dkNavFarms ? t.primary : t.text }};">養蜂場</span>
+        </div>
+        <div onClick="{{ goInspStart }}" style="display:flex; align-items:center; gap:12px; padding:11px 14px; border-radius:10px; cursor:pointer; background:{{ dkNavInsp ? t.chipBg : 'transparent' }}; margin-bottom:1px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="{{ dkNavInsp ? t.primary : t.textMuted }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.35-4.35"></path></svg>
+          <span style="font-size:14px; font-weight:{{ dkNavInsp ? '700' : '500' }}; color:{{ dkNavInsp ? t.primary : t.text }};">内検</span>
+        </div>
+        <div onClick="{{ tabTasks }}" style="display:flex; align-items:center; gap:12px; padding:11px 14px; border-radius:10px; cursor:pointer; background:{{ dkNavTasks ? t.chipBg : 'transparent' }}; margin-bottom:1px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="{{ dkNavTasks ? t.primary : t.textMuted }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2.4"></rect><path d="M9 4V3h6v1"></path><path d="M8.5 13l2 2 4-4.5"></path></svg>
+          <span style="font-size:14px; font-weight:{{ dkNavTasks ? '700' : '500' }}; color:{{ dkNavTasks ? t.primary : t.text }};">作業管理</span>
+        </div>
+        <div onClick="{{ tabReport }}" style="display:flex; align-items:center; gap:12px; padding:11px 14px; border-radius:10px; cursor:pointer; background:{{ dkNavReport ? t.chipBg : 'transparent' }}; margin-bottom:1px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="{{ dkNavReport ? t.primary : t.textMuted }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20V12"></path><path d="M12 20V5"></path><path d="M19 20v-5"></path></svg>
+          <span style="font-size:14px; font-weight:{{ dkNavReport ? '700' : '500' }}; color:{{ dkNavReport ? t.primary : t.text }};">分析レポート</span>
+        </div>
+        <div onClick="{{ tabSettings }}" style="display:flex; align-items:center; gap:12px; padding:11px 14px; border-radius:10px; cursor:pointer; background:{{ dkNavSettings ? t.chipBg : 'transparent' }}; margin-bottom:1px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="{{ dkNavSettings ? t.primary : t.textMuted }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h9"></path><circle cx="16" cy="7" r="2.4"></circle><path d="M18.5 7H20"></path><path d="M4 17h5"></path><circle cx="11" cy="17" r="2.4"></circle><path d="M13.5 17H20"></path></svg>
+          <span style="font-size:14px; font-weight:{{ dkNavSettings ? '700' : '500' }}; color:{{ dkNavSettings ? t.primary : t.text }};">設定</span>
+        </div>
+      </nav>
+      <!-- User info & logout -->
+      <div style="padding:16px 20px; border-top:1px solid {{ t.border }};">
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+          <div style="width:34px; height:34px; border-radius:50%; background:{{ t.chipBg }}; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0;">🧑</div>
+          <div><div style="font-size:13px; font-weight:700; color:{{ t.text }}; line-height:1.3;">{{ userName }}</div><div style="font-size:11px; color:{{ t.textMuted }};">{{ userFarm }}</div></div>
+        </div>
+        <button onClick="{{ logout }}" style="width:100%; padding:8px; font-size:13px; font-weight:600; font-family:{{ t.font }}; color:{{ t.danger }}; background:{{ t.dangerBg }}; border:none; border-radius:8px; cursor:pointer;">ログアウト</button>
+      </div>
+    </div>
+  </sc-if>
+
   <div id="proto-frame-outer" style="box-shadow:0 24px 60px rgba(0,0,0,.5);">
-    <div style="position:relative; width:390px; height:844px; overflow:hidden; background:{{ t.bg }};">
+    <div id="app-frame" style="position:relative; width:390px; height:844px; overflow:hidden; background:{{ t.bg }};">
 
 
 
@@ -531,7 +617,7 @@
             </div>
 
             <!-- BOTTOM NAV -->
-            <div style="display:flex; background:{{ t.navBarBg }}; border-top:1px solid {{ t.border }}; padding:8px 6px 26px;">
+            <div id="bottom-tabbar" style="display:flex; background:{{ t.navBarBg }}; border-top:1px solid {{ t.border }}; padding:8px 6px 26px;">
               <button onClick="{{ tabHome }}" style="flex:1; background:none; border:none; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; color:{{ nc.home }};"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"></path><path d="M5 9.5V20h5v-6h4v6h5V9.5"></path></svg><span style="font-size:10px; font-weight:700;">ホーム</span></button>
               <button onClick="{{ tabFarms }}" style="flex:1; background:none; border:none; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; color:{{ nc.farms }};"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="7" height="7" rx="1.6"></rect><rect x="14" y="4" width="7" height="7" rx="1.6"></rect><rect x="3" y="14" width="7" height="7" rx="1.6"></rect><rect x="14" y="14" width="7" height="7" rx="1.6"></rect></svg><span style="font-size:10px; font-weight:700;">養蜂場</span></button>
               <button onClick="{{ tabTasks }}" style="flex:1; background:none; border:none; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; color:{{ nc.tasks }};"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2.4"></rect><path d="M9 4V3h6v1"></path><path d="M8.5 13l2 2 4-4.5"></path></svg><span style="font-size:10px; font-weight:700;">作業</span></button>
@@ -941,6 +1027,10 @@ class Component extends DCLogic {
       h: { loginEmail:this.field('loginEmail'), loginPw:this.field('loginPw'), regName:this.field('regName'), regEmail:this.field('regEmail'), regPw:this.field('regPw'), regFarm:this.field('regFarm'), frameMemo:this.field('frameMemo'), aiMemo:this.field('aiMemo'), taskType:this.field('taskType'), taskColony:this.field('taskColony'), taskMemo:this.field('taskMemo'), recType:this.field('recType'), recColony:this.field('recColony'), recMemo:this.field('recMemo') },
       // screen flags
       scLogin:sc==='login', scRegister:sc==='register', scOb1:sc==='ob1', scOb2:sc==='ob2', scOb3:sc==='ob3', scApp:app,
+      dkNavHome:app&&['home','notif'].includes(v), dkNavFarms:app&&['farms','farmDetail','farmMap'].includes(v),
+      dkNavInsp:app&&['inspStart','inspCapture','inspFrame','inspAI','inspSummary','inspHistory'].includes(v),
+      dkNavTasks:app&&['tasks','taskCreate','workRecord','workHistory'].includes(v),
+      dkNavReport:app&&v==='report', dkNavSettings:app&&v==='settings',
       vHome:app&&v==='home', vNotif:app&&v==='notif', vFarms:app&&v==='farms', vFarmDetail:app&&v==='farmDetail', vFarmMap:app&&v==='farmMap',
       vInspStart:app&&v==='inspStart', vInspCapture:app&&v==='inspCapture', vInspFrame:app&&v==='inspFrame', vInspAI:app&&v==='inspAI', vInspSummary:app&&v==='inspSummary', vInspHistory:app&&v==='inspHistory',
       vSensor:app&&v==='sensor', vGraph:app&&(v==='weight'||v==='temp'||v==='humid'), vCamera:app&&v==='camera', vAiDiagnosis:app&&v==='aiDiagnosis', vAiRecommend:app&&v==='aiRecommend',
