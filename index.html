@@ -493,11 +493,34 @@
 
               <!-- SETTINGS -->
               <sc-if value="{{ vSettings }}" hint-placeholder-val="{{ false }}">
-                <div data-screen-label="設定" style="padding:64px 16px 16px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
+                <div data-screen-label="設定" style="padding:64px 16px 24px; overflow-y:auto; position:absolute; inset:0; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
                   <div style="font-size:22px; font-weight:800; color:{{ t.text }}; margin-bottom:18px; padding:0 4px;">設定</div>
-                  <div style="display:flex; align-items:center; gap:14px; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; margin-bottom:16px;"><div style="width:52px; height:52px; border-radius:50%; background:{{ t.chipBg }}; display:flex; align-items:center; justify-content:center; font-size:24px;">🧑‍🌾</div><div><div style="font-size:16px; font-weight:800; color:{{ t.text }};">{{ userName }}</div><div style="font-size:13px; color:{{ t.textMuted }}; margin-top:2px;">{{ userFarm }}</div></div></div>
+                  <!-- Profile card -->
+                  <div style="display:flex; align-items:center; gap:14px; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; margin-bottom:20px;">
+                    <div style="width:52px; height:52px; border-radius:50%; background:{{ t.chipBg }}; display:flex; align-items:center; justify-content:center; font-size:24px; flex-shrink:0;">🧑‍🌾</div>
+                    <div style="flex:1; min-width:0;">
+                      <div style="font-size:16px; font-weight:800; color:{{ t.text }};">{{ userName }}</div>
+                      <div style="font-size:13px; color:{{ t.textMuted }}; margin-top:2px;">{{ userFarm }}</div>
+                    </div>
+                    <button onClick="{{ goEditProfile }}" style="padding:7px 14px; font-size:13px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primary }}; background:{{ t.chipBg }}; border:none; border-radius:999px; cursor:pointer;">編集</button>
+                  </div>
+                  <!-- Edit profile form -->
+                  <sc-if value="{{ settingEditOpen }}">
+                    <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; margin-bottom:20px;">
+                      <div style="font-size:14px; font-weight:700; color:{{ t.text }}; margin-bottom:14px;">プロフィール編集</div>
+                      <div style="margin-bottom:12px;"><label style="display:block; font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:6px;">お名前</label><input type="text" value="{{ editName }}" onInput="{{ h.editName }}" style="width:100%; padding:12px 14px; font-size:15px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surfaceAlt }}; border:1.5px solid {{ t.border }}; border-radius:10px; outline:none;" style-focus="border-color:{{ t.primary }};"></div>
+                      <div style="margin-bottom:16px;"><label style="display:block; font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:6px;">養蜂場名</label><input type="text" value="{{ editFarm }}" onInput="{{ h.editFarm }}" style="width:100%; padding:12px 14px; font-size:15px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surfaceAlt }}; border:1.5px solid {{ t.border }}; border-radius:10px; outline:none;" style-focus="border-color:{{ t.primary }};"></div>
+                      <sc-if value="{{ settingError }}"><div style="margin-bottom:12px; padding:10px 12px; background:{{ t.dangerBg }}; border-radius:8px; font-size:13px; color:{{ t.danger }}; font-weight:600;">{{ settingError }}</div></sc-if>
+                      <sc-if value="{{ settingSaved }}"><div style="margin-bottom:12px; padding:10px 12px; background:{{ t.chipBg }}; border-radius:8px; font-size:13px; color:{{ t.ok }}; font-weight:600;">✓ 保存しました</div></sc-if>
+                      <div style="display:flex; gap:8px;">
+                        <button onClick="{{ cancelEditProfile }}" style="flex:1; padding:12px; font-size:14px; font-weight:700; font-family:{{ t.font }}; color:{{ t.textMuted }}; background:{{ t.surfaceAlt }}; border:1px solid {{ t.border }}; border-radius:10px; cursor:pointer;">キャンセル</button>
+                        <button onClick="{{ saveProfile }}" style="flex:2; padding:12px; font-size:14px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:10px; cursor:pointer; box-shadow:0 4px 12px {{ t.primaryShadow }};">保存する</button>
+                      </div>
+                    </div>
+                  </sc-if>
+                  <!-- Other settings rows -->
                   <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; overflow:hidden; margin-bottom:16px;">
-                    <sc-for list="{{ settingsRows }}" as="sr" hint-placeholder-count="5">
+                    <sc-for list="{{ settingsRows }}" as="sr">
                       <div style="display:flex; align-items:center; gap:12px; padding:15px 16px; border-bottom:1px solid {{ t.border }};"><span style="font-size:18px; width:24px; text-align:center;">{{ sr.icon }}</span><span style="flex:1; font-size:14px; color:{{ t.text }};">{{ sr.label }}</span><span style="color:{{ t.textMuted }};">›</span></div>
                     </sc-for>
                   </div>
@@ -534,6 +557,7 @@ class Component extends DCLogic {
     taskFilter: 'today', reportPeriod: 'month', reads: {},
     f: { loginEmail:'', loginPw:'', regName:'', regEmail:'', regPw:'', regFarm:'', frameMemo:'', aiMemo:'', taskType:'給餌', taskColony:'A-02', taskMemo:'', recType:'給餌', recColony:'A-02', recMemo:'' },
     loginError: '', regError: '', userName: '', userFarm: '',
+    settingEditOpen: false, settingError: '', settingSaved: false,
     inspColony: 'A-01', inspHistory: [],
     workHistory: [],
   };
@@ -659,6 +683,35 @@ class Component extends DCLogic {
   toggleFrame(n) { this.setState(s => { const fr={...s.frames}; if(fr[n]) delete fr[n]; else fr[n]=true; return { frames:fr }; }); }
   selectAll() { const fr={}; for(let i=1;i<=10;i++) fr[i]=true; this.setState({ frames:fr }); }
   markAllRead() { const r={...this.state.reads}; this.NOTIFS.forEach(n=>{ r[n.id]=true; }); this.setState({ reads:r }); }
+  goEditProfile() {
+    this._fieldBuf.editName = this.state.userName;
+    this._fieldBuf.editFarm = this.state.userFarm;
+    this.setState({ settingEditOpen: true, settingError: '', settingSaved: false });
+  }
+
+  cancelEditProfile() {
+    this.setState({ settingEditOpen: false, settingError: '', settingSaved: false });
+  }
+
+  async saveProfile() {
+    const name = (this.f('editName') || '').trim();
+    const farm = (this.f('editFarm') || '').trim();
+    if (!name) { this.setState({ settingError: '名前を入力してください' }); return; }
+    try {
+      const session = await window.HoneyDB.getSession();
+      if (!session) throw new Error('ログインが必要です');
+      const { error } = await window.supabase
+        .from('profiles')
+        .update({ name, farm_name: farm })
+        .eq('id', session.user.id);
+      if (error) throw error;
+      this.setState({ userName: name, userFarm: farm, settingSaved: true, settingError: '' });
+      setTimeout(() => this.setState({ settingSaved: false, settingEditOpen: false }), 1500);
+    } catch(e) {
+      this.setState({ settingError: '保存に失敗しました: ' + (e.message || '') });
+    }
+  }
+
   async logout() {
     try { await window.HoneyDB.signOut(); } catch(e) {}
     this.setState({ screen:'login', view:'home', hist:[], anim:'scrInBack', reads:{}, loginError:'', regError:'', userName:'', userFarm:'',
@@ -920,9 +973,12 @@ class Component extends DCLogic {
       repSegMonth:pill(s.reportPeriod==='month'), repSegWeek:pill(s.reportPeriod==='week'), repSegYear:pill(s.reportPeriod==='year'),
       rMonth:()=>this.setState({reportPeriod:'month'}), rWeek:()=>this.setState({reportPeriod:'week'}), rYear:()=>this.setState({reportPeriod:'year'}),
       // field handlers
-      h: (() => { const o = {}; ['loginEmail','loginPw','regName','regEmail','regPw','regFarm','frameMemo','aiMemo','taskType','taskColony','taskMemo','recType','recColony','recMemo'].forEach(k => { o[k] = this.field(k); }); return o; })(),
+      h: (() => { const o = {}; ['loginEmail','loginPw','regName','regEmail','regPw','regFarm','frameMemo','aiMemo','taskType','taskColony','taskMemo','recType','recColony','recMemo','editName','editFarm'].forEach(k => { o[k] = this.field(k); }); return o; })(),
       // auth
       loginError: s.loginError, regError: s.regError, userName: s.userName, userFarm: s.userFarm || '養蜂家',
+      settingEditOpen: s.settingEditOpen, settingError: s.settingError, settingSaved: s.settingSaved,
+      editName: s.userName, editFarm: s.userFarm || '',
+      goEditProfile: () => this.goEditProfile(), cancelEditProfile: () => this.cancelEditProfile(), saveProfile: () => this.saveProfile(),
       // inspection
       inspColony: s.inspColony,
       setInspColony: (e) => this.setState({ inspColony: e.target.value }),
