@@ -223,6 +223,26 @@
                     <div style="margin-top:14px;"><svg viewBox="0 0 320 124" width="100%" style="display:block;"><defs><linearGradient id="cg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="{{ t.primary }}" stop-opacity="0.28"></stop><stop offset="100%" stop-color="{{ t.primary }}" stop-opacity="0"></stop></linearGradient></defs><path d="M0,96 C28,92 44,80 66,82 C92,84 100,60 128,62 C156,64 166,42 192,48 C220,54 230,32 256,36 C282,40 298,24 306,22 L320,20 L320,124 L0,124 Z" fill="url(#cg)"></path><path d="M0,96 C28,92 44,80 66,82 C92,84 100,60 128,62 C156,64 166,42 192,48 C220,54 230,32 256,36 C282,40 298,24 306,22" fill="none" stroke="{{ t.primary }}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="306" cy="22" r="4.5" fill="{{ t.primary }}" stroke="{{ t.surface }}" stroke-width="2.5"></circle></svg></div>
                     <div style="display:flex; justify-content:space-between; margin-top:8px; font-size:11px; color:{{ t.textMuted }};"><span>第1週</span><span>第2週</span><span>第3週</span><span>第4週</span></div>
                   </div>
+                  <!-- 最近の活動 -->
+                  <div style="margin-top:22px;">
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+                      <div style="font-size:12px; font-weight:700; letter-spacing:.08em; color:{{ t.textMuted }};">最近の活動</div>
+                      <span onClick="{{ goTasks }}" style="font-size:12px; color:{{ t.primary }}; font-weight:600; cursor:pointer;">もっと見る</span>
+                    </div>
+                    <sc-if value="{{ recentActivityEmpty }}">
+                      <div style="padding:20px; background:{{ t.surface }}; border:1.5px dashed {{ t.border }}; border-radius:{{ t.radius }}px; text-align:center; font-size:13px; color:{{ t.textMuted }};">まだ作業記録がありません</div>
+                    </sc-if>
+                    <sc-if value="{{ !recentActivityEmpty }}">
+                      <div style="display:flex; flex-direction:column; gap:8px;">
+                        <sc-for list="{{ recentActivity }}" as="act">
+                          <div style="display:flex; align-items:center; gap:12px; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:12px 14px;">
+                            <div style="width:34px; height:34px; border-radius:10px; background:{{ t.chipBg }}; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0;">{{ act.icon }}</div>
+                            <div style="flex:1;"><div style="font-size:13px; font-weight:700; color:{{ t.text }};">{{ act.actLabel }}</div><div style="font-size:11px; color:{{ t.textMuted }}; margin-top:1px;">{{ act.date }}</div></div>
+                          </div>
+                        </sc-for>
+                      </div>
+                    </sc-if>
+                  </div>
                 </div>
               </sc-if>
 
@@ -483,19 +503,91 @@
                 </div>
               </sc-if>
 
-              <!-- SCR-024 TASKS -->
+              <!-- SCR-024 TASKS - 内検メイン -->
               <sc-if value="{{ vTasks }}" hint-placeholder-val="{{ false }}">
-                <div data-screen-label="SCR-024 タスク一覧" style="padding:64px 16px 16px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
-                  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; padding:0 4px;"><span style="font-size:22px; font-weight:800; color:{{ t.text }};">タスク一覧</span><button onClick="{{ goInspStart }}" style="padding:7px 13px; font-size:13px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primary }}; background:{{ t.chipBg }}; border:none; border-radius:999px; cursor:pointer;">🔍 内検</button></div>
-                  <div style="display:flex; gap:6px; background:{{ t.surfaceAlt }}; border:1px solid {{ t.border }}; padding:5px; border-radius:12px; margin-bottom:16px;"><button onClick="{{ tfToday }}" style="{{ taskSegToday }}">本日</button><button onClick="{{ tfWeek }}" style="{{ taskSegWeek }}">今週</button><button onClick="{{ tfAll }}" style="{{ taskSegAll }}">すべて</button></div>
-                  <div style="display:flex; flex-direction:column; gap:8px;">
-                    <sc-if value="{{ tasksEmpty }}">
-                      <div style="text-align:center; padding:40px 16px; color:{{ t.textMuted }}; font-size:15px;">タスクがありません</div>
+                <div data-screen-label="SCR-024 作業" style="overflow-y:auto; position:absolute; inset:0; padding-bottom:24px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
+                  <!-- ヘッダー -->
+                  <div style="padding:64px 20px 16px; display:flex; align-items:center; justify-content:space-between;">
+                    <span style="font-size:22px; font-weight:800; color:{{ t.text }};">作業</span>
+                    <span style="font-size:12px; color:{{ t.textMuted }};">{{ todayLabel }}</span>
+                  </div>
+                  <!-- 内検バナー (メインCTA) -->
+                  <div onClick="{{ goInspStart }}" style="margin:0 16px 20px; background:{{ t.primary }}; border-radius:18px; padding:20px; cursor:pointer; overflow:hidden; position:relative;" style-active="opacity:.9;">
+                    <div style="font-size:11px; font-weight:700; letter-spacing:.1em; color:{{ t.primaryText }}; opacity:.7; margin-bottom:6px; text-transform:uppercase;">内検（内部検査）</div>
+                    <div style="font-size:21px; font-weight:800; color:{{ t.primaryText }}; margin-bottom:5px;">🔍 内検を記録する</div>
+                    <div style="font-size:13px; color:{{ t.primaryText }}; opacity:.8; margin-bottom:16px;">蜂群の状態をチェックして記録しましょう</div>
+                    <div style="display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,.22); padding:8px 16px; border-radius:999px;">
+                      <span style="font-size:13px; font-weight:700; color:{{ t.primaryText }};">今すぐ開始 →</span>
+                    </div>
+                    <div style="position:absolute; right:-8px; top:-8px; font-size:88px; opacity:.1; line-height:1; pointer-events:none;">🐝</div>
+                  </div>
+                  <!-- 本日のサマリー -->
+                  <div style="padding:0 16px; margin-bottom:20px;">
+                    <div style="font-size:12px; font-weight:700; letter-spacing:.08em; color:{{ t.textMuted }}; margin-bottom:10px;">本日の記録</div>
+                    <div style="display:flex; gap:8px;">
+                      <div style="flex:1; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:12px; padding:12px; text-align:center;">
+                        <div style="font-size:26px; font-weight:800; color:{{ t.text }};">{{ dashInspCount }}</div>
+                        <div style="font-size:11px; color:{{ t.textMuted }}; margin-top:2px;">🔍 内検</div>
+                      </div>
+                      <div style="flex:1; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:12px; padding:12px; text-align:center;">
+                        <div style="font-size:26px; font-weight:800; color:{{ t.text }};">{{ dashFeedCount }}</div>
+                        <div style="font-size:11px; color:{{ t.textMuted }}; margin-top:2px;">🍼 給餌</div>
+                      </div>
+                      <div style="flex:1; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:12px; padding:12px; text-align:center;">
+                        <div style="font-size:26px; font-weight:800; color:{{ t.text }};">{{ dashHarvestCount }}</div>
+                        <div style="font-size:11px; color:{{ t.textMuted }}; margin-top:2px;">🍯 採蜜</div>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- その他の作業 -->
+                  <div style="padding:0 16px; margin-bottom:20px;">
+                    <div style="font-size:12px; font-weight:700; letter-spacing:.08em; color:{{ t.textMuted }}; margin-bottom:10px;">その他の作業を記録</div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                      <div onClick="{{ goWorkRecordFeed }}" style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:14px; padding:14px; cursor:pointer; display:flex; align-items:center; gap:10px;" style-active="background:{{ t.chipBg }};">
+                        <div style="width:36px; height:36px; border-radius:10px; background:{{ t.chipBg }}; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">🍼</div>
+                        <div><div style="font-size:13px; font-weight:700; color:{{ t.text }};">給餌</div><div style="font-size:11px; color:{{ t.textMuted }};">砂糖水・花粉</div></div>
+                      </div>
+                      <div onClick="{{ goWorkRecordHarvest }}" style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:14px; padding:14px; cursor:pointer; display:flex; align-items:center; gap:10px;" style-active="background:{{ t.chipBg }};">
+                        <div style="width:36px; height:36px; border-radius:10px; background:{{ t.chipBg }}; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">🍯</div>
+                        <div><div style="font-size:13px; font-weight:700; color:{{ t.text }};">採蜜</div><div style="font-size:11px; color:{{ t.textMuted }};">採蜜量・日時</div></div>
+                      </div>
+                      <div onClick="{{ goWorkRecordTreat }}" style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:14px; padding:14px; cursor:pointer; display:flex; align-items:center; gap:10px;" style-active="background:{{ t.chipBg }};">
+                        <div style="width:36px; height:36px; border-radius:10px; background:{{ t.chipBg }}; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">💊</div>
+                        <div><div style="font-size:13px; font-weight:700; color:{{ t.text }};">治療</div><div style="font-size:11px; color:{{ t.textMuted }};">薬剤・処置</div></div>
+                      </div>
+                      <div onClick="{{ goWorkHistory }}" style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:14px; padding:14px; cursor:pointer; display:flex; align-items:center; gap:10px;" style-active="background:{{ t.chipBg }};">
+                        <div style="width:36px; height:36px; border-radius:10px; background:{{ t.chipBg }}; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">📋</div>
+                        <div><div style="font-size:13px; font-weight:700; color:{{ t.text }};">作業履歴</div><div style="font-size:11px; color:{{ t.textMuted }};">すべての記録</div></div>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- 最近の内検 -->
+                  <div style="padding:0 16px;">
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+                      <div style="font-size:12px; font-weight:700; letter-spacing:.08em; color:{{ t.textMuted }};">最近の内検</div>
+                      <span onClick="{{ goInspHistory }}" style="font-size:12px; color:{{ t.primary }}; font-weight:600; cursor:pointer;">すべて見る</span>
+                    </div>
+                    <sc-if value="{{ inspHistoryEmpty }}">
+                      <div style="display:flex; flex-direction:column; align-items:center; gap:10px; padding:28px 16px; background:{{ t.surface }}; border:1.5px dashed {{ t.border }}; border-radius:{{ t.radius }}px; text-align:center;">
+                        <div style="font-size:36px;">🔍</div>
+                        <div style="font-size:14px; font-weight:700; color:{{ t.text }};">まだ内検記録がありません</div>
+                        <div style="font-size:12px; color:{{ t.textMuted }};">上のバナーから最初の内検を始めてみましょう</div>
+                      </div>
                     </sc-if>
-                    <sc-for list="{{ tasksView }}" as="tk">
-                      <div onClick="{{ tk.open }}" style="display:flex; align-items:center; gap:13px; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:14px; cursor:pointer;"><div style="width:40px; height:40px; border-radius:11px; background:{{ tk.iconBg }}; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">{{ tk.icon }}</div><div style="flex:1; min-width:0;"><div style="font-size:14px; font-weight:700; color:{{ t.text }};">{{ tk.colony }}　{{ tk.type }}</div><div style="font-size:12px; color:{{ t.textMuted }}; margin-top:2px;">{{ tk.when }}</div><sc-if value="{{ tk.memo }}"><div style="font-size:12px; color:{{ t.textMuted }}; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ tk.memo }}</div></sc-if></div><span style="font-size:11px; font-weight:700; color:{{ tk.statusColor }}; background:{{ tk.statusBg }}; padding:4px 10px; border-radius:999px; flex-shrink:0;">{{ tk.status }}</span></div>
-                    </sc-for>
-                    <button onClick="{{ goTaskCreate }}" style="margin-top:4px; padding:15px; font-size:15px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primary }}; background:transparent; border:1.5px dashed {{ t.border }}; border-radius:{{ t.radius }}px; cursor:pointer;">＋ タスクを追加</button>
+                    <sc-if value="{{ !inspHistoryEmpty }}">
+                      <div style="display:flex; flex-direction:column; gap:8px;">
+                        <sc-for list="{{ recentInspItems }}" as="rec">
+                          <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:13px 14px; display:flex; align-items:center; gap:12px;">
+                            <div style="width:38px; height:38px; border-radius:11px; background:{{ t.chipBg }}; display:flex; align-items:center; justify-content:center; font-size:17px; flex-shrink:0;">🔍</div>
+                            <div style="flex:1; min-width:0;">
+                              <div style="font-size:14px; font-weight:700; color:{{ t.text }};">{{ rec.colony }}</div>
+                              <div style="font-size:12px; color:{{ t.textMuted }}; margin-top:2px;">{{ rec.date }} ・ {{ rec.weather }} ・ {{ rec.frames.length }}枠</div>
+                              <sc-if value="{{ rec.frameMemo }}"><div style="font-size:12px; color:{{ t.textMuted }}; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">📝 {{ rec.frameMemo }}</div></sc-if>
+                            </div>
+                          </div>
+                        </sc-for>
+                      </div>
+                    </sc-if>
                   </div>
                 </div>
               </sc-if>
@@ -548,6 +640,36 @@
                     </div>
                   </sc-if>
                   <button onClick="{{ goWorkRecord }}" style="width:100%; padding:15px; font-size:15px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primary }}; background:transparent; border:1.5px dashed {{ t.border }}; border-radius:{{ t.radius }}px; cursor:pointer;">＋ 作業を記録</button>
+                </div>
+              </sc-if>
+
+              <!-- SETTING DETAIL -->
+              <sc-if value="{{ vSettingDetail }}" hint-placeholder-val="{{ false }}">
+                <div data-screen-label="設定詳細" style="padding:60px 16px 24px; overflow-y:auto; position:absolute; inset:0; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
+                  <div style="display:flex; align-items:center; gap:10px; margin-bottom:24px;">
+                    <button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button>
+                    <span style="font-size:20px; font-weight:800; color:{{ t.text }};">{{ settingDetail.icon }} {{ settingDetail.label }}</span>
+                  </div>
+                  <!-- アカウント画面 (key=account) -->
+                  <sc-if value="{{ settingDetailKey === 'account' }}">
+                    <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; overflow:hidden; margin-bottom:14px;">
+                      <div style="padding:15px 16px; border-bottom:1px solid {{ t.border }};"><div style="font-size:12px; color:{{ t.textMuted }}; margin-bottom:3px;">ログイン中のアカウント</div><div style="font-size:15px; font-weight:700; color:{{ t.text }};">{{ userFarm }}</div></div>
+                      <div style="padding:15px 16px; border-bottom:1px solid {{ t.border }};"><div style="font-size:12px; color:{{ t.textMuted }}; margin-bottom:3px;">メールアドレス</div><div style="font-size:14px; color:{{ t.text }};">（メール確認は認証画面で確認可能）</div></div>
+                      <div style="padding:15px 16px;"><div style="font-size:12px; color:{{ t.textMuted }}; margin-bottom:3px;">パスワード</div><div style="font-size:14px; color:{{ t.text }};">••••••••</div></div>
+                    </div>
+                    <div style="display:flex; flex-direction:column; align-items:center; gap:10px; padding:24px; background:{{ t.chipBg }}; border-radius:{{ t.radius }}px; text-align:center;">
+                      <div style="font-size:13px; color:{{ t.textMuted }}; line-height:1.7;">パスワード変更・メール変更は<br>今後のアップデートで対応予定です。</div>
+                    </div>
+                  </sc-if>
+                  <!-- Coming soon (その他) -->
+                  <sc-if value="{{ settingDetailKey !== 'account' }}">
+                    <div style="display:flex; flex-direction:column; align-items:center; gap:16px; padding:40px 20px; text-align:center; background:{{ t.surface }}; border:1.5px dashed {{ t.border }}; border-radius:{{ t.radius }}px;">
+                      <div style="font-size:52px;">{{ settingDetail.icon }}</div>
+                      <div style="font-size:18px; font-weight:800; color:{{ t.text }};">準備中です</div>
+                      <div style="font-size:14px; color:{{ t.textMuted }}; line-height:1.8;">{{ settingDetail.label }}は<br>今後のアップデートで追加されます。</div>
+                      <div style="font-size:12px; color:{{ t.textMuted }};">{{ settingDetail.desc }}</div>
+                    </div>
+                  </sc-if>
                 </div>
               </sc-if>
 
@@ -607,7 +729,7 @@
                   <!-- Other settings rows -->
                   <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; overflow:hidden; margin-bottom:16px;">
                     <sc-for list="{{ settingsRows }}" as="sr">
-                      <div style="display:flex; align-items:center; gap:12px; padding:15px 16px; border-bottom:1px solid {{ t.border }};"><span style="font-size:18px; width:24px; text-align:center;">{{ sr.icon }}</span><span style="flex:1; font-size:14px; color:{{ t.text }};">{{ sr.label }}</span><span style="color:{{ t.textMuted }};">›</span></div>
+                      <div onClick="{{ sr.open }}" style="display:flex; align-items:center; gap:12px; padding:15px 16px; border-bottom:1px solid {{ t.border }}; cursor:pointer;" style-active="background:{{ t.surfaceAlt }};"><span style="font-size:18px; width:24px; text-align:center;">{{ sr.icon }}</span><div style="flex:1;"><div style="font-size:14px; color:{{ t.text }};">{{ sr.label }}</div><div style="font-size:11px; color:{{ t.textMuted }}; margin-top:2px;">{{ sr.desc }}</div></div><span style="color:{{ t.textMuted }};">›</span></div>
                     </sc-for>
                   </div>
                   <button onClick="{{ logout }}" style="width:100%; padding:15px; font-size:15px; font-weight:700; font-family:{{ t.font }}; color:{{ t.danger }}; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:14px; cursor:pointer;">ログアウト</button>
@@ -644,6 +766,7 @@ class Component extends DCLogic {
     f: { loginEmail:'', loginPw:'', regName:'', regEmail:'', regPw:'', regFarm:'', frameMemo:'', aiMemo:'', taskType:'給餌', taskColony:'A-02', taskMemo:'', recType:'給餌', recColony:'A-02', recMemo:'' },
     loginError: '', regError: '', userName: '', userFarm: '',
     settingEditOpen: false, settingError: '', settingSaved: false,
+    settingDetailKey: '',
     inspColony: 'A-01', inspHistory: [],
     workHistory: [],
   };
@@ -727,8 +850,11 @@ class Component extends DCLogic {
   ];
   REPORT_FARMS = [ { name:'第一養蜂場', kg:245 }, { name:'第二養蜂場', kg:158 }, { name:'第三養蜂場', kg:55 } ];
   SETTINGS = [
-    { icon:'🏡', label:'養蜂場の管理' }, { icon:'📡', label:'センサー・デバイス' }, { icon:'🔔', label:'通知設定' },
-    { icon:'👥', label:'メンバー管理' }, { icon:'🔒', label:'アカウント' },
+    { icon:'🏡', label:'養蜂場の管理', key:'farm', desc:'管理する養蜂場・蜂群の設定' },
+    { icon:'📡', label:'センサー・デバイス', key:'sensor', desc:'IoTセンサーの接続・管理' },
+    { icon:'🔔', label:'通知設定', key:'notif', desc:'アラートと通知の設定' },
+    { icon:'👥', label:'メンバー管理', key:'member', desc:'チームメンバーと権限の管理' },
+    { icon:'🔒', label:'アカウント', key:'account', desc:'メール・パスワードの管理' },
   ];
   GRAPH = {
     weight: { title:'重量グラフ（A-01）', value:'38.5', unit:'kg', color:'#E8961B',
@@ -784,18 +910,22 @@ class Component extends DCLogic {
     const farm = (this.f('editFarm') || '').trim();
     if (!name) { this.setState({ settingError: '名前を入力してください' }); return; }
     try {
-      const session = await window.HoneyDB.getSession();
-      if (!session) throw new Error('ログインが必要です');
-      const { error } = await window.supabase
-        .from('profiles')
-        .update({ name, farm_name: farm })
-        .eq('id', session.user.id);
-      if (error) throw error;
+      await window.HoneyDB.updateProfile(name, farm);
       this.setState({ userName: name, userFarm: farm, settingSaved: true, settingError: '' });
       setTimeout(() => this.setState({ settingSaved: false, settingEditOpen: false }), 1500);
     } catch(e) {
       this.setState({ settingError: '保存に失敗しました: ' + (e.message || '') });
     }
+  }
+
+  goWorkRecordType(type) {
+    this.setState(s => ({ ...s, f: { ...s.f, recType: type } }));
+    this.nav('workRecord');
+  }
+
+  openSettingDetail(key) {
+    this.setState({ settingDetailKey: key });
+    this.nav('settingDetail');
   }
 
   async logout() {
@@ -1034,9 +1164,9 @@ class Component extends DCLogic {
       vHome:app&&v==='home', vNotif:app&&v==='notif', vFarms:app&&v==='farms', vFarmDetail:app&&v==='farmDetail', vFarmMap:app&&v==='farmMap',
       vInspStart:app&&v==='inspStart', vInspCapture:app&&v==='inspCapture', vInspFrame:app&&v==='inspFrame', vInspAI:app&&v==='inspAI', vInspSummary:app&&v==='inspSummary', vInspHistory:app&&v==='inspHistory',
       vSensor:app&&v==='sensor', vGraph:app&&(v==='weight'||v==='temp'||v==='humid'), vCamera:app&&v==='camera', vAiDiagnosis:app&&v==='aiDiagnosis', vAiRecommend:app&&v==='aiRecommend',
-      vTasks:app&&v==='tasks', vTaskCreate:app&&v==='taskCreate', vWorkRecord:app&&v==='workRecord', vWorkHistory:app&&v==='workHistory', vReport:app&&v==='report', vSettings:app&&v==='settings',
+      vTasks:app&&v==='tasks', vTaskCreate:app&&v==='taskCreate', vWorkRecord:app&&v==='workRecord', vWorkHistory:app&&v==='workHistory', vReport:app&&v==='report', vSettings:app&&v==='settings', vSettingDetail:app&&v==='settingDetail',
       nc, notifs, hasUnread, farms, colonies, mapPins, frameChips, selectedCount, aiResults, scoreCells, calCells, healthTrendPts, healthDots, heatRows, tasksView, tasksEmpty, recActions, reportFarms,
-      workHist:this.WORK_HIST, settingsRows:this.SETTINGS,
+      workHist:this.WORK_HIST,
       sensorLine:sm.d, sensorArea:sma.d,
       faceLabel: s.face==='A'?'表面 A':'裏面 B',
       // graph
@@ -1103,10 +1233,18 @@ class Component extends DCLogic {
       back:()=>this.back(),
       goNotif:()=>this.nav('notif'), markAllRead:()=>this.markAllRead(),
       goFarmDetail:()=>this.nav('farmDetail'), goFarmMap:()=>this.nav('farmMap'),
-      goInspStart:()=>this.nav('inspStart'), goInspCapture:()=>this.nav('inspCapture'), goInspFrame:()=>this.nav('inspFrame'), goInspAI:()=>this.nav('inspAI'), goInspSummary:()=>this.nav('inspSummary'), goInspHistory:()=>this.tab('tasks'),
+      goInspStart:()=>this.nav('inspStart'), goInspCapture:()=>this.nav('inspCapture'), goInspFrame:()=>this.nav('inspFrame'), goInspAI:()=>this.nav('inspAI'), goInspSummary:()=>this.nav('inspSummary'),
       goWeight:()=>this.navGraph('weight'), goTemp:()=>this.navGraph('temp'), goHumid:()=>this.navGraph('humid'),
       goAiDiagnosis:()=>this.nav('aiDiagnosis'), goAiRecommend:()=>this.nav('aiRecommend'),
       goReport:()=>this.tab('report'), goTasks:()=>this.tab('tasks'), goTaskCreate:()=>this.nav('taskCreate'), goWorkRecord:()=>this.nav('workRecord'), goWorkHistory:()=>this.nav('workHistory'),
+      goWorkRecordFeed:()=>this.goWorkRecordType('給餌'), goWorkRecordHarvest:()=>this.goWorkRecordType('採蜜'), goWorkRecordTreat:()=>this.goWorkRecordType('治療'),
+      recentInspItems: s.inspHistory.slice(0, 3),
+      recentActivity: [...s.inspHistory.map(r=>({...r,kind:'insp',icon:'🔍',actLabel:r.colony+' 内検'})),...s.workHistory.map(r=>({...r,kind:'work',icon:r.type==='給餌'?'🍼':r.type==='採蜜'?'🍯':'💊',actLabel:r.colony+' '+r.type}))].slice(0,4),
+      recentActivityEmpty: s.inspHistory.length===0 && s.workHistory.length===0,
+      settingsRows: this.SETTINGS.map(sr => ({ ...sr, open: () => this.openSettingDetail(sr.key) })),
+      settingDetailKey: s.settingDetailKey,
+      settingDetail: this.SETTINGS.find(sr => sr.key === s.settingDetailKey) || {},
+      goInspHistory:()=>this.nav('inspHistory'),
       // tabs
       tabHome:()=>this.tab('home'), tabFarms:()=>this.tab('farms'), tabTasks:()=>this.tab('tasks'), tabReport:()=>this.tab('report'), tabSettings:()=>this.tab('settings'),
       logout:()=>this.logout(),

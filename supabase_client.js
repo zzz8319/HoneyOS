@@ -110,6 +110,16 @@
     }));
   }
 
+  async function updateProfile(name, farmName) {
+    const session = await getSession();
+    if (!session) throw new Error('ログインが必要です');
+    const { error } = await sb.from('profiles').update({
+      name,
+      farm_name: farmName,
+    }).eq('id', session.user.id);
+    if (error) throw error;
+  }
+
   async function saveWorkRecord(record) {
     const session = await getSession();
     if (!session) throw new Error('ログインが必要です');
@@ -131,6 +141,7 @@
     signOut,
     getSession,
     getUserProfile,
+    updateProfile,
     loadInspRecords,
     saveInspRecord,
     loadWorkRecords,
