@@ -84,6 +84,9 @@
       time: record.time,
       weather: record.weather,
       frames: record.frames,
+      count_mode: record.countMode || 'frame',
+      frame_details: record.frameDetails || {},
+      space_count: record.spaceCount || null,
       frame_memo: record.frameMemo || '',
       ai_memo: record.aiMemo || '',
     });
@@ -130,6 +133,7 @@
       date: record.date,
       time: record.time,
       memo: record.memo || '',
+      yield_kg: record.yieldKg || null,
     });
     if (error) throw error;
   }

@@ -3,6 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#E8961B">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="HoneyOS">
+<link rel="manifest" href="./manifest.json">
+<script>if('serviceWorker' in navigator){ navigator.serviceWorker.register('./sw.js'); }</script>
 <script src="./supabase.min.js"></script>
 <script src="./support.js"></script>
 <script src="./supabase_client.js"></script>
@@ -325,16 +331,77 @@
                 </div>
               </sc-if>
 
-              <!-- SCR-012 CAPTURE -->
+              <!-- SCR-012 枠記録 -->
               <sc-if value="{{ vInspCapture }}" hint-placeholder-val="{{ false }}">
-                <div data-screen-label="SCR-012 撮影" style="padding:60px 16px 16px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1); display:flex; flex-direction:column; height:100%;">
-                  <div style="display:flex; align-items:center; gap:10px; margin-bottom:24px;"><button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button><span style="font-size:18px; font-weight:800; color:{{ t.text }};">撮影</span></div>
-                  <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:20px; text-align:center; background:{{ t.surface }}; border:1.5px dashed {{ t.border }}; border-radius:{{ t.radius }}px; padding:32px; margin-bottom:24px;">
-                    <div style="font-size:56px;">📷</div>
-                    <div style="font-size:18px; font-weight:800; color:{{ t.text }};">撮影機能は準備中です</div>
-                    <div style="font-size:14px; color:{{ t.textMuted }}; line-height:1.8;">カメラ・AI解析機能は<br>今後のアップデートで追加されます。<br>現在はメモ記録のみ可能です。</div>
+                <div data-screen-label="SCR-012 枠記録" style="padding:60px 16px 24px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
+                  <!-- Header -->
+                  <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;">
+                    <button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button>
+                    <span style="font-size:18px; font-weight:800; color:{{ t.text }};">枠記録　{{ inspColony }}</span>
+                    <span style="margin-left:auto; font-size:13px; color:{{ t.textMuted }}; white-space:nowrap;">{{ selectedFrameNum }}/{{ selectedFrameCount }}枠</span>
                   </div>
-                  <button onClick="{{ goInspFrame }}" style="width:100%; padding:16px; font-size:16px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};" style-active="transform:translateY(1px);">メモ入力へ進む</button>
+                  <!-- Mode toggle -->
+                  <div style="display:flex; gap:4px; background:{{ t.surfaceAlt }}; border:1px solid {{ t.border }}; padding:4px; border-radius:12px; margin-bottom:14px;">
+                    <button onClick="{{ setModeFrame }}" style="{{ modeFrameStyle }}">🏠 枠式</button>
+                    <button onClick="{{ setModeSpace }}" style="{{ modeSpaceStyle }}">🐝 空間式</button>
+                  </div>
+                  <!-- 枠式 -->
+                  <sc-if value="{{ countModeIsFrame }}">
+                    <!-- Frame nav chips -->
+                    <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px;">
+                      <sc-for list="{{ frameNavChips }}" as="fn">
+                        <div onClick="{{ fn.select }}" style="min-width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; cursor:pointer; background:{{ fn.bg }}; color:{{ fn.fg }}; border:1.5px solid {{ fn.border }}; position:relative; padding:0 4px;">{{ fn.n }}<sc-if value="{{ fn.hasData }}"><span style="position:absolute; top:-3px; right:-3px; width:7px; height:7px; border-radius:50%; background:{{ t.ok }}; border:1.5px solid {{ t.bg }};"></span></sc-if></div>
+                      </sc-for>
+                    </div>
+                    <!-- Frame detail card -->
+                    <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; display:flex; flex-direction:column; gap:14px; margin-bottom:14px;">
+                      <!-- 蜂量 -->
+                      <div><div style="font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:8px;">🐝 蜂量</div><div style="display:flex; gap:6px;">
+                        <sc-for list="{{ beesChips }}" as="bc"><button onClick="{{ bc.set }}" style="{{ bc.style }}">{{ bc.label }}</button></sc-for>
+                      </div></div>
+                      <!-- 育児状況 -->
+                      <div><div style="font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:8px;">🥚 育児状況</div><div style="display:flex; gap:6px; flex-wrap:wrap;">
+                        <sc-for list="{{ broodChips }}" as="bc"><button onClick="{{ bc.set }}" style="{{ bc.style }}">{{ bc.label }}</button></sc-for>
+                      </div></div>
+                      <!-- 女王確認 -->
+                      <div><div style="font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:8px;">👑 女王確認</div><div style="display:flex; gap:6px;">
+                        <sc-for list="{{ queenChips }}" as="qc"><button onClick="{{ qc.set }}" style="{{ qc.style }}">{{ qc.label }}</button></sc-for>
+                      </div></div>
+                      <!-- 蜜・花粉 -->
+                      <div style="display:flex; gap:8px;">
+                        <button onClick="{{ toggleHoney }}" style="{{ honeyToggleStyle }}">🍯 蜜あり</button>
+                        <button onClick="{{ togglePollen }}" style="{{ pollenToggleStyle }}">🌸 花粉あり</button>
+                      </div>
+                      <!-- メモ -->
+                      <div><div style="font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:6px;">メモ（任意）</div>
+                        <textarea value="{{ currentFrameMemo }}" onInput="{{ hFdMemo }}" placeholder="気になった点..." rows="2" style="width:100%; padding:11px 13px; font-size:14px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surfaceAlt }}; border:1.5px solid {{ t.border }}; border-radius:10px; outline:none; resize:none; box-sizing:border-box;" style-focus="border-color:{{ t.primary }};"></textarea>
+                      </div>
+                    </div>
+                    <!-- Prev/Next -->
+                    <div style="display:flex; gap:8px; margin-bottom:14px;">
+                      <button onClick="{{ prevFrame }}" style="flex:1; padding:12px; font-size:14px; font-weight:700; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px; cursor:pointer;">← 前の枠</button>
+                      <button onClick="{{ nextFrame }}" style="flex:1; padding:12px; font-size:14px; font-weight:700; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px; cursor:pointer;">次の枠 →</button>
+                    </div>
+                  </sc-if>
+                  <!-- 空間式 -->
+                  <sc-if value="{{ !countModeIsFrame }}">
+                    <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; margin-bottom:14px;">
+                      <div style="font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:12px;">🐝 蜂が覆っているスペース数</div>
+                      <div style="display:flex; align-items:center; gap:20px; justify-content:center; padding:8px 0 14px;">
+                        <button onClick="{{ decSpaceCount }}" style="width:44px; height:44px; border-radius:50%; background:{{ t.surfaceAlt }}; border:1.5px solid {{ t.border }}; font-size:22px; cursor:pointer; font-family:{{ t.font }}; color:{{ t.text }};">−</button>
+                        <div style="text-align:center;"><span style="font-size:40px; font-weight:800; color:{{ t.text }};">{{ spaceCount }}</span><div style="font-size:11px; color:{{ t.textMuted }}; margin-top:2px;">スペース</div></div>
+                        <button onClick="{{ incSpaceCount }}" style="width:44px; height:44px; border-radius:50%; background:{{ t.surfaceAlt }}; border:1.5px solid {{ t.border }}; font-size:22px; cursor:pointer; font-family:{{ t.font }}; color:{{ t.text }};">＋</button>
+                      </div>
+                      <div style="display:grid; grid-template-columns:repeat(5,1fr); gap:5px;">
+                        <sc-for list="{{ spaceCells }}" as="sc"><div style="aspect-ratio:1; border-radius:7px; background:{{ sc.bg }}; display:flex; align-items:center; justify-content:center; font-size:13px; transition:background .15s;">{{ sc.icon }}</div></sc-for>
+                      </div>
+                    </div>
+                    <div><div style="font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:6px;">観察メモ（任意）</div>
+                      <textarea value="{{ f.frameMemo }}" onInput="{{ h.frameMemo }}" placeholder="全体的に活発、蜜源豊富..." rows="3" style="width:100%; padding:13px 14px; font-size:14px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px; outline:none; resize:none;" style-focus="border-color:{{ t.primary }};"></textarea>
+                    </div>
+                  </sc-if>
+                  <!-- Complete button -->
+                  <button onClick="{{ goInspSummary }}" style="width:100%; margin-top:14px; padding:16px; font-size:16px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};" style-active="transform:translateY(1px);">記録完了・サマリーへ</button>
                 </div>
               </sc-if>
 
@@ -377,9 +444,11 @@
                   <div style="font-size:16px; font-weight:800; color:{{ t.text }};">{{ inspSummaryColony }}</div>
                   <div style="font-size:13px; color:{{ t.textMuted }}; margin-bottom:18px;">{{ inspSummaryDate }} ・ {{ inspSummaryWeather }}</div>
                   <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; margin-bottom:14px; display:flex; flex-direction:column; gap:12px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-size:13px; color:{{ t.textMuted }};">記録方式</span><span style="font-size:13px; font-weight:700; color:{{ t.chipText }}; background:{{ t.chipBg }}; padding:3px 9px; border-radius:999px;">{{ inspSummaryMode }}</span></div>
+                    <div style="height:1px; background:{{ t.border }};"></div>
                     <div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-size:13px; color:{{ t.textMuted }};">検査枠</span><span style="font-size:14px; font-weight:700; color:{{ t.text }};">{{ inspSummaryCount }}枠（{{ inspSummaryFrames }}）</span></div>
                     <div style="height:1px; background:{{ t.border }};"></div>
-                    <div><div style="font-size:12px; color:{{ t.textMuted }}; margin-bottom:5px;">枠メモ</div><div style="font-size:14px; color:{{ t.text }}; line-height:1.7;">{{ inspSummaryFrameMemo }}</div></div>
+                    <div><div style="font-size:12px; color:{{ t.textMuted }}; margin-bottom:5px;">記録内容</div><div style="font-size:13px; color:{{ t.text }}; line-height:1.8; white-space:pre-line;">{{ inspSummaryFrameMemo }}</div></div>
                     <div style="height:1px; background:{{ t.border }};"></div>
                     <div><div style="font-size:12px; color:{{ t.textMuted }}; margin-bottom:5px;">その他メモ</div><div style="font-size:14px; color:{{ t.text }}; line-height:1.7;">{{ inspSummaryAiMemo }}</div></div>
                   </div>
@@ -391,7 +460,8 @@
               <!-- SCR-016 INSPECTION HISTORY -->
               <sc-if value="{{ vInspHistory }}" hint-placeholder-val="{{ false }}">
                 <div data-screen-label="SCR-016 内検履歴ダッシュボード" style="padding:60px 16px 16px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
-                  <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px;"><button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button><span style="font-size:20px; font-weight:800; color:{{ t.text }};">内検履歴</span></div>
+                  <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;"><button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button><span style="font-size:20px; font-weight:800; color:{{ t.text }};">内検履歴</span></div>
+                  <div style="position:relative; margin-bottom:14px;"><span style="position:absolute; left:13px; top:50%; transform:translateY(-50%); font-size:14px; pointer-events:none;">🔍</span><input value="{{ inspSearch }}" onInput="{{ hInspSearch }}" type="text" placeholder="蜂群・メモで検索..." style="width:100%; padding:11px 13px 11px 38px; font-size:14px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px; outline:none; box-sizing:border-box;" style-focus="border-color:{{ t.primary }};"></div>
                   <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; margin-bottom:14px;">
                     <div style="font-size:13px; font-weight:700; color:{{ t.text }}; margin-bottom:12px;">2026年6月</div>
                     <div style="display:grid; grid-template-columns:repeat(7,1fr); gap:5px; text-align:center;">
@@ -612,9 +682,10 @@
                 <div data-screen-label="SCR-026 作業記録入力" style="padding:60px 16px 16px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
                   <div style="display:flex; align-items:center; gap:10px; margin-bottom:20px;"><button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button><span style="font-size:20px; font-weight:800; color:{{ t.text }};">作業記録入力</span></div>
                   <div style="display:flex; flex-direction:column; gap:16px; margin-bottom:24px;">
-                    <div><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">作業種別</label><select value="{{ f.recType }}" onChange="{{ h.recType }}" style="width:100%; padding:14px 16px; font-size:15px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px; outline:none;"><option>給餌</option><option>内検</option><option>採蜜</option><option>治療</option></select></div>
+                    <div><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">作業種別</label><select value="{{ f.recType }}" onChange="{{ setRecType }}" style="width:100%; padding:14px 16px; font-size:15px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px; outline:none;"><option>給餌</option><option>内検</option><option>採蜜</option><option>治療</option></select></div>
                     <div><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">対象蜂群</label><select value="{{ f.recColony }}" onChange="{{ h.recColony }}" style="width:100%; padding:14px 16px; font-size:15px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px; outline:none;"><sc-for list="{{ coloniesOpts }}" as="col"><option>{{ col }}</option></sc-for></select></div>
                     <div><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">実施日時</label><div style="padding:14px 16px; font-size:15px; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px;">{{ taskDateLabel }}</div></div>
+                    <sc-if value="{{ recTypeIsHarvest }}"><div><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">🍯 採蜜量（kg）</label><input value="{{ recYieldKg }}" onInput="{{ h.recYieldKg }}" type="number" min="0" step="0.1" placeholder="0.0" style="width:100%; padding:14px 16px; font-size:15px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px; outline:none; box-sizing:border-box;" style-focus="border-color:{{ t.primary }};"></div></sc-if>
                     <div><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">メモ</label><textarea value="{{ f.recMemo }}" onInput="{{ h.recMemo }}" placeholder="砂糖水 2L 給餌" rows="2" style="width:100%; padding:14px 16px; font-size:15px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px; outline:none; resize:none;" style-focus="border-color:{{ t.primary }};"></textarea></div>
                     <div><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">写真</label><div style="display:flex; gap:8px;"><div style="width:74px; height:74px; border-radius:12px; border:1.5px dashed {{ t.border }}; display:flex; align-items:center; justify-content:center; font-size:24px; color:{{ t.textMuted }}; cursor:pointer;">＋</div><div style="width:74px; height:74px; border-radius:12px; background:radial-gradient(circle,#c79a4e,#6e4f23);"></div></div></div>
                   </div>
@@ -769,6 +840,8 @@ class Component extends DCLogic {
     settingDetailKey: '',
     inspColony: 'A-01', inspHistory: [],
     workHistory: [],
+    countMode: 'frame', frameDetails: {}, selectedFrameNum: 1, spaceCount: 5,
+    inspSearch: '',
   };
 
   COLONIES = ['A-01','A-02','A-03','A-04','A-05','A-06','A-07','A-08','A-09','A-10','A-11','A-12'];
@@ -960,15 +1033,43 @@ class Component extends DCLogic {
   }
 
   startInspection() {
+    const frameNums = Object.keys(this.state.frames).map(Number).sort((a,b)=>a-b);
     this.setState(s => ({
-      frames: { 1:true, 2:true, 3:true },
+      frameDetails: {}, selectedFrameNum: frameNums[0] || 1, spaceCount: 5,
       f: { ...s.f, frameMemo:'', aiMemo:'' },
     }));
+    // clear frame memo buffers
+    for (let i = 1; i <= 10; i++) delete this._fieldBuf['fdmemo_' + i];
     this.nav('inspCapture');
+  }
+
+  setFrameDetail(num, key, val) {
+    this.setState(s => {
+      const fd = { ...(s.frameDetails[num] || {}) };
+      fd[key] = val;
+      return { frameDetails: { ...s.frameDetails, [num]: fd } };
+    });
+  }
+
+  selectFrameNum(num) {
+    const cur = this.state.selectedFrameNum;
+    const memo = this._fieldBuf['fdmemo_' + cur] !== undefined ? this._fieldBuf['fdmemo_' + cur] : ((this.state.frameDetails[cur] || {}).memo || '');
+    this.setState(s => {
+      const fd = { ...(s.frameDetails[cur] || {}) };
+      fd.memo = memo;
+      return { selectedFrameNum: num, frameDetails: { ...s.frameDetails, [cur]: fd } };
+    });
+    const newMemo = (this.state.frameDetails[num] || {}).memo || '';
+    this._fieldBuf['fdmemo_' + num] = newMemo;
   }
 
   async saveInspection() {
     const s = this.state;
+    // flush current frame memo from buf
+    const curNum = s.selectedFrameNum;
+    const curMemo = this._fieldBuf['fdmemo_' + curNum] !== undefined ? this._fieldBuf['fdmemo_' + curNum] : ((s.frameDetails[curNum] || {}).memo || '');
+    const mergedDetails = { ...s.frameDetails };
+    if (mergedDetails[curNum]) mergedDetails[curNum] = { ...mergedDetails[curNum], memo: curMemo };
     const wxMap = { sun:'晴れ', cloud:'曇り', rain:'雨' };
     const now = new Date();
     const dateStr = now.toLocaleDateString('ja-JP', { year:'numeric', month:'2-digit', day:'2-digit' });
@@ -979,6 +1080,9 @@ class Component extends DCLogic {
       time: timeStr,
       weather: wxMap[s.weather] || '晴れ',
       frames: Object.keys(s.frames).map(Number).sort((a,b)=>a-b),
+      countMode: s.countMode,
+      frameDetails: mergedDetails,
+      spaceCount: s.spaceCount,
       frameMemo: this.f('frameMemo').trim(),
       aiMemo: this.f('aiMemo').trim(),
     };
@@ -1012,12 +1116,16 @@ class Component extends DCLogic {
     const now = new Date();
     const dateStr = now.toLocaleDateString('ja-JP', { year:'numeric', month:'2-digit', day:'2-digit' });
     const timeStr = now.toLocaleTimeString('ja-JP', { hour:'2-digit', minute:'2-digit' });
+    const type = this.state.f.recType || this.f('recType');
+    const yieldKgRaw = this.f('recYieldKg');
+    const yieldKg = type === '採蜜' && yieldKgRaw ? parseFloat(yieldKgRaw) || null : null;
     const record = {
-      type: this.f('recType'),
+      type,
       colony: this.f('recColony'),
       date: dateStr,
       time: timeStr,
       memo: this.f('recMemo').trim(),
+      yieldKg,
     };
     try { await window.HoneyDB.saveWorkRecord(record); } catch(e) { console.error('saveWorkRecord:', e); }
     const entry = { id: now.getTime(), ...record, detail: (record.colony ? record.colony + ' ' : '') + (record.memo || record.type) };
@@ -1025,6 +1133,7 @@ class Component extends DCLogic {
       workHistory: [entry, ...prev.workHistory],
       f: Object.assign({}, prev.f, { recType:'給餌', recColony:this.COLONIES[0], recMemo:'' }),
     }));
+    delete this._fieldBuf['recYieldKg'];
     this.nav('workHistory');
   }
 
@@ -1193,7 +1302,7 @@ class Component extends DCLogic {
       repSegMonth:pill(s.reportPeriod==='month'), repSegWeek:pill(s.reportPeriod==='week'), repSegYear:pill(s.reportPeriod==='year'),
       rMonth:()=>this.setState({reportPeriod:'month'}), rWeek:()=>this.setState({reportPeriod:'week'}), rYear:()=>this.setState({reportPeriod:'year'}),
       // field handlers
-      h: (() => { const o = {}; ['loginEmail','loginPw','regName','regEmail','regPw','regFarm','frameMemo','aiMemo','taskType','taskColony','taskMemo','recType','recColony','recMemo','editName','editFarm'].forEach(k => { o[k] = this.field(k); }); return o; })(),
+      h: (() => { const o = {}; ['loginEmail','loginPw','regName','regEmail','regPw','regFarm','frameMemo','aiMemo','taskType','taskColony','taskMemo','recType','recColony','recMemo','recYieldKg','editName','editFarm'].forEach(k => { o[k] = this.field(k); }); return o; })(),
       // auth
       loginError: s.loginError, regError: s.regError, userName: s.userName, userFarm: s.userFarm || '養蜂家',
       settingEditOpen: s.settingEditOpen, settingError: s.settingError, settingSaved: s.settingSaved,
@@ -1205,14 +1314,65 @@ class Component extends DCLogic {
       coloniesOpts: this.COLONIES,
       startInspection: () => this.startInspection(),
       saveInspection: () => this.saveInspection(),
+      // frame detail screen
+      countModeIsFrame: s.countMode === 'frame',
+      setModeFrame: () => this.setState({ countMode: 'frame' }),
+      setModeSpace: () => this.setState({ countMode: 'space' }),
+      modeFrameStyle: 'flex:1; padding:9px; border:none; border-radius:9px; cursor:pointer; font-size:13px; font-weight:700; font-family:'+t.font+'; background:'+(s.countMode==='frame'?t.surface:'transparent')+'; color:'+(s.countMode==='frame'?t.text:t.textMuted)+'; box-shadow:'+(s.countMode==='frame'?'0 1px 3px rgba(0,0,0,.1)':'none')+';',
+      modeSpaceStyle: 'flex:1; padding:9px; border:none; border-radius:9px; cursor:pointer; font-size:13px; font-weight:700; font-family:'+t.font+'; background:'+(s.countMode==='space'?t.surface:'transparent')+'; color:'+(s.countMode==='space'?t.text:t.textMuted)+'; box-shadow:'+(s.countMode==='space'?'0 1px 3px rgba(0,0,0,.1)':'none')+';',
+      selectedFrameNum: s.selectedFrameNum,
+      selectedFrameCount: Object.keys(s.frames).length,
+      frameNavChips: (() => { const nums=Object.keys(s.frames).map(Number).sort((a,b)=>a-b); return nums.map(n=>({ n, select:()=>this.selectFrameNum(n), bg:n===s.selectedFrameNum?t.primary:t.surface, fg:n===s.selectedFrameNum?t.primaryText:t.textMuted, border:n===s.selectedFrameNum?t.primary:t.border, hasData:!!(s.frameDetails[n]&&(s.frameDetails[n].bees!==undefined||s.frameDetails[n].brood!==undefined)) })); })(),
+      beesChips: (() => { const cur=(s.frameDetails[s.selectedFrameNum]||{}).bees; const labels=['空','少','並','多']; return labels.map((label,i)=>({ label, set:()=>this.setFrameDetail(s.selectedFrameNum,'bees',i), style:'flex:1; padding:9px 6px; border:none; border-radius:9px; cursor:pointer; font-size:13px; font-weight:700; font-family:'+t.font+'; background:'+(cur===i?t.primary:t.surface)+'; color:'+(cur===i?t.primaryText:t.textMuted)+'; border:1.5px solid '+(cur===i?t.primary:t.border)+';' })); })(),
+      broodChips: (() => { const cur=(s.frameDetails[s.selectedFrameNum]||{}).brood; const labels=['なし','卵','幼虫','有蓋','混在']; return labels.map((label,i)=>({ label, set:()=>this.setFrameDetail(s.selectedFrameNum,'brood',i), style:'flex:1; padding:8px 4px; border:none; border-radius:9px; cursor:pointer; font-size:12px; font-weight:700; font-family:'+t.font+'; background:'+(cur===i?t.primary:t.surface)+'; color:'+(cur===i?t.primaryText:t.textMuted)+'; border:1.5px solid '+(cur===i?t.primary:t.border)+';' })); })(),
+      queenChips: (() => { const cur=(s.frameDetails[s.selectedFrameNum]||{}).queen; const labels=['未確認','確認済','王台あり']; return labels.map((label,i)=>({ label, set:()=>this.setFrameDetail(s.selectedFrameNum,'queen',i), style:'flex:1; padding:9px 6px; border:none; border-radius:9px; cursor:pointer; font-size:12px; font-weight:700; font-family:'+t.font+'; background:'+(cur===i?t.primary:t.surface)+'; color:'+(cur===i?t.primaryText:t.textMuted)+'; border:1.5px solid '+(cur===i?t.primary:t.border)+';' })); })(),
+      toggleHoney: () => this.setFrameDetail(s.selectedFrameNum,'honey',!((s.frameDetails[s.selectedFrameNum]||{}).honey)),
+      togglePollen: () => this.setFrameDetail(s.selectedFrameNum,'pollen',!((s.frameDetails[s.selectedFrameNum]||{}).pollen)),
+      honeyToggleStyle: 'flex:1; padding:10px; border:none; border-radius:10px; cursor:pointer; font-size:13px; font-weight:700; font-family:'+t.font+'; background:'+((s.frameDetails[s.selectedFrameNum]||{}).honey?t.chipBg:t.surface)+'; color:'+((s.frameDetails[s.selectedFrameNum]||{}).honey?t.chipText:t.textMuted)+'; border:1.5px solid '+((s.frameDetails[s.selectedFrameNum]||{}).honey?t.primary:t.border)+';',
+      pollenToggleStyle: 'flex:1; padding:10px; border:none; border-radius:10px; cursor:pointer; font-size:13px; font-weight:700; font-family:'+t.font+'; background:'+((s.frameDetails[s.selectedFrameNum]||{}).pollen?t.chipBg:t.surface)+'; color:'+((s.frameDetails[s.selectedFrameNum]||{}).pollen?t.chipText:t.textMuted)+'; border:1.5px solid '+((s.frameDetails[s.selectedFrameNum]||{}).pollen?t.primary:t.border)+';',
+      currentFrameMemo: (s.frameDetails[s.selectedFrameNum]||{}).memo || '',
+      hFdMemo: this.field('fdmemo_' + s.selectedFrameNum),
+      prevFrame: () => { const nums=Object.keys(s.frames).map(Number).sort((a,b)=>a-b); const i=nums.indexOf(s.selectedFrameNum); if(i>0) this.selectFrameNum(nums[i-1]); },
+      nextFrame: () => { const nums=Object.keys(s.frames).map(Number).sort((a,b)=>a-b); const i=nums.indexOf(s.selectedFrameNum); if(i<nums.length-1) this.selectFrameNum(nums[i+1]); },
+      spaceCount: s.spaceCount,
+      incSpaceCount: () => this.setState(st=>({spaceCount:Math.min(20,(st.spaceCount||5)+1)})),
+      decSpaceCount: () => this.setState(st=>({spaceCount:Math.max(0,(st.spaceCount||5)-1)})),
+      spaceCells: Array.from({length:20},(_,i)=>({ bg:i<s.spaceCount?t.primary:t.surfaceAlt, icon:i<s.spaceCount?'🐝':'' })),
+      goInspSummary: () => this.nav('inspSummary'),
+      // work record yield
+      setRecType: (e) => this.setState(st => ({ f: { ...st.f, recType: e.target.value } })),
+      recTypeIsHarvest: s.f.recType === '採蜜',
+      recYieldKg: this._fieldBuf['recYieldKg'] || '',
       inspSummaryColony: s.inspColony,
       inspSummaryWeather: ({sun:'☀️ 晴れ', cloud:'⛅ 曇り', rain:'🌧️ 雨'})[s.weather] || '晴れ',
       inspSummaryDate: new Date().toLocaleDateString('ja-JP', { year:'numeric', month:'2-digit', day:'2-digit' }),
       inspSummaryFrames: Object.keys(s.frames).map(Number).sort((a,b)=>a-b).join('・') + ' 枠',
-      inspSummaryFrameMemo: s.f.frameMemo || '（なし）',
-      inspSummaryAiMemo: s.f.aiMemo || '（なし）',
+      inspSummaryMode: s.countMode === 'frame' ? '枠式' : '空間式',
+      inspSummaryFrameMemo: (() => {
+        if (s.countMode === 'space') return '空間数：' + s.spaceCount + ' スペース';
+        const nums = Object.keys(s.frames).map(Number).sort((a,b)=>a-b);
+        const beeL=['空','少','並','多']; const broodL=['なし','卵','幼虫','有蓋','混在']; const queenL=['未確認','確認済','王台あり'];
+        const lines = nums.map(n => {
+          const d = s.frameDetails[n] || {};
+          const parts = [];
+          if (d.bees !== undefined) parts.push('蜂量:'+beeL[d.bees]);
+          if (d.brood !== undefined) parts.push('育児:'+broodL[d.brood]);
+          if (d.queen !== undefined) parts.push('女王:'+queenL[d.queen]);
+          if (d.honey) parts.push('蜜○');
+          if (d.pollen) parts.push('花粉○');
+          return parts.length ? ('枠'+n+'：'+parts.join(' ')) : null;
+        }).filter(Boolean);
+        return lines.length ? lines.join('\n') : (s.f.frameMemo || '（記録なし）');
+      })(),
+      inspSummaryAiMemo: s.f.aiMemo || s.f.frameMemo || '（なし）',
       inspSummaryCount: Object.keys(s.frames).length,
-      inspHistoryItems: s.inspHistory,
+      inspSearch: s.inspSearch,
+      hInspSearch: (e) => { this.setState({ inspSearch: e.target.value }); },
+      inspHistoryItems: s.inspHistory.filter(r => {
+        const q = s.inspSearch.trim().toLowerCase();
+        if (!q) return true;
+        return (r.colony||'').toLowerCase().includes(q) || (r.frameMemo||'').toLowerCase().includes(q) || (r.aiMemo||'').toLowerCase().includes(q) || (r.date||'').includes(q);
+      }),
       inspHistoryEmpty: s.inspHistory.length === 0,
       workHistoryItems: s.workHistory,
       workHistoryEmpty: s.workHistory.length === 0,
