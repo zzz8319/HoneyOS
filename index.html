@@ -505,7 +505,7 @@
 
               <!-- SCR-024 TASKS - 内検メイン -->
               <sc-if value="{{ vTasks }}" hint-placeholder-val="{{ false }}">
-                <div data-screen-label="SCR-024 作業" style="overflow-y:auto; position:absolute; inset:0; padding-bottom:24px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
+                <div data-screen-label="SCR-024 作業" style="padding-bottom:24px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
                   <!-- ヘッダー -->
                   <div style="padding:64px 20px 16px; display:flex; align-items:center; justify-content:space-between;">
                     <span style="font-size:22px; font-weight:800; color:{{ t.text }};">作業</span>
@@ -645,7 +645,7 @@
 
               <!-- SETTING DETAIL -->
               <sc-if value="{{ vSettingDetail }}" hint-placeholder-val="{{ false }}">
-                <div data-screen-label="設定詳細" style="padding:60px 16px 24px; overflow-y:auto; position:absolute; inset:0; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
+                <div data-screen-label="設定詳細" style="padding:60px 16px 24px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
                   <div style="display:flex; align-items:center; gap:10px; margin-bottom:24px;">
                     <button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button>
                     <span style="font-size:20px; font-weight:800; color:{{ t.text }};">{{ settingDetail.icon }} {{ settingDetail.label }}</span>
