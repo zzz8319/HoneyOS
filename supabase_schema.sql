@@ -35,6 +35,11 @@ create policy "users delete own insp_records"
   on public.insp_records for delete
   using (auth.uid() = user_id);
 
+-- Add frame detail columns (run if upgrading existing DB)
+alter table public.insp_records add column if not exists count_mode text not null default 'frame';
+alter table public.insp_records add column if not exists frame_details jsonb not null default '{}';
+alter table public.insp_records add column if not exists space_count integer;
+
 -- =====================
 -- work_records: 作業履歴
 -- =====================
@@ -46,6 +51,7 @@ create table if not exists public.work_records (
   date       text not null,
   time       text not null,
   memo       text not null default '',
+  yield_kg   decimal,
   created_at timestamptz not null default now()
 );
 
@@ -66,6 +72,9 @@ create policy "users insert own work_records"
 create policy "users delete own work_records"
   on public.work_records for delete
   using (auth.uid() = user_id);
+
+-- Add yield_kg column (run if upgrading existing DB)
+alter table public.work_records add column if not exists yield_kg decimal;
 
 -- =====================
 -- profiles: ユーザープロファイル

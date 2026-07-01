@@ -84,6 +84,9 @@
       time: record.time,
       weather: record.weather,
       frames: record.frames,
+      count_mode: record.countMode || 'frame',
+      frame_details: record.frameDetails || {},
+      space_count: record.spaceCount || null,
       frame_memo: record.frameMemo || '',
       ai_memo: record.aiMemo || '',
     });
@@ -110,6 +113,16 @@
     }));
   }
 
+  async function updateProfile(name, farmName) {
+    const session = await getSession();
+    if (!session) throw new Error('ログインが必要です');
+    const { error } = await sb.from('profiles').update({
+      name,
+      farm_name: farmName,
+    }).eq('id', session.user.id);
+    if (error) throw error;
+  }
+
   async function saveWorkRecord(record) {
     const session = await getSession();
     if (!session) throw new Error('ログインが必要です');
@@ -120,6 +133,7 @@
       date: record.date,
       time: record.time,
       memo: record.memo || '',
+      yield_kg: record.yieldKg || null,
     });
     if (error) throw error;
   }
@@ -131,6 +145,7 @@
     signOut,
     getSession,
     getUserProfile,
+    updateProfile,
     loadInspRecords,
     saveInspRecord,
     loadWorkRecords,
