@@ -350,91 +350,88 @@
 
                   <!-- ===== 枠式 ===== -->
                   <sc-if value="{{ countModeIsFrame }}">
-                    <!-- Mini barcode overview of all frames -->
-                    <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:14px; padding:12px 14px 10px; margin-bottom:14px;">
-                      <div style="font-size:11px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:8px; letter-spacing:.04em;">全枠サマリー（タップで選択）</div>
-                      <div style="display:flex; gap:3px; height:72px;">
-                        <sc-for list="{{ frameOverviewBars }}" as="fb">
-                          <div onClick="{{ fb.select }}" style="flex:1; position:relative; border-radius:5px; overflow:hidden; background:{{ t.surfaceAlt }}; border:1.5px solid {{ fb.border }}; cursor:pointer;">
-                            <div style="position:absolute; bottom:0; left:0; right:0; background:{{ fb.fillColor }}; height:{{ fb.fillPct }}%; border-radius:3px 3px 0 0;"></div>
-                            <div style="position:absolute; bottom:3px; left:0; right:0; text-align:center; font-size:10px; font-weight:800; color:{{ fb.labelColor }}; line-height:1;">{{ fb.n }}</div>
+                    <!-- Frame nav bar -->
+                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+                      <button onClick="{{ prevFrame }}" style="width:36px; height:36px; border-radius:10px; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center; color:{{ t.text }}; flex-shrink:0;">‹</button>
+                      <div style="flex:1; text-align:center; font-size:15px; font-weight:800; color:{{ t.text }};">{{ selectedFrameNum }} 枠目<span style="font-size:12px; font-weight:400; color:{{ t.textMuted }};"> （{{ selectedFrameNum }}/{{ selectedFrameCount }}）</span></div>
+                      <button onClick="{{ nextFrame }}" style="width:36px; height:36px; border-radius:10px; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center; color:{{ t.text }}; flex-shrink:0;">›</button>
+                    </div>
+                    <!-- Frame zone map card -->
+                    <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:14px; margin-bottom:12px;">
+                      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+                        <div style="font-size:12px; font-weight:700; color:{{ t.text }};">🖼 枠マップ</div>
+                        <div style="font-size:11px; color:{{ t.textMuted }};">タップで内容サイクル</div>
+                      </div>
+                      <!-- Zone bars (8 columns) -->
+                      <div style="display:flex; gap:3px; height:90px; border:1.5px solid {{ t.border }}; border-radius:10px; overflow:hidden; background:{{ t.surfaceAlt }}; padding:6px;">
+                        <sc-for list="{{ frameZones }}" as="fz">
+                          <div onClick="{{ fz.tap }}" style="flex:1; position:relative; border-radius:5px; background:{{ fz.bg }}; border:1.5px solid {{ fz.border }}; cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; overflow:hidden;">
+                            <sc-if value="{{ fz.hasQueen }}"><span style="font-size:12px; line-height:1;">👑</span></sc-if>
+                            <span style="font-size:9px; font-weight:800; color:{{ fz.textColor }}; line-height:1; margin-top:2px;">{{ fz.label }}</span>
                           </div>
                         </sc-for>
                       </div>
-                      <div style="display:flex; gap:10px; margin-top:8px; justify-content:flex-end;">
-                        <span style="display:flex; align-items:center; gap:4px; font-size:11px; color:{{ t.textMuted }};"><span style="width:10px; height:10px; border-radius:2px; background:{{ t.surfaceAlt }}; border:1px solid {{ t.border }};"></span>空</span>
-                        <span style="display:flex; align-items:center; gap:4px; font-size:11px; color:{{ t.textMuted }};"><span style="width:10px; height:10px; border-radius:2px; background:{{ frameBarLight }};"></span>少</span>
-                        <span style="display:flex; align-items:center; gap:4px; font-size:11px; color:{{ t.textMuted }};"><span style="width:10px; height:10px; border-radius:2px; background:{{ frameBarMid }};"></span>並</span>
-                        <span style="display:flex; align-items:center; gap:4px; font-size:11px; color:{{ t.textMuted }};"><span style="width:10px; height:10px; border-radius:2px; background:{{ t.primary }};"></span>多</span>
+                      <!-- Queen position row -->
+                      <div style="display:flex; align-items:center; gap:6px; margin-top:10px;">
+                        <span style="font-size:11px; font-weight:700; color:{{ t.textMuted }}; flex-shrink:0; white-space:nowrap;">👑 女王</span>
+                        <div style="display:flex; gap:3px; flex:1;">
+                          <sc-for list="{{ queenDots }}" as="qd">
+                            <div onClick="{{ qd.tap }}" style="flex:1; height:18px; border-radius:4px; background:{{ qd.bg }}; border:1.5px solid {{ qd.border }}; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:9px;">{{ qd.icon }}</div>
+                          </sc-for>
+                        </div>
+                        <span style="font-size:10px; color:{{ t.textMuted }}; flex-shrink:0; margin-left:4px;">{{ queenPosLabel }}</span>
+                      </div>
+                      <!-- Zone type legend -->
+                      <div style="display:flex; gap:4px; flex-wrap:wrap; margin-top:10px;">
+                        <sc-for list="{{ zoneTypeLegend }}" as="zl">
+                          <span style="display:flex; align-items:center; gap:3px; font-size:10px; font-weight:700; color:{{ t.textMuted }}; white-space:nowrap;"><span style="width:10px; height:10px; border-radius:2px; background:{{ zl.bg }}; border:1px solid {{ zl.border }};"></span>{{ zl.label }}</span>
+                        </sc-for>
                       </div>
                     </div>
-                    <!-- Selected frame label + prev/next -->
-                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
-                      <button onClick="{{ prevFrame }}" style="width:36px; height:36px; border-radius:10px; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center; color:{{ t.text }}; flex-shrink:0;">‹</button>
-                      <div style="flex:1; text-align:center; font-size:15px; font-weight:800; color:{{ t.text }};">{{ selectedFrameNum }} 枠目　<span style="font-size:12px; font-weight:400; color:{{ t.textMuted }};">{{ selectedFrameNum }}/{{ selectedFrameCount }}</span></div>
-                      <button onClick="{{ nextFrame }}" style="width:36px; height:36px; border-radius:10px; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center; color:{{ t.text }}; flex-shrink:0;">›</button>
-                    </div>
-                    <!-- Frame detail card -->
-                    <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; display:flex; flex-direction:column; gap:14px; margin-bottom:14px;">
-                      <!-- 蜂量 -->
-                      <div><div style="font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:8px;">🐝 蜂量</div><div style="display:flex; gap:6px;">
+                    <!-- 蜂量 quick chips -->
+                    <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:12px 14px; margin-bottom:12px;">
+                      <div style="font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:8px;">🐝 蜂量</div>
+                      <div style="display:flex; gap:6px;">
                         <sc-for list="{{ beesChips }}" as="bc"><button onClick="{{ bc.set }}" style="{{ bc.style }}">{{ bc.label }}</button></sc-for>
-                      </div></div>
-                      <!-- 育児状況 -->
-                      <div><div style="font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:8px;">🥚 育児状況</div><div style="display:flex; gap:6px; flex-wrap:wrap;">
-                        <sc-for list="{{ broodChips }}" as="bc"><button onClick="{{ bc.set }}" style="{{ bc.style }}">{{ bc.label }}</button></sc-for>
-                      </div></div>
-                      <!-- 女王確認 -->
-                      <div><div style="font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:8px;">👑 女王確認</div><div style="display:flex; gap:6px;">
-                        <sc-for list="{{ queenChips }}" as="qc"><button onClick="{{ qc.set }}" style="{{ qc.style }}">{{ qc.label }}</button></sc-for>
-                      </div></div>
-                      <!-- 蜜・花粉 -->
-                      <div style="display:flex; gap:8px;">
-                        <button onClick="{{ toggleHoney }}" style="{{ honeyToggleStyle }}">🍯 蜜あり</button>
-                        <button onClick="{{ togglePollen }}" style="{{ pollenToggleStyle }}">🌸 花粉あり</button>
                       </div>
-                      <!-- メモ -->
-                      <div><div style="font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:6px;">メモ（任意）</div>
-                        <textarea value="{{ currentFrameMemo }}" onInput="{{ hFdMemo }}" placeholder="気になった点..." rows="2" style="width:100%; padding:11px 13px; font-size:14px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surfaceAlt }}; border:1.5px solid {{ t.border }}; border-radius:10px; outline:none; resize:none; box-sizing:border-box;" style-focus="border-color:{{ t.primary }};"></textarea>
-                      </div>
+                    </div>
+                    <!-- Memo -->
+                    <div style="margin-bottom:12px;">
+                      <div style="font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:6px;">メモ（任意）</div>
+                      <textarea value="{{ currentFrameMemo }}" onInput="{{ hFdMemo }}" placeholder="気になった点..." rows="2" style="width:100%; padding:11px 13px; font-size:14px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:10px; outline:none; resize:none; box-sizing:border-box;" style-focus="border-color:{{ t.primary }};"></textarea>
                     </div>
                   </sc-if>
 
                   <!-- ===== 空間式 ===== -->
                   <sc-if value="{{ !countModeIsFrame }}">
+                    <!-- Type picker -->
+                    <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:12px; padding:12px 14px; margin-bottom:12px;">
+                      <div style="font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:9px;">内容タイプを選んでスペースをタップ</div>
+                      <div style="display:flex; gap:5px; flex-wrap:wrap;">
+                        <sc-for list="{{ spaceTypePicker }}" as="stp">
+                          <button onClick="{{ stp.select }}" style="{{ stp.style }}">{{ stp.icon }}{{ stp.label }}</button>
+                        </sc-for>
+                      </div>
+                    </div>
                     <!-- Stats row -->
-                    <div style="display:flex; gap:8px; margin-bottom:14px;">
-                      <div style="flex:1; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:12px; padding:12px; text-align:center;">
-                        <div style="font-size:22px; font-weight:800; color:{{ t.text }};">{{ spaceCoveredCount }}</div>
-                        <div style="font-size:11px; color:{{ t.textMuted }}; margin-top:2px;">蜂あり</div>
-                      </div>
-                      <div style="flex:1; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:12px; padding:12px; text-align:center;">
-                        <div style="font-size:22px; font-weight:800; color:{{ t.primary }};">{{ spaceCount }}</div>
-                        <div style="font-size:11px; color:{{ t.textMuted }}; margin-top:2px;">総スペース</div>
-                      </div>
-                      <div style="flex:1; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:12px; padding:12px; text-align:center;">
-                        <div style="font-size:22px; font-weight:800; color:{{ t.accent }};">{{ spaceCoveredPct }}%</div>
-                        <div style="font-size:11px; color:{{ t.textMuted }}; margin-top:2px;">密度</div>
-                      </div>
+                    <div style="display:flex; gap:8px; margin-bottom:12px;">
+                      <sc-for list="{{ spaceStats }}" as="ss">
+                        <div style="flex:1; background:{{ ss.bg }}; border:1px solid {{ ss.border }}; border-radius:10px; padding:10px 6px; text-align:center; min-width:0;">
+                          <div style="font-size:13px; font-weight:800; color:{{ ss.textColor }};">{{ ss.count }}</div>
+                          <div style="font-size:10px; color:{{ ss.labelColor }}; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ ss.label }}</div>
+                        </div>
+                      </sc-for>
                     </div>
                     <!-- Barcode visualization -->
                     <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:14px; padding:14px; margin-bottom:10px;">
                       <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
                         <div style="font-size:12px; font-weight:700; color:{{ t.text }};">{{ inspColony }}</div>
-                        <div style="font-size:11px; color:{{ t.textMuted }};">タップで密度変更</div>
+                        <div style="font-size:11px; color:{{ t.textMuted }};">タップでペイント</div>
                       </div>
                       <!-- Barcode bars -->
-                      <div style="display:flex; gap:2px; height:110px; background:{{ t.surfaceAlt }}; border-radius:8px; padding:8px 8px 4px; overflow:hidden;">
+                      <div style="display:flex; gap:2px; height:100px; background:{{ t.surfaceAlt }}; border-radius:8px; padding:8px; overflow:hidden;">
                         <sc-for list="{{ spaceBars }}" as="sb">
-                          <div onClick="{{ sb.tap }}" style="flex:1; position:relative; border-radius:3px; overflow:hidden; background:{{ t.bg }}; cursor:pointer;">
-                            <div style="position:absolute; bottom:0; left:0; right:0; background:{{ sb.fillColor }}; height:{{ sb.fillPct }}%; border-radius:2px 2px 0 0; transition:height .15s, background .15s;"></div>
-                          </div>
-                        </sc-for>
-                      </div>
-                      <!-- Density labels below bars -->
-                      <div style="display:flex; gap:2px; margin-top:4px; padding:0 8px;">
-                        <sc-for list="{{ spaceBars }}" as="sb">
-                          <div style="flex:1; text-align:center; font-size:9px; font-weight:700; color:{{ sb.labelColor }};">{{ sb.label }}</div>
+                          <div onClick="{{ sb.tap }}" style="flex:1; border-radius:3px; background:{{ sb.bg }}; cursor:pointer; border:1.5px solid {{ sb.border }};"></div>
                         </sc-for>
                       </div>
                     </div>
@@ -445,15 +442,9 @@
                       <span style="font-size:16px; font-weight:800; color:{{ t.text }}; min-width:28px; text-align:center;">{{ spaceCount }}</span>
                       <button onClick="{{ incSpaceCount }}" style="width:32px; height:32px; border-radius:8px; background:{{ t.surfaceAlt }}; border:1px solid {{ t.border }}; font-size:18px; cursor:pointer; font-family:{{ t.font }}; color:{{ t.text }}; display:flex; align-items:center; justify-content:center;">＋</button>
                     </div>
-                    <!-- Density legend -->
-                    <div style="display:flex; gap:6px; margin-bottom:12px;">
-                      <div style="flex:1; background:{{ t.surfaceAlt }}; border:1px solid {{ t.border }}; border-radius:8px; padding:8px 4px; text-align:center;"><div style="font-size:11px; font-weight:700; color:{{ t.textMuted }};">なし</div><div style="font-size:10px; color:{{ t.textMuted }}; margin-top:2px;">（空）</div></div>
-                      <div style="flex:1; background:{{ frameBarLight }}22; border:1px solid {{ frameBarLight }}; border-radius:8px; padding:8px 4px; text-align:center;"><div style="font-size:11px; font-weight:700; color:{{ t.text }};">少</div><div style="font-size:10px; color:{{ t.textMuted }}; margin-top:2px;">1タップ</div></div>
-                      <div style="flex:1; background:{{ frameBarMid }}33; border:1px solid {{ frameBarMid }}; border-radius:8px; padding:8px 4px; text-align:center;"><div style="font-size:11px; font-weight:700; color:{{ t.text }};">並</div><div style="font-size:10px; color:{{ t.textMuted }}; margin-top:2px;">2タップ</div></div>
-                      <div style="flex:1; background:{{ t.primary }}; border:1px solid {{ t.primary }}; border-radius:8px; padding:8px 4px; text-align:center;"><div style="font-size:11px; font-weight:700; color:{{ t.primaryText }};">多</div><div style="font-size:10px; color:{{ t.primaryText }}; margin-top:2px;">3タップ</div></div>
-                    </div>
                     <!-- Memo -->
-                    <div><div style="font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:6px;">観察メモ（任意）</div>
+                    <div style="margin-bottom:12px;">
+                      <div style="font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:6px;">観察メモ（任意）</div>
                       <textarea value="{{ f.frameMemo }}" onInput="{{ h.frameMemo }}" placeholder="全体的に活発、蜜源豊富..." rows="2" style="width:100%; padding:13px 14px; font-size:14px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px; outline:none; resize:none;" style-focus="border-color:{{ t.primary }};"></textarea>
                     </div>
                   </sc-if>
@@ -539,18 +530,83 @@
                   <sc-if value="{{ !inspHistoryEmpty }}">
                     <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:14px;">
                       <sc-for list="{{ inspHistoryItems }}" as="rec">
-                        <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:14px 16px;">
+                        <div onClick="{{ rec.open }}" style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:14px 16px; cursor:pointer;" style-active="background:{{ t.surfaceAlt }};">
                           <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
                             <span style="font-size:15px; font-weight:800; color:{{ t.text }};">{{ rec.colony }}</span>
-                            <span style="font-size:12px; color:{{ t.textMuted }};">{{ rec.date }}</span>
+                            <div style="display:flex; align-items:center; gap:8px;"><span style="font-size:12px; color:{{ t.textMuted }};">{{ rec.date }}</span><span style="font-size:11px; color:{{ t.textMuted }};">›</span></div>
                           </div>
                           <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:6px;">
                             <span style="font-size:12px; font-weight:700; color:{{ t.chipText }}; background:{{ t.chipBg }}; padding:2px 9px; border-radius:999px;">{{ rec.weather }}</span>
+                            <span style="font-size:12px; font-weight:700; color:{{ t.textMuted }}; background:{{ t.surfaceAlt }}; padding:2px 9px; border-radius:999px;">{{ rec.modeLabel }}</span>
                             <span style="font-size:12px; font-weight:700; color:{{ t.textMuted }}; background:{{ t.surfaceAlt }}; padding:2px 9px; border-radius:999px;">{{ rec.frames.length }}枠</span>
                           </div>
                           <sc-if value="{{ rec.frameMemo }}"><div style="font-size:13px; color:{{ t.textMuted }}; margin-top:4px;">📝 {{ rec.frameMemo }}</div></sc-if>
                         </div>
                       </sc-for>
+                    </div>
+                  </sc-if>
+                </div>
+              </sc-if>
+
+              <!-- SCR-016b 内検詳細 -->
+              <sc-if value="{{ vInspDetail }}" hint-placeholder-val="{{ false }}">
+                <div data-screen-label="SCR-016b 内検詳細" style="padding:60px 16px 24px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
+                  <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px;">
+                    <button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button>
+                    <div><div style="font-size:18px; font-weight:800; color:{{ t.text }};">{{ detailColony }} 内検記録</div><div style="font-size:12px; color:{{ t.textMuted }}; margin-top:1px;">{{ detailDate }} ・ {{ detailWeather }}</div></div>
+                    <span style="margin-left:auto; font-size:12px; font-weight:700; color:{{ t.chipText }}; background:{{ t.chipBg }}; padding:4px 10px; border-radius:999px;">{{ detailModeLabel }}</span>
+                  </div>
+                  <!-- 枠式詳細 -->
+                  <sc-if value="{{ detailIsFrame }}">
+                    <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:14px;">
+                      <sc-for list="{{ detailFrameCards }}" as="dfc">
+                        <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:14px;">
+                          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+                            <span style="font-size:14px; font-weight:800; color:{{ t.text }};">枠 {{ dfc.num }}</span>
+                            <sc-if value="{{ dfc.hasQueen }}"><span style="font-size:12px; font-weight:700; background:#FFF8DC; color:#6B5E00; padding:3px 9px; border-radius:999px; border:1px solid #D4C87A;">👑 女王確認</span></sc-if>
+                            <sc-if value="{{ dfc.beeLabel }}"><span style="font-size:12px; font-weight:700; color:{{ t.chipText }}; background:{{ t.chipBg }}; padding:3px 9px; border-radius:999px;">🐝 {{ dfc.beeLabel }}</span></sc-if>
+                          </div>
+                          <!-- Zone visualization (read-only) -->
+                          <div style="display:flex; gap:3px; height:52px; border:1px solid {{ t.border }}; border-radius:8px; overflow:hidden; background:{{ t.surfaceAlt }}; padding:4px; margin-bottom:8px;">
+                            <sc-for list="{{ dfc.zones }}" as="dz">
+                              <div style="flex:1; border-radius:4px; background:{{ dz.bg }}; border:1px solid {{ dz.border }}; display:flex; align-items:center; justify-content:center; font-size:8px; font-weight:800; color:{{ dz.textColor }}; overflow:hidden;">{{ dz.label }}</div>
+                            </sc-for>
+                          </div>
+                          <!-- Zone type counts -->
+                          <div style="display:flex; gap:5px; flex-wrap:wrap;">
+                            <sc-for list="{{ dfc.typeCounts }}" as="tc">
+                              <span style="font-size:11px; font-weight:700; background:{{ tc.bg }}; color:{{ tc.text }}; border:1px solid {{ tc.border }}; padding:2px 8px; border-radius:999px;">{{ tc.icon }}{{ tc.label }}×{{ tc.count }}</span>
+                            </sc-for>
+                          </div>
+                          <sc-if value="{{ dfc.memo }}"><div style="font-size:13px; color:{{ t.textMuted }}; margin-top:8px; padding-top:8px; border-top:1px solid {{ t.border }};">📝 {{ dfc.memo }}</div></sc-if>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </sc-if>
+                  <!-- 空間式詳細 -->
+                  <sc-if value="{{ !detailIsFrame }}">
+                    <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:14px; padding:14px; margin-bottom:14px;">
+                      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+                        <div style="font-size:12px; font-weight:700; color:{{ t.text }};">{{ detailColony }}</div>
+                        <div style="font-size:12px; color:{{ t.textMuted }};">{{ detailSpaceCount }}スペース</div>
+                      </div>
+                      <div style="display:flex; gap:2px; height:90px; background:{{ t.surfaceAlt }}; border-radius:8px; padding:8px; overflow:hidden;">
+                        <sc-for list="{{ detailSpaceBars }}" as="dsb">
+                          <div style="flex:1; border-radius:3px; background:{{ dsb.bg }}; border:1.5px solid {{ dsb.border }};"></div>
+                        </sc-for>
+                      </div>
+                      <div style="display:flex; gap:5px; flex-wrap:wrap; margin-top:10px;">
+                        <sc-for list="{{ detailSpaceStats }}" as="dss">
+                          <span style="font-size:11px; font-weight:700; background:{{ dss.bg }}; color:{{ dss.text }}; border:1px solid {{ dss.border }}; padding:2px 8px; border-radius:999px;">{{ dss.icon }}{{ dss.label }}×{{ dss.count }}</span>
+                        </sc-for>
+                      </div>
+                    </div>
+                  </sc-if>
+                  <!-- Memo -->
+                  <sc-if value="{{ detailFrameMemo }}">
+                    <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:14px 16px; margin-bottom:14px;">
+                      <div style="font-size:12px; color:{{ t.textMuted }}; margin-bottom:5px;">観察メモ</div>
+                      <div style="font-size:14px; color:{{ t.text }}; line-height:1.7;">{{ detailFrameMemo }}</div>
                     </div>
                   </sc-if>
                 </div>
@@ -898,8 +954,8 @@ class Component extends DCLogic {
     settingDetailKey: '',
     inspColony: 'A-01', inspHistory: [],
     workHistory: [],
-    countMode: 'frame', frameDetails: {}, selectedFrameNum: 1, spaceCount: 10, spaceLevels: {},
-    inspSearch: '',
+    countMode: 'frame', frameDetails: {}, selectedFrameNum: 1, spaceCount: 10, spaceLevels: {}, spaceType: 'bee',
+    inspSearch: '', inspDetailRecord: null,
   };
 
   COLONIES = ['A-01','A-02','A-03','A-04','A-05','A-06','A-07','A-08','A-09','A-10','A-11','A-12'];
@@ -1008,7 +1064,7 @@ class Component extends DCLogic {
   GROUP = {
     home:'home', notif:'home',
     farms:'farms', farmDetail:'farms', farmMap:'farms', sensor:'farms', weight:'farms', temp:'farms', humid:'farms', camera:'farms', aiDiagnosis:'farms', aiRecommend:'farms',
-    tasks:'tasks', taskCreate:'tasks', workRecord:'tasks', workHistory:'tasks', inspStart:'tasks', inspCapture:'tasks', inspFrame:'tasks', inspAI:'tasks', inspSummary:'tasks', inspHistory:'tasks',
+    tasks:'tasks', taskCreate:'tasks', workRecord:'tasks', workHistory:'tasks', inspStart:'tasks', inspCapture:'tasks', inspFrame:'tasks', inspAI:'tasks', inspSummary:'tasks', inspHistory:'tasks', inspDetail:'tasks',
     report:'analytics', settings:'settings',
   };
 
@@ -1102,11 +1158,46 @@ class Component extends DCLogic {
   }
 
   tapSpace(i) {
+    const type = this.state.spaceType || 'bee';
     this.setState(s => {
       const lvls = { ...(s.spaceLevels || {}) };
-      lvls[i] = ((lvls[i] || 0) + 1) % 4;
+      lvls[i] = lvls[i] === type ? '' : type;
       return { spaceLevels: lvls };
     });
+  }
+
+  setSpaceType(type) { this.setState({ spaceType: type }); }
+
+  tapFrameZone(frameNum, zoneIdx) {
+    const CYCLE = ['', 'egg', 'larva', 'capped', 'honey', 'pollen'];
+    this.setState(s => {
+      const fd = { ...(s.frameDetails[frameNum] || {}) };
+      const zones = { ...(fd.zones || {}) };
+      zones[zoneIdx] = CYCLE[(CYCLE.indexOf(zones[zoneIdx] || '') + 1) % CYCLE.length];
+      fd.zones = zones;
+      return { frameDetails: { ...s.frameDetails, [frameNum]: fd } };
+    });
+  }
+
+  toggleQueenPos(frameNum, zoneIdx) {
+    this.setState(s => {
+      const fd = { ...(s.frameDetails[frameNum] || {}) };
+      fd.queenPos = fd.queenPos === zoneIdx ? null : zoneIdx;
+      return { frameDetails: { ...s.frameDetails, [frameNum]: fd } };
+    });
+  }
+
+  setFrameBees(frameNum, val) {
+    this.setState(s => {
+      const fd = { ...(s.frameDetails[frameNum] || {}) };
+      fd.bees = fd.bees === val ? undefined : val;
+      return { frameDetails: { ...s.frameDetails, [frameNum]: fd } };
+    });
+  }
+
+  openInspDetail(record) {
+    this.setState({ inspDetailRecord: record });
+    this.nav('inspDetail');
   }
 
   setFrameDetail(num, key, val) {
@@ -1338,7 +1429,7 @@ class Component extends DCLogic {
       dkNavTasks:app&&['tasks','taskCreate','workRecord','workHistory'].includes(v),
       dkNavReport:app&&v==='report', dkNavSettings:app&&v==='settings',
       vHome:app&&v==='home', vNotif:app&&v==='notif', vFarms:app&&v==='farms', vFarmDetail:app&&v==='farmDetail', vFarmMap:app&&v==='farmMap',
-      vInspStart:app&&v==='inspStart', vInspCapture:app&&v==='inspCapture', vInspFrame:app&&v==='inspFrame', vInspAI:app&&v==='inspAI', vInspSummary:app&&v==='inspSummary', vInspHistory:app&&v==='inspHistory',
+      vInspStart:app&&v==='inspStart', vInspCapture:app&&v==='inspCapture', vInspFrame:app&&v==='inspFrame', vInspAI:app&&v==='inspAI', vInspSummary:app&&v==='inspSummary', vInspHistory:app&&v==='inspHistory', vInspDetail:app&&v==='inspDetail',
       vSensor:app&&v==='sensor', vGraph:app&&(v==='weight'||v==='temp'||v==='humid'), vCamera:app&&v==='camera', vAiDiagnosis:app&&v==='aiDiagnosis', vAiRecommend:app&&v==='aiRecommend',
       vTasks:app&&v==='tasks', vTaskCreate:app&&v==='taskCreate', vWorkRecord:app&&v==='workRecord', vWorkHistory:app&&v==='workHistory', vReport:app&&v==='report', vSettings:app&&v==='settings', vSettingDetail:app&&v==='settingDetail',
       nc, notifs, hasUnread, farms, colonies, mapPins, frameChips, selectedCount, aiResults, scoreCells, calCells, healthTrendPts, healthDots, heatRows, tasksView, tasksEmpty, recActions, reportFarms,
@@ -1381,7 +1472,7 @@ class Component extends DCLogic {
       coloniesOpts: this.COLONIES,
       startInspection: () => this.startInspection(),
       saveInspection: () => this.saveInspection(),
-      // frame detail screen
+      // ===== frame/space detail screen =====
       countModeIsFrame: s.countMode === 'frame',
       setModeFrame: () => this.setState({ countMode: 'frame' }),
       setModeSpace: () => this.setState({ countMode: 'space' }),
@@ -1389,50 +1480,86 @@ class Component extends DCLogic {
       modeSpaceStyle: 'flex:1; padding:9px; border:none; border-radius:9px; cursor:pointer; font-size:13px; font-weight:700; font-family:'+t.font+'; background:'+(s.countMode==='space'?t.surface:'transparent')+'; color:'+(s.countMode==='space'?t.text:t.textMuted)+'; box-shadow:'+(s.countMode==='space'?'0 1px 3px rgba(0,0,0,.1)':'none')+';',
       selectedFrameNum: s.selectedFrameNum,
       selectedFrameCount: Object.keys(s.frames).length,
-      frameNavChips: (() => { const nums=Object.keys(s.frames).map(Number).sort((a,b)=>a-b); return nums.map(n=>({ n, select:()=>this.selectFrameNum(n), bg:n===s.selectedFrameNum?t.primary:t.surface, fg:n===s.selectedFrameNum?t.primaryText:t.textMuted, border:n===s.selectedFrameNum?t.primary:t.border, hasData:!!(s.frameDetails[n]&&(s.frameDetails[n].bees!==undefined||s.frameDetails[n].brood!==undefined)) })); })(),
-      beesChips: (() => { const cur=(s.frameDetails[s.selectedFrameNum]||{}).bees; const labels=['空','少','並','多']; return labels.map((label,i)=>({ label, set:()=>this.setFrameDetail(s.selectedFrameNum,'bees',i), style:'flex:1; padding:9px 6px; border:none; border-radius:9px; cursor:pointer; font-size:13px; font-weight:700; font-family:'+t.font+'; background:'+(cur===i?t.primary:t.surface)+'; color:'+(cur===i?t.primaryText:t.textMuted)+'; border:1.5px solid '+(cur===i?t.primary:t.border)+';' })); })(),
-      broodChips: (() => { const cur=(s.frameDetails[s.selectedFrameNum]||{}).brood; const labels=['なし','卵','幼虫','有蓋','混在']; return labels.map((label,i)=>({ label, set:()=>this.setFrameDetail(s.selectedFrameNum,'brood',i), style:'flex:1; padding:8px 4px; border:none; border-radius:9px; cursor:pointer; font-size:12px; font-weight:700; font-family:'+t.font+'; background:'+(cur===i?t.primary:t.surface)+'; color:'+(cur===i?t.primaryText:t.textMuted)+'; border:1.5px solid '+(cur===i?t.primary:t.border)+';' })); })(),
-      queenChips: (() => { const cur=(s.frameDetails[s.selectedFrameNum]||{}).queen; const labels=['未確認','確認済','王台あり']; return labels.map((label,i)=>({ label, set:()=>this.setFrameDetail(s.selectedFrameNum,'queen',i), style:'flex:1; padding:9px 6px; border:none; border-radius:9px; cursor:pointer; font-size:12px; font-weight:700; font-family:'+t.font+'; background:'+(cur===i?t.primary:t.surface)+'; color:'+(cur===i?t.primaryText:t.textMuted)+'; border:1.5px solid '+(cur===i?t.primary:t.border)+';' })); })(),
-      toggleHoney: () => this.setFrameDetail(s.selectedFrameNum,'honey',!((s.frameDetails[s.selectedFrameNum]||{}).honey)),
-      togglePollen: () => this.setFrameDetail(s.selectedFrameNum,'pollen',!((s.frameDetails[s.selectedFrameNum]||{}).pollen)),
-      honeyToggleStyle: 'flex:1; padding:10px; border:none; border-radius:10px; cursor:pointer; font-size:13px; font-weight:700; font-family:'+t.font+'; background:'+((s.frameDetails[s.selectedFrameNum]||{}).honey?t.chipBg:t.surface)+'; color:'+((s.frameDetails[s.selectedFrameNum]||{}).honey?t.chipText:t.textMuted)+'; border:1.5px solid '+((s.frameDetails[s.selectedFrameNum]||{}).honey?t.primary:t.border)+';',
-      pollenToggleStyle: 'flex:1; padding:10px; border:none; border-radius:10px; cursor:pointer; font-size:13px; font-weight:700; font-family:'+t.font+'; background:'+((s.frameDetails[s.selectedFrameNum]||{}).pollen?t.chipBg:t.surface)+'; color:'+((s.frameDetails[s.selectedFrameNum]||{}).pollen?t.chipText:t.textMuted)+'; border:1.5px solid '+((s.frameDetails[s.selectedFrameNum]||{}).pollen?t.primary:t.border)+';',
-      currentFrameMemo: (s.frameDetails[s.selectedFrameNum]||{}).memo || '',
-      hFdMemo: this.field('fdmemo_' + s.selectedFrameNum),
       prevFrame: () => { const nums=Object.keys(s.frames).map(Number).sort((a,b)=>a-b); const i=nums.indexOf(s.selectedFrameNum); if(i>0) this.selectFrameNum(nums[i-1]); },
       nextFrame: () => { const nums=Object.keys(s.frames).map(Number).sort((a,b)=>a-b); const i=nums.indexOf(s.selectedFrameNum); if(i<nums.length-1) this.selectFrameNum(nums[i+1]); },
+      currentFrameMemo: (s.frameDetails[s.selectedFrameNum]||{}).memo || '',
+      hFdMemo: this.field('fdmemo_' + s.selectedFrameNum),
+      // Zone colors helper (used in multiple places)
+      ...(() => {
+        const ZONE_COLORS = {
+          '':       { bg: t.surfaceAlt, border: t.border,   text: t.textMuted, label: '',    icon: '' },
+          'egg':    { bg: '#FFFFF0',    border: '#D4C87A',   text: '#6B5E00',   label: '卵',  icon: '🥚' },
+          'larva':  { bg: '#DFF2DF',    border: '#7CB87B',   text: '#2E7D32',   label: '幼虫',icon: '🐛' },
+          'capped': { bg: '#C4A882',    border: '#8B6914',   text: '#fff',      label: '有蓋',icon: '🫙' },
+          'honey':  { bg: t.primary,    border: t.primary,   text: t.primaryText,label: '蜜', icon: '🍯' },
+          'pollen': { bg: '#F9D71C',    border: '#E6B800',   text: '#5D4037',   label: '花粉',icon: '🌸' },
+          'bee':    { bg: t.primary+'bb',border: t.primary,  text: t.primaryText,label: '蜂', icon: '🐝' },
+        };
+        const SPACE_TYPES = ['', 'bee', 'honey', 'capped', 'larva', 'egg', 'pollen'];
+        const frameNum = s.selectedFrameNum;
+        const fd = s.frameDetails[frameNum] || {};
+        const zones = fd.zones || {};
+        const ZONE_CYCLE = ['', 'egg', 'larva', 'capped', 'honey', 'pollen'];
+        // 枠マップ (8 zones)
+        const frameZones = Array.from({length:8}, (_,i) => {
+          const type = zones[i] || '';
+          const zc = ZONE_COLORS[type];
+          return { tap:()=>this.tapFrameZone(frameNum,i), bg:zc.bg, border:zc.border, textColor:zc.text, label:zc.label, hasQueen: fd.queenPos===i };
+        });
+        // Queen dots
+        const queenDots = Array.from({length:8}, (_,i) => ({
+          tap: ()=>this.toggleQueenPos(frameNum,i),
+          bg: fd.queenPos===i ? '#FFF8DC' : t.surfaceAlt,
+          border: fd.queenPos===i ? '#D4C87A' : t.border,
+          icon: fd.queenPos===i ? '👑' : '',
+        }));
+        const queenPosLabel = fd.queenPos!=null ? (fd.queenPos+1)+'番目' : '未設定';
+        // Zone legend
+        const zoneTypeLegend = ZONE_CYCLE.slice(1).map(k=>({ bg:ZONE_COLORS[k].bg, border:ZONE_COLORS[k].border, label:ZONE_COLORS[k].icon+ZONE_COLORS[k].label }));
+        // 蜂量 chips
+        const beeLabels=['空','少','並','多']; const curBees=fd.bees;
+        const beesChips=beeLabels.map((label,i)=>({ label, set:()=>this.setFrameBees(frameNum,i), style:'flex:1; padding:9px 4px; border:none; border-radius:9px; cursor:pointer; font-size:13px; font-weight:700; font-family:'+t.font+'; background:'+(curBees===i?t.primary:t.surface)+'; color:'+(curBees===i?t.primaryText:t.textMuted)+'; border:1.5px solid '+(curBees===i?t.primary:t.border)+';' }));
+        // Space type picker
+        const spaceTypePicker = SPACE_TYPES.slice(1).map(type=>{
+          const zc=ZONE_COLORS[type]; const active=s.spaceType===type;
+          return { icon:zc.icon, label:zc.label, select:()=>this.setSpaceType(type), style:'padding:7px 10px; border:none; border-radius:9px; cursor:pointer; font-size:12px; font-weight:700; font-family:'+t.font+'; background:'+(active?zc.bg:t.surface)+'; color:'+(active?zc.text:t.textMuted)+'; border:1.5px solid '+(active?zc.border:t.border)+';' };
+        });
+        // Space bars
+        const lvls = s.spaceLevels || {};
+        const spaceBars = Array.from({length:s.spaceCount},(_,i)=>{ const type=lvls[i]||''; const zc=ZONE_COLORS[type]; return { tap:()=>this.tapSpace(i), bg:zc.bg, border:zc.border }; });
+        // Space stats
+        const typeCounts={}; Object.values(lvls).forEach(t2=>{if(t2)typeCounts[t2]=(typeCounts[t2]||0)+1;});
+        const spaceStats = Object.entries(typeCounts).map(([type,count])=>{ const zc=ZONE_COLORS[type]; return { bg:zc.bg, border:zc.border, text:zc.text, textColor:zc.text, labelColor:zc.text, icon:zc.icon, label:zc.label, count }; });
+        if(!spaceStats.length) spaceStats.push({ bg:t.surfaceAlt, border:t.border, text:t.textMuted, textColor:t.textMuted, labelColor:t.textMuted, icon:'', label:'記録なし', count:0 });
+        // Insp detail computed
+        const idr = s.inspDetailRecord || {};
+        const idrIsFrame = (idr.countMode||'frame') === 'frame';
+        const idrFrameDetails = idr.frameDetails || {};
+        const idrSpaceLevels = idrIsFrame ? {} : (idr.frameDetails || idr.spaceLevels || {});
+        const detailFrameCards = idrIsFrame ? (idr.frames||[]).map(num=>{
+          const ifd=idrFrameDetails[num]||{}; const izones=ifd.zones||{};
+          const dzones=Array.from({length:8},(_,i)=>{ const tp=izones[i]||''; const zc=ZONE_COLORS[tp]; return {bg:zc.bg,border:zc.border,textColor:zc.text,label:zc.label}; });
+          const tcMap={}; Object.values(izones).forEach(tp=>{if(tp)tcMap[tp]=(tcMap[tp]||0)+1;});
+          const typeCounts2=Object.entries(tcMap).map(([tp,cnt])=>{ const zc=ZONE_COLORS[tp]; return {bg:zc.bg,border:zc.border,text:zc.text,icon:zc.icon,label:zc.label,count:cnt}; });
+          const beeLabels2=['空','少','並','多'];
+          return { num, hasQueen:ifd.queenPos!=null, beeLabel:ifd.bees!=null?beeLabels2[ifd.bees]:'', zones:dzones, typeCounts:typeCounts2, memo:ifd.memo||'' };
+        }) : [];
+        const idrSpaceArr=Array.from({length:idr.spaceCount||10},(_,i)=>{const tp=idrSpaceLevels[i]||'';const zc=ZONE_COLORS[tp];return{bg:zc.bg,border:zc.border};});
+        const idrStatMap={}; Object.values(idrSpaceLevels).forEach(tp=>{if(tp)idrStatMap[tp]=(idrStatMap[tp]||0)+1;});
+        const detailSpaceStats=Object.entries(idrStatMap).map(([tp,cnt])=>{const zc=ZONE_COLORS[tp];return{bg:zc.bg,border:zc.border,text:zc.text,icon:zc.icon,label:zc.label,count:cnt};});
+        return {
+          frameZones, queenDots, queenPosLabel, zoneTypeLegend, beesChips, spaceTypePicker, spaceBars, spaceStats,
+          // insp detail
+          detailColony: idr.colony||'', detailDate: idr.date||'', detailWeather: idr.weather||'',
+          detailModeLabel: idrIsFrame?'枠式':'空間式', detailIsFrame: idrIsFrame,
+          detailFrameCards, detailSpaceBars:idrSpaceArr, detailSpaceStats, detailSpaceCount:idr.spaceCount||10,
+          detailFrameMemo: idr.frameMemo||idr.aiMemo||'',
+          frameBarLight: t.primary+'66', frameBarMid: t.primary+'aa',
+        };
+      })(),
       spaceCount: s.spaceCount,
       incSpaceCount: () => this.setState(st=>({spaceCount:Math.min(20,(st.spaceCount||10)+1)})),
       decSpaceCount: () => this.setState(st=>({spaceCount:Math.max(3,(st.spaceCount||10)-1)})),
-      // barcode visualization
-      frameBarLight: t.primary + '66',
-      frameBarMid: t.primary + 'aa',
-      spaceBars: (() => {
-        const lvls = s.spaceLevels || {};
-        const fillColors = ['transparent', t.primary+'55', t.primary+'99', t.primary];
-        const fillPcts = [0, 33, 66, 100];
-        const lvlLabels = ['','少','並','多'];
-        const labelColors = ['transparent', t.textMuted, t.text, t.primaryText];
-        return Array.from({length: s.spaceCount}, (_,i) => {
-          const lv = lvls[i] || 0;
-          return { tap:()=>this.tapSpace(i), fillColor:fillColors[lv], fillPct:fillPcts[lv], label:lvlLabels[lv], labelColor:labelColors[lv] };
-        });
-      })(),
-      spaceCoveredCount: Object.values(s.spaceLevels||{}).filter(v=>v>0).length,
-      spaceCoveredPct: s.spaceCount > 0 ? Math.round(Object.values(s.spaceLevels||{}).filter(v=>v>0).length / s.spaceCount * 100) : 0,
-      // frame overview bars for 枠式
-      frameOverviewBars: (() => {
-        const nums = Object.keys(s.frames).map(Number).sort((a,b)=>a-b);
-        const fillPcts = [4, 35, 68, 100];
-        const fillColors = [t.border, t.primary+'55', t.primary+'99', t.primary];
-        const labelColors = [t.textMuted, t.textMuted, t.text, '#fff'];
-        return nums.map(n => {
-          const d = s.frameDetails[n] || {};
-          const lv = d.bees !== undefined ? d.bees : 0;
-          const isSel = n === s.selectedFrameNum;
-          return { n, select:()=>this.selectFrameNum(n), fillPct:fillPcts[lv], fillColor:fillColors[lv], border:isSel?t.primary:t.border, labelColor:isSel&&lv>1?'#fff':labelColors[lv] };
-        });
-      })(),
       goInspSummary: () => this.nav('inspSummary'),
       // work record yield
       setRecType: (e) => this.setState(st => ({ f: { ...st.f, recType: e.target.value } })),
@@ -1467,7 +1594,11 @@ class Component extends DCLogic {
         const q = s.inspSearch.trim().toLowerCase();
         if (!q) return true;
         return (r.colony||'').toLowerCase().includes(q) || (r.frameMemo||'').toLowerCase().includes(q) || (r.aiMemo||'').toLowerCase().includes(q) || (r.date||'').includes(q);
-      }),
+      }).map(r => ({
+        ...r,
+        open: () => this.openInspDetail(r),
+        modeLabel: (r.countMode||'frame') === 'frame' ? '枠式' : '空間式',
+      })),
       inspHistoryEmpty: s.inspHistory.length === 0,
       workHistoryItems: s.workHistory,
       workHistoryEmpty: s.workHistory.length === 0,
