@@ -287,13 +287,38 @@
                     <div style="flex:1; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:14px;"><div style="font-size:12px; color:{{ t.textMuted }};">今月収量</div><div style="margin-top:6px;"><span style="font-size:22px; font-weight:800; color:{{ t.text }};">245</span><span style="font-size:12px; color:{{ t.textMuted }};"> kg</span></div></div>
                     <div style="flex:1; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:14px;"><div style="font-size:12px; color:{{ t.textMuted }};">前月比</div><div style="margin-top:6px;"><span style="font-size:22px; font-weight:800; color:{{ t.accent }};">+15</span><span style="font-size:12px; color:{{ t.textMuted }};"> %</span></div></div>
                   </div>
-                  <div style="font-size:13px; font-weight:700; color:{{ t.textMuted }}; margin-bottom:10px;">配置図　<span style="font-weight:400; font-size:12px;">（タップで蜂群詳細）</span></div>
-                  <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:14px;">
-                    <sc-for list="{{ colonies }}" as="c" hint-placeholder-count="12">
-                      <div onClick="{{ c.open }}" style="aspect-ratio:1; border-radius:12px; background:{{ c.bg }}; border:1.5px solid {{ c.border }}; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer;"><span style="font-size:13px; font-weight:800; color:{{ c.fg }};">{{ c.id }}</span><span style="width:7px; height:7px; border-radius:50%; background:{{ c.dot }}; margin-top:4px;"></span></div>
+                  <div style="font-size:13px; font-weight:700; color:{{ t.textMuted }}; margin-bottom:10px;">蜂群ダッシュボード　<span style="font-weight:400; font-size:12px;">（最新内検データ）</span></div>
+                  <!-- Beewise-style colony barcode grid -->
+                  <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:8px; margin-bottom:14px;">
+                    <sc-for list="{{ colonyBarcodes }}" as="cb">
+                      <div onClick="{{ cb.open }}" style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:12px; padding:10px; cursor:pointer;">
+                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+                          <span style="font-size:13px; font-weight:800; color:{{ t.text }};">{{ cb.id }}</span>
+                          <span style="font-size:10px; color:{{ t.textMuted }};">{{ cb.date }}</span>
+                        </div>
+                        <sc-if value="{{ cb.hasInsp }}">
+                          <div style="display:flex; gap:2px; height:44px; background:{{ t.surfaceAlt }}; border-radius:6px; padding:3px; overflow:hidden;">
+                            <sc-for list="{{ cb.frameSegs }}" as="cfs">
+                              <div style="flex:1; min-width:0; display:flex; flex-direction:column; border-radius:2px; overflow:hidden;">
+                                <sc-for list="{{ cfs.segs }}" as="cfss">
+                                  <div style="background:{{ cfss.bg }}; flex:{{ cfss.flex }};"></div>
+                                </sc-for>
+                              </div>
+                            </sc-for>
+                          </div>
+                        </sc-if>
+                        <sc-if value="{{ !cb.hasInsp }}">
+                          <div style="height:44px; background:{{ t.surfaceAlt }}; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:10px; color:{{ t.textMuted }};">内検記録なし</div>
+                        </sc-if>
+                      </div>
                     </sc-for>
                   </div>
-                  <div style="display:flex; gap:16px; font-size:12px; color:{{ t.textMuted }};"><span style="display:flex; align-items:center; gap:5px;"><span style="width:9px; height:9px; border-radius:50%; background:{{ t.ok }};"></span>正常</span><span style="display:flex; align-items:center; gap:5px;"><span style="width:9px; height:9px; border-radius:50%; background:{{ t.warn }};"></span>注意</span><span style="display:flex; align-items:center; gap:5px;"><span style="width:9px; height:9px; border-radius:50%; background:{{ t.danger }};"></span>異常</span></div>
+                  <!-- Legend -->
+                  <div style="display:flex; gap:8px; flex-wrap:wrap; font-size:10px; color:{{ t.textMuted }};">
+                    <sc-for list="{{ zoneTypeLegend }}" as="ztl2">
+                      <span style="display:flex; align-items:center; gap:3px;"><span style="width:8px; height:8px; border-radius:2px; background:{{ ztl2.bg }}; border:1px solid {{ ztl2.border }};"></span>{{ ztl2.label }}</span>
+                    </sc-for>
+                  </div>
                 </div>
               </sc-if>
 
@@ -1622,6 +1647,30 @@ class Component extends DCLogic {
         const idrSpaceArr=Array.from({length:idr.spaceCount||10},(_,i)=>{const tp=idrSpaceLevels[i]||'';const zc=ZONE_COLORS[tp];return{bg:zc.bg,border:zc.border};});
         const idrStatMap={}; Object.values(idrSpaceLevels).forEach(tp=>{if(tp)idrStatMap[tp]=(idrStatMap[tp]||0)+1;});
         const detailSpaceStats=Object.entries(idrStatMap).map(([tp,cnt])=>{const zc=ZONE_COLORS[tp];return{bg:zc.bg,border:zc.border,text:zc.text,icon:zc.icon,label:zc.label,count:cnt};});
+        // Colony barcode summaries from real inspHistory (Beewise-style)
+        const colonyIds = Array.from({length:12},(_,i)=>'A-'+String(i+1).padStart(2,'0'));
+        const colonyBarcodes = colonyIds.map(cid => {
+          const latest = s.inspHistory.find(r => r.colony === cid);
+          if (!latest) return { id:cid, frameSegs:[], hasInsp:false, date:'未記録', open:()=>this.nav('sensor') };
+          const isFrame = (latest.countMode||'frame') === 'frame';
+          const fd = latest.frameDetails || {};
+          let frameSegs = [];
+          if (isFrame) {
+            const fNums = (latest.frames||[]).slice().sort((a,b)=>a-b);
+            frameSegs = fNums.map(num => {
+              const ifd = fd[num] || {}; const izones = ifd.zones || {};
+              const tcMap = {}; for(let i=0;i<8;i++){const tp=izones[i]||'';tcMap[tp]=(tcMap[tp]||0)+1;}
+              const segs = Object.entries(tcMap).sort((a,b)=>b[1]-a[1]).map(([tp,cnt])=>({bg:ZONE_COLORS[tp].bg,flex:cnt}));
+              return { segs, hasQueen:ifd.queenPos!=null };
+            });
+          } else {
+            const lvls = fd || latest.spaceLevels || {};
+            frameSegs = Array.from({length:latest.spaceCount||10},(_,i)=>{
+              const tp=lvls[i]||''; return { segs:[{bg:ZONE_COLORS[tp]?.bg||t.surfaceAlt,flex:1}], hasQueen:false };
+            });
+          }
+          return { id:cid, frameSegs, hasInsp:true, date:latest.date||'', open:()=>this.nav('sensor') };
+        });
         return {
           frameZones, queenDots, queenPosLabel, zoneTypeLegend, beesChips, spaceTypePicker, spaceBars, spaceStats,
           allFrameBars,
@@ -1631,6 +1680,7 @@ class Component extends DCLogic {
           detailFrameCards, detailSpaceBars:idrSpaceArr, detailSpaceStats, detailSpaceCount:idr.spaceCount||10,
           detailFrameMemo: idr.frameMemo||idr.aiMemo||'',
           detailAllFrameBars,
+          colonyBarcodes,
           frameBarLight: t.primary+'66', frameBarMid: t.primary+'aa',
         };
       })(),
