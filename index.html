@@ -350,6 +350,25 @@
 
                   <!-- ===== 枠式 ===== -->
                   <sc-if value="{{ countModeIsFrame }}">
+                    <!-- All-frames barcode overview -->
+                    <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:14px; padding:12px 14px; margin-bottom:12px;">
+                      <div style="font-size:12px; font-weight:700; color:{{ t.text }}; margin-bottom:8px;">全枠マップ <span style="font-size:10px; font-weight:400; color:{{ t.textMuted }};">— タップで選択</span></div>
+                      <div style="display:flex; gap:3px; height:80px; background:{{ t.surfaceAlt }}; border-radius:8px; padding:5px; overflow:hidden;">
+                        <sc-for list="{{ allFrameBars }}" as="afb">
+                          <div onClick="{{ afb.select }}" style="flex:1; min-width:0; display:flex; flex-direction:column; border-radius:4px; overflow:hidden; cursor:pointer; border:2px solid {{ afb.borderColor }}; position:relative;">
+                            <sc-if value="{{ afb.hasQueen }}"><div style="position:absolute; top:1px; left:0; right:0; text-align:center; font-size:8px; line-height:1; z-index:2; pointer-events:none;">👑</div></sc-if>
+                            <sc-for list="{{ afb.segments }}" as="afs">
+                              <div style="background:{{ afs.bg }}; flex:{{ afs.flex }};"></div>
+                            </sc-for>
+                          </div>
+                        </sc-for>
+                      </div>
+                      <div style="display:flex; gap:3px; padding:3px 5px 0;">
+                        <sc-for list="{{ allFrameBars }}" as="afbn">
+                          <div style="flex:1; min-width:0; text-align:center; font-size:9px; font-weight:{{ afbn.numWeight }}; color:{{ afbn.numColor }};">{{ afbn.num }}</div>
+                        </sc-for>
+                      </div>
+                    </div>
                     <!-- Frame nav bar -->
                     <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
                       <button onClick="{{ prevFrame }}" style="width:36px; height:36px; border-radius:10px; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center; color:{{ t.text }}; flex-shrink:0;">‹</button>
@@ -558,27 +577,62 @@
                   </div>
                   <!-- 枠式詳細 -->
                   <sc-if value="{{ detailIsFrame }}">
-                    <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:14px;">
+                    <!-- Beewise-style all-frames barcode -->
+                    <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:14px; padding:14px; margin-bottom:12px;">
+                      <div style="font-size:12px; font-weight:700; color:{{ t.text }}; margin-bottom:10px;">全枠マップ</div>
+                      <div style="display:flex; gap:3px; height:100px; background:{{ t.surfaceAlt }}; border-radius:10px; padding:6px; overflow:hidden;">
+                        <sc-for list="{{ detailAllFrameBars }}" as="dab">
+                          <div style="flex:1; min-width:0; display:flex; flex-direction:column; border-radius:4px; overflow:hidden; border:1.5px solid {{ t.border }}; position:relative;">
+                            <sc-if value="{{ dab.hasQueen }}"><div style="position:absolute; top:1px; left:0; right:0; text-align:center; font-size:9px; line-height:1; z-index:2; pointer-events:none;">👑</div></sc-if>
+                            <sc-for list="{{ dab.segments }}" as="das">
+                              <div style="background:{{ das.bg }}; flex:{{ das.flex }};"></div>
+                            </sc-for>
+                          </div>
+                        </sc-for>
+                      </div>
+                      <div style="display:flex; gap:3px; padding:3px 6px 0;">
+                        <sc-for list="{{ detailAllFrameBars }}" as="dabn">
+                          <div style="flex:1; min-width:0; text-align:center; font-size:9px; font-weight:600; color:{{ t.textMuted }};">{{ dabn.num }}</div>
+                        </sc-for>
+                      </div>
+                      <!-- Legend -->
+                      <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:10px;">
+                        <sc-for list="{{ zoneTypeLegend }}" as="ztl">
+                          <span style="display:flex; align-items:center; gap:3px; font-size:10px; font-weight:700; color:{{ t.textMuted }};"><span style="width:10px; height:10px; border-radius:2px; background:{{ ztl.bg }}; border:1px solid {{ ztl.border }};"></span>{{ ztl.label }}</span>
+                        </sc-for>
+                      </div>
+                    </div>
+                    <!-- Per-frame detail list -->
+                    <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:14px;">
                       <sc-for list="{{ detailFrameCards }}" as="dfc">
-                        <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:14px;">
-                          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
-                            <span style="font-size:14px; font-weight:800; color:{{ t.text }};">枠 {{ dfc.num }}</span>
-                            <sc-if value="{{ dfc.hasQueen }}"><span style="font-size:12px; font-weight:700; background:#FFF8DC; color:#6B5E00; padding:3px 9px; border-radius:999px; border:1px solid #D4C87A;">👑 女王確認</span></sc-if>
-                            <sc-if value="{{ dfc.beeLabel }}"><span style="font-size:12px; font-weight:700; color:{{ t.chipText }}; background:{{ t.chipBg }}; padding:3px 9px; border-radius:999px;">🐝 {{ dfc.beeLabel }}</span></sc-if>
-                          </div>
-                          <!-- Zone visualization (read-only) -->
-                          <div style="display:flex; gap:3px; height:52px; border:1px solid {{ t.border }}; border-radius:8px; overflow:hidden; background:{{ t.surfaceAlt }}; padding:4px; margin-bottom:8px;">
-                            <sc-for list="{{ dfc.zones }}" as="dz">
-                              <div style="flex:1; border-radius:4px; background:{{ dz.bg }}; border:1px solid {{ dz.border }}; display:flex; align-items:center; justify-content:center; font-size:8px; font-weight:800; color:{{ dz.textColor }}; overflow:hidden;">{{ dz.label }}</div>
+                        <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:12px 14px; display:flex; align-items:center; gap:12px;">
+                          <!-- Mini vertical barcode -->
+                          <div style="width:28px; height:56px; border-radius:6px; overflow:hidden; border:1.5px solid {{ t.border }}; display:flex; flex-direction:column; flex-shrink:0; position:relative;">
+                            <sc-if value="{{ dfc.hasQueen }}"><div style="position:absolute; top:1px; left:0; right:0; text-align:center; font-size:8px; line-height:1; z-index:2;">👑</div></sc-if>
+                            <sc-for list="{{ dfc.miniSegs }}" as="ms">
+                              <div style="background:{{ ms.bg }}; flex:{{ ms.flex }};"></div>
                             </sc-for>
                           </div>
-                          <!-- Zone type counts -->
-                          <div style="display:flex; gap:5px; flex-wrap:wrap;">
-                            <sc-for list="{{ dfc.typeCounts }}" as="tc">
-                              <span style="font-size:11px; font-weight:700; background:{{ tc.bg }}; color:{{ tc.text }}; border:1px solid {{ tc.border }}; padding:2px 8px; border-radius:999px;">{{ tc.icon }}{{ tc.label }}×{{ tc.count }}</span>
-                            </sc-for>
+                          <!-- Info -->
+                          <div style="flex:1; min-width:0;">
+                            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+                              <span style="font-size:14px; font-weight:800; color:{{ t.text }};">{{ dfc.num }}枠目</span>
+                              <span style="font-size:12px; color:{{ t.textMuted }};">🐝 {{ dfc.beeLabel }}</span>
+                            </div>
+                            <!-- Zone row (8 zones horizontal) -->
+                            <div style="display:flex; gap:2px; height:22px; border-radius:5px; overflow:hidden; margin-bottom:6px;">
+                              <sc-for list="{{ dfc.zones }}" as="dz">
+                                <div style="flex:1; background:{{ dz.bg }}; border:1px solid {{ dz.border }}; border-radius:2px; display:flex; align-items:center; justify-content:center; font-size:7px; font-weight:800; color:{{ dz.textColor }};">{{ dz.label }}</div>
+                              </sc-for>
+                            </div>
+                            <!-- Type count chips -->
+                            <div style="display:flex; gap:4px; flex-wrap:wrap;">
+                              <sc-for list="{{ dfc.typeCounts }}" as="tc">
+                                <span style="font-size:10px; font-weight:700; background:{{ tc.bg }}; color:{{ tc.text }}; border:1px solid {{ tc.border }}; padding:1px 7px; border-radius:999px;">{{ tc.icon }}{{ tc.label }}×{{ tc.count }}</span>
+                              </sc-for>
+                            </div>
+                            <sc-if value="{{ dfc.memo }}"><div style="font-size:12px; color:{{ t.textMuted }}; margin-top:6px;">📝 {{ dfc.memo }}</div></sc-if>
                           </div>
-                          <sc-if value="{{ dfc.memo }}"><div style="font-size:13px; color:{{ t.textMuted }}; margin-top:8px; padding-top:8px; border-top:1px solid {{ t.border }};">📝 {{ dfc.memo }}</div></sc-if>
                         </div>
                       </sc-for>
                     </div>
@@ -1531,29 +1585,52 @@ class Component extends DCLogic {
         const typeCounts={}; Object.values(lvls).forEach(t2=>{if(t2)typeCounts[t2]=(typeCounts[t2]||0)+1;});
         const spaceStats = Object.entries(typeCounts).map(([type,count])=>{ const zc=ZONE_COLORS[type]; return { bg:zc.bg, border:zc.border, text:zc.text, textColor:zc.text, labelColor:zc.text, icon:zc.icon, label:zc.label, count }; });
         if(!spaceStats.length) spaceStats.push({ bg:t.surfaceAlt, border:t.border, text:t.textMuted, textColor:t.textMuted, labelColor:t.textMuted, icon:'', label:'記録なし', count:0 });
+        // All-frames barcode (input screen)
+        const allFrameNums = Object.keys(s.frames).map(Number).sort((a,b)=>a-b);
+        const allFrameBars = allFrameNums.map(num => {
+          const ifd = s.frameDetails[num] || {};
+          const izones = ifd.zones || {};
+          const tcMap = {};
+          for (let i=0; i<8; i++) { const tp=izones[i]||''; tcMap[tp]=(tcMap[tp]||0)+1; }
+          const segs = Object.entries(tcMap).sort((a,b)=>b[1]-a[1]).map(([tp,cnt])=>({ bg:ZONE_COLORS[tp].bg, flex:cnt }));
+          const isSel = num === s.selectedFrameNum;
+          return { num, segments:segs, hasQueen:ifd.queenPos!=null, select:()=>this.selectFrameNum(num),
+            borderColor:isSel?t.primary:t.border, numColor:isSel?t.primary:t.textMuted,
+            numWeight:isSel?'800':'600' };
+        });
         // Insp detail computed
         const idr = s.inspDetailRecord || {};
         const idrIsFrame = (idr.countMode||'frame') === 'frame';
         const idrFrameDetails = idr.frameDetails || {};
         const idrSpaceLevels = idrIsFrame ? {} : (idr.frameDetails || idr.spaceLevels || {});
+        const beeLabels2=['空','少','並','多'];
         const detailFrameCards = idrIsFrame ? (idr.frames||[]).map(num=>{
           const ifd=idrFrameDetails[num]||{}; const izones=ifd.zones||{};
           const dzones=Array.from({length:8},(_,i)=>{ const tp=izones[i]||''; const zc=ZONE_COLORS[tp]; return {bg:zc.bg,border:zc.border,textColor:zc.text,label:zc.label}; });
           const tcMap={}; Object.values(izones).forEach(tp=>{if(tp)tcMap[tp]=(tcMap[tp]||0)+1;});
-          const typeCounts2=Object.entries(tcMap).map(([tp,cnt])=>{ const zc=ZONE_COLORS[tp]; return {bg:zc.bg,border:zc.border,text:zc.text,icon:zc.icon,label:zc.label,count:cnt}; });
-          const beeLabels2=['空','少','並','多'];
-          return { num, hasQueen:ifd.queenPos!=null, beeLabel:ifd.bees!=null?beeLabels2[ifd.bees]:'', zones:dzones, typeCounts:typeCounts2, memo:ifd.memo||'' };
+          const typeCounts2=Object.entries(tcMap).sort((a,b)=>b[1]-a[1]).map(([tp,cnt])=>{ const zc=ZONE_COLORS[tp]; return {bg:zc.bg,border:zc.border,text:zc.text,icon:zc.icon,label:zc.label,count:cnt}; });
+          const miniSegs=Object.entries(tcMap).sort((a,b)=>b[1]-a[1]).map(([tp,cnt])=>({ bg:ZONE_COLORS[tp].bg, flex:cnt }));
+          return { num, hasQueen:ifd.queenPos!=null, beeLabel:ifd.bees!=null?beeLabels2[ifd.bees]:'', zones:dzones, typeCounts:typeCounts2, miniSegs, memo:ifd.memo||'' };
+        }) : [];
+        // Detail all-frames barcode
+        const detailAllFrameBars = idrIsFrame ? (idr.frames||[]).map(num=>{
+          const ifd=idrFrameDetails[num]||{}; const izones=ifd.zones||{};
+          const tcMap2={}; for(let i=0;i<8;i++){const tp=izones[i]||'';tcMap2[tp]=(tcMap2[tp]||0)+1;}
+          const segs=Object.entries(tcMap2).sort((a,b)=>b[1]-a[1]).map(([tp,cnt])=>({bg:ZONE_COLORS[tp].bg,flex:cnt}));
+          return { num, segments:segs, hasQueen:ifd.queenPos!=null };
         }) : [];
         const idrSpaceArr=Array.from({length:idr.spaceCount||10},(_,i)=>{const tp=idrSpaceLevels[i]||'';const zc=ZONE_COLORS[tp];return{bg:zc.bg,border:zc.border};});
         const idrStatMap={}; Object.values(idrSpaceLevels).forEach(tp=>{if(tp)idrStatMap[tp]=(idrStatMap[tp]||0)+1;});
         const detailSpaceStats=Object.entries(idrStatMap).map(([tp,cnt])=>{const zc=ZONE_COLORS[tp];return{bg:zc.bg,border:zc.border,text:zc.text,icon:zc.icon,label:zc.label,count:cnt};});
         return {
           frameZones, queenDots, queenPosLabel, zoneTypeLegend, beesChips, spaceTypePicker, spaceBars, spaceStats,
+          allFrameBars,
           // insp detail
           detailColony: idr.colony||'', detailDate: idr.date||'', detailWeather: idr.weather||'',
           detailModeLabel: idrIsFrame?'枠式':'空間式', detailIsFrame: idrIsFrame,
           detailFrameCards, detailSpaceBars:idrSpaceArr, detailSpaceStats, detailSpaceCount:idr.spaceCount||10,
           detailFrameMemo: idr.frameMemo||idr.aiMemo||'',
+          detailAllFrameBars,
           frameBarLight: t.primary+'66', frameBarMid: t.primary+'aa',
         };
       })(),
