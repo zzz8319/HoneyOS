@@ -370,6 +370,143 @@
                 </div>
               </sc-if>
 
+              <!-- SCR-009b 巣箱サマリー (Hive Detail) -->
+              <sc-if value="{{ vHiveDetail }}" hint-placeholder-val="{{ false }}">
+                <div data-screen-label="SCR-009b 巣箱サマリー" style="padding:60px 16px 32px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1); overflow-y:auto; height:100%;">
+                  <!-- Header -->
+                  <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;">
+                    <button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button>
+                    <div style="flex:1;">
+                      <div style="font-size:19px; font-weight:800; color:{{ t.text }};">{{ hiveDetailColonyName }}</div>
+                      <div style="font-size:12px; color:{{ t.textMuted }}; margin-top:1px;">最終内検: {{ hiveDetailLastDate }}</div>
+                    </div>
+                    <div style="font-size:12px; font-weight:700; background:{{ t.chipBg }}; color:{{ t.chipText }}; border:1px solid {{ t.primary }}; border-radius:99px; padding:5px 12px;">{{ hiveDetailNumBoxes }}段積み</div>
+                  </div>
+
+                  <!-- Quick stats -->
+                  <div style="display:flex; gap:8px; margin-bottom:14px;">
+                    <div style="flex:1; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:12px; padding:10px 8px; text-align:center;">
+                      <div style="font-size:20px; font-weight:800; color:{{ t.text }};">{{ hiveDetailNumBoxes }}</div>
+                      <div style="font-size:10px; color:{{ t.textMuted }}; margin-top:2px;">段数</div>
+                    </div>
+                    <div style="flex:1; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:12px; padding:10px 8px; text-align:center;">
+                      <div style="font-size:20px; font-weight:800; color:{{ t.primary }};">{{ hiveTotalFrames }}</div>
+                      <div style="font-size:10px; color:{{ t.textMuted }}; margin-top:2px;">総枠数</div>
+                    </div>
+                    <div style="flex:1; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:12px; padding:10px 8px; text-align:center;">
+                      <div style="font-size:20px; font-weight:800; color:#2E7D32;">{{ hiveBroodCount }}</div>
+                      <div style="font-size:10px; color:{{ t.textMuted }}; margin-top:2px;">育児ゾーン</div>
+                    </div>
+                    <div style="flex:1; background:{{ hiveQueenBg }}; border:1px solid {{ t.border }}; border-radius:12px; padding:10px 8px; text-align:center;">
+                      <div style="font-size:14px; font-weight:800; color:{{ hiveQueenColor }};">{{ hiveQueenLabel }}</div>
+                      <div style="font-size:10px; color:{{ t.textMuted }}; margin-top:2px;">女王</div>
+                    </div>
+                  </div>
+
+                  <!-- Structure settings -->
+                  <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:14px; padding:12px 14px; margin-bottom:14px;">
+                    <div style="font-size:12px; font-weight:700; color:{{ t.textMuted }}; margin-bottom:10px;">巣箱設定</div>
+                    <!-- Box count adjuster -->
+                    <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                      <span style="font-size:13px; font-weight:600; color:{{ t.text }}; flex:1;">段数</span>
+                      <button onClick="{{ hiveDecBoxes }}" style="width:32px; height:32px; border-radius:8px; background:{{ t.surfaceAlt }}; border:1px solid {{ t.border }}; font-size:18px; cursor:pointer; font-family:{{ t.font }}; color:{{ t.text }}; display:flex; align-items:center; justify-content:center;">−</button>
+                      <span style="font-size:16px; font-weight:800; color:{{ t.text }}; min-width:24px; text-align:center;">{{ hiveDetailNumBoxes }}</span>
+                      <button onClick="{{ hiveIncBoxes }}" style="width:32px; height:32px; border-radius:8px; background:{{ t.surfaceAlt }}; border:1px solid {{ t.border }}; font-size:18px; cursor:pointer; font-family:{{ t.font }}; color:{{ t.text }}; display:flex; align-items:center; justify-content:center;">＋</button>
+                    </div>
+                    <!-- Queen excluder position -->
+                    <div style="font-size:12px; font-weight:600; color:{{ t.text }}; margin-bottom:7px;">隔王板の位置</div>
+                    <div style="display:flex; gap:5px; flex-wrap:wrap;">
+                      <sc-for list="{{ hiveQEOptions }}" as="qeo">
+                        <button onClick="{{ qeo.set }}" style="padding:6px 11px; border-radius:99px; font-size:12px; font-weight:700; font-family:{{ t.font }}; cursor:pointer; border:1.5px solid {{ qeo.active ? t.primary : t.border }}; background:{{ qeo.active ? t.chipBg : t.surface }}; color:{{ qeo.active ? t.chipText : t.textMuted }};">{{ qeo.label }}</button>
+                      </sc-for>
+                    </div>
+                  </div>
+
+                  <!-- Hive Diagram -->
+                  <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:14px; padding:16px; margin-bottom:14px;">
+                    <div style="font-size:12px; font-weight:700; color:{{ t.textMuted }}; margin-bottom:14px;">🏠 巣箱構造図</div>
+                    <div style="display:flex; flex-direction:column; align-items:center; gap:0;">
+                      <!-- Roof -->
+                      <div style="width:calc(100% + 24px); height:14px; background:linear-gradient(180deg,#a07840,#8B6530); border-radius:8px 8px 0 0; margin-bottom:-1px;"></div>
+                      <!-- Boxes + QE stack -->
+                      <div style="width:100%; display:flex; flex-direction:column; gap:0;">
+                        <sc-for list="{{ hiveItems }}" as="hi">
+                          <!-- Queen Excluder -->
+                          <sc-if value="{{ hi.isQE }}">
+                            <div style="display:flex; flex-direction:column; align-items:center; padding:2px 0; position:relative; z-index:2;">
+                              <div style="font-size:10px; font-weight:700; color:#6B5E00; background:#FFF8DC; border:1px solid #D4C87A; padding:2px 10px; border-radius:99px; white-space:nowrap; margin:2px 0;">👑 隔王板</div>
+                              <div style="width:100%; height:8px; background:repeating-linear-gradient(90deg,#D4C87A 0px,#D4C87A 2px,transparent 2px,transparent 8px); border-top:2px solid #D4C87A; border-bottom:2px solid #D4C87A; opacity:.7;"></div>
+                            </div>
+                          </sc-if>
+                          <!-- Box -->
+                          <sc-if value="{{ !hi.isQE }}">
+                            <div style="width:100%; border:2.5px solid #c4a07a; background:{{ t.surfaceAlt }}; border-radius:6px; margin:1px 0; overflow:hidden;">
+                              <!-- Box label -->
+                              <div style="display:flex; align-items:center; justify-content:space-between; padding:5px 10px 4px; background:rgba(196,160,122,.1); border-bottom:1px solid #e0c9a8;">
+                                <span style="font-size:11px; font-weight:700; color:{{ t.textMuted }};">{{ hi.label }}</span>
+                                <span style="font-size:10px; font-weight:700; background:{{ hi.typeBg }}; color:{{ hi.typeClr }}; border:1px solid {{ hi.typeBorder }}; padding:2px 8px; border-radius:99px;">{{ hi.typeLabel }}</span>
+                              </div>
+                              <!-- Frame bars -->
+                              <div style="display:flex; gap:3px; height:80px; padding:7px; background:{{ t.surfaceAlt }};">
+                                <sc-for list="{{ hi.frameBars }}" as="hfb">
+                                  <div style="flex:1; min-width:0; display:flex; flex-direction:column; border-radius:4px; overflow:hidden; border:1.5px solid #d4b896; position:relative;">
+                                    <sc-if value="{{ hfb.hasQueen }}"><div style="position:absolute; top:1px; left:0; right:0; text-align:center; font-size:8px; z-index:2; pointer-events:none; line-height:1;">👑</div></sc-if>
+                                    <sc-for list="{{ hfb.segs }}" as="hs">
+                                      <div style="background:{{ hs.bg }}; flex:{{ hs.flex }};"></div>
+                                    </sc-for>
+                                  </div>
+                                </sc-for>
+                              </div>
+                              <!-- Frame numbers -->
+                              <div style="display:flex; gap:3px; padding:2px 7px 5px;">
+                                <sc-for list="{{ hi.frameBars }}" as="hfbn">
+                                  <div style="flex:1; min-width:0; text-align:center; font-size:8px; font-weight:600; color:{{ t.textMuted }};">{{ hfbn.fnum }}</div>
+                                </sc-for>
+                              </div>
+                            </div>
+                          </sc-if>
+                        </sc-for>
+                      </div>
+                      <!-- Bottom board -->
+                      <div style="width:calc(100% + 24px); height:10px; background:linear-gradient(0deg,#6B4F20,#8B6530); border-radius:0 0 6px 6px; margin-top:-1px;"></div>
+                      <!-- Entrance -->
+                      <div style="width:36px; height:6px; background:#3d2a10; border-radius:3px; margin-top:3px;"></div>
+                      <!-- Stand legs -->
+                      <div style="display:flex; gap:60px; margin-top:4px;">
+                        <div style="width:10px; height:20px; background:#8B6530; border-radius:0 0 4px 4px;"></div>
+                        <div style="width:10px; height:20px; background:#8B6530; border-radius:0 0 4px 4px;"></div>
+                      </div>
+                    </div>
+                    <!-- Legend -->
+                    <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:14px;">
+                      <sc-for list="{{ zoneTypeLegend }}" as="ztl3">
+                        <span style="display:flex; align-items:center; gap:3px; font-size:10px; font-weight:700; color:{{ t.textMuted }};"><span style="width:10px; height:10px; border-radius:2px; background:{{ ztl3.bg }}; border:1px solid {{ ztl3.border }};"></span>{{ ztl3.label }}</span>
+                      </sc-for>
+                    </div>
+                  </div>
+
+                  <!-- Per-box breakdown -->
+                  <div style="font-size:13px; font-weight:800; color:{{ t.text }}; margin-bottom:10px;">段別詳細</div>
+                  <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:14px;">
+                    <sc-for list="{{ hiveItems }}" as="hi2">
+                      <sc-if value="{{ !hi2.isQE }}">
+                        <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:14px;">
+                          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+                            <span style="font-size:14px; font-weight:800; color:{{ t.text }};">{{ hi2.label }}</span>
+                            <span style="font-size:11px; font-weight:700; background:{{ hi2.typeBg }}; color:{{ hi2.typeClr }}; border:1px solid {{ hi2.typeBorder }}; padding:3px 9px; border-radius:99px;">{{ hi2.typeLabel }}</span>
+                          </div>
+                          <div style="display:flex; gap:5px; flex-wrap:wrap;">
+                            <sc-for list="{{ hi2.boxChips }}" as="bch">
+                              <span style="font-size:11px; font-weight:700; background:{{ bch.bg }}; color:{{ bch.text }}; border:1px solid {{ bch.border }}; padding:3px 9px; border-radius:99px;">{{ bch.label }}</span>
+                            </sc-for>
+                          </div>
+                        </div>
+                      </sc-if>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-if>
+
               <!-- SCR-010 FARM MAP -->
               <sc-if value="{{ vFarmMap }}" hint-placeholder-val="{{ false }}">
                 <div data-screen-label="SCR-010 養蜂場マップ" style="padding:60px 16px 16px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
@@ -1083,6 +1220,7 @@ class Component extends DCLogic {
     workHistory: [],
     countMode: 'frame', frameDetails: {}, selectedFrameNum: 1, spaceCount: 10, spaceLevels: {}, spaceType: 'bee',
     inspSearch: '', inspDetailRecord: null,
+    hiveStructures: {}, hiveDetailColony: null,
   };
 
   COLONIES = ['A-01','A-02','A-03','A-04','A-05','A-06','A-07','A-08','A-09','A-10','A-11','A-12'];
@@ -1190,7 +1328,7 @@ class Component extends DCLogic {
 
   GROUP = {
     home:'home', notif:'home',
-    farms:'farms', farmDetail:'farms', farmMap:'farms', sensor:'farms', weight:'farms', temp:'farms', humid:'farms', camera:'farms', aiDiagnosis:'farms', aiRecommend:'farms',
+    farms:'farms', farmDetail:'farms', farmMap:'farms', hiveDetail:'farms', sensor:'farms', weight:'farms', temp:'farms', humid:'farms', camera:'farms', aiDiagnosis:'farms', aiRecommend:'farms',
     tasks:'tasks', taskCreate:'tasks', workRecord:'tasks', workHistory:'tasks', inspStart:'tasks', inspCapture:'tasks', inspFrame:'tasks', inspAI:'tasks', inspSummary:'tasks', inspHistory:'tasks', inspDetail:'tasks',
     report:'analytics', settings:'settings',
   };
@@ -1325,6 +1463,36 @@ class Component extends DCLogic {
   openInspDetail(record) {
     this.setState({ inspDetailRecord: record });
     this.nav('inspDetail');
+  }
+
+  openHiveDetail(colonyId) {
+    this.setState({ hiveDetailColony: colonyId });
+    this.nav('hiveDetail');
+  }
+
+  incHiveBoxes() {
+    const cid = this.state.hiveDetailColony;
+    this.setState(s => {
+      const cur = s.hiveStructures[cid] || { boxes: 2, qeAfter: 1 };
+      return { hiveStructures: { ...s.hiveStructures, [cid]: { ...cur, boxes: Math.min(5, cur.boxes + 1) } } };
+    });
+  }
+
+  decHiveBoxes() {
+    const cid = this.state.hiveDetailColony;
+    this.setState(s => {
+      const cur = s.hiveStructures[cid] || { boxes: 2, qeAfter: 1 };
+      const nb = Math.max(1, cur.boxes - 1);
+      return { hiveStructures: { ...s.hiveStructures, [cid]: { boxes: nb, qeAfter: Math.min(cur.qeAfter, nb - 1) } } };
+    });
+  }
+
+  setHiveQE(pos) {
+    const cid = this.state.hiveDetailColony;
+    this.setState(s => {
+      const cur = s.hiveStructures[cid] || { boxes: 2, qeAfter: 1 };
+      return { hiveStructures: { ...s.hiveStructures, [cid]: { ...cur, qeAfter: pos } } };
+    });
   }
 
   setFrameDetail(num, key, val) {
@@ -1557,6 +1725,7 @@ class Component extends DCLogic {
       dkNavReport:app&&v==='report', dkNavSettings:app&&v==='settings',
       vHome:app&&v==='home', vNotif:app&&v==='notif', vFarms:app&&v==='farms', vFarmDetail:app&&v==='farmDetail', vFarmMap:app&&v==='farmMap',
       vInspStart:app&&v==='inspStart', vInspCapture:app&&v==='inspCapture', vInspFrame:app&&v==='inspFrame', vInspAI:app&&v==='inspAI', vInspSummary:app&&v==='inspSummary', vInspHistory:app&&v==='inspHistory', vInspDetail:app&&v==='inspDetail',
+      vHiveDetail:app&&v==='hiveDetail',
       vSensor:app&&v==='sensor', vGraph:app&&(v==='weight'||v==='temp'||v==='humid'), vCamera:app&&v==='camera', vAiDiagnosis:app&&v==='aiDiagnosis', vAiRecommend:app&&v==='aiRecommend',
       vTasks:app&&v==='tasks', vTaskCreate:app&&v==='taskCreate', vWorkRecord:app&&v==='workRecord', vWorkHistory:app&&v==='workHistory', vReport:app&&v==='report', vSettings:app&&v==='settings', vSettingDetail:app&&v==='settingDetail',
       nc, notifs, hasUnread, farms, colonies, mapPins, frameChips, selectedCount, aiResults, scoreCells, calCells, healthTrendPts, healthDots, heatRows, tasksView, tasksEmpty, recActions, reportFarms,
@@ -1699,7 +1868,7 @@ class Component extends DCLogic {
         const colonyIds = Array.from({length:12},(_,i)=>'A-'+String(i+1).padStart(2,'0'));
         const colonyBarcodes = colonyIds.map(cid => {
           const latest = s.inspHistory.find(r => r.colony === cid);
-          if (!latest) return { id:cid, frameSegs:[], hasInsp:false, date:'未記録', open:()=>this.nav('sensor') };
+          if (!latest) return { id:cid, frameSegs:[], hasInsp:false, date:'未記録', open:()=>this.openHiveDetail(cid) };
           const isFrame = (latest.countMode||'frame') === 'frame';
           const fd = latest.frameDetails || {};
           let frameSegs = [];
@@ -1717,7 +1886,7 @@ class Component extends DCLogic {
               const tp=lvls[i]||''; return { segs:[{bg:ZONE_COLORS[tp]?.bg||t.surfaceAlt,flex:1}], hasQueen:false };
             });
           }
-          return { id:cid, frameSegs, hasInsp:true, date:latest.date||'', open:()=>this.nav('sensor') };
+          return { id:cid, frameSegs, hasInsp:true, date:latest.date||'', open:()=>this.openHiveDetail(cid) };
         });
         return {
           frameZones, queenDots, queenPosLabel, zoneTypeLegend, beesChips, spaceTypePicker, spaceBars, spaceStats,
@@ -1729,6 +1898,81 @@ class Component extends DCLogic {
           detailFrameMemo: idr.frameMemo||idr.aiMemo||'',
           detailAllFrameBars,
           colonyBarcodes,
+          // ===== Hive Detail (巣箱サマリー) =====
+          ...(() => {
+            const hcid = s.hiveDetailColony || 'A-01';
+            const hs = s.hiveStructures[hcid] || { boxes: 2, qeAfter: 1 };
+            const numBoxes = hs.boxes; const qeAfter = hs.qeAfter || 0;
+            const latestInsp2 = s.inspHistory.find(r => r.colony === hcid);
+            const hHasInsp = !!latestInsp2;
+            const hIsFrame = !latestInsp2 || (latestInsp2.countMode||'frame') === 'frame';
+            const hFrameNums = hHasInsp ? (latestInsp2.frames||[]).slice().sort((a,b)=>a-b) : Array.from({length:8},(_,i)=>i+1);
+            const hFPB = Math.ceil(hFrameNums.length / numBoxes);
+            const bL2 = ['空','少','並','多'];
+            const ZCF = {
+              'egg':    { bg:'#FFFFF0', text:'#6B5E00', border:'#D4C87A', icon:'🥚', label:'卵' },
+              'larva':  { bg:'#DFF2DF', text:'#2E7D32', border:'#7CB87B', icon:'🐛', label:'幼虫' },
+              'capped': { bg:'#C4A882', text:'#fff',    border:'#8B6914', icon:'🫙', label:'有蓋' },
+              'honey':  { bg:t.chipBg,  text:t.chipText,border:t.primary, icon:'🍯', label:'蜜' },
+              'pollen': { bg:'#FFFFF0', text:'#5D4037', border:'#E6B800', icon:'🌸', label:'花粉' },
+            };
+            const hiveItems = [];
+            for (let bn = numBoxes; bn >= 1; bn--) {
+              const fnums = hFrameNums.slice((bn-1)*hFPB, bn*hFPB);
+              const frameBars = fnums.map(fnum => {
+                const ifd = hHasInsp ? ((latestInsp2.frameDetails||{})[fnum]||{}) : {};
+                const izones = ifd.zones || {};
+                const tcMap = {}; for(let i=0;i<8;i++){const tp=izones[i]||'';tcMap[tp]=(tcMap[tp]||0)+1;}
+                const segs = Object.entries(tcMap).sort((a,b)=>b[1]-a[1]).map(([tp,cnt])=>({bg:ZONE_COLORS[tp]?.bg||t.surfaceAlt, flex:cnt}));
+                return { fnum, segs, hasQueen: ifd.queenPos!=null, beeLabel: ifd.bees!=null?bL2[ifd.bees]:'' };
+              });
+              const boxTypeCounts = {};
+              fnums.forEach(fnum => {
+                const izones = hHasInsp ? ((latestInsp2.frameDetails||{})[fnum]?.zones||{}) : {};
+                Object.values(izones).forEach(tp => { if(tp) boxTypeCounts[tp]=(boxTypeCounts[tp]||0)+1; });
+              });
+              const boxChips = Object.entries(boxTypeCounts).sort((a,b)=>b[1]-a[1]).map(([tp,cnt]) => {
+                const c = ZCF[tp] || { bg:t.surfaceAlt, text:t.textMuted, border:t.border, icon:'', label:tp };
+                return { bg:c.bg, text:c.text, border:c.border, label:c.icon+c.label+'×'+cnt };
+              });
+              const isAboveQE = qeAfter > 0 && bn > qeAfter;
+              const boxTypeLabel = isAboveQE ? '採蜜継箱' : (bn===1 ? '本巣' : '継箱');
+              const boxTypeBg = isAboveQE ? t.chipBg : (bn===1?'#DFF2DF':t.surfaceAlt);
+              const boxTypeClr = isAboveQE ? t.chipText : (bn===1?'#2E7D32':t.textMuted);
+              const boxTypeBorder = isAboveQE ? t.primary : (bn===1?'#7CB87B':t.border);
+              hiveItems.push({ type:'box', isQE:false, boxNum:bn, label:bn+'段目', typeLabel:boxTypeLabel,
+                typeBg:boxTypeBg, typeClr:boxTypeClr, typeBorder:boxTypeBorder, frameBars, boxChips });
+              if (qeAfter > 0 && bn - 1 === qeAfter) hiveItems.push({ type:'qe', isQE:true });
+            }
+            const hiveQEOptions = [
+              { label:'なし', active:qeAfter===0, set:()=>this.setHiveQE(0) },
+              ...Array.from({length:numBoxes-1},(_,i)=>({ label:(i+1)+'段↑'+(i+2)+'段', active:qeAfter===i+1, set:()=>this.setHiveQE(i+1) })),
+            ];
+            const hiveTotalFrames2 = hFrameNums.length;
+            let hiveBroodCount=0, hiveHoneyCount=0, hiveQueenFound=false;
+            hFrameNums.forEach(fnum => {
+              const ifd = hHasInsp ? (latestInsp2.frameDetails||{})[fnum]||{} : {};
+              if (ifd.queenPos!=null) hiveQueenFound=true;
+              Object.values(ifd.zones||{}).forEach(tp=>{
+                if(tp==='larva'||tp==='capped'||tp==='egg') hiveBroodCount++;
+                if(tp==='honey') hiveHoneyCount++;
+              });
+            });
+            return {
+              hiveItems, hiveQEOptions,
+              hiveDetailColonyName: hcid,
+              hiveDetailLastDate: hHasInsp ? (latestInsp2.date||'') : '記録なし',
+              hiveDetailNumBoxes: numBoxes,
+              hiveDetailQEAfter: qeAfter,
+              hiveTotalFrames: hiveTotalFrames2,
+              hiveBroodCount, hiveHoneyCount,
+              hiveQueenLabel: hiveQueenFound ? '👑 確認' : '未確認',
+              hiveQueenColor: hiveQueenFound ? '#6B5E00' : t.textMuted,
+              hiveQueenBg: hiveQueenFound ? '#FFF8DC' : t.surfaceAlt,
+              hiveIncBoxes: () => this.incHiveBoxes(),
+              hiveDecBoxes: () => this.decHiveBoxes(),
+            };
+          })(),
           frameBarLight: t.primary+'66', frameBarMid: t.primary+'aa',
         };
       })(),
