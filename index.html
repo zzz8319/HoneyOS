@@ -315,7 +315,23 @@
               <!-- SCR-008 FARMS LIST -->
               <sc-if value="{{ vFarms }}" hint-placeholder-val="{{ false }}">
                 <div data-screen-label="SCR-008 養蜂場一覧" style="padding:64px 16px 16px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
-                  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; padding:0 4px;"><span style="font-size:22px; font-weight:800; color:{{ t.text }};">養蜂場一覧</span><button onClick="{{ goFarmMap }}" style="padding:7px 13px; font-size:13px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primary }}; background:{{ t.chipBg }}; border:none; border-radius:999px; cursor:pointer; display:flex; align-items:center; gap:5px;">🗺️ マップ</button></div>
+                  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; padding:0 4px;"><span style="font-size:22px; font-weight:800; color:{{ t.text }};">養蜂場一覧</span><button onClick="{{ goFarmMap }}" style="padding:7px 13px; font-size:13px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primary }}; background:{{ t.chipBg }}; border:none; border-radius:999px; cursor:pointer; display:flex; align-items:center; gap:5px;">🗺️ マップ</button></div>
+                  <!-- Farm switcher tabs -->
+                  <div style="display:flex; gap:6px; overflow-x:auto; padding-bottom:4px; margin-bottom:16px; scrollbar-width:none;">
+                    <sc-for list="{{ farmList }}" as="fl">
+                      <button onClick="{{ fl.select }}" style="flex-shrink:0; padding:6px 14px; font-size:13px; font-weight:700; font-family:{{ t.font }}; border:none; border-radius:999px; cursor:pointer; background:{{ fl.active ? t.primary : t.chipBg }}; color:{{ fl.active ? t.primaryText : t.text }}; white-space:nowrap;">{{ fl.name }}</button>
+                    </sc-for>
+                  </div>
+                  <!-- Active farm summary card -->
+                  <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; margin-bottom:16px; display:flex; align-items:center; gap:14px;">
+                    <div style="width:52px; height:52px; border-radius:16px; background:{{ t.chipBg }}; display:flex; align-items:center; justify-content:center; font-size:26px; flex-shrink:0;">🏡</div>
+                    <div style="flex:1; min-width:0;">
+                      <div style="font-size:17px; font-weight:800; color:{{ t.text }};">{{ activeFarmName }}</div>
+                      <div style="font-size:13px; color:{{ t.textMuted }}; margin-top:3px;">蜂群：{{ activeFarmData.colonies }}群　収量：{{ activeFarmData.yield }}kg</div>
+                    </div>
+                    <span style="font-size:13px; font-weight:700; color:{{ activeFarmData.up ? t.accent : t.textMuted }}; background:{{ t.chipBg }}; padding:4px 10px; border-radius:999px; flex-shrink:0;">{{ activeFarmData.delta }}</span>
+                  </div>
+                  <div style="font-size:13px; font-weight:700; color:{{ t.textMuted }}; margin-bottom:10px;">すべての養蜂場</div>
                   <div style="display:flex; flex-direction:column; gap:10px;">
                     <sc-for list="{{ farms }}" as="fm" hint-placeholder-count="3">
                       <div onClick="{{ fm.open }}" style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; cursor:pointer; display:flex; align-items:center; gap:14px;"><div style="width:48px; height:48px; border-radius:14px; background:{{ t.chipBg }}; display:flex; align-items:center; justify-content:center; font-size:24px; flex-shrink:0;">🏡</div><div style="flex:1; min-width:0;"><div style="font-size:16px; font-weight:800; color:{{ t.text }};">{{ fm.name }}</div><div style="font-size:13px; color:{{ t.textMuted }}; margin-top:3px;">蜂群：{{ fm.colonies }}群　収量：{{ fm.yield }}kg</div></div><span style="font-size:12px; font-weight:700; color:{{ fm.deltaColor }}; background:{{ fm.deltaBg }}; padding:3px 8px; border-radius:999px; flex-shrink:0;">{{ fm.delta }}</span></div>
@@ -1848,7 +1864,7 @@ class Component extends DCLogic {
       scLogin:sc==='login', scRegister:sc==='register', scOb1:sc==='ob1', scOb2:sc==='ob2', scOb3:sc==='ob3', scApp:app,
       dkNavHome:app&&['home','notif'].includes(v), dkNavFarms:app&&['farms','farmDetail','farmMap'].includes(v),
       dkNavInsp:app&&['inspStart','inspCapture','inspFrame','inspAI','inspSummary','inspHistory'].includes(v),
-      dkNavTasks:app&&['tasks','taskCreate','workRecord','workHistory'].includes(v),
+      dkNavTasks:app&&['tasks','taskCreate','workRecord','workHistory','colonyTrend'].includes(v),
       dkNavReport:app&&v==='report', dkNavSettings:app&&v==='settings',
       vHome:app&&v==='home', vNotif:app&&v==='notif', vFarms:app&&v==='farms', vFarmDetail:app&&v==='farmDetail', vFarmMap:app&&v==='farmMap',
       vInspStart:app&&v==='inspStart', vInspCapture:app&&v==='inspCapture', vInspFrame:app&&v==='inspFrame', vInspAI:app&&v==='inspAI', vInspSummary:app&&v==='inspSummary', vInspHistory:app&&v==='inspHistory', vInspDetail:app&&v==='inspDetail',
