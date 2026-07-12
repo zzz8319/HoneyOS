@@ -541,125 +541,85 @@
                 </div>
               </sc-if>
 
-              <!-- SCR-012 枠記録 -->
+              <!-- SCR-012 内検記録 -->
               <sc-if value="{{ vInspCapture }}" hint-placeholder-val="{{ false }}">
-                <div data-screen-label="SCR-012 枠記録" style="padding:60px 16px 24px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
+                <div data-screen-label="SCR-012 内検記録" style="padding:60px 16px 24px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
                   <!-- Header -->
-                  <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;">
+                  <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px;">
                     <button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button>
                     <div style="flex:1; min-width:0;">
                       <div style="font-size:17px; font-weight:800; color:{{ t.text }};">{{ inspColony }} 内検記録</div>
                       <div style="font-size:12px; color:{{ t.textMuted }}; margin-top:1px;">{{ inspSummaryDate }} ・ {{ inspSummaryWeather }}</div>
                     </div>
                   </div>
-                  <!-- Mode toggle -->
-                  <div style="display:flex; gap:4px; background:{{ t.surfaceAlt }}; border:1px solid {{ t.border }}; padding:4px; border-radius:12px; margin-bottom:16px;">
-                    <button onClick="{{ setModeFrame }}" style="{{ modeFrameStyle }}">🏠 枠式</button>
-                    <button onClick="{{ setModeSpace }}" style="{{ modeSpaceStyle }}">🐝 空間式</button>
-                  </div>
 
-                  <!-- ===== 枠式 ===== -->
-                  <sc-if value="{{ countModeIsFrame }}">
-                    <!-- 枠数調整 -->
-                    <div style="display:flex; align-items:center; justify-content:space-between; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:12px; padding:10px 14px; margin-bottom:12px;">
-                      <div style="font-size:13px; font-weight:700; color:{{ t.text }};">枠数</div>
-                      <div style="display:flex; align-items:center; gap:12px;">
-                        <button onClick="{{ decFrameCount }}" style="width:32px; height:32px; border-radius:50%; background:{{ t.surfaceAlt }}; border:1.5px solid {{ t.border }}; font-size:20px; font-weight:300; cursor:pointer; display:flex; align-items:center; justify-content:center; color:{{ t.text }}; font-family:{{ t.font }};">−</button>
-                        <span style="font-size:18px; font-weight:800; color:{{ t.text }}; min-width:24px; text-align:center;">{{ frameCountVal }}</span>
-                        <button onClick="{{ incFrameCount }}" style="width:32px; height:32px; border-radius:50%; background:{{ t.surfaceAlt }}; border:1.5px solid {{ t.border }}; font-size:20px; font-weight:300; cursor:pointer; display:flex; align-items:center; justify-content:center; color:{{ t.text }}; font-family:{{ t.font }};">＋</button>
-                      </div>
-                    </div>
-                    <!-- 枠ブロック一覧 (横スクロール) -->
-                    <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:14px; padding:12px 14px; margin-bottom:12px;">
-                      <div style="font-size:12px; font-weight:700; color:{{ t.textMuted }}; margin-bottom:10px;">枠を選んで内容を記録</div>
-                      <div style="display:flex; gap:6px; overflow-x:auto; padding-bottom:4px;">
-                        <sc-for list="{{ frameBlocks }}" as="fb">
-                          <div onClick="{{ fb.select }}" style="flex-shrink:0; width:44px; display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer;">
-                            <div style="width:44px; height:56px; border-radius:10px; background:{{ fb.bg }}; border:2.5px solid {{ fb.border }}; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; position:relative;">
-                              <sc-if value="{{ fb.hasQueen }}"><span style="position:absolute; top:2px; left:0; right:0; text-align:center; font-size:9px; line-height:1;">👑</span></sc-if>
-                              <span style="font-size:20px; font-weight:900; color:{{ fb.textColor }}; line-height:1;">{{ fb.kanji }}</span>
-                            </div>
-                            <span style="font-size:10px; font-weight:{{ fb.numWeight }}; color:{{ fb.numColor }};">{{ fb.num }}</span>
-                          </div>
-                        </sc-for>
-                      </div>
-                    </div>
-                    <!-- 選択中の枠: 内容タイプ選択 -->
-                    <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:14px; padding:12px 14px; margin-bottom:12px;">
-                      <div style="font-size:13px; font-weight:800; color:{{ t.text }}; margin-bottom:10px;">{{ selectedFrameNum }} 枠目の内容</div>
-                      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px;">
-                        <sc-for list="{{ frameTypeChips }}" as="ftc">
-                          <button onClick="{{ ftc.select }}" style="padding:12px 6px; border:2px solid {{ ftc.border }}; border-radius:12px; background:{{ ftc.bg }}; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; font-family:{{ t.font }};">
-                            <span style="font-size:24px; font-weight:900; color:{{ ftc.textColor }}; line-height:1;">{{ ftc.kanji }}</span>
-                            <span style="font-size:11px; font-weight:700; color:{{ ftc.textColor }};">{{ ftc.typeName }}</span>
-                          </button>
-                        </sc-for>
-                      </div>
-                      <!-- 女王トグル -->
-                      <button onClick="{{ frameQueenToggle }}" style="margin-top:12px; width:100%; padding:10px; border-radius:10px; border:1.5px solid {{ frameQueenActive ? '#D4C87A' : t.border }}; background:{{ frameQueenActive ? '#FFF8DC' : t.surfaceAlt }}; cursor:pointer; font-size:13px; font-weight:700; color:{{ frameQueenActive ? '#7a6010' : t.textMuted }}; font-family:{{ t.font }};">👑 {{ frameQueenActive ? 'この枠に女王あり' : '女王なし（タップでマーク）' }}</button>
-                    </div>
-                    <!-- 蜂量 quick chips -->
-                    <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:12px 14px; margin-bottom:12px;">
-                      <div style="font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:8px;">🐝 {{ selectedFrameNum }}枠の蜂量</div>
-                      <div style="display:flex; gap:6px;">
-                        <sc-for list="{{ beesChips }}" as="bc"><button onClick="{{ bc.set }}" style="{{ bc.style }}">{{ bc.label }}</button></sc-for>
-                      </div>
-                    </div>
-                    <!-- Memo -->
-                    <div style="margin-bottom:12px;">
-                      <div style="font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:6px;">メモ（任意）</div>
-                      <textarea value="{{ currentFrameMemo }}" onInput="{{ hFdMemo }}" placeholder="気になった点..." rows="2" style="width:100%; padding:11px 13px; font-size:14px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:10px; outline:none; resize:none; box-sizing:border-box;" style-focus="border-color:{{ t.primary }};"></textarea>
-                    </div>
-                  </sc-if>
-
-                  <!-- ===== 空間式 ===== -->
-                  <sc-if value="{{ !countModeIsFrame }}">
-                    <!-- Type picker -->
-                    <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:12px; padding:12px 14px; margin-bottom:12px;">
-                      <div style="font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:9px;">内容タイプを選んでスペースをタップ</div>
-                      <div style="display:flex; gap:5px; flex-wrap:wrap;">
-                        <sc-for list="{{ spaceTypePicker }}" as="stp">
-                          <button onClick="{{ stp.select }}" style="{{ stp.style }}">{{ stp.icon }}{{ stp.label }}</button>
-                        </sc-for>
-                      </div>
-                    </div>
-                    <!-- Stats row -->
-                    <div style="display:flex; gap:8px; margin-bottom:12px;">
-                      <sc-for list="{{ spaceStats }}" as="ss">
-                        <div style="flex:1; background:{{ ss.bg }}; border:1px solid {{ ss.border }}; border-radius:10px; padding:10px 6px; text-align:center; min-width:0;">
-                          <div style="font-size:13px; font-weight:800; color:{{ ss.textColor }};">{{ ss.count }}</div>
-                          <div style="font-size:10px; color:{{ ss.labelColor }}; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ ss.label }}</div>
-                        </div>
+                  <!-- 内容タイプ選択 -->
+                  <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:14px; padding:12px 14px; margin-bottom:12px;">
+                    <div style="font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:9px;">内容タイプを選んでスペースをタップ</div>
+                    <div style="display:flex; gap:5px; flex-wrap:wrap;">
+                      <sc-for list="{{ spaceTypePicker }}" as="stp">
+                        <button onClick="{{ stp.select }}" style="{{ stp.style }}">{{ stp.icon }}{{ stp.label }}</button>
                       </sc-for>
                     </div>
-                    <!-- Barcode visualization -->
-                    <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:14px; padding:14px; margin-bottom:10px;">
-                      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
-                        <div style="font-size:12px; font-weight:700; color:{{ t.text }};">{{ inspColony }}</div>
-                        <div style="font-size:11px; color:{{ t.textMuted }};">タップでペイント</div>
-                      </div>
-                      <!-- Barcode bars -->
-                      <div style="display:flex; gap:2px; height:100px; background:{{ t.surfaceAlt }}; border-radius:8px; padding:8px; overflow:hidden;">
-                        <sc-for list="{{ spaceBars }}" as="sb">
-                          <div onClick="{{ sb.tap }}" style="flex:1; border-radius:3px; background:{{ sb.bg }}; cursor:pointer; border:1.5px solid {{ sb.border }};"></div>
-                        </sc-for>
-                      </div>
-                    </div>
-                    <!-- Space count adjuster -->
-                    <div style="display:flex; align-items:center; gap:10px; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:12px; padding:10px 14px; margin-bottom:12px;">
-                      <span style="font-size:12px; font-weight:600; color:{{ t.textMuted }}; flex:1;">スペース数</span>
-                      <button onClick="{{ decSpaceCount }}" style="width:32px; height:32px; border-radius:8px; background:{{ t.surfaceAlt }}; border:1px solid {{ t.border }}; font-size:18px; cursor:pointer; font-family:{{ t.font }}; color:{{ t.text }}; display:flex; align-items:center; justify-content:center;">−</button>
-                      <span style="font-size:16px; font-weight:800; color:{{ t.text }}; min-width:28px; text-align:center;">{{ spaceCount }}</span>
-                      <button onClick="{{ incSpaceCount }}" style="width:32px; height:32px; border-radius:8px; background:{{ t.surfaceAlt }}; border:1px solid {{ t.border }}; font-size:18px; cursor:pointer; font-family:{{ t.font }}; color:{{ t.text }}; display:flex; align-items:center; justify-content:center;">＋</button>
-                    </div>
-                    <!-- Memo -->
-                    <div style="margin-bottom:12px;">
-                      <div style="font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:6px;">観察メモ（任意）</div>
-                      <textarea value="{{ f.frameMemo }}" onInput="{{ h.frameMemo }}" placeholder="全体的に活発、蜜源豊富..." rows="2" style="width:100%; padding:13px 14px; font-size:14px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px; outline:none; resize:none;" style-focus="border-color:{{ t.primary }};"></textarea>
-                    </div>
-                  </sc-if>
+                  </div>
 
-                  <!-- Complete button -->
+                  <!-- 集計 -->
+                  <div style="display:flex; gap:6px; margin-bottom:12px; overflow-x:auto; padding-bottom:2px;">
+                    <sc-for list="{{ spaceStats }}" as="ss">
+                      <div style="flex-shrink:0; background:{{ ss.bg }}; border:1px solid {{ ss.border }}; border-radius:10px; padding:8px 10px; text-align:center; min-width:48px;">
+                        <div style="font-size:13px; font-weight:800; color:{{ ss.textColor }};">{{ ss.count }}</div>
+                        <div style="font-size:10px; color:{{ ss.labelColor }}; margin-top:2px; white-space:nowrap;">{{ ss.label }}</div>
+                      </div>
+                    </sc-for>
+                  </div>
+
+                  <!-- バーコードビジュアライズ -->
+                  <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:14px; padding:14px; margin-bottom:12px;">
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+                      <div style="font-size:12px; font-weight:700; color:{{ t.text }};">{{ inspColony }}</div>
+                      <div style="font-size:11px; color:{{ t.textMuted }};">タップでペイント</div>
+                    </div>
+                    <div style="display:flex; gap:2px; height:100px; background:{{ t.surfaceAlt }}; border-radius:8px; padding:8px; overflow:hidden;">
+                      <sc-for list="{{ spaceBars }}" as="sb">
+                        <div onClick="{{ sb.tap }}" style="flex:1; border-radius:3px; background:{{ sb.bg }}; cursor:pointer; border:1.5px solid {{ sb.border }};"></div>
+                      </sc-for>
+                    </div>
+                  </div>
+
+                  <!-- スペース数調整 -->
+                  <div style="display:flex; align-items:center; gap:10px; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:12px; padding:10px 14px; margin-bottom:12px;">
+                    <span style="font-size:12px; font-weight:600; color:{{ t.textMuted }}; flex:1;">スペース数</span>
+                    <button onClick="{{ decSpaceCount }}" style="width:32px; height:32px; border-radius:8px; background:{{ t.surfaceAlt }}; border:1px solid {{ t.border }}; font-size:18px; cursor:pointer; font-family:{{ t.font }}; color:{{ t.text }}; display:flex; align-items:center; justify-content:center;">−</button>
+                    <span style="font-size:16px; font-weight:800; color:{{ t.text }}; min-width:28px; text-align:center;">{{ spaceCount }}</span>
+                    <button onClick="{{ incSpaceCount }}" style="width:32px; height:32px; border-radius:8px; background:{{ t.surfaceAlt }}; border:1px solid {{ t.border }}; font-size:18px; cursor:pointer; font-family:{{ t.font }}; color:{{ t.text }}; display:flex; align-items:center; justify-content:center;">＋</button>
+                  </div>
+
+                  <!-- 女王の有無 -->
+                  <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:14px; padding:12px 14px; margin-bottom:12px;">
+                    <div style="font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:9px;">👑 女王の有無</div>
+                    <div style="display:flex; gap:8px;">
+                      <button onClick="{{ setQueenYes }}" style="{{ inspQueenStyle(true) }}">確認あり</button>
+                      <button onClick="{{ setQueenNo }}" style="{{ inspQueenStyle(false) }}">確認なし</button>
+                    </div>
+                  </div>
+
+                  <!-- 蜂数 -->
+                  <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:14px; padding:12px 14px; margin-bottom:12px;">
+                    <div style="font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:9px;">🐝 蜂数</div>
+                    <div style="display:flex; gap:6px;">
+                      <sc-for list="{{ beesTotalChips }}" as="btc">
+                        <button onClick="{{ btc.set }}" style="{{ btc.style }}">{{ btc.label }}</button>
+                      </sc-for>
+                    </div>
+                  </div>
+
+                  <!-- 観察メモ -->
+                  <div style="margin-bottom:12px;">
+                    <div style="font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:6px;">観察メモ（任意）</div>
+                    <textarea value="{{ f.frameMemo }}" onInput="{{ h.frameMemo }}" placeholder="全体的に活発、蜜源豊富..." rows="2" style="width:100%; padding:13px 14px; font-size:14px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px; outline:none; resize:none;" style-focus="border-color:{{ t.primary }};"></textarea>
+                  </div>
+
+                  <!-- 完了ボタン -->
                   <button onClick="{{ goInspSummary }}" style="width:100%; margin-top:14px; padding:16px; font-size:16px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};" style-active="transform:translateY(1px);">記録完了・サマリーへ</button>
                 </div>
               </sc-if>
@@ -844,6 +804,19 @@
                         <sc-for list="{{ detailSpaceStats }}" as="dss">
                           <span style="font-size:11px; font-weight:700; background:{{ dss.bg }}; color:{{ dss.text }}; border:1px solid {{ dss.border }}; padding:2px 8px; border-radius:999px;">{{ dss.icon }}{{ dss.label }}×{{ dss.count }}</span>
                         </sc-for>
+                      </div>
+                    </div>
+                    <!-- 女王・蜂数 サマリー -->
+                    <div style="display:flex; gap:8px; margin-bottom:14px;">
+                      <div style="flex:1; background:{{ detailQueenBg }}; border:1px solid {{ detailQueenBorder }}; border-radius:12px; padding:12px; text-align:center;">
+                        <div style="font-size:18px; margin-bottom:4px;">👑</div>
+                        <div style="font-size:13px; font-weight:800; color:{{ detailQueenColor }};">{{ detailQueenLabel }}</div>
+                        <div style="font-size:10px; color:{{ t.textMuted }}; margin-top:2px;">女王</div>
+                      </div>
+                      <div style="flex:1; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:12px; padding:12px; text-align:center;">
+                        <div style="font-size:18px; margin-bottom:4px;">🐝</div>
+                        <div style="font-size:13px; font-weight:800; color:{{ t.text }};">{{ detailBeesLabel }}</div>
+                        <div style="font-size:10px; color:{{ t.textMuted }}; margin-top:2px;">蜂数</div>
                       </div>
                     </div>
                   </sc-if>
@@ -1199,7 +1172,8 @@ class Component extends DCLogic {
     settingDetailKey: '',
     inspColony: 'A-01', inspHistory: [],
     workHistory: [],
-    countMode: 'frame', frameDetails: {}, selectedFrameNum: 1, frameCount: 8, spaceCount: 10, spaceLevels: {}, spaceType: 'bee',
+    frameDetails: {}, selectedFrameNum: 1, frameCount: 8, spaceCount: 10, spaceLevels: {}, spaceType: 'honey',
+    inspQueenPresent: null, inspBeesTotal: null,
     inspSearch: '', inspDetailRecord: null,
     hiveStructures: {}, hiveDetailColony: null,
   };
@@ -1395,7 +1369,7 @@ class Component extends DCLogic {
   startInspection() {
     const frameNums = Object.keys(this.state.frames).map(Number).sort((a,b)=>a-b);
     this.setState(s => ({
-      frameDetails: {}, selectedFrameNum: 1, frameCount: s.frameCount || 8, spaceCount: 10, spaceLevels: {},
+      frameDetails: {}, selectedFrameNum: 1, frameCount: s.frameCount || 8, spaceCount: 10, spaceLevels: {}, spaceType: 'honey', inspQueenPresent: null, inspBeesTotal: null,
       f: { ...s.f, frameMemo:'', aiMemo:'' },
     }));
     // clear frame memo buffers
@@ -1538,10 +1512,12 @@ class Component extends DCLogic {
       time: timeStr,
       weather: wxMap[s.weather] || '晴れ',
       frames: Array.from({length: s.frameCount || 8}, (_, i) => i + 1),
-      countMode: s.countMode,
+      countMode: 'space',
       frameDetails: mergedDetails,
       spaceCount: s.spaceCount,
       spaceLevels: s.spaceLevels || {},
+      queenPresent: s.inspQueenPresent,
+      beesTotal: s.inspBeesTotal,
       frameMemo: this.f('frameMemo').trim(),
       aiMemo: this.f('aiMemo').trim(),
     };
@@ -1775,11 +1751,6 @@ class Component extends DCLogic {
       startInspection: () => this.startInspection(),
       saveInspection: () => this.saveInspection(),
       // ===== frame/space detail screen =====
-      countModeIsFrame: s.countMode === 'frame',
-      setModeFrame: () => this.setState({ countMode: 'frame' }),
-      setModeSpace: () => this.setState({ countMode: 'space' }),
-      modeFrameStyle: 'flex:1; padding:9px; border:none; border-radius:9px; cursor:pointer; font-size:13px; font-weight:700; font-family:'+t.font+'; background:'+(s.countMode==='frame'?t.surface:'transparent')+'; color:'+(s.countMode==='frame'?t.text:t.textMuted)+'; box-shadow:'+(s.countMode==='frame'?'0 1px 3px rgba(0,0,0,.1)':'none')+';',
-      modeSpaceStyle: 'flex:1; padding:9px; border:none; border-radius:9px; cursor:pointer; font-size:13px; font-weight:700; font-family:'+t.font+'; background:'+(s.countMode==='space'?t.surface:'transparent')+'; color:'+(s.countMode==='space'?t.text:t.textMuted)+'; box-shadow:'+(s.countMode==='space'?'0 1px 3px rgba(0,0,0,.1)':'none')+';',
       selectedFrameNum: s.selectedFrameNum,
       selectedFrameCount: Object.keys(s.frames).length,
       prevFrame: () => { const nums=Object.keys(s.frames).map(Number).sort((a,b)=>a-b); const i=nums.indexOf(s.selectedFrameNum); if(i>0) this.selectFrameNum(nums[i-1]); },
@@ -1789,15 +1760,17 @@ class Component extends DCLogic {
       // Zone colors helper (used in multiple places)
       ...(() => {
         const ZONE_COLORS = {
-          '':       { bg: t.surfaceAlt, border: t.border,   text: t.textMuted, label: '',    icon: '' },
-          'egg':    { bg: '#FFFFF0',    border: '#D4C87A',   text: '#6B5E00',   label: '卵',  icon: '🥚' },
-          'larva':  { bg: '#DFF2DF',    border: '#7CB87B',   text: '#2E7D32',   label: '幼虫',icon: '🐛' },
-          'capped': { bg: '#C4A882',    border: '#8B6914',   text: '#fff',      label: '有蓋',icon: '🫙' },
-          'honey':  { bg: t.primary,    border: t.primary,   text: t.primaryText,label: '蜜', icon: '🍯' },
-          'pollen': { bg: '#F9D71C',    border: '#E6B800',   text: '#5D4037',   label: '花粉',icon: '🌸' },
-          'bee':    { bg: t.primary+'bb',border: t.primary,  text: t.primaryText,label: '蜂', icon: '🐝' },
+          '':           { bg: t.surfaceAlt,  border: t.border,   text: t.textMuted,  label: '空',   icon: '' },
+          'egg':        { bg: '#FFFFF0',     border: '#D4C87A',  text: '#6B5E00',    label: '卵',   icon: '🥚' },
+          'larva':      { bg: '#DFF2DF',     border: '#7CB87B',  text: '#2E7D32',    label: '幼虫', icon: '🐛' },
+          'capped':     { bg: '#C4A882',     border: '#8B6914',  text: '#fff',       label: '有蓋', icon: '🫙' },
+          'honey':      { bg: t.primary,     border: t.primary,  text: t.primaryText,label: '蜜',   icon: '🍯' },
+          'pollen':     { bg: '#F9D71C',     border: '#E6B800',  text: '#5D4037',    label: '花粉', icon: '🌸' },
+          'drone':      { bg: '#D0E8FF',     border: '#6AAAD4',  text: '#1a4a70',    label: '雄枠', icon: '🔵' },
+          'comb':       { bg: '#F5E6C8',     border: '#C8A060',  text: '#6b3a10',    label: '巣脾', icon: '🟫' },
+          'foundation': { bg: '#F0F0E8',     border: '#B0A890',  text: '#504838',    label: '巣礎', icon: '⬜' },
         };
-        const SPACE_TYPES = ['', 'bee', 'honey', 'capped', 'larva', 'egg', 'pollen'];
+        const SPACE_TYPES = ['', 'honey', 'pollen', 'capped', 'larva', 'egg', 'drone', 'comb', 'foundation'];
         const FRAME_TYPES = ['honey', 'pollen', 'capped', 'larva', 'egg', ''];
         const FRAME_KANJI = { 'honey':'蜜', 'pollen':'花', 'capped':'蛹', 'larva':'幼', 'egg':'卵', '':'空' };
         const frameNum = s.selectedFrameNum;
@@ -1871,6 +1844,17 @@ class Component extends DCLogic {
         const typeCounts={}; Object.values(lvls).forEach(t2=>{if(t2)typeCounts[t2]=(typeCounts[t2]||0)+1;});
         const spaceStats = Object.entries(typeCounts).map(([type,count])=>{ const zc=ZONE_COLORS[type]; return { bg:zc.bg, border:zc.border, text:zc.text, textColor:zc.text, labelColor:zc.text, icon:zc.icon, label:zc.label, count }; });
         if(!spaceStats.length) spaceStats.push({ bg:t.surfaceAlt, border:t.border, text:t.textMuted, textColor:t.textMuted, labelColor:t.textMuted, icon:'', label:'記録なし', count:0 });
+        // Queen & bees (inspection-level)
+        const qp = s.inspQueenPresent;
+        const inspQueenPresent = qp;
+        const inspQueenStyle = (val) => 'flex:1; padding:10px 6px; border:none; border-radius:10px; cursor:pointer; font-size:13px; font-weight:700; font-family:'+t.font+'; background:'+(qp===val?'#FFF8DC':t.surface)+'; color:'+(qp===val?'#7a6010':t.textMuted)+'; border:1.5px solid '+(qp===val?'#D4C87A':t.border)+';';
+        const setQueenYes = () => this.setState(s2 => ({ inspQueenPresent: s2.inspQueenPresent === true ? null : true }));
+        const setQueenNo  = () => this.setState(s2 => ({ inspQueenPresent: s2.inspQueenPresent === false ? null : false }));
+        const bt = s.inspBeesTotal;
+        const beesTotalChips = ['少','並','多','密'].map((label, i) => ({
+          label, set: () => this.setState(s2 => ({ inspBeesTotal: s2.inspBeesTotal === i ? null : i })),
+          style: 'flex:1; padding:10px 4px; border:none; border-radius:10px; cursor:pointer; font-size:13px; font-weight:700; font-family:'+t.font+'; background:'+(bt===i?t.primary:t.surface)+'; color:'+(bt===i?t.primaryText:t.textMuted)+'; border:1.5px solid '+(bt===i?t.primary:t.border)+';',
+        }));
         // All-frames barcode (input screen) — reads .type (new) or .zones (legacy)
         const allFrameNums = Array.from({length: fc}, (_, i) => i + 1);
         const allFrameBars = allFrameNums.map(num => {
@@ -1957,11 +1941,18 @@ class Component extends DCLogic {
           allFrameBars,
           frameBlocks, frameTypeChips, frameQueenActive, frameQueenToggle,
           frameCountVal, incFrameCount, decFrameCount,
+          inspQueenPresent, setQueenYes, setQueenNo, inspQueenStyle,
+          beesTotalChips,
           // insp detail
           detailColony: idr.colony||'', detailDate: idr.date||'', detailWeather: idr.weather||'',
-          detailModeLabel: idrIsFrame?'枠式':'空間式', detailIsFrame: idrIsFrame,
+          detailModeLabel: '記録', detailIsFrame: idrIsFrame,
           detailFrameCards, detailSpaceBars:idrSpaceArr, detailSpaceStats, detailSpaceCount:idr.spaceCount||10,
           detailFrameMemo: idr.frameMemo||idr.aiMemo||'',
+          detailQueenLabel: idr.queenPresent===true?'確認あり':idr.queenPresent===false?'確認なし':'未記録',
+          detailQueenColor: idr.queenPresent===true?'#7a6010':idr.queenPresent===false?t.textMuted:t.textMuted,
+          detailQueenBg: idr.queenPresent===true?'#FFF8DC':t.surface,
+          detailQueenBorder: idr.queenPresent===true?'#D4C87A':t.border,
+          detailBeesLabel: idr.beesTotal!=null?(['少','並','多','密'][idr.beesTotal]||'未記録'):'未記録',
           detailAllFrameBars,
           colonyBarcodes,
           // ===== Hive Detail (巣箱サマリー) =====
