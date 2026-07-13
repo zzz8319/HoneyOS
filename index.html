@@ -418,7 +418,15 @@
                     <div style="flex:1; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:14px;"><div style="font-size:12px; color:{{ t.textMuted }};">今月収量</div><div style="margin-top:6px;"><span style="font-size:22px; font-weight:800; color:{{ t.text }};">245</span><span style="font-size:12px; color:{{ t.textMuted }};"> kg</span></div></div>
                     <div style="flex:1; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:14px;"><div style="font-size:12px; color:{{ t.textMuted }};">前月比</div><div style="margin-top:6px;"><span style="font-size:22px; font-weight:800; color:{{ t.accent }};">+15</span><span style="font-size:12px; color:{{ t.textMuted }};"> %</span></div></div>
                   </div>
-                  <div style="font-size:13px; font-weight:700; color:{{ t.textMuted }}; margin-bottom:10px;">蜂群ダッシュボード　<span style="font-weight:400; font-size:12px;">（最新内検データ）</span></div>
+                  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+                    <div style="font-size:13px; font-weight:700; color:{{ t.textMuted }};">蜂群ダッシュボード <span style="font-weight:400; font-size:11px;">（最新内検）</span></div>
+                  </div>
+                  <!-- Badge filter chips -->
+                  <div style="display:flex; gap:6px; margin-bottom:12px;">
+                    <button onClick="{{ setBadgeFilterAll }}" style="{{ badgeFilterAllStyle }}">すべて</button>
+                    <button onClick="{{ setBadgeFilterWarn }}" style="{{ badgeFilterWarnStyle }}">⚠️ 要注意</button>
+                    <button onClick="{{ setBadgeFilterDanger }}" style="{{ badgeFilterDangerStyle }}">🔴 緊急</button>
+                  </div>
                   <!-- Beewise-style colony barcode grid -->
                   <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:8px; margin-bottom:14px;">
                     <sc-for list="{{ colonyBarcodes }}" as="cb">
@@ -620,6 +628,17 @@
                       <div onClick="{{ fr.toggle }}" style="aspect-ratio:1; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:800; cursor:pointer; background:{{ fr.bg }}; color:{{ fr.fg }}; border:1.5px solid {{ fr.border }};">{{ fr.n }}</div>
                     </sc-for>
                   </div>
+                  <!-- 前回値プリロードバナー -->
+                  <sc-if value="{{ inspPreFill }}">
+                    <div style="background:{{ t.chipBg }}; border:1px solid {{ t.primary }}; border-radius:12px; padding:10px 14px; margin-bottom:14px; display:flex; align-items:center; gap:10px;">
+                      <span style="font-size:18px;">🔁</span>
+                      <div style="flex:1; font-size:12px; color:{{ t.text }}; line-height:1.5;">
+                        <span style="font-weight:700;">前回記録（{{ inspPreFill.date }}）を引き継ぎ</span><br>
+                        <sc-if value="{{ inspPreFill.spaceCount }}"><span style="color:{{ t.textMuted }};">スペース数: {{ inspPreFill.spaceCount }}</span></sc-if>
+                        <sc-if value="{{ inspPreFill.queenLabel }}"><span style="color:{{ t.textMuted }};">　女王: {{ inspPreFill.queenLabel }}</span></sc-if>
+                      </div>
+                    </div>
+                  </sc-if>
                   <button onClick="{{ startInspection }}" style="width:100%; padding:16px; font-size:16px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};" style-active="transform:translateY(1px);">内検を開始する（{{ selectedCount }}枠）</button>
                 </div>
               </sc-if>
@@ -1402,11 +1421,34 @@
                       <div onClick="{{ sr.open }}" style="display:flex; align-items:center; gap:12px; padding:15px 16px; border-bottom:1px solid {{ t.border }}; cursor:pointer;" style-active="background:{{ t.surfaceAlt }};"><span style="font-size:18px; width:24px; text-align:center;">{{ sr.icon }}</span><div style="flex:1;"><div style="font-size:14px; color:{{ t.text }};">{{ sr.label }}</div><div style="font-size:11px; color:{{ t.textMuted }}; margin-top:2px;">{{ sr.desc }}</div></div><span style="color:{{ t.textMuted }};">›</span></div>
                     </sc-for>
                   </div>
+                  <!-- JSON バックアップ -->
+                  <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; margin-bottom:16px;">
+                    <div style="font-size:13px; font-weight:700; color:{{ t.text }}; margin-bottom:4px;">💾 データバックアップ</div>
+                    <div style="font-size:12px; color:{{ t.textMuted }}; margin-bottom:12px;">{{ isEn ? 'Export all inspection and work records as JSON.' : '内検・作業記録をJSONファイルとして書き出します。' }}</div>
+                    <sc-if value="{{ jsonImportSuccess }}">
+                      <div style="margin-bottom:10px; padding:8px 12px; background:{{ t.chipBg }}; border-radius:8px; font-size:12px; color:{{ t.ok }}; font-weight:700;">✓ {{ isEn ? 'Data imported successfully' : 'データを読み込みました' }}</div>
+                    </sc-if>
+                    <sc-if value="{{ jsonImportError }}">
+                      <div style="margin-bottom:10px; padding:8px 12px; background:{{ t.dangerBg }}; border-radius:8px; font-size:12px; color:{{ t.danger }}; font-weight:700;">{{ jsonImportError }}</div>
+                    </sc-if>
+                    <div style="display:flex; gap:8px;">
+                      <button onClick="{{ exportJSON }}" style="flex:1; padding:12px; font-size:13px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:10px; cursor:pointer; opacity:{{ exportingJSON ? 0.6 : 1 }};">{{ exportingJSON ? '出力中…' : (isEn ? '⬇ Export' : '⬇ エクスポート') }}</button>
+                      <button onClick="{{ importJSON }}" style="flex:1; padding:12px; font-size:13px; font-weight:700; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surfaceAlt }}; border:1px solid {{ t.border }}; border-radius:10px; cursor:pointer;">{{ isEn ? '⬆ Import' : '⬆ インポート' }}</button>
+                    </div>
+                  </div>
+
                   <button onClick="{{ logout }}" style="width:100%; padding:15px; font-size:15px; font-weight:700; font-family:{{ t.font }}; color:{{ t.danger }}; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:14px; cursor:pointer;">ログアウト</button>
                 </div>
               </sc-if>
 
             </div>
+
+            <!-- OFFLINE BANNER -->
+            <sc-if value="{{ isOffline }}">
+              <div style="position:absolute; top:44px; left:0; right:0; z-index:9998; background:#2D3748; color:#EDF2F7; font-size:12px; font-weight:700; text-align:center; padding:7px 12px; display:flex; align-items:center; justify-content:center; gap:6px; animation:scrIn .3s ease;">
+                <span>📡</span><span>{{ isEn ? 'Offline — data may be out of date' : 'オフライン中 — データは最新でない場合があります' }}</span>
+              </div>
+            </sc-if>
 
             <!-- BOTTOM NAV -->
             <div id="bottom-tabbar" style="display:flex; background:{{ t.navBarBg }}; border-top:1px solid {{ t.border }}; padding:8px 6px 26px;">
@@ -1454,6 +1496,9 @@ class Component extends DCLogic {
     hasDraft: false,
     lang: 'ja',
     obFarmName: '', obColonyCount: '12', obExperience: 'beginner',
+    isOffline: !navigator.onLine,
+    colonyBadgeFilter: 'all',
+    lastInspByColony: {},
   };
 
   COLONIES = ['A-01','A-02','A-03','A-04','A-05','A-06','A-07','A-08','A-09','A-10','A-11','A-12'];
@@ -1463,6 +1508,21 @@ class Component extends DCLogic {
     this._fieldBuf = {};
     this._initSession();
     this._checkDraft();
+    this._setupOfflineDetect();
+  }
+
+  _setupOfflineDetect() {
+    window.addEventListener('online', () => this.setState({ isOffline: false }));
+    window.addEventListener('offline', () => this.setState({ isOffline: true }));
+  }
+
+  _setupRealtime() {
+    try {
+      window.HoneyDB.subscribeRealtime(
+        (records) => this.setState({ inspHistory: records, lastInspByColony: this._buildLastInspByColony(records) }),
+        (records) => this.setState({ workHistory: records })
+      );
+    } catch(e) {}
   }
 
   async _initSession() {
@@ -1476,14 +1536,26 @@ class Component extends DCLogic {
         db.loadInspRecords(),
         db.loadWorkRecords(),
       ]);
+      const lastInspByColony = this._buildLastInspByColony(inspHistory);
       this.setState({
         screen: 'app',
         userName: profile ? profile.name : session.user.email,
         userFarm: profile ? profile.farm_name : '',
         inspHistory,
         workHistory,
+        lastInspByColony,
       });
+      this._setupRealtime();
     } catch(e) { /* session not available */ }
+  }
+
+  _buildLastInspByColony(inspHistory) {
+    const map = {};
+    (inspHistory || []).forEach(r => {
+      if (!r.colony) return;
+      if (!map[r.colony] || (r.date || '') > (map[r.colony].date || '')) map[r.colony] = r;
+    });
+    return map;
   }
 
   THEMES = {
@@ -1673,7 +1745,9 @@ class Component extends DCLogic {
         window.HoneyDB.loadInspRecords(),
         window.HoneyDB.loadWorkRecords(),
       ]);
-      this.setState({ loginError: '', userName: profile ? profile.name : email, userFarm: profile ? profile.farm_name : '', inspHistory, workHistory });
+      const lastInspByColony = this._buildLastInspByColony(inspHistory);
+      this.setState({ loginError: '', userName: profile ? profile.name : email, userFarm: profile ? profile.farm_name : '', inspHistory, workHistory, lastInspByColony });
+      this._setupRealtime();
       this.tab('home');
     } catch(e) {
       const msg = e.message || '';
@@ -2419,6 +2493,10 @@ class Component extends DCLogic {
           const alertBorder = latest.queenPresent===false ? t.danger : daysSince > 21 ? t.warn : t.border;
           return { id:cid, frameSegs, hasInsp:true, date:latest.date||'', open:()=>this.openHiveDetail(cid), alertBadge, alertBorder };
         });
+        const badgeFilter = s.colonyBadgeFilter || 'all';
+        const filteredColonyBarcodes = badgeFilter === 'all' ? colonyBarcodes
+          : badgeFilter === 'warn' ? colonyBarcodes.filter(cb => cb.alertBadge === '⚠️')
+          : colonyBarcodes.filter(cb => cb.alertBadge === '🔴' || cb.alertBadge === '❓');
         return {
           frameZones, queenDots, queenPosLabel, zoneTypeLegend, beesChips, spaceTypePicker, spaceBars, spaceStats,
           allFrameBars,
@@ -2437,7 +2515,7 @@ class Component extends DCLogic {
           detailQueenBorder: idr.queenPresent===true?'#D4C87A':t.border,
           detailBeesLabel: idr.beesTotal!=null?(['少','並','多','密'][idr.beesTotal]||'未記録'):'未記録',
           detailAllFrameBars,
-          colonyBarcodes,
+          colonyBarcodes: filteredColonyBarcodes,
           // ===== Hive Detail (巣箱サマリー) =====
           ...(() => {
             const hcid = s.hiveDetailColony || 'A-01';
@@ -2596,6 +2674,24 @@ class Component extends DCLogic {
       // ===== CSVエクスポート =====
       exportInspCSV: () => this.exportInspCSV(),
       exportWorkCSV: () => this.exportWorkCSV(),
+      // ===== JSONバックアップ =====
+      exportJSON: () => this.exportJSON(),
+      importJSON: () => this.importJSON(),
+      exportingJSON: s.exportingJSON || false,
+      jsonImportSuccess: s.jsonImportSuccess || false,
+      jsonImportError: s.jsonImportError || '',
+      // ===== オフライン =====
+      isOffline: s.isOffline,
+      // ===== バッジフィルタ =====
+      colonyBadgeFilter: s.colonyBadgeFilter,
+      setBadgeFilterAll: () => this.setState({ colonyBadgeFilter: 'all' }),
+      setBadgeFilterWarn: () => this.setState({ colonyBadgeFilter: 'warn' }),
+      setBadgeFilterDanger: () => this.setState({ colonyBadgeFilter: 'danger' }),
+      badgeFilterAllStyle: pill(s.colonyBadgeFilter === 'all'),
+      badgeFilterWarnStyle: pill(s.colonyBadgeFilter === 'warn'),
+      badgeFilterDangerStyle: pill(s.colonyBadgeFilter === 'danger'),
+      // ===== 前回値プリロード =====
+      goInspStartWithPreFill: (colony) => this.goInspStartWithPreFill(colony),
       // ===== 蜂群比較ナビ =====
       goColonyCompare: () => this.goColonyCompare(),
       // work record yield
@@ -2603,6 +2699,12 @@ class Component extends DCLogic {
       recTypeIsHarvest: s.f.recType === '採蜜',
       recYieldKg: this._fieldBuf['recYieldKg'] || '',
       inspSummaryColony: s.inspColony,
+      inspPreFill: (() => {
+        const last = (s.lastInspByColony || {})[s.inspColony];
+        if (!last) return null;
+        const qLabel = last.queenPresent === true ? '確認あり 👑' : last.queenPresent === false ? '確認なし' : null;
+        return { date: last.date || '', spaceCount: last.spaceCount || null, queenLabel: qLabel };
+      })(),
       inspSummaryWeather: ({sun:'☀️ 晴れ', cloud:'⛅ 曇り', rain:'🌧️ 雨'})[s.weather] || '晴れ',
       inspSummaryDate: new Date().toLocaleDateString('ja-JP', { year:'numeric', month:'2-digit', day:'2-digit' }),
       inspSummaryFrames: Object.keys(s.frames).map(Number).sort((a,b)=>a-b).join('・') + ' 枠',
@@ -2804,6 +2906,67 @@ class Component extends DCLogic {
     a.download = filename;
     a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
+
+  // ===== JSONバックアップ =====
+  async exportJSON() {
+    this.setState({ exportingJSON: true });
+    try {
+      let data;
+      try { data = await window.HoneyDB.exportAllData(); } catch(e) {
+        data = { exportedAt: new Date().toISOString(), inspRecords: this.state.inspHistory, workRecords: this.state.workHistory };
+      }
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'honeyos_backup_' + new Date().toISOString().slice(0,10) + '.json';
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    } catch(e) {}
+    this.setState({ exportingJSON: false });
+  }
+
+  importJSON() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        try {
+          const data = JSON.parse(ev.target.result);
+          if (!data || (!data.inspRecords && !data.workRecords)) {
+            this.setState({ jsonImportError: 'ファイル形式が不正です' });
+            setTimeout(() => this.setState({ jsonImportError: '' }), 3000);
+            return;
+          }
+          const inspHistory = Array.isArray(data.inspRecords) ? data.inspRecords : this.state.inspHistory;
+          const workHistory = Array.isArray(data.workRecords) ? data.workRecords : this.state.workHistory;
+          const lastInspByColony = this._buildLastInspByColony(inspHistory);
+          this.setState({ inspHistory, workHistory, lastInspByColony, jsonImportSuccess: true, jsonImportError: '' });
+          setTimeout(() => this.setState({ jsonImportSuccess: false }), 2500);
+        } catch(er) {
+          this.setState({ jsonImportError: 'JSONの読み込みに失敗しました' });
+          setTimeout(() => this.setState({ jsonImportError: '' }), 3000);
+        }
+      };
+      reader.readAsText(file);
+    };
+    input.click();
+  }
+
+  // ===== 前回内検値プリロード付き内検開始 =====
+  goInspStartWithPreFill(colony) {
+    const last = this.state.lastInspByColony[colony];
+    const patch = { inspColony: colony };
+    if (last) {
+      if (last.spaceCount != null) patch.spaceCount = last.spaceCount;
+      if (last.queenPresent != null) patch.inspQueenPresent = last.queenPresent;
+    }
+    this.setState(patch);
+    this.nav('inspStart');
   }
 }
 </script>
