@@ -438,32 +438,199 @@ if('serviceWorker' in navigator){
                 </div>
               </sc-if>
 
-              <!-- SCR-008 FARMS LIST -->
+              <!-- SCR-008 COLONY SUMMARY -->
               <sc-if value="{{ vFarms }}" hint-placeholder-val="{{ false }}">
-                <div data-screen-label="SCR-008 養蜂場一覧" style="padding:64px 16px 16px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
-                  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; padding:0 4px;"><span style="font-size:22px; font-weight:800; color:{{ t.text }};">養蜂場一覧</span><button onClick="{{ goFarmMap }}" style="padding:7px 13px; font-size:13px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primary }}; background:{{ t.chipBg }}; border:none; border-radius:999px; cursor:pointer; display:flex; align-items:center; gap:5px;">🗺️ マップ</button></div>
-                  <!-- Farm switcher tabs -->
-                  <div style="display:flex; gap:6px; overflow-x:auto; padding-bottom:4px; margin-bottom:16px; scrollbar-width:none;">
-                    <sc-for list="{{ farmList }}" as="fl">
-                      <button onClick="{{ fl.select }}" style="flex-shrink:0; padding:6px 14px; font-size:13px; font-weight:700; font-family:{{ t.font }}; border:none; border-radius:999px; cursor:pointer; background:{{ fl.active ? t.primary : t.chipBg }}; color:{{ fl.active ? t.primaryText : t.text }}; white-space:nowrap;">{{ fl.name }}</button>
-                    </sc-for>
-                  </div>
-                  <!-- Active farm summary card -->
-                  <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; margin-bottom:16px; display:flex; align-items:center; gap:14px;">
-                    <div style="width:52px; height:52px; border-radius:16px; background:{{ t.chipBg }}; display:flex; align-items:center; justify-content:center; font-size:26px; flex-shrink:0;">🏡</div>
-                    <div style="flex:1; min-width:0;">
-                      <div style="font-size:17px; font-weight:800; color:{{ t.text }};">{{ activeFarmName }}</div>
-                      <div style="font-size:13px; color:{{ t.textMuted }}; margin-top:3px;">蜂群：{{ activeFarmData.colonies }}群　収量：{{ activeFarmData.yield }}kg</div>
+                <div data-screen-label="SCR-008 蜂群サマリー" style="padding:60px 0 80px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1); height:100%; overflow-y:auto; box-sizing:border-box;">
+                  <!-- Header -->
+                  <div style="display:flex; align-items:center; justify-content:space-between; padding:0 16px; margin-bottom:14px;">
+                    <div>
+                      <div style="font-size:22px; font-weight:800; color:{{ t.text }}; letter-spacing:-0.5px;">蜂群サマリー</div>
+                      <div style="font-size:12px; color:{{ t.textMuted }}; margin-top:1px;">最新内検記録に基づく一覧</div>
                     </div>
-                    <span style="font-size:13px; font-weight:700; color:{{ activeFarmData.up ? t.accent : t.textMuted }}; background:{{ t.chipBg }}; padding:4px 10px; border-radius:999px; flex-shrink:0;">{{ activeFarmData.delta }}</span>
+                    <button onClick="{{ goFarmMap }}" style="padding:7px 13px; font-size:12px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primary }}; background:{{ t.chipBg }}; border:none; border-radius:999px; cursor:pointer;">🗺️ マップ</button>
                   </div>
-                  <div style="font-size:13px; font-weight:700; color:{{ t.textMuted }}; margin-bottom:10px;">すべての養蜂場</div>
-                  <div style="display:flex; flex-direction:column; gap:10px;">
-                    <sc-for list="{{ farms }}" as="fm" hint-placeholder-count="3">
-                      <div onClick="{{ fm.open }}" style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; cursor:pointer; display:flex; align-items:center; gap:14px;"><div style="width:48px; height:48px; border-radius:14px; background:{{ t.chipBg }}; display:flex; align-items:center; justify-content:center; font-size:24px; flex-shrink:0;">🏡</div><div style="flex:1; min-width:0;"><div style="font-size:16px; font-weight:800; color:{{ t.text }};">{{ fm.name }}</div><div style="font-size:13px; color:{{ t.textMuted }}; margin-top:3px;">蜂群：{{ fm.colonies }}群　収量：{{ fm.yield }}kg</div></div><span style="font-size:12px; font-weight:700; color:{{ fm.deltaColor }}; background:{{ fm.deltaBg }}; padding:3px 8px; border-radius:999px; flex-shrink:0;">{{ fm.delta }}</span></div>
-                    </sc-for>
-                    <button onClick="{{ noop }}" style="margin-top:4px; padding:15px; font-size:15px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primary }}; background:transparent; border:1.5px dashed {{ t.border }}; border-radius:{{ t.radius }}px; cursor:pointer;">＋ 養蜂場を追加</button>
+                  <!-- Stats bar -->
+                  <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:8px; padding:0 16px; margin-bottom:14px;">
+                    <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:12px; padding:10px 6px; text-align:center;">
+                      <div style="font-size:18px; font-weight:800; color:{{ t.text }};">{{ summaryStats.total }}</div>
+                      <div style="font-size:9px; color:{{ t.textMuted }}; margin-top:1px;">総蜂群</div>
+                    </div>
+                    <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:12px; padding:10px 6px; text-align:center;">
+                      <div style="font-size:18px; font-weight:800; color:#16A34A;">{{ summaryStats.good }}</div>
+                      <div style="font-size:9px; color:{{ t.textMuted }}; margin-top:1px;">良好</div>
+                    </div>
+                    <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:12px; padding:10px 6px; text-align:center;">
+                      <div style="font-size:18px; font-weight:800; color:{{ t.warn }};">{{ summaryStats.warn }}</div>
+                      <div style="font-size:9px; color:{{ t.textMuted }}; margin-top:1px;">要注意</div>
+                    </div>
+                    <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:12px; padding:10px 6px; text-align:center;">
+                      <div style="font-size:18px; font-weight:800; color:{{ t.primary }};">{{ summaryStats.avgDensity }}</div>
+                      <div style="font-size:9px; color:{{ t.textMuted }}; margin-top:1px;">平均蜜率</div>
+                    </div>
                   </div>
+                  <!-- View mode toggle -->
+                  <div style="display:flex; gap:6px; padding:0 16px; margin-bottom:12px; background:{{ t.surfaceAlt }}; margin:0 16px 12px; border-radius:12px; padding:4px;">
+                    <button onClick="{{ setSummaryModeCard }}" style="flex:1; padding:7px 0; font-size:12px; font-weight:700; font-family:{{ t.font }}; border:none; border-radius:9px; cursor:pointer; background:{{ isSummaryCard ? t.surface : 'transparent' }}; color:{{ isSummaryCard ? t.primary : t.textMuted }}; box-shadow:{{ isSummaryCard ? '0 1px 4px rgba(0,0,0,.08)' : 'none' }};">⊞ カード</button>
+                    <button onClick="{{ setSummaryModeTimeline }}" style="flex:1; padding:7px 0; font-size:12px; font-weight:700; font-family:{{ t.font }}; border:none; border-radius:9px; cursor:pointer; background:{{ isSummaryTimeline ? t.surface : 'transparent' }}; color:{{ isSummaryTimeline ? t.primary : t.textMuted }}; box-shadow:{{ isSummaryTimeline ? '0 1px 4px rgba(0,0,0,.08)' : 'none' }};">⟳ 時系列</button>
+                    <button onClick="{{ setSummaryModeList }}" style="flex:1; padding:7px 0; font-size:12px; font-weight:700; font-family:{{ t.font }}; border:none; border-radius:9px; cursor:pointer; background:{{ isSummaryList ? t.surface : 'transparent' }}; color:{{ isSummaryList ? t.primary : t.textMuted }}; box-shadow:{{ isSummaryList ? '0 1px 4px rgba(0,0,0,.08)' : 'none' }};">☰ 一覧</button>
+                  </div>
+
+                  <!-- ===== CARD VIEW ===== -->
+                  <sc-if value="{{ isSummaryCard }}">
+                    <div style="padding:0 16px;">
+                      <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:10px;">
+                        <sc-for list="{{ colonyCards }}" as="cc">
+                          <div onClick="{{ cc.open }}" style="background:{{ t.surface }}; border:1.5px solid {{ cc.borderColor }}; border-radius:14px; overflow:hidden; cursor:pointer;">
+                            <!-- SVG Beehive illustration -->
+                            <div style="background:linear-gradient(160deg, {{ cc.roofColor }}22 0%, {{ cc.bodyColor }} 100%); padding:12px 10px 8px; display:flex; flex-direction:column; align-items:center;">
+                              <svg width="52" height="44" viewBox="0 0 52 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <!-- Roof -->
+                                <polygon points="26,2 50,18 2,18" fill="{{ cc.roofColor }}" rx="2"/>
+                                <!-- Body box 2 -->
+                                <rect x="7" y="18" width="38" height="10" rx="2" fill="{{ cc.roofColor }}bb"/>
+                                <!-- Body box 1 -->
+                                <rect x="5" y="28" width="42" height="12" rx="2" fill="{{ cc.bodyColor }}" stroke="{{ cc.roofColor }}" stroke-width="1.2"/>
+                                <!-- Entrance -->
+                                <rect x="21" y="37" width="10" height="3" rx="1" fill="{{ cc.roofColor }}66"/>
+                                <!-- Hexagon pattern dots -->
+                                <circle cx="20" cy="33" r="2" fill="{{ cc.roofColor }}44"/>
+                                <circle cx="26" cy="33" r="2" fill="{{ cc.roofColor }}44"/>
+                                <circle cx="32" cy="33" r="2" fill="{{ cc.roofColor }}44"/>
+                              </svg>
+                            </div>
+                            <!-- Colony info -->
+                            <div style="padding:8px 10px 10px;">
+                              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
+                                <span style="font-size:13px; font-weight:800; color:{{ t.text }};">{{ cc.id }}</span>
+                                <span style="font-size:13px;">{{ cc.statusIcon }}</span>
+                              </div>
+                              <!-- Honey density -->
+                              <div style="display:flex; align-items:baseline; gap:3px; margin-bottom:2px;">
+                                <span style="font-size:22px; font-weight:800; color:{{ t.primary }}; line-height:1;">{{ cc.density }}</span>
+                                <span style="font-size:10px; font-weight:600; color:{{ cc.changeColor }};">{{ cc.changeLabel }}</span>
+                              </div>
+                              <div style="font-size:9px; color:{{ t.textMuted }}; margin-bottom:6px;">蜜密度</div>
+                              <!-- Sparkline -->
+                              <sc-if value="{{ cc.hasData && cc.sparkPoints }}">
+                                <svg width="52" height="22" viewBox="0 0 52 22" style="display:block; overflow:visible;">
+                                  <polyline points="{{ cc.sparkPoints }}" fill="none" stroke="{{ cc.roofColor }}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                              </sc-if>
+                              <sc-if value="{{ !cc.hasData }}">
+                                <div style="height:22px; display:flex; align-items:center; font-size:9px; color:{{ t.textMuted }};">内検記録なし</div>
+                              </sc-if>
+                              <!-- Strength -->
+                              <div style="display:flex; align-items:center; justify-content:space-between; margin-top:5px;">
+                                <span style="font-size:9px; color:{{ t.textMuted }};">群勢</span>
+                                <span style="font-size:11px; font-weight:700; color:{{ t.text }};">{{ cc.strengthLabel }}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </sc-for>
+                      </div>
+                    </div>
+                  </sc-if>
+
+                  <!-- ===== TIMELINE VIEW ===== -->
+                  <sc-if value="{{ isSummaryTimeline }}">
+                    <div style="padding:0 16px;">
+                      <div style="position:relative; padding-left:28px;">
+                        <!-- Timeline line -->
+                        <div style="position:absolute; left:10px; top:8px; bottom:8px; width:2px; background:{{ t.border }};"></div>
+                        <sc-for list="{{ timelineCards }}" as="tc">
+                          <div onClick="{{ tc.open }}" style="position:relative; margin-bottom:12px; cursor:pointer;">
+                            <!-- Timeline dot -->
+                            <div style="position:absolute; left:-22px; top:12px; width:10px; height:10px; border-radius:50%; background:{{ tc.roofColor }}; border:2px solid {{ t.surface }};"></div>
+                            <div style="background:{{ t.surface }}; border:1.5px solid {{ tc.borderColor }}; border-radius:12px; padding:10px 12px; display:flex; align-items:center; gap:10px;">
+                              <!-- Mini SVG hive -->
+                              <svg width="32" height="28" viewBox="0 0 52 44" fill="none" style="flex-shrink:0;">
+                                <polygon points="26,2 50,18 2,18" fill="{{ tc.roofColor }}"/>
+                                <rect x="7" y="18" width="38" height="10" rx="2" fill="{{ tc.roofColor }}bb"/>
+                                <rect x="5" y="28" width="42" height="12" rx="2" fill="{{ tc.bodyColor }}" stroke="{{ tc.roofColor }}" stroke-width="1.5"/>
+                              </svg>
+                              <div style="flex:1; min-width:0;">
+                                <div style="display:flex; align-items:center; gap:6px;">
+                                  <span style="font-size:14px; font-weight:800; color:{{ t.text }};">{{ tc.id }}</span>
+                                  <span style="font-size:12px;">{{ tc.statusIcon }}</span>
+                                  <span style="font-size:10px; color:{{ t.textMuted }}; margin-left:auto;">{{ tc.lastDate }}</span>
+                                </div>
+                                <div style="display:flex; align-items:center; gap:12px; margin-top:4px;">
+                                  <div>
+                                    <span style="font-size:16px; font-weight:800; color:{{ t.primary }};">{{ tc.density }}</span>
+                                    <span style="font-size:10px; font-weight:600; color:{{ tc.changeColor }}; margin-left:3px;">{{ tc.changeLabel }}</span>
+                                  </div>
+                                  <div style="flex:1;">
+                                    <sc-if value="{{ tc.sparkPoints }}">
+                                      <svg width="60" height="20" viewBox="0 0 60 20" style="display:block;">
+                                        <polyline points="{{ tc.sparkPoints }}" fill="none" stroke="{{ tc.roofColor }}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                                      </svg>
+                                    </sc-if>
+                                  </div>
+                                  <span style="font-size:11px; font-weight:700; color:{{ t.textMuted }};">{{ tc.strengthLabel }}</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </sc-for>
+                      </div>
+                    </div>
+                  </sc-if>
+
+                  <!-- ===== LIST VIEW ===== -->
+                  <sc-if value="{{ isSummaryList }}">
+                    <div style="padding:0 16px;">
+                      <!-- Filter chips -->
+                      <div style="display:flex; gap:6px; margin-bottom:12px; overflow-x:auto; padding-bottom:2px; scrollbar-width:none;">
+                        <button onClick="{{ setSummaryFilterAll }}" style="flex-shrink:0; padding:6px 14px; font-size:12px; font-weight:700; font-family:{{ t.font }}; border:none; border-radius:999px; cursor:pointer; background:{{ summaryFilterAll ? t.primary : t.chipBg }}; color:{{ summaryFilterAll ? t.primaryText : t.text }};">すべて</button>
+                        <button onClick="{{ setSummaryFilterGood }}" style="flex-shrink:0; padding:6px 14px; font-size:12px; font-weight:700; font-family:{{ t.font }}; border:none; border-radius:999px; cursor:pointer; background:{{ summaryFilterGood ? '#16A34A' : t.chipBg }}; color:{{ summaryFilterGood ? '#fff' : t.text }};">👑 良好</button>
+                        <button onClick="{{ setSummaryFilterWarn }}" style="flex-shrink:0; padding:6px 14px; font-size:12px; font-weight:700; font-family:{{ t.font }}; border:none; border-radius:999px; cursor:pointer; background:{{ summaryFilterWarn ? t.warn : t.chipBg }}; color:{{ summaryFilterWarn ? '#fff' : t.text }};">⚠️ 要注意</button>
+                        <button onClick="{{ setSummaryFilterUnknown }}" style="flex-shrink:0; padding:6px 14px; font-size:12px; font-weight:700; font-family:{{ t.font }}; border:none; border-radius:999px; cursor:pointer; background:{{ summaryFilterUnknown ? t.textMuted : t.chipBg }}; color:{{ summaryFilterUnknown ? '#fff' : t.text }};">❓ 未内検</button>
+                      </div>
+                      <!-- Colony list rows -->
+                      <div style="display:flex; flex-direction:column; gap:8px;">
+                        <sc-for list="{{ colonyCards }}" as="lc">
+                          <div onClick="{{ lc.open }}" style="background:{{ t.surface }}; border:1.5px solid {{ lc.borderColor }}; border-radius:12px; padding:10px 12px; cursor:pointer; display:flex; align-items:center; gap:10px;">
+                            <!-- Mini hive -->
+                            <svg width="28" height="24" viewBox="0 0 52 44" fill="none" style="flex-shrink:0;">
+                              <polygon points="26,2 50,18 2,18" fill="{{ lc.roofColor }}"/>
+                              <rect x="5" y="18" width="42" height="22" rx="2" fill="{{ lc.bodyColor }}" stroke="{{ lc.roofColor }}" stroke-width="1.5"/>
+                            </svg>
+                            <!-- Info -->
+                            <div style="flex:1; min-width:0;">
+                              <div style="display:flex; align-items:center; gap:5px; margin-bottom:5px;">
+                                <span style="font-size:13px; font-weight:800; color:{{ t.text }};">{{ lc.id }}</span>
+                                <span style="font-size:11px;">{{ lc.statusIcon }}</span>
+                                <span style="font-size:10px; color:{{ t.textMuted }}; margin-left:auto;">{{ lc.lastDate }}</span>
+                              </div>
+                              <!-- Density progress bar -->
+                              <div style="display:flex; align-items:center; gap:6px; margin-bottom:3px;">
+                                <span style="font-size:9px; color:{{ t.textMuted }}; width:20px;">蜜率</span>
+                                <div style="flex:1; height:5px; background:{{ t.surfaceAlt }}; border-radius:99px; overflow:hidden;">
+                                  <div style="height:100%; width:{{ lc.densityNum }}%; background:{{ lc.roofColor }}; border-radius:99px; transition:width .3s;"></div>
+                                </div>
+                                <span style="font-size:10px; font-weight:700; color:{{ t.primary }}; width:28px; text-align:right;">{{ lc.density }}</span>
+                              </div>
+                              <!-- Strength bar -->
+                              <div style="display:flex; align-items:center; gap:6px;">
+                                <span style="font-size:9px; color:{{ t.textMuted }}; width:20px;">群勢</span>
+                                <div style="flex:1; height:5px; background:{{ t.surfaceAlt }}; border-radius:99px; overflow:hidden;">
+                                  <div style="height:100%; width:{{ lc.strengthPct }}%; background:#7CB87B; border-radius:99px; transition:width .3s;"></div>
+                                </div>
+                                <span style="font-size:10px; font-weight:700; color:{{ t.text }}; width:28px; text-align:right;">{{ lc.strengthLabel }}</span>
+                              </div>
+                            </div>
+                            <!-- Sparkline -->
+                            <sc-if value="{{ lc.sparkPoints }}">
+                              <svg width="44" height="28" viewBox="0 0 52 22" style="flex-shrink:0;">
+                                <polyline points="{{ lc.sparkPoints }}" fill="none" stroke="{{ lc.roofColor }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                              </svg>
+                            </sc-if>
+                          </div>
+                        </sc-for>
+                      </div>
+                    </div>
+                  </sc-if>
+
                 </div>
               </sc-if>
 
@@ -1909,6 +2076,8 @@ class Component extends DCLogic {
     colonyMemos: (() => { try { return JSON.parse(localStorage.getItem('honeyos_colonyMemos') || '{}'); } catch(e) { return {}; } })(),
     tagFilter: 'all',
     colonyMemoEditId: null,
+    summaryMode: localStorage.getItem('honeyos_summaryMode') || 'card',
+    summaryFilter: 'all',
   };
 
   COLONIES = ['A-01','A-02','A-03','A-04','A-05','A-06','A-07','A-08','A-09','A-10','A-11','A-12'];
@@ -3676,6 +3845,116 @@ class Component extends DCLogic {
         if (!lat || !lng) return '';
         const d = 0.012;
         return `https://www.openstreetmap.org/export/embed.html?bbox=${lng-d},${lat-d},${lng+d},${lat+d}&layer=mapnik&marker=${lat},${lng}`;
+      })(),
+      // ===== 蜂群サマリー (Colony Summary) =====
+      ...(() => {
+        const mkSpark = (vals, w, h) => {
+          if (!vals || vals.length < 2) return '';
+          const mn = Math.min(...vals), mx = Math.max(...vals);
+          const rng = mx - mn || 1;
+          return vals.map((v, i) => {
+            const x = (i / (vals.length - 1)) * w;
+            const y = h - ((v - mn) / rng) * (h - 2) - 1;
+            return x.toFixed(1) + ',' + y.toFixed(1);
+          }).join(' ');
+        };
+        const colonyIds = Array.from({length:12}, (_,i) => 'A-' + String(i+1).padStart(2,'0'));
+        const todayMs = Date.now();
+        const colonyCards = colonyIds.map(cid => {
+          const recs = (s.inspHistory || []).filter(r => r.colony === cid).slice().sort((a,b) => (b.date||'') > (a.date||'') ? 1 : -1);
+          const latest = recs[0];
+          const prev = recs[1];
+          // Honey density from spaceLevels
+          const calcDensity = (rec) => {
+            if (!rec) return null;
+            const lvls = rec.spaceLevels || {};
+            const cnt = rec.spaceCount || 10;
+            const honeyCount = Object.values(lvls).filter(v => v === 'honey').length;
+            return Math.round((honeyCount / cnt) * 100);
+          };
+          const density = calcDensity(latest);
+          const prevDensity = calcDensity(prev);
+          const densityChange = (density != null && prevDensity != null) ? density - prevDensity : null;
+          // Strength 0-3 → 0-100 scale
+          const strength = latest && latest.beesTotal != null ? latest.beesTotal : null;
+          const strengthPct = strength != null ? Math.round((strength / 3) * 100) : null;
+          const strengthLabel = strength != null ? (['少','並','多','密'][strength]||'—') : '—';
+          // Sparkline: density over last 5 records
+          const sparkVals = recs.slice(0, 5).reverse().map(r => calcDensity(r)).filter(v => v != null);
+          const sparkPoints = mkSpark(sparkVals, 52, 22);
+          // Status
+          const daysSince = latest ? (todayMs - new Date(latest.date||'').getTime()) / 86400000 : Infinity;
+          const queenOk = !latest || latest.queenPresent !== false;
+          let status = 'unknown';
+          if (!latest) status = 'unknown';
+          else if (!queenOk) status = 'danger';
+          else if (daysSince > 21 || (density != null && density < 20)) status = 'warn';
+          else status = 'good';
+          const statusIcon = { good:'👑', warn:'⚠️', danger:'🔴', unknown:'❓' }[status];
+          const roofColor = { good:'#E8961B', warn:'#F59E0B', danger:'#EF4444', unknown:'#9CA3AF' }[status];
+          const bodyColor = { good:'#FDF8F0', warn:'#FFFBEB', danger:'#FEF2F2', unknown:'#F9FAFB' }[status];
+          const borderColor = { good: t.primary, warn: t.warn, danger: t.danger, unknown: t.border }[status];
+          const changeLabel = densityChange != null ? (densityChange >= 0 ? '+' : '') + densityChange + '%' : '—';
+          const changeColor = densityChange == null ? t.textMuted : densityChange > 0 ? '#16A34A' : densityChange < 0 ? t.danger : t.textMuted;
+          return {
+            id: cid,
+            density: density != null ? density + '%' : '—',
+            densityNum: density != null ? density : 0,
+            changeLabel,
+            changeColor,
+            strengthLabel,
+            strengthPct: strengthPct != null ? strengthPct : 0,
+            sparkPoints,
+            hasData: !!latest,
+            status, statusIcon, roofColor, bodyColor, borderColor,
+            lastDate: latest ? latest.date : '未記録',
+            open: () => this.openHiveDetail(cid),
+          };
+        });
+        const summaryFilter = s.summaryFilter || 'all';
+        const filteredCards = colonyCards.filter(cc => {
+          if (summaryFilter === 'all') return true;
+          if (summaryFilter === 'good') return cc.status === 'good';
+          if (summaryFilter === 'warn') return cc.status === 'warn' || cc.status === 'danger';
+          if (summaryFilter === 'unknown') return cc.status === 'unknown';
+          return true;
+        });
+        const goodCount = colonyCards.filter(cc => cc.status === 'good').length;
+        const warnCount = colonyCards.filter(cc => cc.status === 'warn' || cc.status === 'danger').length;
+        const densities = colonyCards.filter(cc => cc.hasData).map(cc => cc.densityNum);
+        const strengths = colonyCards.filter(cc => cc.hasData).map(cc => cc.strengthPct);
+        const avgDensity = densities.length ? Math.round(densities.reduce((a,b)=>a+b,0)/densities.length) : 0;
+        const avgStrength = strengths.length ? Math.round(strengths.reduce((a,b)=>a+b,0)/strengths.length) : 0;
+        const summaryMode = s.summaryMode || 'card';
+        const setSummaryMode = (m) => { this.setState({ summaryMode: m }); try { localStorage.setItem('honeyos_summaryMode', m); } catch(e){} };
+        const setSummaryFilter = (f) => this.setState({ summaryFilter: f });
+        return {
+          colonyCards: filteredCards,
+          summaryMode,
+          summaryFilter,
+          setSummaryModeCard: () => setSummaryMode('card'),
+          setSummaryModeTimeline: () => setSummaryMode('timeline'),
+          setSummaryModeList: () => setSummaryMode('list'),
+          isSummaryCard: summaryMode === 'card',
+          isSummaryTimeline: summaryMode === 'timeline',
+          isSummaryList: summaryMode === 'list',
+          summaryFilterAll: summaryFilter === 'all',
+          summaryFilterGood: summaryFilter === 'good',
+          summaryFilterWarn: summaryFilter === 'warn',
+          summaryFilterUnknown: summaryFilter === 'unknown',
+          setSummaryFilterAll: () => setSummaryFilter('all'),
+          setSummaryFilterGood: () => setSummaryFilter('good'),
+          setSummaryFilterWarn: () => setSummaryFilter('warn'),
+          setSummaryFilterUnknown: () => setSummaryFilter('unknown'),
+          summaryStats: {
+            total: colonyCards.length,
+            good: goodCount,
+            warn: warnCount,
+            avgDensity: avgDensity + '%',
+            avgStrength: ['少','並','多','密'][Math.round(avgStrength/33)] || '並',
+          },
+          timelineCards: colonyCards.filter(cc => cc.hasData).slice().sort((a,b) => (b.lastDate||'') > (a.lastDate||'') ? 1 : -1),
+        };
       })(),
       // ===== オフライン =====
       isOffline: s.isOffline,
