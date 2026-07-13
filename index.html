@@ -728,15 +728,43 @@ if('serviceWorker' in navigator){
 
               <!-- SCR-010 FARM MAP -->
               <sc-if value="{{ vFarmMap }}" hint-placeholder-val="{{ false }}">
-                <div data-screen-label="SCR-010 養蜂場マップ" style="padding:60px 16px 16px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
-                  <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px;"><button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button><span style="font-size:20px; font-weight:800; color:{{ t.text }};">養蜂場マップ</span></div>
-                  <div style="position:relative; border-radius:{{ t.radius }}px; overflow:hidden; border:1px solid {{ t.border }}; background:linear-gradient(135deg,{{ t.surfaceAlt }},{{ t.chipBg }}); height:300px; margin-bottom:14px;">
-                    <svg viewBox="0 0 340 300" width="100%" height="100%" style="position:absolute; inset:0; opacity:.4;"><path d="M0,210 Q90,170 170,200 T340,180" fill="none" stroke="{{ t.primary }}" stroke-width="2"></path><path d="M40,0 L70,300" stroke="{{ t.border }}" stroke-width="14" opacity=".6"></path><path d="M0,120 L340,90" stroke="{{ t.border }}" stroke-width="20" opacity=".5"></path></svg>
-                    <sc-for list="{{ mapPins }}" as="p" hint-placeholder-count="12">
-                      <div onClick="{{ p.open }}" style="position:absolute; left:{{ p.x }}%; top:{{ p.y }}%; transform:translate(-50%,-100%); cursor:pointer; display:flex; flex-direction:column; align-items:center;"><span style="background:{{ p.color }}; color:#fff; font-size:10px; font-weight:800; padding:3px 7px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,.25); white-space:nowrap;">{{ p.id }}</span><span style="width:0; height:0; border-left:5px solid transparent; border-right:5px solid transparent; border-top:6px solid {{ p.color }};"></span></div>
-                    </sc-for>
-                  </div>
-                  <div style="display:flex; gap:16px; font-size:12px; color:{{ t.textMuted }}; justify-content:center;"><span style="display:flex; align-items:center; gap:5px;"><span style="width:9px; height:9px; border-radius:50%; background:{{ t.ok }};"></span>正常</span><span style="display:flex; align-items:center; gap:5px;"><span style="width:9px; height:9px; border-radius:50%; background:{{ t.warn }};"></span>注意</span><span style="display:flex; align-items:center; gap:5px;"><span style="width:9px; height:9px; border-radius:50%; background:{{ t.danger }};"></span>異常</span></div>
+                <div data-screen-label="SCR-010 養蜂場マップ" style="padding:60px 0 16px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1); display:flex; flex-direction:column; height:100%;">
+                  <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px; padding:0 16px;"><button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button><span style="font-size:20px; font-weight:800; color:{{ t.text }};">養蜂場マップ</span></div>
+                  <!-- 位置設定済み: OSM地図 -->
+                  <sc-if value="{{ farmHasLocation }}">
+                    <div style="flex:1; position:relative; background:{{ t.surfaceAlt }}; overflow:hidden; min-height:340px;">
+                      <iframe src="{{ farmColonyMapUrl }}" width="100%" height="100%" style="display:block; border:none; min-height:340px;" scrolling="no" frameborder="0"></iframe>
+                    </div>
+                    <div style="padding:12px 16px;">
+                      <div style="font-size:12px; color:{{ t.textMuted }}; margin-bottom:10px;">📍 {{ farmLocationName || (farmLat + ', ' + farmLng) }}</div>
+                      <!-- 蜂群GPSピン一覧 -->
+                      <div style="font-size:12px; font-weight:700; color:{{ t.text }}; margin-bottom:8px;">蜂群の位置（GPS記録済み）</div>
+                      <sc-if value="{{ colonyGpsList.length }}">
+                        <div style="display:flex; flex-direction:column; gap:6px; max-height:160px; overflow-y:auto;">
+                          <sc-for list="{{ colonyGpsList }}" as="cg">
+                            <div style="display:flex; align-items:center; gap:10px; padding:8px 10px; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:10px;">
+                              <span style="font-size:13px; font-weight:800; color:{{ t.primary }}; flex-shrink:0;">{{ cg.id }}</span>
+                              <span style="font-size:11px; color:{{ t.textMuted }}; flex:1; font-variant-numeric:tabular-nums;">{{ cg.lat }}, {{ cg.lng }}</span>
+                              <a href="{{ cg.mapsUrl }}" target="_blank" rel="noopener" style="font-size:11px; font-weight:700; color:{{ t.primary }}; text-decoration:none; padding:4px 8px; background:{{ t.chipBg }}; border-radius:6px; white-space:nowrap;">地図で開く</a>
+                            </div>
+                          </sc-for>
+                        </div>
+                      </sc-if>
+                      <sc-if value="{{ !colonyGpsList.length }}">
+                        <div style="font-size:12px; color:{{ t.textMuted }}; padding:8px 0;">各蜂群の詳細画面からGPS位置を記録できます。</div>
+                      </sc-if>
+                      <a href="{{ farmMapsUrl }}" target="_blank" rel="noopener" style="display:block; width:100%; margin-top:12px; padding:11px; font-size:13px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:10px; cursor:pointer; text-align:center; text-decoration:none; box-sizing:border-box;">Googleマップで全体を見る</a>
+                    </div>
+                  </sc-if>
+                  <!-- 位置未設定 -->
+                  <sc-if value="{{ !farmHasLocation }}">
+                    <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; padding:24px;">
+                      <div style="font-size:56px;">🗺️</div>
+                      <div style="font-size:16px; font-weight:800; color:{{ t.text }}; text-align:center;">養蜂場の位置が未設定です</div>
+                      <div style="font-size:13px; color:{{ t.textMuted }}; text-align:center; line-height:1.6;">設定 → 養蜂場の位置 から<br>住所検索または現在地で設定できます。</div>
+                      <button onClick="{{ goSettings }}" style="padding:13px 28px; font-size:14px; font-weight:800; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:12px; cursor:pointer;">設定画面へ</button>
+                    </div>
+                  </sc-if>
                 </div>
               </sc-if>
 
@@ -1667,6 +1695,37 @@ if('serviceWorker' in navigator){
                       <div onClick="{{ sr.open }}" style="display:flex; align-items:center; gap:12px; padding:15px 16px; border-bottom:1px solid {{ t.border }}; cursor:pointer;" style-active="background:{{ t.surfaceAlt }};"><span style="font-size:18px; width:24px; text-align:center;">{{ sr.icon }}</span><div style="flex:1;"><div style="font-size:14px; color:{{ t.text }};">{{ sr.label }}</div><div style="font-size:11px; color:{{ t.textMuted }}; margin-top:2px;">{{ sr.desc }}</div></div><span style="color:{{ t.textMuted }};">›</span></div>
                     </sc-for>
                   </div>
+                  <!-- 養蜂場位置設定 -->
+                  <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; margin-bottom:16px;">
+                    <div style="font-size:13px; font-weight:700; color:{{ t.text }}; margin-bottom:4px;">📍 養蜂場の位置</div>
+                    <div style="font-size:12px; color:{{ t.textMuted }}; margin-bottom:12px;">地図上に養蜂場の位置を記録します。住所検索または現在地から設定できます。</div>
+                    <!-- 住所検索 -->
+                    <div style="display:flex; gap:8px; margin-bottom:10px;">
+                      <input type="text" value="{{ farmLocSearch }}" onInput="{{ hFarmLocSearch }}" placeholder="例：北海道札幌市、または住所・地名" style="flex:1; padding:11px 14px; font-size:14px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surfaceAlt }}; border:1.5px solid {{ t.border }}; border-radius:10px; outline:none;" style-focus="border-color:{{ t.primary }};">
+                      <button onClick="{{ searchFarmLocation }}" style="padding:11px 16px; font-size:12px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:10px; cursor:pointer; white-space:nowrap; opacity:{{ farmLocSearching ? 0.6 : 1 }};">{{ farmLocSearching ? '検索中…' : '検索' }}</button>
+                    </div>
+                    <!-- 現在地ボタン -->
+                    <button onClick="{{ setFarmGPS }}" style="width:100%; padding:11px; font-size:13px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primary }}; background:{{ t.chipBg }}; border:1.5px solid {{ t.primary }}; border-radius:10px; cursor:pointer; margin-bottom:12px; opacity:{{ farmGpsLoading ? 0.6 : 1 }};">{{ farmGpsLoading ? '📡 取得中…' : '📡 現在地を養蜂場に設定' }}</button>
+                    <!-- 位置設定済み表示 -->
+                    <sc-if value="{{ farmHasLocation }}">
+                      <div style="background:{{ t.surfaceAlt }}; border-radius:10px; overflow:hidden; margin-bottom:10px;">
+                        <iframe src="{{ farmMapEmbedUrl }}" width="100%" height="200" frameborder="0" scrolling="no" style="display:block; border:none;"></iframe>
+                      </div>
+                      <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+                        <span style="font-size:12px; color:{{ t.textMuted }}; flex:1; word-break:break-all;">📍 {{ farmLocationName || farmLat + ', ' + farmLng }}</span>
+                      </div>
+                      <div style="display:flex; gap:8px;">
+                        <a href="{{ farmMapsUrl }}" target="_blank" rel="noopener" style="flex:1; padding:9px; font-size:12px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primary }}; background:{{ t.chipBg }}; border:1.5px solid {{ t.primary }}; border-radius:8px; cursor:pointer; text-align:center; text-decoration:none;">Googleマップで開く</a>
+                        <button onClick="{{ clearFarmLocation }}" style="padding:9px 14px; font-size:12px; font-weight:700; font-family:{{ t.font }}; color:{{ t.danger }}; background:{{ t.dangerBg }}; border:none; border-radius:8px; cursor:pointer;">クリア</button>
+                      </div>
+                    </sc-if>
+                    <sc-if value="{{ !farmHasLocation }}">
+                      <div style="background:{{ t.surfaceAlt }}; border-radius:10px; padding:20px; text-align:center;">
+                        <div style="font-size:28px; margin-bottom:6px;">🗺️</div>
+                        <div style="font-size:12px; color:{{ t.textMuted }};">位置が未設定です</div>
+                      </div>
+                    </sc-if>
+                  </div>
                   <!-- 年間採蜜目標 -->
                   <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; margin-bottom:16px;">
                     <div style="font-size:13px; font-weight:700; color:{{ t.text }}; margin-bottom:4px;">🍯 年間採蜜目標</div>
@@ -1832,6 +1891,12 @@ class Component extends DCLogic {
     sessionExpired: false,
     colonyPositions: (() => { try { return JSON.parse(localStorage.getItem('honeyos_colonyPos') || '{}'); } catch(e) { return {}; } })(),
     gpsLoading: false,
+    farmLat: (() => { const v = parseFloat(localStorage.getItem('honeyos_farmLat') || ''); return isNaN(v) ? null : v; })(),
+    farmLng: (() => { const v = parseFloat(localStorage.getItem('honeyos_farmLng') || ''); return isNaN(v) ? null : v; })(),
+    farmLocationName: localStorage.getItem('honeyos_farmLocName') || '',
+    farmGpsLoading: false,
+    farmLocSearch: '',
+    farmLocSearching: false,
     activityLog: (() => { try { return JSON.parse(localStorage.getItem('honeyos_actLog') || '[]'); } catch(e) { return []; } })(),
     offlineQueue: (() => { try { return JSON.parse(localStorage.getItem('honeyos_offlineQ') || '[]'); } catch(e) { return []; } })(),
     cloneColonyFrom: null,
@@ -1884,6 +1949,56 @@ class Component extends DCLogic {
   _setupOfflineDetect() {
     window.addEventListener('online', () => { this.setState({ isOffline: false }); this._flushOfflineQueue(); });
     window.addEventListener('offline', () => this.setState({ isOffline: true }));
+  }
+
+  // ===== 養蜂場位置設定 =====
+  setFarmGPS() {
+    if (!('geolocation' in navigator)) { this.showToast('このブラウザはGPSに対応していません', 'error'); return; }
+    this.setState({ farmGpsLoading: true });
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const lat = Math.round(pos.coords.latitude * 1e6) / 1e6;
+        const lng = Math.round(pos.coords.longitude * 1e6) / 1e6;
+        this._saveFarmLocation(lat, lng, `${lat}, ${lng}`);
+        this.setState({ farmGpsLoading: false });
+        this.showToast('養蜂場の位置を設定しました 📍', 'ok');
+      },
+      () => { this.setState({ farmGpsLoading: false }); this.showToast('GPS取得に失敗しました', 'error'); },
+      { timeout: 10000 }
+    );
+  }
+  async searchFarmLocation() {
+    const q = (this.state.farmLocSearch || '').trim();
+    if (!q) { this.showToast('住所を入力してください', 'error'); return; }
+    this.setState({ farmLocSearching: true });
+    try {
+      const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=1`;
+      const res = await fetch(url, { headers: { 'Accept-Language': 'ja,en' } });
+      const data = await res.json();
+      if (!data.length) { this.showToast('場所が見つかりませんでした', 'error'); this.setState({ farmLocSearching: false }); return; }
+      const lat = Math.round(parseFloat(data[0].lat) * 1e6) / 1e6;
+      const lng = Math.round(parseFloat(data[0].lon) * 1e6) / 1e6;
+      const name = data[0].display_name.split(',').slice(0, 3).join(', ');
+      this._saveFarmLocation(lat, lng, name);
+      this.setState({ farmLocSearching: false });
+      this.showToast(`「${name}」に設定しました`, 'ok');
+    } catch(e) {
+      this.setState({ farmLocSearching: false });
+      this.showToast('検索に失敗しました（ネットワークを確認）', 'error');
+    }
+  }
+  _saveFarmLocation(lat, lng, name) {
+    try {
+      localStorage.setItem('honeyos_farmLat', String(lat));
+      localStorage.setItem('honeyos_farmLng', String(lng));
+      localStorage.setItem('honeyos_farmLocName', name);
+    } catch(e) {}
+    this.setState({ farmLat: lat, farmLng: lng, farmLocationName: name });
+  }
+  clearFarmLocation() {
+    try { localStorage.removeItem('honeyos_farmLat'); localStorage.removeItem('honeyos_farmLng'); localStorage.removeItem('honeyos_farmLocName'); } catch(e) {}
+    this.setState({ farmLat: null, farmLng: null, farmLocationName: '' });
+    this.showToast('位置情報をクリアしました', 'ok');
   }
 
   // ===== ⑤ GPS蜂箱位置記録 =====
@@ -3507,6 +3622,11 @@ class Component extends DCLogic {
       colonyPositions: s.colonyPositions || {},
       gpsLoading: s.gpsLoading || false,
       recordColonyGPS: (cid) => this.recordColonyGPS(cid),
+      colonyGpsList: Object.entries(s.colonyPositions || {}).map(([id, pos]) => ({
+        id, lat: pos.lat.toFixed(6), lng: pos.lng.toFixed(6),
+        mapsUrl: `https://www.google.com/maps?q=${pos.lat},${pos.lng}`
+      })),
+      goSettings: () => this.tab('settings'),
       currentHiveGPS: (() => {
         const pos = (s.colonyPositions || {})[s.hiveDetailColony];
         if (!pos) return null;
@@ -3533,6 +3653,30 @@ class Component extends DCLogic {
       // ===== ⑩ オフライン内検キュー =====
       offlineQueueCount: (s.offlineQueue || []).length,
       flushOfflineQueue: () => this._flushOfflineQueue(),
+      // ===== 養蜂場位置設定 =====
+      farmLat: s.farmLat, farmLng: s.farmLng,
+      farmLocationName: s.farmLocationName || '',
+      farmHasLocation: !!(s.farmLat && s.farmLng),
+      farmGpsLoading: s.farmGpsLoading || false,
+      farmLocSearch: s.farmLocSearch || '',
+      hFarmLocSearch: (e) => this.setState({ farmLocSearch: e.target.value }),
+      setFarmGPS: () => this.setFarmGPS(),
+      searchFarmLocation: () => this.searchFarmLocation(),
+      clearFarmLocation: () => this.clearFarmLocation(),
+      farmMapEmbedUrl: (() => {
+        const lat = s.farmLat, lng = s.farmLng;
+        if (!lat || !lng) return '';
+        const d = 0.008;
+        return `https://www.openstreetmap.org/export/embed.html?bbox=${lng-d},${lat-d},${lng+d},${lat+d}&layer=mapnik&marker=${lat},${lng}`;
+      })(),
+      farmMapsUrl: s.farmLat ? `https://www.google.com/maps?q=${s.farmLat},${s.farmLng}` : '',
+      farmColonyMapUrl: (() => {
+        // OSM embed with farm + colony pins (limited to URL)
+        const lat = s.farmLat, lng = s.farmLng;
+        if (!lat || !lng) return '';
+        const d = 0.012;
+        return `https://www.openstreetmap.org/export/embed.html?bbox=${lng-d},${lat-d},${lng+d},${lat+d}&layer=mapnik&marker=${lat},${lng}`;
+      })(),
       // ===== オフライン =====
       isOffline: s.isOffline,
       // ===== バッジフィルタ =====
