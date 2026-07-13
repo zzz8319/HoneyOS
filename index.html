@@ -8,7 +8,29 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="HoneyOS">
 <link rel="manifest" href="./manifest.json">
-<script>if('serviceWorker' in navigator){ navigator.serviceWorker.register('./sw.js'); }</script>
+<script>
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('./sw.js').then(reg => {
+    // 新しいSWが見つかったらすぐにskipWaitingを要求
+    reg.addEventListener('updatefound', () => {
+      const nw = reg.installing;
+      if (!nw) return;
+      nw.addEventListener('statechange', () => {
+        if (nw.state === 'installed' && navigator.serviceWorker.controller) {
+          nw.postMessage({ type: 'SKIP_WAITING' });
+        }
+      });
+    });
+    // 定期的に更新チェック
+    setInterval(() => reg.update(), 60000);
+  });
+  // SWコントローラーが変わったらページリロード
+  let refreshing = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!refreshing) { refreshing = true; window.location.reload(); }
+  });
+}
+</script>
 <script src="./supabase.min.js"></script>
 <script src="./support.js"></script>
 <script src="./supabase_client.js"></script>
