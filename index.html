@@ -1791,7 +1791,7 @@ class Component extends DCLogic {
     trendTab: 'bees',
     compareColony1: 'A-01',
     compareColony2: 'A-02',
-    notifPermission: Notification && Notification.permission || 'default',
+    notifPermission: (typeof Notification !== 'undefined' && Notification.permission) || 'default',
     hasDraft: false,
     lang: 'ja',
     obFarmName: '', obColonyCount: '12', obExperience: 'beginner',
