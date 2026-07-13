@@ -221,30 +221,79 @@
           </div>
         </sc-if>
 
+        <!-- SCR-003 オンボーディング① ようこそ -->
         <sc-if value="{{ scOb1 }}" hint-placeholder-val="{{ false }}">
           <div data-screen-label="SCR-003 オンボーディング①" style="position:absolute; inset:0; background:{{ t.bg }}; font-family:{{ t.font }}; padding:66px 30px 40px; display:flex; flex-direction:column; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
-            <div style="display:flex; justify-content:flex-end;"><span onClick="{{ skipOb }}" style="font-size:14px; color:{{ t.textMuted }}; font-weight:600; cursor:pointer;">スキップ</span></div>
-            <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:22px;"><div style="width:168px; height:168px; border-radius:50%; background:{{ t.chipBg }}; display:flex; align-items:center; justify-content:center; font-size:76px;">🐝</div><div style="font-size:27px; font-weight:800; color:{{ t.text }}; line-height:1.45;">ようこそ<br>HoneyOS へ</div><div style="font-size:15px; color:{{ t.textMuted }}; line-height:1.9;">養蜂管理をもっと簡単に、<br>もっとスマートに。</div></div>
+            <div style="display:flex; justify-content:flex-end;"><span onClick="{{ skipOb }}" style="font-size:14px; color:{{ t.textMuted }}; font-weight:600; cursor:pointer;">{{ TR.skip }}</span></div>
+            <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:22px;">
+              <div style="width:168px; height:168px; border-radius:50%; background:{{ t.chipBg }}; display:flex; align-items:center; justify-content:center; font-size:76px;">🐝</div>
+              <div>
+                <div style="font-size:27px; font-weight:800; color:{{ t.text }}; line-height:1.45;">{{ TR.langJa === 'English' ? 'Welcome to' : 'ようこそ' }}<br>HoneyOS {{ TR.langJa === 'English' ? '' : 'へ' }}</div>
+                <div style="font-size:15px; color:{{ t.textMuted }}; line-height:1.9; margin-top:12px;">{{ isEn ? 'Smarter beekeeping management.' : '養蜂管理をもっと簡単に、もっとスマートに。' }}</div>
+              </div>
+              <!-- 言語切り替え -->
+              <div style="display:flex; gap:5px; background:{{ t.surfaceAlt }}; border:1px solid {{ t.border }}; padding:4px; border-radius:12px; margin-top:8px;">
+                <button onClick="{{ setLangJa }}" style="{{ langJaStyle }}">🇯🇵 日本語</button>
+                <button onClick="{{ setLangEn }}" style="{{ langEnStyle }}">🇬🇧 English</button>
+              </div>
+            </div>
             <div style="display:flex; gap:8px; justify-content:center; margin-bottom:24px;"><span style="width:24px; height:8px; border-radius:99px; background:{{ t.primary }};"></span><span style="width:8px; height:8px; border-radius:99px; background:{{ t.border }};"></span><span style="width:8px; height:8px; border-radius:99px; background:{{ t.border }};"></span></div>
-            <button onClick="{{ goOb2 }}" style="width:100%; padding:16px; font-size:16px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};" style-active="transform:translateY(1px);">次へ</button>
+            <button onClick="{{ goOb2 }}" style="width:100%; padding:16px; font-size:16px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};" style-active="transform:translateY(1px);">{{ TR.next }}</button>
           </div>
         </sc-if>
 
+        <!-- SCR-004 オンボーディング② 養蜂場設定 -->
         <sc-if value="{{ scOb2 }}" hint-placeholder-val="{{ false }}">
-          <div data-screen-label="SCR-004 オンボーディング②" style="position:absolute; inset:0; background:{{ t.bg }}; font-family:{{ t.font }}; padding:66px 30px 40px; display:flex; flex-direction:column; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
-            <div style="display:flex; justify-content:flex-end;"><span onClick="{{ skipOb }}" style="font-size:14px; color:{{ t.textMuted }}; font-weight:600; cursor:pointer;">スキップ</span></div>
-            <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:22px;"><div style="width:168px; height:168px; border-radius:50%; background:{{ t.chipBg }}; display:flex; align-items:center; justify-content:center; font-size:76px;">🏡</div><div style="font-size:27px; font-weight:800; color:{{ t.text }}; line-height:1.45;">養蜂場を<br>登録しましょう</div><div style="font-size:15px; color:{{ t.textMuted }}; line-height:1.9;">養蜂場の名前と場所を登録して<br>蜂群の管理を始めましょう。</div></div>
-            <div style="display:flex; gap:8px; justify-content:center; margin-bottom:24px;"><span style="width:8px; height:8px; border-radius:99px; background:{{ t.border }};"></span><span style="width:24px; height:8px; border-radius:99px; background:{{ t.primary }};"></span><span style="width:8px; height:8px; border-radius:99px; background:{{ t.border }};"></span></div>
-            <button onClick="{{ goOb3 }}" style="width:100%; padding:16px; font-size:16px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};" style-active="transform:translateY(1px);">次へ</button>
+          <div data-screen-label="SCR-004 オンボーディング②" style="position:absolute; inset:0; background:{{ t.bg }}; font-family:{{ t.font }}; padding:66px 30px 40px; display:flex; flex-direction:column; overflow-y:auto; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
+            <div style="display:flex; justify-content:flex-end; margin-bottom:24px;"><span onClick="{{ skipOb }}" style="font-size:14px; color:{{ t.textMuted }}; font-weight:600; cursor:pointer;">{{ TR.skip }}</span></div>
+            <div style="font-size:26px; font-weight:800; color:{{ t.text }}; margin-bottom:6px;">🏡 {{ isEn ? 'Set up your apiary' : '養蜂場を設定' }}</div>
+            <div style="font-size:14px; color:{{ t.textMuted }}; margin-bottom:32px;">{{ isEn ? 'Tell us about your beekeeping setup.' : 'あなたの養蜂場の情報を教えてください。' }}</div>
+            <div style="display:flex; flex-direction:column; gap:18px; flex:1;">
+              <div>
+                <label style="display:block; font-size:13px; font-weight:700; color:{{ t.textMuted }}; margin-bottom:8px;">{{ isEn ? '🏷️ Apiary Name' : '🏷️ 養蜂場名' }}</label>
+                <input onInput="{{ h.obFarmName }}" type="text" placeholder="{{ isEn ? 'e.g. Sunny Meadow Apiary' : '例：第一養蜂場' }}" style="width:100%; padding:14px 16px; font-size:15px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px; outline:none; box-sizing:border-box;" style-focus="border-color:{{ t.primary }};"></div>
+              <div>
+                <label style="display:block; font-size:13px; font-weight:700; color:{{ t.textMuted }}; margin-bottom:8px;">{{ isEn ? '🐝 Number of Colonies' : '🐝 管理する蜂群の数' }}</label>
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                  <sc-for list="{{ obColonyCounts }}" as="oc">
+                    <button onClick="{{ oc.set }}" style="padding:10px 18px; font-size:14px; font-weight:700; font-family:{{ t.font }}; border:1.5px solid {{ oc.active ? t.primary : t.border }}; border-radius:10px; background:{{ oc.active ? t.chipBg : t.surface }}; color:{{ oc.active ? t.primary : t.textMuted }}; cursor:pointer;">{{ oc.label }}</button>
+                  </sc-for>
+                </div>
+              </div>
+              <div>
+                <label style="display:block; font-size:13px; font-weight:700; color:{{ t.textMuted }}; margin-bottom:8px;">{{ isEn ? '📚 Experience Level' : '📚 養蜂歴' }}</label>
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                  <sc-for list="{{ obExperienceOpts }}" as="oe">
+                    <button onClick="{{ oe.set }}" style="padding:13px 16px; font-size:14px; font-weight:700; font-family:{{ t.font }}; text-align:left; border:1.5px solid {{ oe.active ? t.primary : t.border }}; border-radius:12px; background:{{ oe.active ? t.chipBg : t.surface }}; color:{{ oe.active ? t.primary : t.text }}; cursor:pointer; display:flex; align-items:center; gap:10px;"><span style="font-size:20px;">{{ oe.icon }}</span><span>{{ oe.label }}</span></button>
+                  </sc-for>
+                </div>
+              </div>
+            </div>
+            <div style="display:flex; gap:8px; justify-content:center; margin:24px 0 18px;"><span style="width:8px; height:8px; border-radius:99px; background:{{ t.border }};"></span><span style="width:24px; height:8px; border-radius:99px; background:{{ t.primary }};"></span><span style="width:8px; height:8px; border-radius:99px; background:{{ t.border }};"></span></div>
+            <button onClick="{{ finishOnboarding }}" style="width:100%; padding:16px; font-size:16px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};" style-active="transform:translateY(1px);">{{ TR.next }}</button>
           </div>
         </sc-if>
 
+        <!-- SCR-005 オンボーディング③ 準備完了 -->
         <sc-if value="{{ scOb3 }}" hint-placeholder-val="{{ false }}">
           <div data-screen-label="SCR-005 オンボーディング③" style="position:absolute; inset:0; background:{{ t.bg }}; font-family:{{ t.font }}; padding:66px 30px 40px; display:flex; flex-direction:column; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
-            <div style="display:flex; justify-content:flex-end;"><span onClick="{{ startApp }}" style="font-size:14px; color:{{ t.textMuted }}; font-weight:600; cursor:pointer;">後で設定する</span></div>
-            <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:22px;"><div style="width:168px; height:168px; border-radius:50%; background:{{ t.chipBg }}; display:flex; align-items:center; justify-content:center; font-size:72px;">📡</div><div style="font-size:27px; font-weight:800; color:{{ t.text }}; line-height:1.45;">センサーを<br>接続しましょう</div><div style="font-size:15px; color:{{ t.textMuted }}; line-height:1.9;">IoTセンサーを登録すると、重量・温度を<br>リアルタイムでモニタリングできます。</div></div>
+            <div style="display:flex; justify-content:flex-end;"><span onClick="{{ startApp }}" style="font-size:14px; color:{{ t.textMuted }}; font-weight:600; cursor:pointer;">{{ isEn ? 'Later' : '後で設定する' }}</span></div>
+            <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:22px;">
+              <div style="width:168px; height:168px; border-radius:50%; background:{{ t.chipBg }}; display:flex; align-items:center; justify-content:center; font-size:72px;">🎉</div>
+              <div>
+                <div style="font-size:27px; font-weight:800; color:{{ t.text }}; line-height:1.45;">{{ isEn ? 'All set!' : '準備完了！' }}</div>
+                <div style="font-size:15px; color:{{ t.textMuted }}; line-height:1.9; margin-top:12px;">{{ isEn ? 'Your apiary is ready. Start your first inspection!' : 'HoneyOS の準備が整いました。\n最初の内検を始めましょう！' }}</div>
+              </div>
+              <!-- 機能紹介ミニリスト -->
+              <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:16px; padding:16px 20px; text-align:left; display:flex; flex-direction:column; gap:10px; width:100%; box-sizing:border-box;">
+                <div style="display:flex; align-items:center; gap:12px; font-size:13px; color:{{ t.text }};"><span style="font-size:20px;">🔍</span><span>{{ isEn ? 'Record hive inspections' : '内検を記録する' }}</span></div>
+                <div style="display:flex; align-items:center; gap:12px; font-size:13px; color:{{ t.text }};"><span style="font-size:20px;">📊</span><span>{{ isEn ? 'View colony trends' : '蜂群トレンドを確認する' }}</span></div>
+                <div style="display:flex; align-items:center; gap:12px; font-size:13px; color:{{ t.text }};"><span style="font-size:20px;">🍯</span><span>{{ isEn ? 'Track honey harvest' : '採蜜量を追跡する' }}</span></div>
+                <div style="display:flex; align-items:center; gap:12px; font-size:13px; color:{{ t.text }};"><span style="font-size:20px;">🔔</span><span>{{ isEn ? 'Get task reminders' : 'タスクのリマインダー' }}</span></div>
+              </div>
+            </div>
             <div style="display:flex; gap:8px; justify-content:center; margin-bottom:24px;"><span style="width:8px; height:8px; border-radius:99px; background:{{ t.border }};"></span><span style="width:8px; height:8px; border-radius:99px; background:{{ t.border }};"></span><span style="width:24px; height:8px; border-radius:99px; background:{{ t.primary }};"></span></div>
-            <button onClick="{{ startApp }}" style="width:100%; padding:16px; font-size:16px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};" style-active="transform:translateY(1px);">始める</button>
+            <button onClick="{{ startApp }}" style="width:100%; padding:16px; font-size:16px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};" style-active="transform:translateY(1px);">{{ TR.start }}</button>
           </div>
         </sc-if>
 
@@ -1287,15 +1336,20 @@
                   <div style="font-size:22px; font-weight:800; color:{{ t.text }}; margin-bottom:16px; padding:0 4px;">レポート</div>
                   <div style="display:flex; gap:6px; background:{{ t.surfaceAlt }}; border:1px solid {{ t.border }}; padding:5px; border-radius:12px; margin-bottom:16px;"><button onClick="{{ rMonth }}" style="{{ repSegMonth }}">月次</button><button onClick="{{ rWeek }}" style="{{ repSegWeek }}">週次</button><button onClick="{{ rYear }}" style="{{ repSegYear }}">年次</button></div>
                   <div style="display:flex; gap:10px; margin-bottom:14px;">
-                    <div style="flex:1; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:14px;"><div style="font-size:11px; color:{{ t.textMuted }};">総収量</div><div style="margin-top:6px;"><span style="font-size:20px; font-weight:800; color:{{ t.text }};">458</span><span style="font-size:11px; color:{{ t.textMuted }};">kg</span></div><div style="font-size:11px; font-weight:700; color:{{ t.accent }};">+12%</div></div>
-                    <div style="flex:1; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:14px;"><div style="font-size:11px; color:{{ t.textMuted }};">収益</div><div style="margin-top:6px;"><span style="font-size:20px; font-weight:800; color:{{ t.text }};">91</span><span style="font-size:11px; color:{{ t.textMuted }};">万</span></div><div style="font-size:11px; font-weight:700; color:{{ t.accent }};">+8%</div></div>
-                    <div style="flex:1; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:14px;"><div style="font-size:11px; color:{{ t.textMuted }};">コスト</div><div style="margin-top:6px;"><span style="font-size:20px; font-weight:800; color:{{ t.text }};">23</span><span style="font-size:11px; color:{{ t.textMuted }};">万</span></div><div style="font-size:11px; color:{{ t.textMuted }};">前月同等</div></div>
+                    <div style="flex:1; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:14px;"><div style="font-size:11px; color:{{ t.textMuted }};">{{ TR.totalYield }}</div><div style="margin-top:6px;"><span style="font-size:20px; font-weight:800; color:{{ t.text }};">{{ reportTotalYield }}</span><span style="font-size:11px; color:{{ t.textMuted }};">kg</span></div><sc-if value="{{ reportHasReal }}"><div style="font-size:11px; font-weight:700; color:{{ t.ok }};">実データ</div></sc-if><sc-if value="{{ !reportHasReal }}"><div style="font-size:11px; color:{{ t.textMuted }};">デモ</div></sc-if></div>
+                    <div style="flex:1; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:14px;"><div style="font-size:11px; color:{{ t.textMuted }};">{{ TR.revenue }}</div><div style="margin-top:6px;"><span style="font-size:20px; font-weight:800; color:{{ t.text }};">91</span><span style="font-size:11px; color:{{ t.textMuted }};">万</span></div><div style="font-size:11px; font-weight:700; color:{{ t.accent }};">+8%</div></div>
+                    <div style="flex:1; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:14px;"><div style="font-size:11px; color:{{ t.textMuted }};">{{ TR.cost }}</div><div style="margin-top:6px;"><span style="font-size:20px; font-weight:800; color:{{ t.text }};">23</span><span style="font-size:11px; color:{{ t.textMuted }};">万</span></div><div style="font-size:11px; color:{{ t.textMuted }};">前月同等</div></div>
+                  </div>
+                  <!-- Harvest yield chart -->
+                  <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; margin-bottom:14px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;"><div style="font-size:13px; font-weight:700; color:{{ t.text }};">採蜜量推移</div><div style="font-size:11px; color:{{ t.textMuted }};">kg</div></div>
+                    <svg viewBox="0 0 300 110" width="100%" style="display:block;"><defs><linearGradient id="hg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="{{ t.primary }}" stop-opacity="0.25"></stop><stop offset="100%" stop-color="{{ t.primary }}" stop-opacity="0"></stop></linearGradient></defs><path d="{{ harvestArea }}" fill="url(#hg)"></path><path d="{{ harvestLine }}" fill="none" stroke="{{ t.primary }}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg>
                   </div>
                   <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; margin-bottom:14px;">
-                    <div style="font-size:13px; font-weight:700; color:{{ t.text }}; margin-bottom:14px;">養蜂場別収量</div>
+                    <div style="font-size:13px; font-weight:700; color:{{ t.text }}; margin-bottom:14px;">蜂群別収量ランキング</div>
                     <div style="display:flex; flex-direction:column; gap:12px;">
-                      <sc-for list="{{ reportFarms }}" as="rf" hint-placeholder-count="3">
-                        <div><div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:5px;"><span style="color:{{ t.text }}; font-weight:600;">{{ rf.name }}</span><span style="color:{{ t.textMuted }};">{{ rf.kg }}kg</span></div><div style="height:9px; border-radius:99px; background:{{ t.surfaceAlt }}; overflow:hidden;"><div style="height:100%; width:{{ rf.pct }}%; background:{{ t.primary }}; border-radius:99px;"></div></div></div>
+                      <sc-for list="{{ reportColonyYield }}" as="cy" hint-placeholder-count="3">
+                        <div><div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:5px;"><span style="color:{{ t.text }}; font-weight:600;">{{ cy.colony }}</span><span style="color:{{ t.textMuted }};">{{ cy.kg }}kg</span></div><div style="height:9px; border-radius:99px; background:{{ t.surfaceAlt }}; overflow:hidden;"><div style="height:100%; width:{{ cy.pct }}%; background:{{ t.primary }}; border-radius:99px;"></div></div></div>
                       </sc-for>
                     </div>
                   </div>
@@ -1303,7 +1357,7 @@
                     <div style="font-size:13px; font-weight:700; color:{{ t.text }}; margin-bottom:12px;">蜂群健康スコア推移</div>
                     <svg viewBox="0 0 300 110" width="100%" style="display:block;"><defs><linearGradient id="rg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="{{ t.accent }}" stop-opacity="0.25"></stop><stop offset="100%" stop-color="{{ t.accent }}" stop-opacity="0"></stop></linearGradient></defs><path d="{{ reportArea }}" fill="url(#rg)"></path><path d="{{ reportLine }}" fill="none" stroke="{{ t.accent }}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg>
                   </div>
-                  <div style="display:flex; gap:10px;"><button onClick="{{ noop }}" style="flex:1.4; padding:15px; font-size:14px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};">PDFを出力</button><button onClick="{{ noop }}" style="flex:1; padding:15px; font-size:14px; font-weight:700; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:14px; cursor:pointer;">CSV</button></div>
+                  <div style="display:flex; gap:10px;"><button onClick="{{ noop }}" style="flex:1.4; padding:15px; font-size:14px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};">PDFを出力</button><button onClick="{{ exportWorkCSV }}" style="flex:1; padding:15px; font-size:14px; font-weight:700; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:14px; cursor:pointer;">CSV</button></div>
                 </div>
               </sc-if>
 
@@ -1334,6 +1388,14 @@
                       </div>
                     </div>
                   </sc-if>
+                  <!-- Language switcher -->
+                  <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; margin-bottom:16px;">
+                    <div style="font-size:13px; font-weight:700; color:{{ t.textMuted }}; margin-bottom:10px;">🌐 {{ TR.langJa }} / {{ TR.langEn }}</div>
+                    <div style="display:flex; gap:8px;">
+                      <button onClick="{{ setLangJa }}" style="{{ langJaStyle }}">🇯🇵 日本語</button>
+                      <button onClick="{{ setLangEn }}" style="{{ langEnStyle }}">🇺🇸 English</button>
+                    </div>
+                  </div>
                   <!-- Other settings rows -->
                   <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; overflow:hidden; margin-bottom:16px;">
                     <sc-for list="{{ settingsRows }}" as="sr">
@@ -1348,11 +1410,11 @@
 
             <!-- BOTTOM NAV -->
             <div id="bottom-tabbar" style="display:flex; background:{{ t.navBarBg }}; border-top:1px solid {{ t.border }}; padding:8px 6px 26px;">
-              <button onClick="{{ tabHome }}" style="flex:1; background:none; border:none; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; color:{{ nc.home }};"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"></path><path d="M5 9.5V20h5v-6h4v6h5V9.5"></path></svg><span style="font-size:10px; font-weight:700;">ホーム</span></button>
-              <button onClick="{{ tabFarms }}" style="flex:1; background:none; border:none; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; color:{{ nc.farms }};"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="7" height="7" rx="1.6"></rect><rect x="14" y="4" width="7" height="7" rx="1.6"></rect><rect x="3" y="14" width="7" height="7" rx="1.6"></rect><rect x="14" y="14" width="7" height="7" rx="1.6"></rect></svg><span style="font-size:10px; font-weight:700;">養蜂場</span></button>
-              <button onClick="{{ tabTasks }}" style="flex:1; background:none; border:none; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; color:{{ nc.tasks }};"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2.4"></rect><path d="M9 4V3h6v1"></path><path d="M8.5 13l2 2 4-4.5"></path></svg><span style="font-size:10px; font-weight:700;">作業</span></button>
-              <button onClick="{{ tabReport }}" style="flex:1; background:none; border:none; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; color:{{ nc.analytics }};"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20V12"></path><path d="M12 20V5"></path><path d="M19 20v-5"></path></svg><span style="font-size:10px; font-weight:700;">分析</span></button>
-              <button onClick="{{ tabSettings }}" style="flex:1; background:none; border:none; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; color:{{ nc.settings }};"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h9"></path><circle cx="16" cy="7" r="2.4"></circle><path d="M18.5 7H20"></path><path d="M4 17h5"></path><circle cx="11" cy="17" r="2.4"></circle><path d="M13.5 17H20"></path></svg><span style="font-size:10px; font-weight:700;">設定</span></button>
+              <button onClick="{{ tabHome }}" style="flex:1; background:none; border:none; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; color:{{ nc.home }};"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"></path><path d="M5 9.5V20h5v-6h4v6h5V9.5"></path></svg><span style="font-size:10px; font-weight:700;">{{ TR.home }}</span></button>
+              <button onClick="{{ tabFarms }}" style="flex:1; background:none; border:none; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; color:{{ nc.farms }};"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="7" height="7" rx="1.6"></rect><rect x="14" y="4" width="7" height="7" rx="1.6"></rect><rect x="3" y="14" width="7" height="7" rx="1.6"></rect><rect x="14" y="14" width="7" height="7" rx="1.6"></rect></svg><span style="font-size:10px; font-weight:700;">{{ TR.farms }}</span></button>
+              <button onClick="{{ tabTasks }}" style="flex:1; background:none; border:none; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; color:{{ nc.tasks }};"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2.4"></rect><path d="M9 4V3h6v1"></path><path d="M8.5 13l2 2 4-4.5"></path></svg><span style="font-size:10px; font-weight:700;">{{ TR.tasks }}</span></button>
+              <button onClick="{{ tabReport }}" style="flex:1; background:none; border:none; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; color:{{ nc.analytics }};"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20V12"></path><path d="M12 20V5"></path><path d="M19 20v-5"></path></svg><span style="font-size:10px; font-weight:700;">{{ TR.analytics }}</span></button>
+              <button onClick="{{ tabSettings }}" style="flex:1; background:none; border:none; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; color:{{ nc.settings }};"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h9"></path><circle cx="16" cy="7" r="2.4"></circle><path d="M18.5 7H20"></path><path d="M4 17h5"></path><circle cx="11" cy="17" r="2.4"></circle><path d="M13.5 17H20"></path></svg><span style="font-size:10px; font-weight:700;">{{ TR.settings }}</span></button>
             </div>
           </div>
         </sc-if>
@@ -1390,6 +1452,8 @@ class Component extends DCLogic {
     compareColony2: 'A-02',
     notifPermission: Notification && Notification.permission || 'default',
     hasDraft: false,
+    lang: 'ja',
+    obFarmName: '', obColonyCount: '12', obExperience: 'beginner',
   };
 
   COLONIES = ['A-01','A-02','A-03','A-04','A-05','A-06','A-07','A-08','A-09','A-10','A-11','A-12'];
@@ -1477,6 +1541,45 @@ class Component extends DCLogic {
     { icon:'👥', label:'メンバー管理', key:'member', desc:'チームメンバーと権限の管理' },
     { icon:'🔒', label:'アカウント', key:'account', desc:'メール・パスワードの管理' },
   ];
+  LANG = {
+    ja: {
+      home:'ホーム', farms:'養蜂場', tasks:'作業', analytics:'分析', settings:'設定',
+      dashboard:'ダッシュボード', save:'保存する', back:'戻る', cancel:'キャンセル',
+      inspStart:'内検を開始', inspHistory:'内検履歴', workHistory:'作業履歴',
+      taskCreate:'タスク作成', report:'レポート',
+      today:'本日', week:'今週', all:'すべて',
+      queenConfirmed:'確認あり 👑', queenNone:'確認なし', queenUnknown:'未記録',
+      beesFew:'少', beesNormal:'並', beesMany:'多', beesFull:'密',
+      weather_sun:'☀️ 晴れ', weather_cloud:'⛅ 曇り', weather_rain:'🌧️ 雨',
+      colony:'蜂群', date:'日付', memo:'メモ', photo:'写真',
+      addTask:'＋ タスクを追加', addWork:'＋ 作業を記録',
+      totalYield:'総収量', revenue:'収益', cost:'コスト',
+      farmList:'養蜂場一覧', colonyTrend:'トレンド',
+      notifications:'通知', notifEnable:'通知を有効にする',
+      langJa:'日本語', langEn:'English',
+      skip:'スキップ', next:'次へ', start:'始める',
+      searchPlaceholder:'蜂群・メモで検索...',
+    },
+    en: {
+      home:'Home', farms:'Farms', tasks:'Tasks', analytics:'Analytics', settings:'Settings',
+      dashboard:'Dashboard', save:'Save', back:'Back', cancel:'Cancel',
+      inspStart:'Start Inspection', inspHistory:'Inspection Log', workHistory:'Work History',
+      taskCreate:'Create Task', report:'Report',
+      today:'Today', week:'This Week', all:'All',
+      queenConfirmed:'Confirmed 👑', queenNone:'Not Seen', queenUnknown:'Unknown',
+      beesFew:'Low', beesNormal:'Normal', beesMany:'High', beesFull:'Dense',
+      weather_sun:'☀️ Sunny', weather_cloud:'⛅ Cloudy', weather_rain:'🌧️ Rainy',
+      colony:'Colony', date:'Date', memo:'Notes', photo:'Photo',
+      addTask:'＋ Add Task', addWork:'＋ Log Work',
+      totalYield:'Total Yield', revenue:'Revenue', cost:'Cost',
+      farmList:'Farm List', colonyTrend:'Trends',
+      notifications:'Notifications', notifEnable:'Enable Notifications',
+      langJa:'日本語', langEn:'English',
+      skip:'Skip', next:'Next', start:'Get Started',
+      searchPlaceholder:'Search by colony or note...',
+    },
+  };
+
   GRAPH = {
     weight: { title:'重量グラフ（A-01）', value:'38.5', unit:'kg', color:'#E8961B',
       day:{ data:[36.8,37.1,37.0,37.6,38.0,38.2,38.5], labels:['0時','4時','8時','12時','16時','20時','現在'], stat:'前日比 +1.2 kg ↑' },
@@ -1928,10 +2031,27 @@ class Component extends DCLogic {
     const gk=this.GRAPH[s.graphKind]; const gd=gk[s.period];
     const gl=this.linePath(gd.data,300,150,12,false); const ga=this.linePath(gd.data,300,150,12,true);
 
-    // report trend
+    // report trend + real harvest data
     const rt=this.linePath([72,75,78,80,82,84,86],300,110,12,false); const rta=this.linePath([72,75,78,80,82,84,86],300,110,12,true);
     const maxKg=Math.max(...this.REPORT_FARMS.map(r=>r.kg));
     const reportFarms=this.REPORT_FARMS.map(r=>({ ...r, pct:Math.round(r.kg/maxKg*100) }));
+    // Real harvest aggregation from workHistory
+    const harvestRecs = s.workHistory.filter(w => w.type === '採蜜' && w.yieldKg);
+    const realTotalYieldKg = harvestRecs.reduce((sum, w) => sum + (parseFloat(w.yieldKg)||0), 0);
+    const reportTotalYield = realTotalYieldKg > 0 ? realTotalYieldKg.toFixed(1) : 458;
+    const reportHasReal = realTotalYieldKg > 0;
+    // Monthly harvest for sparkline
+    const harvestByMonth = {};
+    harvestRecs.forEach(w => { const m = (w.date||'').slice(0,7); harvestByMonth[m] = (harvestByMonth[m]||0) + (parseFloat(w.yieldKg)||0); });
+    const harvestMonths = Object.keys(harvestByMonth).sort();
+    const harvestSparkData = harvestMonths.length >= 2 ? harvestMonths.map(m => harvestByMonth[m]) : [30,45,62,80,95,115,128];
+    const hs = this.linePath(harvestSparkData, 300, 110, 12, false);
+    const hsa = this.linePath(harvestSparkData, 300, 110, 12, true);
+    // Colony yield ranking
+    const colonyYield = {};
+    harvestRecs.forEach(w => { if(w.colony) colonyYield[w.colony] = (colonyYield[w.colony]||0) + (parseFloat(w.yieldKg)||0); });
+    const colonyYieldRank = Object.entries(colonyYield).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([col,kg])=>({ colony:col, kg:kg.toFixed(1), pct:Math.round(kg/realTotalYieldKg*100||0) }));
+    const reportColonyYield = colonyYieldRank.length ? colonyYieldRank : [{ colony:'A-01', kg:'45.2', pct:40 },{ colony:'A-05', kg:'38.8', pct:33 },{ colony:'A-09', kg:'28.5', pct:25 }];
 
     // tasks filtered
     const skMap = { todo:{c:t.warn,b:t.warnBg}, done:{c:t.ok,b:t.chipBg}, plan:{c:t.textMuted,b:t.surfaceAlt} };
@@ -1954,8 +2074,14 @@ class Component extends DCLogic {
     const backBtn = 'width:34px; height:34px; border-radius:50%; background:'+t.surface+'; border:1px solid '+t.border+'; display:flex; align-items:center; justify-content:center; cursor:pointer; color:'+t.text+'; flex-shrink:0;';
     const chip = 'padding:8px 12px; background:#fff; border:1px solid #d8d3c8; border-radius:999px; font-size:12px; color:#5c564a; font-weight:600; cursor:pointer; font-family:inherit; white-space:nowrap;';
 
+    const TR = this.LANG[s.lang] || this.LANG.ja;
+    const isEn = s.lang === 'en';
+
     return {
       t, anim:s.anim, statusColor: t.statusBarDark ? '#FFFFFF' : '#1d1d1f', f:s.f, backBtn, chip, noop:()=>{},
+      TR, isEn,
+      langJaStyle: pill(s.lang==='ja'), langEnStyle: pill(s.lang==='en'),
+      setLangJa:()=>this.setLang('ja'), setLangEn:()=>this.setLang('en'),
       h: { loginEmail:this.field('loginEmail'), loginPw:this.field('loginPw'), regName:this.field('regName'), regEmail:this.field('regEmail'), regPw:this.field('regPw'), regFarm:this.field('regFarm'), frameMemo:this.field('frameMemo'), aiMemo:this.field('aiMemo'), taskType:this.field('taskType'), taskColony:this.field('taskColony'), taskMemo:this.field('taskMemo'), recType:this.field('recType'), recColony:this.field('recColony'), recMemo:this.field('recMemo') },
       // screen flags
       scLogin:sc==='login', scRegister:sc==='register', scOb1:sc==='ob1', scOb2:sc==='ob2', scOb3:sc==='ob3', scApp:app,
@@ -2069,6 +2195,8 @@ class Component extends DCLogic {
       // graph
       graphTitle:gk.title, graphValue:gk.value, graphUnit:gk.unit, graphColor:gk.color, graphStat:gd.stat, graphLabels:gd.labels, graphLine:gl.d, graphArea:ga.d, graphLastX:gl.last[0].toFixed(1), graphLastY:gl.last[1].toFixed(1),
       reportLine:rt.d, reportArea:rta.d,
+      harvestLine:hs.d, harvestArea:hsa.d,
+      reportTotalYield, reportHasReal, reportColonyYield,
       // theme segs
       segHoney:seg(s.theme==='honey'), segCharcoal:seg(s.theme==='charcoal'), segSage:seg(s.theme==='sage'), segKraft:seg(s.theme==='kraft'), segSky:seg(s.theme==='sky'), segBlossom:seg(s.theme==='blossom'),
       thHoney:()=>this.setTheme('honey'), thCharcoal:()=>this.setTheme('charcoal'), thSage:()=>this.setTheme('sage'), thKraft:()=>this.setTheme('kraft'), thSky:()=>this.setTheme('sky'), thBlossom:()=>this.setTheme('blossom'),
@@ -2090,7 +2218,7 @@ class Component extends DCLogic {
       repSegMonth:pill(s.reportPeriod==='month'), repSegWeek:pill(s.reportPeriod==='week'), repSegYear:pill(s.reportPeriod==='year'),
       rMonth:()=>this.setState({reportPeriod:'month'}), rWeek:()=>this.setState({reportPeriod:'week'}), rYear:()=>this.setState({reportPeriod:'year'}),
       // field handlers
-      h: (() => { const o = {}; ['loginEmail','loginPw','regName','regEmail','regPw','regFarm','frameMemo','aiMemo','taskType','taskColony','taskMemo','recType','recColony','recMemo','recYieldKg','editName','editFarm'].forEach(k => { o[k] = this.field(k); }); return o; })(),
+      h: (() => { const o = {}; ['loginEmail','loginPw','regName','regEmail','regPw','regFarm','frameMemo','aiMemo','taskType','taskColony','taskMemo','recType','recColony','recMemo','recYieldKg','editName','editFarm','obFarmName','obColonyCount'].forEach(k => { o[k] = this.field(k); }); return o; })(),
       // auth
       loginError: s.loginError, regError: s.regError, userName: s.userName, userFarm: s.userFarm || '養蜂家',
       settingEditOpen: s.settingEditOpen, settingError: s.settingError, settingSaved: s.settingSaved,
@@ -2534,6 +2662,21 @@ class Component extends DCLogic {
       goRegister:()=>this.go('register'), goLogin:()=>this.go('login'),
       submitLogin:()=>this.submitLogin(), submitRegister:()=>this.submitRegister(),
       goOb2:()=>this.go('ob2'), goOb3:()=>this.go('ob3'), skipOb:()=>this.tab('home'), startApp:()=>this.tab('home'),
+      finishOnboarding:()=>this.finishOnboarding(),
+      obColonyCount: s.obColonyCount, obExperience: s.obExperience,
+      setObExp:(e)=>this.setState({ obExperience: e.target.value }),
+      setObColonyCount:(e)=>this.setState({ obColonyCount: e.target.value }),
+      obColonyCounts: [
+        { label: isEn ? '1–5' : '1〜5頭', value:'5', active: parseInt(s.obColonyCount) <= 5, set:()=>this.setState({ obColonyCount:'5' }) },
+        { label: isEn ? '6–15' : '6〜15頭', value:'12', active: parseInt(s.obColonyCount) > 5 && parseInt(s.obColonyCount) <= 15, set:()=>this.setState({ obColonyCount:'12' }) },
+        { label: isEn ? '16–30' : '16〜30頭', value:'24', active: parseInt(s.obColonyCount) > 15 && parseInt(s.obColonyCount) <= 30, set:()=>this.setState({ obColonyCount:'24' }) },
+        { label: isEn ? '31+' : '31頭以上', value:'40', active: parseInt(s.obColonyCount) > 30, set:()=>this.setState({ obColonyCount:'40' }) },
+      ],
+      obExperienceOpts: [
+        { label: isEn ? 'Beginner (< 1 year)' : '初心者（1年未満）', icon:'🌱', value:'beginner', active: s.obExperience==='beginner', set:()=>this.setState({ obExperience:'beginner' }) },
+        { label: isEn ? 'Intermediate (1–5 years)' : '中級者（1〜5年）', icon:'🐝', value:'intermediate', active: s.obExperience==='intermediate', set:()=>this.setState({ obExperience:'intermediate' }) },
+        { label: isEn ? 'Experienced (5+ years)' : '熟練者（5年以上）', icon:'🏆', value:'experienced', active: s.obExperience==='experienced', set:()=>this.setState({ obExperience:'experienced' }) },
+      ],
       // in-app nav
       back:()=>this.back(),
       goNotif:()=>this.nav('notif'), markAllRead:()=>this.markAllRead(),
@@ -2563,6 +2706,20 @@ class Component extends DCLogic {
   }
   navGraph(kind) { this.setState(s=>({ screen:'app', graphKind:kind, view:kind, hist:[...s.hist, s.view], anim:'scrIn' })); }
   jumpGraph(kind) { this.setState({ screen:'app', graphKind:kind, view:kind, hist:[], anim:'scrIn' }); }
+
+  // ===== 言語切り替え =====
+  setLang(lang) { this.setState({ lang }); }
+
+  // ===== オンボーディング保存 =====
+  async finishOnboarding() {
+    const farmName = (this._fieldBuf['obFarmName'] || this.state.obFarmName || '').trim();
+    const colonyCount = parseInt(this._fieldBuf['obColonyCount'] || this.state.obColonyCount) || 12;
+    if (farmName) {
+      try { await window.HoneyDB.updateProfile(this.state.userName, farmName); } catch(e) {}
+      this.setState({ userFarm: farmName, obFarmName: farmName });
+    }
+    this.go('ob3');
+  }
 
   // ===== 蜂群比較 =====
   goColonyCompare() { this.setState({ compareColony1: 'A-01', compareColony2: 'A-02' }); this.nav('colonyCompare'); }
