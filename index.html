@@ -277,8 +277,26 @@
                     <div style="margin-top:14px;"><svg viewBox="0 0 320 124" width="100%" style="display:block;"><defs><linearGradient id="cg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="{{ t.primary }}" stop-opacity="0.28"></stop><stop offset="100%" stop-color="{{ t.primary }}" stop-opacity="0"></stop></linearGradient></defs><path d="M0,96 C28,92 44,80 66,82 C92,84 100,60 128,62 C156,64 166,42 192,48 C220,54 230,32 256,36 C282,40 298,24 306,22 L320,20 L320,124 L0,124 Z" fill="url(#cg)"></path><path d="M0,96 C28,92 44,80 66,82 C92,84 100,60 128,62 C156,64 166,42 192,48 C220,54 230,32 256,36 C282,40 298,24 306,22" fill="none" stroke="{{ t.primary }}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="306" cy="22" r="4.5" fill="{{ t.primary }}" stroke="{{ t.surface }}" stroke-width="2.5"></circle></svg></div>
                     <div style="display:flex; justify-content:space-between; margin-top:8px; font-size:11px; color:{{ t.textMuted }};"><span>第1週</span><span>第2週</span><span>第3週</span><span>第4週</span></div>
                   </div>
+                  <!-- クイックアクション -->
+                  <div style="margin-top:22px; margin-bottom:22px;">
+                    <div style="font-size:12px; font-weight:700; letter-spacing:.08em; color:{{ t.textMuted }}; margin-bottom:10px;">クイックアクション</div>
+                    <div style="display:flex; gap:8px;">
+                      <button onClick="{{ goInspStart }}" style="flex:1; padding:12px 8px; font-size:12px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:5px; box-shadow:0 4px 12px {{ t.primaryShadow }};">
+                        <span style="font-size:22px;">🔍</span><span>内検開始</span>
+                      </button>
+                      <button onClick="{{ goWorkRecordFeed }}" style="flex:1; padding:12px 8px; font-size:12px; font-weight:700; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:14px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:5px;">
+                        <span style="font-size:22px;">🍼</span><span>給餌記録</span>
+                      </button>
+                      <button onClick="{{ goWorkRecordHarvest }}" style="flex:1; padding:12px 8px; font-size:12px; font-weight:700; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:14px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:5px;">
+                        <span style="font-size:22px;">🍯</span><span>採蜜記録</span>
+                      </button>
+                      <button onClick="{{ goColonyCompare }}" style="flex:1; padding:12px 8px; font-size:12px; font-weight:700; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:14px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:5px;">
+                        <span style="font-size:22px;">⚖️</span><span>群比較</span>
+                      </button>
+                    </div>
+                  </div>
                   <!-- 最近の活動 -->
-                  <div style="margin-top:22px;">
+                  <div style="margin-top:0;">
                     <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
                       <div style="font-size:12px; font-weight:700; letter-spacing:.08em; color:{{ t.textMuted }};">最近の活動</div>
                       <span onClick="{{ goTasks }}" style="font-size:12px; color:{{ t.primary }}; font-weight:600; cursor:pointer;">もっと見る</span>
@@ -355,9 +373,9 @@
                   <!-- Beewise-style colony barcode grid -->
                   <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:8px; margin-bottom:14px;">
                     <sc-for list="{{ colonyBarcodes }}" as="cb">
-                      <div onClick="{{ cb.open }}" style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:12px; padding:10px; cursor:pointer;">
+                      <div onClick="{{ cb.open }}" style="background:{{ t.surface }}; border:1.5px solid {{ cb.alertBorder || t.border }}; border-radius:12px; padding:10px; cursor:pointer;">
                         <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
-                          <span style="font-size:13px; font-weight:800; color:{{ t.text }};">{{ cb.id }}</span>
+                          <div style="display:flex; align-items:center; gap:5px;"><span style="font-size:13px; font-weight:800; color:{{ t.text }};">{{ cb.id }}</span><sc-if value="{{ cb.alertBadge }}"><span style="font-size:11px;">{{ cb.alertBadge }}</span></sc-if></div>
                           <span style="font-size:10px; color:{{ t.textMuted }};">{{ cb.date }}</span>
                         </div>
                         <sc-if value="{{ cb.hasInsp }}">
@@ -560,6 +578,15 @@
               <!-- SCR-012 内検記録 -->
               <sc-if value="{{ vInspCapture }}" hint-placeholder-val="{{ false }}">
                 <div data-screen-label="SCR-012 内検記録" style="padding:60px 16px 24px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
+                  <!-- 下書き復元バナー -->
+                  <sc-if value="{{ hasDraft }}">
+                    <div style="background:{{ t.warnBg }}; border:1px solid {{ t.warn }}; border-radius:12px; padding:12px 14px; margin-bottom:12px; display:flex; align-items:center; gap:10px; animation:scrIn .3s ease;">
+                      <span style="font-size:18px;">📝</span>
+                      <div style="flex:1; font-size:13px; color:{{ t.text }};">前回の下書きがあります</div>
+                      <button onClick="{{ restoreDraft }}" style="padding:6px 12px; font-size:12px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:999px; cursor:pointer;">復元</button>
+                      <button onClick="{{ discardDraft }}" style="padding:6px 10px; font-size:12px; font-weight:700; font-family:{{ t.font }}; color:{{ t.textMuted }}; background:transparent; border:none; cursor:pointer;">✕</button>
+                    </div>
+                  </sc-if>
                   <!-- Header -->
                   <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px;">
                     <button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button>
@@ -695,7 +722,20 @@
                     <div style="height:1px; background:{{ t.border }};"></div>
                     <div><div style="font-size:12px; color:{{ t.textMuted }}; margin-bottom:5px;">観察メモ</div><div style="font-size:13px; color:{{ t.text }}; line-height:1.8; white-space:pre-line;">{{ inspSummaryFrameMemo }}</div></div>
                   </div>
-                  <div style="background:{{ t.chipBg }}; border-radius:{{ t.radius }}px; padding:14px 16px; margin-bottom:20px;"><div style="font-size:13px; color:{{ t.chipText }}; line-height:1.7;">✨ AI解析・健康スコアは今後のアップデートで追加されます。</div></div>
+                  <!-- AI自動アドバイス -->
+                  <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:14px 16px; margin-bottom:12px;">
+                    <div style="font-size:12px; font-weight:700; color:{{ t.textMuted }}; margin-bottom:10px;">🤖 自動アドバイス</div>
+                    <div style="display:flex; flex-direction:column; gap:8px;">
+                      <sc-for list="{{ inspAdvices }}" as="adv">
+                        <div style="display:flex; align-items:flex-start; gap:10px; padding:10px 12px; background:{{ adv.bg }}; border:1px solid {{ adv.border }}; border-radius:12px;">
+                          <span style="font-size:16px; flex-shrink:0;">{{ adv.icon }}</span>
+                          <div style="flex:1;"><div style="font-size:13px; font-weight:700; color:{{ adv.color }};">{{ adv.title }}</div><div style="font-size:12px; color:{{ t.textMuted }}; margin-top:2px; line-height:1.5;">{{ adv.body }}</div></div>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </div>
+                  <!-- 次回内検提案 -->
+                  <button onClick="{{ addNextInspTask }}" style="width:100%; padding:13px; font-size:14px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primary }}; background:transparent; border:1.5px solid {{ t.primary }}; border-radius:14px; cursor:pointer; margin-bottom:10px;">📅 次回内検（{{ nextInspDateLabel }}）をタスクに追加</button>
                   <button onClick="{{ saveInspection }}" style="width:100%; padding:16px; font-size:16px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};" style-active="transform:translateY(1px);">保存する</button>
                 </div>
               </sc-if>
@@ -703,7 +743,7 @@
               <!-- SCR-016 INSPECTION HISTORY -->
               <sc-if value="{{ vInspHistory }}" hint-placeholder-val="{{ false }}">
                 <div data-screen-label="SCR-016 内検履歴ダッシュボード" style="padding:60px 16px 16px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
-                  <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;"><button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button><span style="font-size:20px; font-weight:800; color:{{ t.text }};">内検履歴</span></div>
+                  <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;"><button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button><span style="font-size:20px; font-weight:800; color:{{ t.text }}; flex:1;">内検履歴</span><button onClick="{{ exportInspCSV }}" style="padding:7px 12px; font-size:12px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primary }}; background:{{ t.chipBg }}; border:none; border-radius:999px; cursor:pointer;">📥 CSV</button></div>
                   <div style="position:relative; margin-bottom:14px;"><span style="position:absolute; left:13px; top:50%; transform:translateY(-50%); font-size:14px; pointer-events:none;">🔍</span><input value="{{ inspSearch }}" onInput="{{ hInspSearch }}" type="text" placeholder="蜂群・メモで検索..." style="width:100%; padding:11px 13px 11px 38px; font-size:14px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px; outline:none; box-sizing:border-box;" style-focus="border-color:{{ t.primary }};"></div>
                   <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; margin-bottom:14px;">
                     <div style="font-size:13px; font-weight:700; color:{{ t.text }}; margin-bottom:12px;">2026年6月</div>
@@ -1076,7 +1116,7 @@
               <!-- SCR-027 WORK HISTORY -->
               <sc-if value="{{ vWorkHistory }}" hint-placeholder-val="{{ false }}">
                 <div data-screen-label="SCR-027 作業履歴" style="padding:60px 16px 16px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1); overflow-y:auto; height:100%;">
-                  <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;"><button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button><span style="font-size:20px; font-weight:800; color:{{ t.text }};">作業履歴</span></div>
+                  <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;"><button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button><span style="font-size:20px; font-weight:800; color:{{ t.text }}; flex:1;">作業履歴</span><button onClick="{{ exportWorkCSV }}" style="padding:7px 12px; font-size:12px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primary }}; background:{{ t.chipBg }}; border:none; border-radius:999px; cursor:pointer;">📥 CSV</button></div>
                   <!-- フィルター -->
                   <div style="display:flex; gap:5px; overflow-x:auto; padding-bottom:4px; margin-bottom:14px;">
                     <button onClick="{{ setWhAll }}" style="{{ whFilterAll }}">すべて</button>
@@ -1160,6 +1200,45 @@
                 </div>
               </sc-if>
 
+              <!-- SCR-030 蜂群比較ビュー -->
+              <sc-if value="{{ vColonyCompare }}" hint-placeholder-val="{{ false }}">
+                <div data-screen-label="SCR-030 蜂群比較" style="padding:60px 16px 24px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1); overflow-y:auto; height:100%;">
+                  <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px;"><button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button><span style="font-size:20px; font-weight:800; color:{{ t.text }};">蜂群比較</span></div>
+                  <!-- 比較蜂群セレクター -->
+                  <div style="display:flex; gap:10px; margin-bottom:16px;">
+                    <div style="flex:1;"><label style="font-size:12px; font-weight:700; color:{{ t.textMuted }}; display:block; margin-bottom:6px;">蜂群 A</label><select value="{{ compareColony1 }}" onChange="{{ setCmpCol1 }}" style="width:100%; padding:12px 14px; font-size:14px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.primary }}; border-radius:12px; outline:none;"><sc-for list="{{ coloniesOpts }}" as="col"><option>{{ col }}</option></sc-for></select></div>
+                    <div style="display:flex; align-items:flex-end; padding-bottom:12px; font-size:18px; color:{{ t.textMuted }};">⚖️</div>
+                    <div style="flex:1;"><label style="font-size:12px; font-weight:700; color:{{ t.textMuted }}; display:block; margin-bottom:6px;">蜂群 B</label><select value="{{ compareColony2 }}" onChange="{{ setCmpCol2 }}" style="width:100%; padding:12px 14px; font-size:14px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px; outline:none;"><sc-for list="{{ coloniesOpts }}" as="col"><option>{{ col }}</option></sc-for></select></div>
+                  </div>
+                  <!-- 比較カード -->
+                  <div style="display:flex; gap:10px; margin-bottom:14px;">
+                    <sc-for list="{{ compareCards }}" as="cc">
+                      <div style="flex:1; background:{{ t.surface }}; border:1px solid {{ cc.borderColor }}; border-radius:16px; padding:14px; min-width:0;">
+                        <div style="font-size:16px; font-weight:800; color:{{ t.text }}; margin-bottom:4px;">{{ cc.colony }}</div>
+                        <div style="font-size:11px; color:{{ t.textMuted }}; margin-bottom:12px;">最終内検：{{ cc.lastDate }}</div>
+                        <!-- バーコード -->
+                        <div style="display:flex; gap:1px; height:40px; border-radius:8px; overflow:hidden; margin-bottom:10px;">
+                          <sc-for list="{{ cc.miniSegs }}" as="ms">
+                            <div style="flex:1; background:{{ ms.bg }};"></div>
+                          </sc-for>
+                        </div>
+                        <div style="display:flex; flex-direction:column; gap:6px;">
+                          <div style="display:flex; justify-content:space-between; font-size:12px;"><span style="color:{{ t.textMuted }};">女王</span><span style="font-weight:700; color:{{ cc.queenColor }};">{{ cc.queenLabel }}</span></div>
+                          <div style="display:flex; justify-content:space-between; font-size:12px;"><span style="color:{{ t.textMuted }};">蜂数</span><span style="font-weight:700; color:{{ cc.beesColor }};">{{ cc.beesLabel }}</span></div>
+                          <div style="display:flex; justify-content:space-between; font-size:12px;"><span style="color:{{ t.textMuted }};">健康</span><span style="font-weight:700; color:{{ cc.healthColor }};">{{ cc.healthLabel }}</span></div>
+                          <div style="display:flex; justify-content:space-between; font-size:12px;"><span style="color:{{ t.textMuted }};">記録数</span><span style="font-weight:700; color:{{ t.text }};">{{ cc.recCount }}件</span></div>
+                        </div>
+                      </div>
+                    </sc-for>
+                  </div>
+                  <!-- 差分サマリー -->
+                  <div style="background:{{ t.chipBg }}; border-radius:14px; padding:14px 16px;">
+                    <div style="font-size:12px; font-weight:700; color:{{ t.chipText }}; margin-bottom:6px;">📊 比較サマリー</div>
+                    <div style="font-size:13px; color:{{ t.text }}; line-height:1.8;">{{ compareSummary }}</div>
+                  </div>
+                </div>
+              </sc-if>
+
               <!-- SETTING DETAIL -->
               <sc-if value="{{ vSettingDetail }}" hint-placeholder-val="{{ false }}">
                 <div data-screen-label="設定詳細" style="padding:60px 16px 24px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
@@ -1178,8 +1257,20 @@
                       <div style="font-size:13px; color:{{ t.textMuted }}; line-height:1.7;">パスワード変更・メール変更は<br>今後のアップデートで対応予定です。</div>
                     </div>
                   </sc-if>
+                  <!-- 通知設定 -->
+                  <sc-if value="{{ settingDetailKey === 'notif' }}">
+                    <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; margin-bottom:14px; display:flex; flex-direction:column; gap:14px;">
+                      <div style="font-size:14px; color:{{ t.text }}; line-height:1.7;">内検推奨日・タスク期限をデバイスのプッシュ通知で受け取れます。</div>
+                      <button onClick="{{ requestNotifPermission }}" style="padding:13px; font-size:14px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:12px; cursor:pointer;">🔔 通知を有効にする</button>
+                      <div style="font-size:12px; color:{{ notifStatusColor }}; font-weight:700; text-align:center;">{{ notifStatusLabel }}</div>
+                    </div>
+                    <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; overflow:hidden;">
+                      <div style="padding:14px 16px; border-bottom:1px solid {{ t.border }};"><div style="font-size:13px; font-weight:700; color:{{ t.text }};">内検リマインダー</div><div style="font-size:12px; color:{{ t.textMuted }}; margin-top:2px;">前回内検から21日経過した蜂群に通知</div></div>
+                      <div style="padding:14px 16px;"><div style="font-size:13px; font-weight:700; color:{{ t.text }};">タスクリマインダー</div><div style="font-size:12px; color:{{ t.textMuted }}; margin-top:2px;">当日のタスクを朝8時に通知</div></div>
+                    </div>
+                  </sc-if>
                   <!-- Coming soon (その他) -->
-                  <sc-if value="{{ settingDetailKey !== 'account' }}">
+                  <sc-if value="{{ settingDetailKey !== 'account' && settingDetailKey !== 'notif' }}">
                     <div style="display:flex; flex-direction:column; align-items:center; gap:16px; padding:40px 20px; text-align:center; background:{{ t.surface }}; border:1.5px dashed {{ t.border }}; border-radius:{{ t.radius }}px;">
                       <div style="font-size:52px;">{{ settingDetail.icon }}</div>
                       <div style="font-size:18px; font-weight:800; color:{{ t.text }};">準備中です</div>
@@ -1295,6 +1386,10 @@ class Component extends DCLogic {
     activeFarm: 'f1',
     trendColony: 'A-01',
     trendTab: 'bees',
+    compareColony1: 'A-01',
+    compareColony2: 'A-02',
+    notifPermission: Notification && Notification.permission || 'default',
+    hasDraft: false,
   };
 
   COLONIES = ['A-01','A-02','A-03','A-04','A-05','A-06','A-07','A-08','A-09','A-10','A-11','A-12'];
@@ -1302,8 +1397,8 @@ class Component extends DCLogic {
   constructor() {
     super();
     this._fieldBuf = {};
-    // Restore session from Supabase (async, triggers re-render when done)
     this._initSession();
+    this._checkDraft();
   }
 
   async _initSession() {
@@ -1405,6 +1500,7 @@ class Component extends DCLogic {
     farms:'farms', farmDetail:'farms', farmMap:'farms', hiveDetail:'farms', sensor:'farms', weight:'farms', temp:'farms', humid:'farms', camera:'farms', aiDiagnosis:'farms', aiRecommend:'farms',
     tasks:'tasks', taskCreate:'tasks', workRecord:'tasks', workHistory:'tasks', inspStart:'tasks', inspCapture:'tasks', inspFrame:'tasks', inspAI:'tasks', inspSummary:'tasks', inspHistory:'tasks', inspDetail:'tasks',
     colonyTrend:'tasks',
+    colonyCompare:'tasks',
     report:'analytics', settings:'settings',
   };
 
@@ -1504,6 +1600,7 @@ class Component extends DCLogic {
       lvls[i] = lvls[i] === type ? '' : type;
       return { spaceLevels: lvls };
     });
+    setTimeout(() => this._saveDraft(), 0);
   }
 
   setSpaceType(type) { this.setState({ spaceType: type }); }
@@ -1872,6 +1969,7 @@ class Component extends DCLogic {
       vSensor:app&&v==='sensor', vGraph:app&&(v==='weight'||v==='temp'||v==='humid'), vCamera:app&&v==='camera', vAiDiagnosis:app&&v==='aiDiagnosis', vAiRecommend:app&&v==='aiRecommend',
       vTasks:app&&v==='tasks', vTaskCreate:app&&v==='taskCreate', vWorkRecord:app&&v==='workRecord', vWorkHistory:app&&v==='workHistory', vReport:app&&v==='report', vSettings:app&&v==='settings', vSettingDetail:app&&v==='settingDetail',
       vColonyTrend:app&&v==='colonyTrend',
+      vColonyCompare:app&&v==='colonyCompare',
       nc, notifs, hasUnread, farms, colonies, mapPins, frameChips, selectedCount, aiResults, scoreCells, calCells, healthTrendPts, healthDots, heatRows, tasksView, tasksEmpty, recActions, reportFarms,
       workHist:this.WORK_HIST,
       // ===== タスク完了チェック =====
@@ -2163,7 +2261,7 @@ class Component extends DCLogic {
         const colonyIds = Array.from({length:12},(_,i)=>'A-'+String(i+1).padStart(2,'0'));
         const colonyBarcodes = colonyIds.map(cid => {
           const latest = s.inspHistory.find(r => r.colony === cid);
-          if (!latest) return { id:cid, frameSegs:[], hasInsp:false, date:'未記録', open:()=>this.openHiveDetail(cid) };
+          if (!latest) return { id:cid, frameSegs:[], hasInsp:false, date:'未記録', open:()=>this.openHiveDetail(cid), alertBadge:'❓', alertBorder:t.border };
           const isFrame = (latest.countMode||'frame') === 'frame';
           const fd = latest.frameDetails || {};
           let frameSegs = [];
@@ -2188,7 +2286,10 @@ class Component extends DCLogic {
               const tp=lvls[i]||''; return { segs:[{bg:ZONE_COLORS[tp]?.bg||t.surfaceAlt,flex:1}], hasQueen:false };
             });
           }
-          return { id:cid, frameSegs, hasInsp:true, date:latest.date||'', open:()=>this.openHiveDetail(cid) };
+          const daysSince = (Date.now() - new Date(latest.date||'').getTime()) / 86400000;
+          const alertBadge = latest.queenPresent===false ? '🔴' : daysSince > 21 ? '⚠️' : '';
+          const alertBorder = latest.queenPresent===false ? t.danger : daysSince > 21 ? t.warn : t.border;
+          return { id:cid, frameSegs, hasInsp:true, date:latest.date||'', open:()=>this.openHiveDetail(cid), alertBadge, alertBorder };
         });
         return {
           frameZones, queenDots, queenPosLabel, zoneTypeLegend, beesChips, spaceTypePicker, spaceBars, spaceStats,
@@ -2291,6 +2392,84 @@ class Component extends DCLogic {
       incSpaceCount: () => this.setState(st=>({spaceCount:Math.min(20,(st.spaceCount||10)+1)})),
       decSpaceCount: () => this.setState(st=>({spaceCount:Math.max(3,(st.spaceCount||10)-1)})),
       goInspSummary: () => this.nav('inspSummary'),
+      // ===== 下書き =====
+      hasDraft: s.hasDraft,
+      restoreDraft: () => this.restoreDraft(),
+      discardDraft: () => this.discardDraft(),
+      // ===== AI自動アドバイス =====
+      ...(() => {
+        const lvls = s.spaceLevels || {};
+        const cnt = s.spaceCount || 10;
+        const typeCnts = {};
+        Object.values(lvls).forEach(tp => { if(tp) typeCnts[tp] = (typeCnts[tp]||0)+1; });
+        const honeyPct = ((typeCnts['honey']||0)/cnt)*100;
+        const broodPct = (((typeCnts['egg']||0)+(typeCnts['larva']||0)+(typeCnts['capped']||0))/cnt)*100;
+        const advices = [];
+        if (honeyPct >= 70) advices.push({ icon:'🍯', title:'採蜜タイミングです', body:'蜜域が'+Math.round(honeyPct)+'%に達しています。採蜜を検討してください。', bg:t.chipBg, border:t.primary, color:t.primary });
+        if (s.inspQueenPresent === false) advices.push({ icon:'⚠️', title:'女王を確認できません', body:'次の内検で女王の存在を確認してください。王台の有無も確認しましょう。', bg:t.dangerBg, border:t.danger, color:t.danger });
+        if (broodPct < 20 && cnt > 0) advices.push({ icon:'🔴', title:'育児域が少ない', body:'育児スペースが少ない状態です。女王の産卵状況を確認してください。', bg:t.warnBg, border:t.warn, color:t.warn });
+        if (typeCnts['drone'] >= 2) advices.push({ icon:'🔵', title:'雄枠が多め', body:'雄枠が多い場合、分蜂や女王交替の予兆の可能性があります。', bg:t.warnBg, border:t.warn, color:t.warn });
+        if (s.inspBeesTotal === 3) advices.push({ icon:'✅', title:'蜂数は十分です', body:'蜂量は密の状態。継箱や分蜂管理を考慮してください。', bg:'#DFF2DF', border:'#7CB87B', color:'#2E7D32' });
+        if (!advices.length) advices.push({ icon:'✅', title:'特に問題は見当たりません', body:'記録された状態から異常は検出されませんでした。引き続き定期的な内検を続けましょう。', bg:'#DFF2DF', border:'#7CB87B', color:'#2E7D32' });
+        const nextDate = new Date(); nextDate.setDate(nextDate.getDate() + 14);
+        const nextInspDateLabel = nextDate.toLocaleDateString('ja-JP', { month:'2-digit', day:'2-digit' });
+        return { inspAdvices: advices, nextInspDateLabel, addNextInspTask: () => this.addNextInspTask() };
+      })(),
+      // ===== 蜂群ステータスバッジ =====
+      ...(() => {
+        const todayMs = Date.now();
+        const alertBadgeFor = (cid) => {
+          const recs = s.inspHistory.filter(r => r.colony === cid);
+          if (!recs.length) return { badge: '❓', border: t.border };
+          const latest = recs[0];
+          const latestDate = new Date(latest.date || '').getTime();
+          const daysSince = (todayMs - latestDate) / 86400000;
+          if (latest.queenPresent === false) return { badge: '🔴', border: t.danger };
+          if (daysSince > 21) return { badge: '⚠️', border: t.warn };
+          return { badge: '', border: t.border };
+        };
+        return {};
+      })(),
+      // ===== 蜂群比較 =====
+      ...(() => {
+        const c1 = s.compareColony1 || 'A-01';
+        const c2 = s.compareColony2 || 'A-02';
+        const beesLbls = ['少','並','多','密'];
+        const makeCard = (cid, primary) => {
+          const recs = s.inspHistory.filter(r => r.colony === cid);
+          const r = recs[0];
+          const ZMAP = { 'honey':'#E8961B','pollen':'#F9D71C','capped':'#C4A882','larva':'#DFF2DF','egg':'#FFFFF0','drone':'#D0E8FF','comb':'#F5E6C8','foundation':'#F0F0E8','':'#F0E4CA' };
+          const miniSegs = r ? Array.from({length:r.spaceCount||10},(_,i)=>({ bg: ZMAP[(r.spaceLevels||{})[i]||'']||'#F0E4CA' })) : [{ bg: t.surfaceAlt }];
+          const queenLabel = !r ? '未記録' : r.queenPresent===true?'確認あり':r.queenPresent===false?'なし':'未記録';
+          const queenColor = !r ? t.textMuted : r.queenPresent===true?t.ok:r.queenPresent===false?t.danger:t.textMuted;
+          const beesLabel = !r || r.beesTotal==null ? '未記録' : beesLbls[r.beesTotal];
+          const beesColor = !r || r.beesTotal==null ? t.textMuted : [t.warn,t.ok,t.primary,t.accent][r.beesTotal];
+          const lvls = r ? (r.spaceLevels||{}) : {};
+          const types = {}; Object.values(lvls).forEach(tp=>{if(tp)types[tp]=(types[tp]||0)+1;});
+          const honeyPct = Math.round(((types['honey']||0)/(r?.spaceCount||10))*100);
+          const healthLabel = honeyPct>=70?'良好':honeyPct>=40?'普通':'要観察';
+          const healthColor = honeyPct>=70?t.ok:honeyPct>=40?t.warn:t.danger;
+          return { colony:cid, lastDate:r?r.date:'未記録', miniSegs, queenLabel, queenColor, beesLabel, beesColor, healthLabel, healthColor, recCount:recs.length, borderColor:primary?t.primary:t.border };
+        };
+        const cc1 = makeCard(c1, true), cc2 = makeCard(c2, false);
+        let summary = c1 + ' と ' + c2 + ' を比較中。';
+        if (cc1.recCount === 0 && cc2.recCount === 0) summary += '両群とも内検記録がありません。';
+        else if (cc1.healthLabel !== cc2.healthLabel) summary += cc1.colony + 'は' + cc1.healthLabel + '、' + cc2.colony + 'は' + cc2.healthLabel + 'の状態です。';
+        return { compareCards: [cc1, cc2], compareSummary: summary,
+          compareColony1: c1, compareColony2: c2,
+          setCmpCol1: (e) => this.setState({ compareColony1: e.target.value }),
+          setCmpCol2: (e) => this.setState({ compareColony2: e.target.value }),
+        };
+      })(),
+      // ===== プッシュ通知 =====
+      notifStatusLabel: (() => { const p = s.notifPermission; return p==='granted'?'✅ 通知が有効です':p==='denied'?'🚫 通知がブロックされています（端末設定から変更）':'通知は未設定です'; })(),
+      notifStatusColor: (() => { const p = s.notifPermission; return p==='granted'?t.ok:p==='denied'?t.danger:t.textMuted; })(),
+      requestNotifPermission: () => this.requestNotifPermission(),
+      // ===== CSVエクスポート =====
+      exportInspCSV: () => this.exportInspCSV(),
+      exportWorkCSV: () => this.exportWorkCSV(),
+      // ===== 蜂群比較ナビ =====
+      goColonyCompare: () => this.goColonyCompare(),
       // work record yield
       setRecType: (e) => this.setState(st => ({ f: { ...st.f, recType: e.target.value } })),
       recTypeIsHarvest: s.f.recType === '採蜜',
@@ -2384,6 +2563,91 @@ class Component extends DCLogic {
   }
   navGraph(kind) { this.setState(s=>({ screen:'app', graphKind:kind, view:kind, hist:[...s.hist, s.view], anim:'scrIn' })); }
   jumpGraph(kind) { this.setState({ screen:'app', graphKind:kind, view:kind, hist:[], anim:'scrIn' }); }
+
+  // ===== 蜂群比較 =====
+  goColonyCompare() { this.setState({ compareColony1: 'A-01', compareColony2: 'A-02' }); this.nav('colonyCompare'); }
+
+  // ===== 次回内検タスク追加 =====
+  addNextInspTask() {
+    const d = new Date(); d.setDate(d.getDate() + 14);
+    const dateStr = d.toLocaleDateString('ja-JP', { month:'2-digit', day:'2-digit' });
+    const colony = this.state.inspColony;
+    this.addUserTask('内検', colony, '次回内検（前回から2週間）');
+    this.setState({ nextInspAdded: true });
+    setTimeout(() => this.setState({ nextInspAdded: false }), 2000);
+  }
+
+  // ===== 下書き保存 =====
+  _saveDraft() {
+    const s = this.state;
+    if (s.view !== 'inspCapture' && s.view !== 'inspFrame') return;
+    const draft = { colony: s.inspColony, spaceCount: s.spaceCount, spaceLevels: s.spaceLevels, inspQueenPresent: s.inspQueenPresent, inspBeesTotal: s.inspBeesTotal, ts: Date.now() };
+    try { localStorage.setItem('honeyos_draft', JSON.stringify(draft)); } catch(e) {}
+  }
+
+  _checkDraft() {
+    try {
+      const raw = localStorage.getItem('honeyos_draft');
+      if (!raw) return;
+      const d = JSON.parse(raw);
+      if (d && d.ts && Date.now() - d.ts < 86400000) this.setState({ hasDraft: true, _draftData: d });
+    } catch(e) {}
+  }
+
+  restoreDraft() {
+    const d = this.state._draftData;
+    if (!d) return;
+    this.setState({ spaceCount: d.spaceCount || 10, spaceLevels: d.spaceLevels || {}, inspQueenPresent: d.inspQueenPresent, inspBeesTotal: d.inspBeesTotal, hasDraft: false });
+    try { localStorage.removeItem('honeyos_draft'); } catch(e) {}
+  }
+
+  discardDraft() {
+    this.setState({ hasDraft: false, _draftData: null });
+    try { localStorage.removeItem('honeyos_draft'); } catch(e) {}
+  }
+
+  // ===== プッシュ通知 =====
+  async requestNotifPermission() {
+    if (!('Notification' in window)) { this.setState({ notifPermission: 'unsupported' }); return; }
+    const perm = await Notification.requestPermission();
+    this.setState({ notifPermission: perm });
+    if (perm === 'granted') {
+      new Notification('HoneyOS', { body: '通知が有効になりました 🐝', icon: './icon-192.png' });
+    }
+  }
+
+  _scheduleNotif(title, body, delayMs) {
+    if (!('Notification' in window) || Notification.permission !== 'granted') return;
+    setTimeout(() => new Notification(title, { body, icon: './icon-192.png' }), delayMs);
+  }
+
+  // ===== CSVエクスポート =====
+  exportInspCSV() {
+    const rows = [['日付','蜂群','天気','スペース数','女王','蜂数','メモ']];
+    this.state.inspHistory.forEach(r => {
+      const beesLbl = r.beesTotal != null ? ['少','並','多','密'][r.beesTotal] : '';
+      rows.push([r.date||'', r.colony||'', r.weather||'', r.spaceCount||'', r.queenPresent===true?'確認':r.queenPresent===false?'なし':'', beesLbl, (r.frameMemo||'').replace(/,/g,'、')]);
+    });
+    this._downloadCSV('insp_history.csv', rows);
+  }
+
+  exportWorkCSV() {
+    const allWork = [...this.state.workHistory, ...this.WORK_HIST];
+    const rows = [['日付','種別','蜂群','採蜜量(kg)','メモ']];
+    allWork.forEach(w => rows.push([w.date||'', w.type||'', w.colony||'', w.yieldKg||'', (w.memo||w.detail||'').replace(/,/g,'、')]));
+    this._downloadCSV('work_history.csv', rows);
+  }
+
+  _downloadCSV(filename, rows) {
+    const bom = '﻿';
+    const csv = bom + rows.map(r => r.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
 }
 </script>
 </body>
