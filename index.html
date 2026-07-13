@@ -567,6 +567,39 @@
                       </div>
                     </sc-if>
                   </div>
+                  <!-- GPS位置 + クローン -->
+                  <div style="display:flex; gap:8px; margin-bottom:14px;">
+                    <div style="flex:1; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:14px; padding:12px 14px;">
+                      <div style="font-size:11px; font-weight:700; color:{{ t.textMuted }}; margin-bottom:6px;">📍 設置位置</div>
+                      <sc-if value="{{ currentHiveGPS }}">
+                        <div style="font-size:12px; color:{{ t.text }}; font-variant-numeric:tabular-nums; margin-bottom:6px; word-break:break-all;">{{ currentHiveGPS.label }}</div>
+                      </sc-if>
+                      <sc-if value="{{ !currentHiveGPS }}">
+                        <div style="font-size:12px; color:{{ t.textMuted }}; margin-bottom:6px;">未記録</div>
+                      </sc-if>
+                      <button onClick="{{ recordCurrentHiveGPS }}" style="width:100%; padding:7px; font-size:12px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:8px; cursor:pointer; opacity:{{ gpsLoadingCurrent ? 0.6 : 1 }};">{{ gpsLoadingCurrent ? '取得中…' : '現在地を記録' }}</button>
+                    </div>
+                    <div style="flex:1; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:14px; padding:12px 14px; display:flex; flex-direction:column; justify-content:space-between;">
+                      <div style="font-size:11px; font-weight:700; color:{{ t.textMuted }}; margin-bottom:6px;">🐝 蜂群クローン</div>
+                      <div style="font-size:12px; color:{{ t.textMuted }}; margin-bottom:8px; line-height:1.4;">分蜂時にこの群の設定をコピー</div>
+                      <button onClick="{{ openCurrentHiveClone }}" style="width:100%; padding:7px; font-size:12px; font-weight:700; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surfaceAlt }}; border:1.5px solid {{ t.border }}; border-radius:8px; cursor:pointer;">コピーして新群作成</button>
+                    </div>
+                  </div>
+                  <!-- クローンモーダル -->
+                  <sc-if value="{{ showCloneModal }}">
+                    <div style="position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:9999; display:flex; align-items:center; justify-content:center; padding:24px;">
+                      <div style="background:{{ t.surface }}; border-radius:20px; padding:24px; width:100%; max-width:320px; box-shadow:0 20px 60px rgba(0,0,0,.3);">
+                        <div style="font-size:17px; font-weight:800; color:{{ t.text }}; margin-bottom:6px;">蜂群クローン</div>
+                        <div style="font-size:13px; color:{{ t.textMuted }}; margin-bottom:16px;">{{ cloneColonyFrom }} のタグ・メモを新群にコピーします</div>
+                        <label style="display:block; font-size:12px; font-weight:700; color:{{ t.textMuted }}; margin-bottom:6px;">コピー先の蜂群ID</label>
+                        <input type="text" value="{{ cloneColonyTo }}" onInput="{{ hCloneColonyTo }}" placeholder="例: A-13" style="width:100%; padding:12px 14px; font-size:15px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surfaceAlt }}; border:1.5px solid {{ t.border }}; border-radius:10px; outline:none; box-sizing:border-box; margin-bottom:16px;" style-focus="border-color:{{ t.primary }};">
+                        <div style="display:flex; gap:8px;">
+                          <button onClick="{{ cancelCloneColony }}" style="flex:1; padding:12px; font-size:14px; font-weight:700; font-family:{{ t.font }}; color:{{ t.textMuted }}; background:{{ t.surfaceAlt }}; border:none; border-radius:10px; cursor:pointer;">キャンセル</button>
+                          <button onClick="{{ confirmCloneColony }}" style="flex:2; padding:12px; font-size:14px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:10px; cursor:pointer;">コピーする</button>
+                        </div>
+                      </div>
+                    </div>
+                  </sc-if>
                   <!-- Structure settings -->
                   <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:14px; padding:12px 14px; margin-bottom:14px;">
                     <div style="font-size:12px; font-weight:700; color:{{ t.textMuted }}; margin-bottom:10px;">巣箱設定</div>
@@ -1621,6 +1654,45 @@
                       <button onClick="{{ saveHarvestGoal }}" style="padding:11px 18px; font-size:13px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:10px; cursor:pointer;">設定</button>
                     </div>
                   </div>
+                  <!-- ⑧ アクティビティログ -->
+                  <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; margin-bottom:16px;">
+                    <div onClick="{{ toggleActivityLog }}" style="display:flex; justify-content:space-between; align-items:center; cursor:pointer;">
+                      <div>
+                        <div style="font-size:13px; font-weight:700; color:{{ t.text }};">📋 アクティビティログ</div>
+                        <div style="font-size:12px; color:{{ t.textMuted }}; margin-top:2px;">内検・作業の操作履歴（最新50件）</div>
+                      </div>
+                      <div style="display:flex; align-items:center; gap:8px;">
+                        <sc-if value="{{ offlineQueueCount }}">
+                          <span style="font-size:11px; font-weight:700; padding:2px 8px; background:#E8961B22; color:{{ t.primary }}; border-radius:99px;">オフライン{{ offlineQueueCount }}件</span>
+                        </sc-if>
+                        <span style="font-size:18px; color:{{ t.textMuted }};">▾</span>
+                      </div>
+                    </div>
+                    <sc-if value="{{ showActivityLog }}">
+                      <div style="margin-top:14px; border-top:1px solid {{ t.border }}; padding-top:12px;">
+                        <sc-if value="{{ activityLogEmpty }}">
+                          <div style="font-size:13px; color:{{ t.textMuted }}; text-align:center; padding:18px 0;">まだ記録がありません</div>
+                        </sc-if>
+                        <sc-if value="{{ !activityLogEmpty }}">
+                          <div style="display:flex; flex-direction:column; gap:6px; max-height:260px; overflow-y:auto;">
+                            <sc-for list="{{ activityLog }}" as="al">
+                              <div style="display:flex; align-items:center; gap:10px; padding:7px 0; border-bottom:1px solid {{ t.border }}22;">
+                                <span style="font-size:16px; flex-shrink:0;">{{ activityLogIcon(al.type) }}</span>
+                                <span style="font-size:12px; color:{{ t.text }}; flex:1;">{{ al.label }}</span>
+                                <span style="font-size:11px; color:{{ t.textMuted }}; flex-shrink:0; white-space:nowrap;">{{ al.date }} {{ al.time }}</span>
+                              </div>
+                            </sc-for>
+                          </div>
+                          <div style="margin-top:12px; display:flex; gap:8px;">
+                            <sc-if value="{{ offlineQueueCount }}">
+                              <button onClick="{{ flushOfflineQueue }}" style="flex:1; padding:9px; font-size:12px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:8px; cursor:pointer;">☁️ 今すぐ同期 ({{ offlineQueueCount }})</button>
+                            </sc-if>
+                            <button onClick="{{ clearActivityLog }}" style="flex:1; padding:9px; font-size:12px; font-weight:700; font-family:{{ t.font }}; color:{{ t.textMuted }}; background:{{ t.surfaceAlt }}; border:1.5px solid {{ t.border }}; border-radius:8px; cursor:pointer;">ログをクリア</button>
+                          </div>
+                        </sc-if>
+                      </div>
+                    </sc-if>
+                  </div>
                   <!-- JSON バックアップ -->
                   <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; margin-bottom:16px;">
                     <div style="font-size:13px; font-weight:700; color:{{ t.text }}; margin-bottom:4px;">💾 データバックアップ</div>
@@ -1645,8 +1717,11 @@
 
             <!-- OFFLINE BANNER -->
             <sc-if value="{{ isOffline }}">
-              <div style="position:absolute; top:44px; left:0; right:0; z-index:9998; background:#2D3748; color:#EDF2F7; font-size:12px; font-weight:700; text-align:center; padding:7px 12px; display:flex; align-items:center; justify-content:center; gap:6px; animation:scrIn .3s ease;">
+              <div style="position:absolute; top:44px; left:0; right:0; z-index:9998; background:#2D3748; color:#EDF2F7; font-size:12px; font-weight:700; text-align:center; padding:7px 12px; display:flex; align-items:center; justify-content:center; gap:8px; animation:scrIn .3s ease;">
                 <span>📡</span><span>{{ isEn ? 'Offline — data may be out of date' : 'オフライン中 — データは最新でない場合があります' }}</span>
+                <sc-if value="{{ offlineQueueCount }}">
+                  <span style="padding:2px 8px; background:rgba(255,255,255,.15); border-radius:99px; font-size:11px;">未送信{{ offlineQueueCount }}件</span>
+                </sc-if>
               </div>
             </sc-if>
 
@@ -1733,6 +1808,13 @@ class Component extends DCLogic {
     appUpdateReady: false,
     swipeStartX: null,
     sessionExpired: false,
+    colonyPositions: (() => { try { return JSON.parse(localStorage.getItem('honeyos_colonyPos') || '{}'); } catch(e) { return {}; } })(),
+    gpsLoading: false,
+    activityLog: (() => { try { return JSON.parse(localStorage.getItem('honeyos_actLog') || '[]'); } catch(e) { return []; } })(),
+    offlineQueue: (() => { try { return JSON.parse(localStorage.getItem('honeyos_offlineQ') || '[]'); } catch(e) { return []; } })(),
+    cloneColonyFrom: null,
+    cloneColonyTo: '',
+    showActivityLog: false,
     globalSearch: '',
     workSearch: '',
     harvestGoalKg: parseInt(localStorage.getItem('honeyos_harvestGoal') || '0') || 0,
@@ -1754,11 +1836,120 @@ class Component extends DCLogic {
     this._setupSwipeGesture();
     this._setupKeyboardShortcuts();
     this._setupSWUpdateDetect();
+    this._setupOfflineQueue();
+    this._handlePwaShortcut();
+  }
+
+  // ===== ⑨ PWAショートカット URLパラメータ処理 =====
+  _handlePwaShortcut() {
+    try {
+      const p = new URLSearchParams(window.location.search);
+      const action = p.get('action');
+      if (!action) return;
+      // Remove param from URL without reload
+      const url = new URL(window.location.href);
+      url.searchParams.delete('action');
+      history.replaceState(null, '', url.toString());
+      // Route after session init settles
+      setTimeout(() => {
+        if (action === 'inspStart') this.setState({ screen: 'inspStart' });
+        else if (action === 'workRecord') this.setState({ screen: 'workRecord' });
+        else if (action === 'colonies') this.setState({ screen: 'colonies' });
+      }, 400);
+    } catch(e) {}
   }
 
   _setupOfflineDetect() {
-    window.addEventListener('online', () => this.setState({ isOffline: false }));
+    window.addEventListener('online', () => { this.setState({ isOffline: false }); this._flushOfflineQueue(); });
     window.addEventListener('offline', () => this.setState({ isOffline: true }));
+  }
+
+  // ===== ⑤ GPS蜂箱位置記録 =====
+  recordColonyGPS(colonyId) {
+    if (!('geolocation' in navigator)) { this.showToast('このブラウザはGPSに対応していません', 'error'); return; }
+    this.setState({ gpsLoading: colonyId });
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude: lat, longitude: lng } = pos.coords;
+        const positions = { ...this.state.colonyPositions, [colonyId]: { lat, lng, ts: Date.now() } };
+        try { localStorage.setItem('honeyos_colonyPos', JSON.stringify(positions)); } catch(e) {}
+        this.setState({ colonyPositions: positions, gpsLoading: false });
+        this.showToast(`${colonyId} の位置を記録しました 📍`, 'ok');
+        this._logActivity('gps', `${colonyId} GPS位置記録`);
+      },
+      () => { this.setState({ gpsLoading: false }); this.showToast('GPS取得に失敗しました', 'error'); },
+      { timeout: 10000 }
+    );
+  }
+
+  // ===== ⑦ 蜂群クローン =====
+  openCloneColony(fromId) {
+    const taken = new Set(this.COLONIES);
+    const next = this.COLONIES.find(c => !taken.has(c)) || '';
+    this.setState({ cloneColonyFrom: fromId, cloneColonyTo: next });
+  }
+  confirmCloneColony() {
+    const { cloneColonyFrom, cloneColonyTo, colonyMemos, colonyTags, lastInspByColony } = this.state;
+    if (!cloneColonyTo) { this.showToast('コピー先IDを入力してください', 'error'); return; }
+    const newMemos = { ...colonyMemos };
+    if (colonyMemos[cloneColonyFrom]) newMemos[cloneColonyTo] = colonyMemos[cloneColonyFrom] + '\n（' + cloneColonyFrom + ' からコピー）';
+    const newTags = { ...colonyTags };
+    if (colonyTags[cloneColonyFrom]) newTags[cloneColonyTo] = [...(colonyTags[cloneColonyFrom] || [])];
+    try {
+      localStorage.setItem('honeyos_colonyMemos', JSON.stringify(newMemos));
+      localStorage.setItem('honeyos_colonyTags', JSON.stringify(newTags));
+    } catch(e) {}
+    this.setState({ colonyMemos: newMemos, colonyTags: newTags, cloneColonyFrom: null });
+    this.showToast(`${cloneColonyFrom} → ${cloneColonyTo} にコピーしました`, 'ok');
+    this._logActivity('clone', `${cloneColonyFrom} → ${cloneColonyTo} 蜂群クローン`);
+  }
+
+  // ===== ⑧ アクティビティログ =====
+  _logActivity(type, label) {
+    const entry = { type, label, ts: Date.now(), time: new Date().toLocaleTimeString('ja-JP', { hour:'2-digit', minute:'2-digit' }), date: new Date().toLocaleDateString('ja-JP', { month:'2-digit', day:'2-digit' }) };
+    this.setState(s => {
+      const log = [entry, ...s.activityLog].slice(0, 50);
+      try { localStorage.setItem('honeyos_actLog', JSON.stringify(log)); } catch(e) {}
+      return { activityLog: log };
+    });
+  }
+  clearActivityLog() {
+    this.setState({ activityLog: [] });
+    try { localStorage.removeItem('honeyos_actLog'); } catch(e) {}
+    this.showToast('ログをクリアしました', 'ok');
+  }
+
+  // ===== ⑩ オフライン内検キュー =====
+  _setupOfflineQueue() {
+    if (navigator.onLine) this._flushOfflineQueue();
+  }
+  _enqueueOfflineInsp(record) {
+    this.setState(s => {
+      const q = [...s.offlineQueue, { kind: 'insp', record, ts: Date.now() }];
+      try { localStorage.setItem('honeyos_offlineQ', JSON.stringify(q)); } catch(e) {}
+      return { offlineQueue: q };
+    });
+    this.showToast('オフライン中: 内検を一時保存しました 📥', 'warn');
+    this._logActivity('offlineQ', `オフライン内検キュー: ${record.colony}`);
+  }
+  async _flushOfflineQueue() {
+    const q = this.state.offlineQueue;
+    if (!q.length) return;
+    const db = window.HoneyDB;
+    if (!db) return;
+    const failed = [];
+    for (const item of q) {
+      try {
+        if (item.kind === 'insp') await db.saveInspRecord(item.record);
+      } catch(e) { failed.push(item); }
+    }
+    const remaining = failed;
+    try { localStorage.setItem('honeyos_offlineQ', JSON.stringify(remaining)); } catch(e) {}
+    this.setState({ offlineQueue: remaining });
+    if (q.length - remaining.length > 0) {
+      this.showToast(`${q.length - remaining.length}件のオフライン内検を同期しました ✓`, 'ok');
+      this._logActivity('sync', `${q.length - remaining.length}件オフライン同期`);
+    }
   }
 
   _setupInstallPrompt() {
@@ -2325,16 +2516,27 @@ class Component extends DCLogic {
       frameMemo: this.f('frameMemo').trim(),
       aiMemo: this.f('aiMemo').trim(),
     };
-    try {
-      await window.HoneyDB.saveInspRecord(record);
-    } catch(e) {
-      this.showToast('保存に失敗しました: ' + (e.message || ''), 'error');
+    if (this.state.isOffline) {
+      this._enqueueOfflineInsp(record);
+    } else {
+      try {
+        await window.HoneyDB.saveInspRecord(record);
+      } catch(e) {
+        if (this._handleAuthError(e)) return;
+        this._enqueueOfflineInsp(record);
+        const newRec2 = { id: now.getTime(), ...record };
+        const ih2 = [newRec2, ...s.inspHistory];
+        this.setState({ inspHistory: ih2, lastInspByColony: this._buildLastInspByColony(ih2) });
+        this.tab('tasks');
+        return;
+      }
     }
     const newRec = { id: now.getTime(), ...record };
     const inspHistory = [newRec, ...s.inspHistory];
     const lastInspByColony = this._buildLastInspByColony(inspHistory);
     this.setState({ inspHistory, lastInspByColony });
-    this.showToast(`${record.colony} の内検を記録しました ✓`, 'ok');
+    this._logActivity('insp', `${record.colony} 内検記録`);
+    if (!this.state.isOffline) this.showToast(`${record.colony} の内検を記録しました ✓`, 'ok');
     this.tab('tasks');
   }
 
@@ -2391,6 +2593,7 @@ class Component extends DCLogic {
     delete this._fieldBuf['recYieldKg'];
     const yieldMsg = yieldKg ? `採蜜量 ${yieldKg}kg を記録しました 🍯` : `作業記録を保存しました`;
     this.showToast(yieldMsg, 'ok');
+    this._logActivity('work', `${record.colony || ''} ${record.type}`);
     this.nav('workHistory');
   }
 
@@ -3277,6 +3480,37 @@ class Component extends DCLogic {
       hColonyMemo: this.field('colonyMemo_' + s.inspColony),
       openInspColonyMemoEdit: () => this.openColonyMemoEdit(s.inspColony),
       saveInspColonyMemo: () => this.saveColonyMemo(s.inspColony),
+      // ===== ⑤ GPS蜂箱位置 =====
+      colonyPositions: s.colonyPositions || {},
+      gpsLoading: s.gpsLoading || false,
+      recordColonyGPS: (cid) => this.recordColonyGPS(cid),
+      currentHiveGPS: (() => {
+        const pos = (s.colonyPositions || {})[s.hiveDetailColony];
+        if (!pos) return null;
+        const lat = pos.lat.toFixed(5), lng = pos.lng.toFixed(5);
+        return { lat, lng, label: `${lat}, ${lng}`, mapsUrl: `https://www.google.com/maps?q=${pos.lat},${pos.lng}` };
+      })(),
+      recordCurrentHiveGPS: () => this.recordColonyGPS(s.hiveDetailColony || 'A-01'),
+      gpsLoadingCurrent: s.gpsLoading === (s.hiveDetailColony || 'A-01'),
+      // ===== ⑦ 蜂群クローン =====
+      cloneColonyFrom: s.cloneColonyFrom,
+      cloneColonyTo: s.cloneColonyTo || '',
+      showCloneModal: !!s.cloneColonyFrom,
+      openCloneColony: (cid) => this.openCloneColony(cid),
+      openCurrentHiveClone: () => this.openCloneColony(s.hiveDetailColony || 'A-01'),
+      confirmCloneColony: () => this.confirmCloneColony(),
+      cancelCloneColony: () => this.setState({ cloneColonyFrom: null }),
+      hCloneColonyTo: (e) => this.setState({ cloneColonyTo: e.target.value }),
+      // ===== ⑧ アクティビティログ =====
+      activityLog: s.activityLog || [],
+      activityLogEmpty: !(s.activityLog && s.activityLog.length),
+      showActivityLog: s.showActivityLog || false,
+      toggleActivityLog: () => this.setState(st => ({ showActivityLog: !st.showActivityLog })),
+      clearActivityLog: () => this.clearActivityLog(),
+      activityLogIcon: (type) => ({ insp:'🔍', work:'📋', gps:'📍', clone:'🐝', sync:'☁️', offlineQ:'📥' })[type] || '📋',
+      // ===== ⑩ オフライン内検キュー =====
+      offlineQueueCount: (s.offlineQueue || []).length,
+      flushOfflineQueue: () => this._flushOfflineQueue(),
       // ===== オフライン =====
       isOffline: s.isOffline,
       // ===== バッジフィルタ =====
