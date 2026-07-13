@@ -49,6 +49,10 @@ self.addEventListener('notificationclick', e => {
   );
 });
 
+self.addEventListener('message', e => {
+  if (e.data && e.data.type === 'SKIP_WAITING') self.skipWaiting();
+});
+
 self.addEventListener('fetch', e => {
   // Network-first for Supabase API calls
   if (e.request.url.includes('supabase.co')) {
