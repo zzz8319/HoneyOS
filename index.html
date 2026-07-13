@@ -364,6 +364,23 @@
                       </button>
                     </div>
                   </div>
+                  <!-- 内検リマインダー -->
+                  <sc-if value="{{ reminderColonies.length > 0 }}">
+                    <div style="margin-bottom:22px;">
+                      <div style="font-size:12px; font-weight:700; letter-spacing:.08em; color:{{ t.textMuted }}; margin-bottom:10px;">内検リマインダー</div>
+                      <div style="background:{{ t.warnBg }}; border:1px solid {{ t.warn }}; border-radius:{{ t.radius }}px; padding:12px 14px;">
+                        <sc-for list="{{ reminderColonies }}" as="rc">
+                          <div style="display:flex; align-items:center; justify-content:space-between; padding:6px 0; border-bottom:1px solid {{ t.border }}; last-child:border-bottom:none;">
+                            <div style="display:flex; align-items:center; gap:8px;">
+                              <span style="font-size:16px;">{{ rc.urgent ? '⚠️' : '🔔' }}</span>
+                              <span style="font-size:14px; font-weight:700; color:{{ t.text }};">{{ rc.colony }}</span>
+                            </div>
+                            <span style="font-size:12px; font-weight:700; color:{{ rc.urgent ? t.danger : t.warn }}; background:{{ rc.urgent ? t.dangerBg : t.warnBg }}; padding:3px 8px; border-radius:999px;">{{ rc.label }}</span>
+                          </div>
+                        </sc-for>
+                      </div>
+                    </div>
+                  </sc-if>
                   <!-- 最近の活動 -->
                   <div style="margin-top:0;">
                     <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
@@ -442,19 +459,32 @@
                     <div style="font-size:13px; font-weight:700; color:{{ t.textMuted }};">蜂群ダッシュボード <span style="font-weight:400; font-size:11px;">（最新内検）</span></div>
                   </div>
                   <!-- Badge filter chips -->
-                  <div style="display:flex; gap:6px; margin-bottom:12px;">
+                  <div style="display:flex; gap:6px; margin-bottom:8px; overflow-x:auto; padding-bottom:2px; scrollbar-width:none;">
                     <button onClick="{{ setBadgeFilterAll }}" style="{{ badgeFilterAllStyle }}">すべて</button>
                     <button onClick="{{ setBadgeFilterWarn }}" style="{{ badgeFilterWarnStyle }}">⚠️ 要注意</button>
                     <button onClick="{{ setBadgeFilterDanger }}" style="{{ badgeFilterDangerStyle }}">🔴 緊急</button>
+                  </div>
+                  <!-- タグフィルター -->
+                  <div style="display:flex; gap:6px; margin-bottom:12px; overflow-x:auto; padding-bottom:2px; scrollbar-width:none;">
+                    <sc-for list="{{ colonyTagOpts }}" as="cto">
+                      <button onClick="{{ cto.select }}" style="{{ cto.style }}">{{ cto.label }}</button>
+                    </sc-for>
                   </div>
                   <!-- Beewise-style colony barcode grid -->
                   <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:8px; margin-bottom:14px;">
                     <sc-for list="{{ colonyBarcodes }}" as="cb">
                       <div onClick="{{ cb.open }}" style="background:{{ t.surface }}; border:1.5px solid {{ cb.alertBorder || t.border }}; border-radius:12px; padding:10px; cursor:pointer;">
-                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
                           <div style="display:flex; align-items:center; gap:5px;"><span style="font-size:13px; font-weight:800; color:{{ t.text }};">{{ cb.id }}</span><sc-if value="{{ cb.alertBadge }}"><span style="font-size:11px;">{{ cb.alertBadge }}</span></sc-if></div>
                           <span style="font-size:10px; color:{{ t.textMuted }};">{{ cb.date }}</span>
                         </div>
+                        <sc-if value="{{ cb.tags && cb.tags.length > 0 }}">
+                          <div style="display:flex; flex-wrap:wrap; gap:3px; margin-bottom:4px;">
+                            <sc-for list="{{ cb.tags }}" as="ctag">
+                              <span style="font-size:9px; font-weight:700; color:{{ t.chipText }}; background:{{ t.chipBg }}; border-radius:999px; padding:2px 6px;">{{ ctag }}</span>
+                            </sc-for>
+                          </div>
+                        </sc-if>
                         <sc-if value="{{ cb.hasInsp }}">
                           <div style="display:flex; gap:2px; height:44px; background:{{ t.surfaceAlt }}; border-radius:6px; padding:3px; overflow:hidden;">
                             <sc-for list="{{ cb.frameSegs }}" as="cfs">
@@ -514,6 +544,29 @@
                     </div>
                   </div>
 
+                  <!-- タグ・固定メモ -->
+                  <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:14px; padding:14px; margin-bottom:14px;">
+                    <div style="font-size:12px; font-weight:700; color:{{ t.textMuted }}; margin-bottom:8px;">タグ</div>
+                    <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px;">
+                      <sc-for list="{{ hiveDetailTagOpts }}" as="hto">
+                        <button onClick="{{ hto.toggle }}" style="{{ hto.style }}">{{ hto.label }}</button>
+                      </sc-for>
+                    </div>
+                    <div style="font-size:12px; font-weight:700; color:{{ t.textMuted }}; margin-bottom:6px;">固定メモ</div>
+                    <sc-if value="{{ !hiveDetailMemoEditing }}">
+                      <div style="display:flex; align-items:center; gap:8px;">
+                        <div style="flex:1; font-size:13px; color:{{ hiveDetailMemo ? t.text : t.textMuted }}; line-height:1.5; min-height:20px;">{{ hiveDetailMemo || '（メモなし）' }}</div>
+                        <button onClick="{{ openHiveDetailMemoEdit }}" style="padding:5px 10px; font-size:12px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primary }}; background:{{ t.chipBg }}; border:none; border-radius:8px; cursor:pointer;">編集</button>
+                      </div>
+                    </sc-if>
+                    <sc-if value="{{ hiveDetailMemoEditing }}">
+                      <textarea onInput="{{ hHiveDetailMemo }}" style="width:100%; min-height:60px; padding:8px 10px; font-size:13px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surfaceAlt }}; border:1.5px solid {{ t.primary }}; border-radius:10px; outline:none; resize:vertical;">{{ hiveDetailMemoVal }}</textarea>
+                      <div style="display:flex; gap:8px; margin-top:8px;">
+                        <button onClick="{{ saveHiveDetailMemo }}" style="flex:1; padding:9px; font-size:13px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:10px; cursor:pointer;">保存</button>
+                        <button onClick="{{ cancelHiveDetailMemoEdit }}" style="padding:9px 14px; font-size:13px; font-weight:700; font-family:{{ t.font }}; color:{{ t.textMuted }}; background:{{ t.surfaceAlt }}; border:none; border-radius:10px; cursor:pointer;">取消</button>
+                      </div>
+                    </sc-if>
+                  </div>
                   <!-- Structure settings -->
                   <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:14px; padding:12px 14px; margin-bottom:14px;">
                     <div style="font-size:12px; font-weight:700; color:{{ t.textMuted }}; margin-bottom:10px;">巣箱設定</div>
@@ -658,6 +711,30 @@
                         <sc-if value="{{ inspPreFill.queenLabel }}"><span style="color:{{ t.textMuted }};">　女王: {{ inspPreFill.queenLabel }}</span></sc-if>
                       </div>
                     </div>
+                  </sc-if>
+                  <!-- 蜂群固定メモ -->
+                  <sc-if value="{{ currentColonyMemo || colonyMemoEditActive }}">
+                    <div style="background:{{ t.surfaceAlt }}; border:1px solid {{ t.border }}; border-radius:12px; padding:12px 14px; margin-bottom:14px;">
+                      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+                        <span style="font-size:12px; font-weight:700; color:{{ t.textMuted }};">📌 蜂群メモ</span>
+                        <sc-if value="{{ !colonyMemoEditActive }}">
+                          <button onClick="{{ openInspColonyMemoEdit }}" style="font-size:11px; font-weight:700; color:{{ t.primary }}; background:transparent; border:none; cursor:pointer; padding:0;">編集</button>
+                        </sc-if>
+                      </div>
+                      <sc-if value="{{ !colonyMemoEditActive }}">
+                        <div style="font-size:13px; color:{{ t.text }}; line-height:1.5;">{{ currentColonyMemo }}</div>
+                      </sc-if>
+                      <sc-if value="{{ colonyMemoEditActive }}">
+                        <textarea onInput="{{ hColonyMemo }}" rows="3" style="width:100%; padding:8px 10px; font-size:13px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.primary }}; border-radius:8px; outline:none; resize:vertical; box-sizing:border-box;">{{ currentColonyMemo }}</textarea>
+                        <div style="display:flex; gap:8px; margin-top:8px;">
+                          <button onClick="{{ saveInspColonyMemo }}" style="flex:1; padding:8px; font-size:12px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:8px; cursor:pointer;">保存</button>
+                          <button onClick="{{ cancelColonyMemoEdit }}" style="padding:8px 12px; font-size:12px; color:{{ t.textMuted }}; background:transparent; border:none; cursor:pointer;">取消</button>
+                        </div>
+                      </sc-if>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ !currentColonyMemo && !colonyMemoEditActive }}">
+                    <button onClick="{{ openInspColonyMemoEdit }}" style="width:100%; padding:10px; font-size:12px; font-weight:700; font-family:{{ t.font }}; color:{{ t.textMuted }}; background:transparent; border:1.5px dashed {{ t.border }}; border-radius:10px; cursor:pointer; margin-bottom:14px;">📌 この蜂群のメモを追加</button>
                   </sc-if>
                   <button onClick="{{ startInspection }}" style="width:100%; padding:16px; font-size:16px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};" style-active="transform:translateY(1px);">内検を開始する（{{ selectedCount }}枠）</button>
                 </div>
@@ -1253,7 +1330,9 @@
               <!-- SCR-027 WORK HISTORY -->
               <sc-if value="{{ vWorkHistory }}" hint-placeholder-val="{{ false }}">
                 <div data-screen-label="SCR-027 作業履歴" style="padding:60px 16px 16px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1); overflow-y:auto; height:100%;">
-                  <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;"><button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button><span style="font-size:20px; font-weight:800; color:{{ t.text }}; flex:1;">作業履歴</span><button onClick="{{ exportWorkCSV }}" style="padding:7px 12px; font-size:12px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primary }}; background:{{ t.chipBg }}; border:none; border-radius:999px; cursor:pointer;">📥 CSV</button></div>
+                  <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;"><button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button><span style="font-size:20px; font-weight:800; color:{{ t.text }}; flex:1;">作業履歴</span><button onClick="{{ exportWorkCSV }}" style="padding:7px 12px; font-size:12px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primary }}; background:{{ t.chipBg }}; border:none; border-radius:999px; cursor:pointer;">📥 CSV</button></div>
+                  <!-- 検索バー -->
+                  <div style="position:relative; margin-bottom:10px;"><span style="position:absolute; left:13px; top:50%; transform:translateY(-50%); font-size:14px; pointer-events:none;">🔍</span><input value="{{ workSearch }}" onInput="{{ hWorkSearch }}" type="text" placeholder="蜂群・種別・メモで検索..." style="width:100%; padding:11px 13px 11px 38px; font-size:14px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px; outline:none; box-sizing:border-box;" style-focus="border-color:{{ t.primary }};"></div>
                   <!-- フィルター -->
                   <div style="display:flex; gap:5px; overflow-x:auto; padding-bottom:4px; margin-bottom:14px;">
                     <button onClick="{{ setWhAll }}" style="{{ whFilterAll }}">すべて</button>
@@ -1455,6 +1534,22 @@
                     <div style="flex:1; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:14px;"><div style="font-size:11px; color:{{ t.textMuted }};">{{ TR.revenue }}</div><div style="margin-top:6px;"><span style="font-size:20px; font-weight:800; color:{{ t.text }};">91</span><span style="font-size:11px; color:{{ t.textMuted }};">万</span></div><div style="font-size:11px; font-weight:700; color:{{ t.accent }};">+8%</div></div>
                     <div style="flex:1; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:14px;"><div style="font-size:11px; color:{{ t.textMuted }};">{{ TR.cost }}</div><div style="margin-top:6px;"><span style="font-size:20px; font-weight:800; color:{{ t.text }};">23</span><span style="font-size:11px; color:{{ t.textMuted }};">万</span></div><div style="font-size:11px; color:{{ t.textMuted }};">前月同等</div></div>
                   </div>
+                  <!-- 年間採蜜目標 -->
+                  <sc-if value="{{ harvestGoalProgress.hasGoal }}">
+                    <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; margin-bottom:14px;">
+                      <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px;">
+                        <div style="font-size:13px; font-weight:700; color:{{ t.text }};">年間採蜜目標</div>
+                        <span style="font-size:12px; font-weight:700; color:{{ t.primary }};">{{ harvestGoalProgress.pct }}%達成</span>
+                      </div>
+                      <div style="height:10px; background:{{ t.surfaceAlt }}; border-radius:99px; overflow:hidden; margin-bottom:8px;">
+                        <div style="height:100%; width:{{ harvestGoalProgress.barWidth }}; background:{{ t.primary }}; border-radius:99px; transition:width .4s ease;"></div>
+                      </div>
+                      <div style="display:flex; justify-content:space-between; font-size:12px; color:{{ t.textMuted }};">
+                        <span>{{ harvestGoalProgress.actual }}kg 達成</span>
+                        <span>目標 {{ harvestGoalProgress.goal }}kg</span>
+                      </div>
+                    </div>
+                  </sc-if>
                   <!-- Harvest yield chart -->
                   <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; margin-bottom:14px;">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;"><div style="font-size:13px; font-weight:700; color:{{ t.text }};">採蜜量推移</div><div style="font-size:11px; color:{{ t.textMuted }};">kg</div></div>
@@ -1516,6 +1611,15 @@
                     <sc-for list="{{ settingsRows }}" as="sr">
                       <div onClick="{{ sr.open }}" style="display:flex; align-items:center; gap:12px; padding:15px 16px; border-bottom:1px solid {{ t.border }}; cursor:pointer;" style-active="background:{{ t.surfaceAlt }};"><span style="font-size:18px; width:24px; text-align:center;">{{ sr.icon }}</span><div style="flex:1;"><div style="font-size:14px; color:{{ t.text }};">{{ sr.label }}</div><div style="font-size:11px; color:{{ t.textMuted }}; margin-top:2px;">{{ sr.desc }}</div></div><span style="color:{{ t.textMuted }};">›</span></div>
                     </sc-for>
+                  </div>
+                  <!-- 年間採蜜目標 -->
+                  <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; margin-bottom:16px;">
+                    <div style="font-size:13px; font-weight:700; color:{{ t.text }}; margin-bottom:4px;">🍯 年間採蜜目標</div>
+                    <div style="font-size:12px; color:{{ t.textMuted }}; margin-bottom:12px;">目標収量を設定するとレポートに進捗バーが表示されます。</div>
+                    <div style="display:flex; gap:8px; align-items:center;">
+                      <input type="number" value="{{ harvestGoalKg }}" onInput="{{ hHarvestGoalKg }}" min="0" max="9999" step="10" placeholder="500" style="flex:1; padding:11px 14px; font-size:15px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surfaceAlt }}; border:1.5px solid {{ t.border }}; border-radius:10px; outline:none;" style-focus="border-color:{{ t.primary }};"><span style="font-size:14px; color:{{ t.textMuted }}; flex-shrink:0;">kg</span>
+                      <button onClick="{{ saveHarvestGoal }}" style="padding:11px 18px; font-size:13px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:10px; cursor:pointer;">設定</button>
+                    </div>
                   </div>
                   <!-- JSON バックアップ -->
                   <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; margin-bottom:16px;">
@@ -1629,6 +1733,13 @@ class Component extends DCLogic {
     appUpdateReady: false,
     swipeStartX: null,
     sessionExpired: false,
+    globalSearch: '',
+    workSearch: '',
+    harvestGoalKg: parseInt(localStorage.getItem('honeyos_harvestGoal') || '0') || 0,
+    colonyTags: (() => { try { return JSON.parse(localStorage.getItem('honeyos_colonyTags') || '{}'); } catch(e) { return {}; } })(),
+    colonyMemos: (() => { try { return JSON.parse(localStorage.getItem('honeyos_colonyMemos') || '{}'); } catch(e) { return {}; } })(),
+    tagFilter: 'all',
+    colonyMemoEditId: null,
   };
 
   COLONIES = ['A-01','A-02','A-03','A-04','A-05','A-06','A-07','A-08','A-09','A-10','A-11','A-12'];
@@ -2470,7 +2581,12 @@ class Component extends DCLogic {
         const WORK_TYPE_ICONS = { '給餌':'🍼', '内検':'🔍', '採蜜':'🍯', '治療':'💊' };
         const allWork = [...s.workHistory, ...this.WORK_HIST.map(w => ({ ...w, id: w.date + w.type }))];
         const wFilter = s.workHistoryFilter || 'all';
-        const filtered = wFilter === 'all' ? allWork : allWork.filter(w => w.type === wFilter);
+        const wq = (s.workSearch || '').trim().toLowerCase();
+        const filtered = allWork.filter(w => {
+          if (wFilter !== 'all' && w.type !== wFilter) return false;
+          if (!wq) return true;
+          return (w.colony||'').toLowerCase().includes(wq) || (w.type||'').includes(wq) || (w.memo||w.detail||'').toLowerCase().includes(wq) || (w.date||'').includes(wq);
+        });
         // month grouping
         const monthGroups = [];
         filtered.forEach(w => {
@@ -2792,12 +2908,14 @@ class Component extends DCLogic {
           const daysSince = (Date.now() - new Date(latest.date||'').getTime()) / 86400000;
           const alertBadge = latest.queenPresent===false ? '🔴' : daysSince > 21 ? '⚠️' : '';
           const alertBorder = latest.queenPresent===false ? t.danger : daysSince > 21 ? t.warn : t.border;
-          return { id:cid, frameSegs, hasInsp:true, date:latest.date||'', open:()=>this.openHiveDetail(cid), alertBadge, alertBorder };
+          const colTags = (s.colonyTags || {})[cid] || [];
+          return { id:cid, frameSegs, hasInsp:true, date:latest.date||'', open:()=>this.openHiveDetail(cid), alertBadge, alertBorder, tags: colTags };
         });
         const badgeFilter = s.colonyBadgeFilter || 'all';
-        const filteredColonyBarcodes = badgeFilter === 'all' ? colonyBarcodes
-          : badgeFilter === 'warn' ? colonyBarcodes.filter(cb => cb.alertBadge === '⚠️')
-          : colonyBarcodes.filter(cb => cb.alertBadge === '🔴' || cb.alertBadge === '❓');
+        const tagF = s.tagFilter || 'all';
+        const filteredColonyBarcodes = colonyBarcodes
+          .filter(cb => badgeFilter === 'all' ? true : badgeFilter === 'warn' ? cb.alertBadge === '⚠️' : (cb.alertBadge === '🔴' || cb.alertBadge === '❓'))
+          .filter(cb => tagF === 'all' ? true : (cb.tags || []).includes(tagF));
         return {
           frameZones, queenDots, queenPosLabel, zoneTypeLegend, beesChips, spaceTypePicker, spaceBars, spaceStats,
           allFrameBars,
@@ -2877,6 +2995,16 @@ class Component extends DCLogic {
                 if(tp==='honey') hiveHoneyCount++;
               });
             });
+            const ALL_TAGS = ['採蜜用','育成中','要注意','新群','越冬中'];
+            const hcTags = (s.colonyTags || {})[hcid] || [];
+            const hiveDetailTagOpts = ALL_TAGS.map(tag => ({
+              label: (hcTags.includes(tag) ? '✓ ' : '') + tag,
+              toggle: () => this.toggleColonyTag(hcid, tag),
+              style: 'padding:5px 11px; border:1.5px solid '+(hcTags.includes(tag)?t.primary:t.border)+'; border-radius:999px; cursor:pointer; font-size:12px; font-weight:700; font-family:'+t.font+'; background:'+(hcTags.includes(tag)?t.chipBg:t.surface)+'; color:'+(hcTags.includes(tag)?t.chipText:t.textMuted)+';',
+            }));
+            const hiveDetailMemo = (s.colonyMemos || {})[hcid] || '';
+            const hiveDetailMemoEditing = s.colonyMemoEditId === hcid;
+            const hiveDetailMemoVal = this._fieldBuf['colonyMemo_' + hcid] !== undefined ? this._fieldBuf['colonyMemo_' + hcid] : hiveDetailMemo;
             return {
               hiveItems, hiveQEOptions,
               hiveDetailColonyName: hcid,
@@ -2890,6 +3018,12 @@ class Component extends DCLogic {
               hiveQueenBg: hiveQueenFound ? '#FFF8DC' : t.surfaceAlt,
               hiveIncBoxes: () => this.incHiveBoxes(),
               hiveDecBoxes: () => this.decHiveBoxes(),
+              hiveDetailTagOpts,
+              hiveDetailMemo, hiveDetailMemoEditing, hiveDetailMemoVal,
+              openHiveDetailMemoEdit: () => this.openColonyMemoEdit(hcid),
+              saveHiveDetailMemo: () => this.saveColonyMemo(hcid),
+              cancelHiveDetailMemoEdit: () => this.setState({ colonyMemoEditId: null }),
+              hHiveDetailMemo: this.field('colonyMemo_' + hcid),
             };
           })(),
           frameBarLight: t.primary+'66', frameBarMid: t.primary+'aa',
@@ -3069,6 +3203,80 @@ class Component extends DCLogic {
         const areaPath = linePath + ` L${pts[pts.length-1].x},100 L${pts[0].x},100 Z`;
         return { linePath, areaPath, dates: recs.map(r => (r.date||'').slice(5)), scores };
       })(),
+      // ===== 内検リマインダー（ホーム） =====
+      reminderColonies: (() => {
+        const now = Date.now();
+        return this.COLONIES.map(cid => {
+          const last = (s.lastInspByColony || {})[cid];
+          if (!last) return { colony: cid, daysSince: null, label: '未内検', urgent: true };
+          const days = Math.floor((now - new Date(last.date || '').getTime()) / 86400000);
+          if (days < 14) return null;
+          return { colony: cid, daysSince: days, label: days + '日経過', urgent: days > 21 };
+        }).filter(Boolean).sort((a,b) => (b.daysSince||999) - (a.daysSince||999)).slice(0, 5);
+      })(),
+      // ===== グローバル検索 =====
+      globalSearch: s.globalSearch || '',
+      hGlobalSearch: (e) => this.setState({ globalSearch: e.target.value }),
+      globalSearchResults: (() => {
+        const q = (s.globalSearch || '').trim().toLowerCase();
+        if (!q) return [];
+        const inspRes = s.inspHistory.filter(r =>
+          (r.colony||'').toLowerCase().includes(q) || (r.frameMemo||'').toLowerCase().includes(q) ||
+          (r.aiMemo||'').toLowerCase().includes(q) || (r.date||'').includes(q)
+        ).slice(0, 5).map(r => ({ ...r, kind: 'insp', icon: '🔍', title: r.colony + ' 内検', sub: r.date }));
+        const workRes = s.workHistory.filter(w =>
+          (w.colony||'').toLowerCase().includes(q) || (w.type||'').includes(q) ||
+          (w.memo||'').toLowerCase().includes(q) || (w.date||'').includes(q)
+        ).slice(0, 5).map(w => ({ ...w, kind: 'work', icon: '📋', title: (w.colony||'') + ' ' + w.type, sub: w.date }));
+        return [...inspRes, ...workRes].slice(0, 8);
+      })(),
+      globalSearchEmpty: !!(s.globalSearch && s.globalSearch.trim()) && (() => {
+        const q = s.globalSearch.trim().toLowerCase();
+        const any = [...s.inspHistory, ...s.workHistory].some(r =>
+          JSON.stringify(r).toLowerCase().includes(q)
+        );
+        return !any;
+      })(),
+      clearGlobalSearch: () => this.setState({ globalSearch: '' }),
+      // ===== 作業履歴インクリメンタル検索 =====
+      workSearch: s.workSearch || '',
+      hWorkSearch: (e) => this.setState({ workSearch: e.target.value }),
+      clearWorkSearch: () => this.setState({ workSearch: '' }),
+      // ===== 年間採蜜目標 =====
+      harvestGoalKg: s.harvestGoalKg || 0,
+      harvestGoalProgress: (() => {
+        const goal = s.harvestGoalKg || 0;
+        const actual = s.workHistory.filter(w => w.type === '採蜜').reduce((sum, w) => sum + (parseFloat(w.yieldKg)||0), 0);
+        const pct = goal > 0 ? Math.min(100, Math.round(actual / goal * 100)) : 0;
+        return { goal, actual: actual.toFixed(1), pct, barWidth: pct + '%', hasGoal: goal > 0 };
+      })(),
+      hHarvestGoalKg: this.field('harvestGoalKg'),
+      saveHarvestGoal: () => this.saveHarvestGoal(),
+      // ===== 蜂群タグ =====
+      COLONY_TAG_OPTIONS: ['採蜜用', '育成中', '要注意', '新群', '越冬中'],
+      tagFilter: s.tagFilter || 'all',
+      setTagFilterAll: () => this.setTagFilter('all'),
+      colonyTagOpts: (() => {
+        const allTags = new Set(['採蜜用', '育成中', '要注意', '新群', '越冬中']);
+        Object.values(s.colonyTags || {}).flat().forEach(t => allTags.add(t));
+        return ['all', ...allTags].map(tag => ({
+          tag, label: tag === 'all' ? 'すべて' : tag,
+          active: (s.tagFilter || 'all') === tag,
+          select: () => this.setTagFilter(tag),
+          style: 'flex-shrink:0; padding:6px 12px; border:none; border-radius:999px; cursor:pointer; font-size:12px; font-weight:700; font-family:'+t.font+'; background:'+((s.tagFilter||'all')===tag?t.primary:t.chipBg)+'; color:'+((s.tagFilter||'all')===tag?t.primaryText:t.text)+';',
+        }));
+      })(),
+      // ===== 蜂群固定メモ =====
+      colonyMemoEditId: s.colonyMemoEditId || null,
+      colonyMemos: s.colonyMemos || {},
+      openColonyMemoEdit: (colony) => this.openColonyMemoEdit(colony),
+      saveColonyMemo: (colony) => this.saveColonyMemo(colony),
+      cancelColonyMemoEdit: () => this.setState({ colonyMemoEditId: null }),
+      currentColonyMemo: (s.colonyMemos || {})[s.inspColony] || '',
+      colonyMemoEditActive: s.colonyMemoEditId === s.inspColony,
+      hColonyMemo: this.field('colonyMemo_' + s.inspColony),
+      openInspColonyMemoEdit: () => this.openColonyMemoEdit(s.inspColony),
+      saveInspColonyMemo: () => this.saveColonyMemo(s.inspColony),
       // ===== オフライン =====
       isOffline: s.isOffline,
       // ===== バッジフィルタ =====
@@ -3405,6 +3613,43 @@ class Component extends DCLogic {
       reader.readAsText(file);
     };
     input.click();
+  }
+
+  // ===== 蜂群タグ管理 =====
+  toggleColonyTag(colony, tag) {
+    this.setState(s => {
+      const tags = { ...s.colonyTags };
+      const cur = tags[colony] || [];
+      const next = cur.includes(tag) ? cur.filter(t => t !== tag) : [...cur, tag];
+      if (next.length) tags[colony] = next; else delete tags[colony];
+      try { localStorage.setItem('honeyos_colonyTags', JSON.stringify(tags)); } catch(e) {}
+      return { colonyTags: tags };
+    });
+  }
+  setTagFilter(tag) { this.setState({ tagFilter: tag }); }
+
+  // ===== 蜂群固定メモ =====
+  openColonyMemoEdit(colony) {
+    this._fieldBuf['colonyMemo_' + colony] = (this.state.colonyMemos[colony] || '');
+    this.setState({ colonyMemoEditId: colony });
+  }
+  saveColonyMemo(colony) {
+    const memo = (this._fieldBuf['colonyMemo_' + colony] || '').trim();
+    this.setState(s => {
+      const memos = { ...s.colonyMemos };
+      if (memo) memos[colony] = memo; else delete memos[colony];
+      try { localStorage.setItem('honeyos_colonyMemos', JSON.stringify(memos)); } catch(e) {}
+      return { colonyMemos: memos, colonyMemoEditId: null };
+    });
+    this.showToast('メモを保存しました', 'ok');
+  }
+
+  // ===== 年間採蜜目標 =====
+  saveHarvestGoal() {
+    const kg = parseFloat(this._fieldBuf['harvestGoalKg'] || '0') || 0;
+    try { localStorage.setItem('honeyos_harvestGoal', String(kg)); } catch(e) {}
+    this.setState({ harvestGoalKg: kg });
+    this.showToast('目標を設定しました', 'ok');
   }
 
   // ===== 前回内検値プリロード付き内検開始 =====
