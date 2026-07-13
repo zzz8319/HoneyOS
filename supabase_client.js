@@ -138,6 +138,56 @@
     if (error) throw error;
   }
 
+  // ==================
+  // Realtime
+  // ==================
+  let _realtimeChannel = null;
+
+  function subscribeRealtime(onInspChange, onWorkChange) {
+    if (_realtimeChannel) return;
+    _realtimeChannel = sb
+      .channel('honeyos-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'insp_records' }, async () => {
+        try {
+          const records = await loadInspRecords();
+          onInspChange(records);
+        } catch(e) {}
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'work_records' }, async () => {
+        try {
+          const records = await loadWorkRecords();
+          onWorkChange(records);
+        } catch(e) {}
+      })
+      .subscribe();
+  }
+
+  function unsubscribeRealtime() {
+    if (_realtimeChannel) {
+      sb.removeChannel(_realtimeChannel);
+      _realtimeChannel = null;
+    }
+  }
+
+  // ==================
+  // Full data export
+  // ==================
+  async function exportAllData() {
+    const session = await getSession();
+    if (!session) throw new Error('ログインが必要です');
+    const [inspRecs, workRecs] = await Promise.all([
+      loadInspRecords(),
+      loadWorkRecords(),
+    ]);
+    const profile = await getUserProfile();
+    return {
+      exportedAt: new Date().toISOString(),
+      profile,
+      inspRecords: inspRecs,
+      workRecords: workRecs,
+    };
+  }
+
   // Expose API
   window.HoneyDB = {
     signUp,
@@ -150,5 +200,8 @@
     saveInspRecord,
     loadWorkRecords,
     saveWorkRecord,
+    subscribeRealtime,
+    unsubscribeRealtime,
+    exportAllData,
   };
 })();
