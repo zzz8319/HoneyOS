@@ -28,6 +28,7 @@
   @keyframes scrIn { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
   @keyframes scrInBack { from { opacity: 0; transform: translateX(-24px); } to { opacity: 1; transform: none; } }
   @keyframes liveBlink { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+  @keyframes skLoad { 0% { transform: translateX(-100%); } 60%,100% { transform: translateX(100%); } }
 
   /* Mobile: full screen app overlaid on top of everything */
   @media (max-width: 480px) {
@@ -189,7 +190,26 @@
   <div id="proto-frame-outer" style="box-shadow:0 24px 60px rgba(0,0,0,.5);">
     <div id="app-frame" style="position:relative; width:390px; height:844px; overflow:hidden; background:{{ t.bg }};">
 
+      <!-- GLOBAL LOADING SKELETON -->
+      <sc-if value="{{ isLoading }}">
+        <div style="position:absolute; inset:0; z-index:9999; background:{{ t.bg }}; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px;">
+          <div style="font-size:40px; animation:liveBlink 1.4s infinite;">🐝</div>
+          <div style="width:180px; height:8px; border-radius:99px; background:{{ t.border }}; overflow:hidden; position:relative;">
+            <div style="position:absolute; inset:0; border-radius:99px; background:{{ t.primary }}; animation:skLoad 1.4s ease-in-out infinite;"></div>
+          </div>
+          <div style="font-size:13px; color:{{ t.textMuted }}; font-weight:600;">読み込み中...</div>
+        </div>
+      </sc-if>
 
+      <!-- GLOBAL TOAST -->
+      <sc-if value="{{ toast }}">
+        <div style="position:absolute; bottom:100px; left:16px; right:16px; z-index:9997; animation:scrIn .28s ease;">
+          <div style="padding:13px 16px; border-radius:14px; font-size:14px; font-weight:700; font-family:{{ t.font }}; display:flex; align-items:center; gap:10px; box-shadow:0 8px 28px rgba(0,0,0,.18); background:{{ toast.type==='ok' ? t.ok : toast.type==='error' ? t.danger : t.text }}; color:#fff;">
+            <span>{{ toast.type==='ok' ? '✓' : toast.type==='error' ? '✕' : 'ℹ' }}</span>
+            <span style="flex:1;">{{ toast.msg }}</span>
+          </div>
+        </div>
+      </sc-if>
 
       <div id="app-mobile" style="position:absolute; inset:0;">
 
@@ -1115,9 +1135,17 @@
                             <div style="font-size:13px; font-weight:700; color:{{ t.text }};">{{ tk.icon }} {{ tk.type }} — {{ tk.colony }}</div>
                             <div style="font-size:11px; color:{{ t.textMuted }}; margin-top:2px;">{{ tk.when }}</div>
                           </div>
+                          <sc-if value="{{ tk.done || tk.sk === 'done' }}">
+                            <div onClick="{{ tk.archive }}" style="padding:4px 8px; font-size:10px; font-weight:700; font-family:{{ t.font }}; color:{{ t.textMuted }}; background:{{ t.surfaceAlt }}; border:1px solid {{ t.border }}; border-radius:999px; cursor:pointer; flex-shrink:0;">完了</div>
+                          </sc-if>
                         </div>
                       </sc-for>
                     </div>
+                    <sc-if value="{{ archivedCount }}">
+                      <div onClick="{{ toggleShowArchived }}" style="margin-top:8px; text-align:center; font-size:12px; color:{{ t.textMuted }}; cursor:pointer; padding:6px;">
+                        {{ showArchived ? '▲ アーカイブを隠す' : '▼ アーカイブ済み ' + archivedCount + '件を表示' }}
+                      </div>
+                    </sc-if>
                   </div>
                   <!-- 最近の内検 -->
                   <div style="padding:0 16px;">
@@ -1173,7 +1201,21 @@
                     <div><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">作業種別</label><select value="{{ f.recType }}" onChange="{{ setRecType }}" style="width:100%; padding:14px 16px; font-size:15px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px; outline:none;"><option>給餌</option><option>内検</option><option>採蜜</option><option>治療</option></select></div>
                     <div><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">対象蜂群</label><select value="{{ f.recColony }}" onChange="{{ h.recColony }}" style="width:100%; padding:14px 16px; font-size:15px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px; outline:none;"><sc-for list="{{ coloniesOpts }}" as="col"><option>{{ col }}</option></sc-for></select></div>
                     <div><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">実施日時</label><div style="padding:14px 16px; font-size:15px; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px;">{{ taskDateLabel }}</div></div>
-                    <sc-if value="{{ recTypeIsHarvest }}"><div><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">🍯 採蜜量（kg）</label><input value="{{ recYieldKg }}" onInput="{{ h.recYieldKg }}" type="number" min="0" step="0.1" placeholder="0.0" style="width:100%; padding:14px 16px; font-size:15px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px; outline:none; box-sizing:border-box;" style-focus="border-color:{{ t.primary }};"></div></sc-if>
+                    <sc-if value="{{ recTypeIsHarvest }}">
+                      <div style="background:{{ t.chipBg }}; border:1.5px solid {{ t.primary }}; border-radius:14px; padding:14px 16px; display:flex; flex-direction:column; gap:12px;">
+                        <div style="font-size:12px; font-weight:700; color:{{ t.primary }};">🍯 採蜜詳細</div>
+                        <div style="display:flex; gap:10px;">
+                          <div style="flex:1;"><label style="display:block; font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:6px;">採蜜量（kg）</label><input value="{{ recYieldKg }}" onInput="{{ h.recYieldKg }}" type="number" min="0" step="0.1" placeholder="0.0" style="width:100%; padding:11px 12px; font-size:16px; font-weight:700; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:10px; outline:none; box-sizing:border-box;" style-focus="border-color:{{ t.primary }};"></div>
+                          <div style="flex:1;"><label style="display:block; font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:6px;">単価（円/kg）</label><input value="{{ recPricePerKg }}" onInput="{{ h.recPricePerKg }}" type="number" min="0" step="100" placeholder="2000" style="width:100%; padding:11px 12px; font-size:16px; font-weight:700; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:10px; outline:none; box-sizing:border-box;" style-focus="border-color:{{ t.primary }};"></div>
+                        </div>
+                        <sc-if value="{{ harvestRevenue }}">
+                          <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:{{ t.surface }}; border-radius:10px;">
+                            <span style="font-size:12px; color:{{ t.textMuted }}; font-weight:600;">概算収益</span>
+                            <span style="font-size:18px; font-weight:800; color:{{ t.primary }};">¥{{ harvestRevenue }}</span>
+                          </div>
+                        </sc-if>
+                      </div>
+                    </sc-if>
                     <div><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">メモ</label><textarea value="{{ f.recMemo }}" onInput="{{ h.recMemo }}" placeholder="砂糖水 2L 給餌" rows="2" style="width:100%; padding:14px 16px; font-size:15px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px; outline:none; resize:none;" style-focus="border-color:{{ t.primary }};"></textarea></div>
                     <div><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">写真</label><div style="display:flex; gap:8px;"><div style="width:74px; height:74px; border-radius:12px; border:1.5px dashed {{ t.border }}; display:flex; align-items:center; justify-content:center; font-size:24px; color:{{ t.textMuted }}; cursor:pointer;">＋</div><div style="width:74px; height:74px; border-radius:12px; background:radial-gradient(circle,#c79a4e,#6e4f23);"></div></div></div>
                   </div>
@@ -1499,6 +1541,10 @@ class Component extends DCLogic {
     isOffline: !navigator.onLine,
     colonyBadgeFilter: 'all',
     lastInspByColony: {},
+    archivedTaskIds: {},
+    showArchived: false,
+    toast: null,
+    isLoading: false,
   };
 
   COLONIES = ['A-01','A-02','A-03','A-04','A-05','A-06','A-07','A-08','A-09','A-10','A-11','A-12'];
@@ -1526,11 +1572,12 @@ class Component extends DCLogic {
   }
 
   async _initSession() {
+    this.setState({ isLoading: true });
     try {
       const db = window.HoneyDB;
-      if (!db) return;
+      if (!db) { this.setState({ isLoading: false }); return; }
       const session = await db.getSession();
-      if (!session) return;
+      if (!session) { this.setState({ isLoading: false }); return; }
       const profile = await db.getUserProfile();
       const [inspHistory, workHistory] = await Promise.all([
         db.loadInspRecords(),
@@ -1544,9 +1591,11 @@ class Component extends DCLogic {
         inspHistory,
         workHistory,
         lastInspByColony,
+        isLoading: false,
       });
       this._setupRealtime();
-    } catch(e) { /* session not available */ }
+      this._checkAndNotify(inspHistory);
+    } catch(e) { this.setState({ isLoading: false }); }
   }
 
   _buildLastInspByColony(inspHistory) {
@@ -1748,6 +1797,7 @@ class Component extends DCLogic {
       const lastInspByColony = this._buildLastInspByColony(inspHistory);
       this.setState({ loginError: '', userName: profile ? profile.name : email, userFarm: profile ? profile.farm_name : '', inspHistory, workHistory, lastInspByColony });
       this._setupRealtime();
+      this._checkAndNotify(inspHistory);
       this.tab('home');
     } catch(e) {
       const msg = e.message || '';
@@ -1956,9 +2006,16 @@ class Component extends DCLogic {
       frameMemo: this.f('frameMemo').trim(),
       aiMemo: this.f('aiMemo').trim(),
     };
-    try { await window.HoneyDB.saveInspRecord(record); } catch(e) { console.error('saveInspection:', e); }
-    const inspHistory = [{ id: now.getTime(), ...record }, ...s.inspHistory];
-    this.setState({ inspHistory });
+    try {
+      await window.HoneyDB.saveInspRecord(record);
+    } catch(e) {
+      this.showToast('保存に失敗しました: ' + (e.message || ''), 'error');
+    }
+    const newRec = { id: now.getTime(), ...record };
+    const inspHistory = [newRec, ...s.inspHistory];
+    const lastInspByColony = this._buildLastInspByColony(inspHistory);
+    this.setState({ inspHistory, lastInspByColony });
+    this.showToast(`${record.colony} の内検を記録しました ✓`, 'ok');
     this.tab('tasks');
   }
 
@@ -1997,13 +2054,20 @@ class Component extends DCLogic {
       memo: this.f('recMemo').trim(),
       yieldKg,
     };
-    try { await window.HoneyDB.saveWorkRecord(record); } catch(e) { console.error('saveWorkRecord:', e); }
+    try {
+      await window.HoneyDB.saveWorkRecord(record);
+    } catch(e) {
+      this.showToast('保存に失敗しました: ' + (e.message || ''), 'error');
+      return;
+    }
     const entry = { id: now.getTime(), ...record, detail: (record.colony ? record.colony + ' ' : '') + (record.memo || record.type) };
     this.setState(prev => ({
       workHistory: [entry, ...prev.workHistory],
       f: Object.assign({}, prev.f, { recType:'給餌', recColony:this.COLONIES[0], recMemo:'' }),
     }));
     delete this._fieldBuf['recYieldKg'];
+    const yieldMsg = yieldKg ? `採蜜量 ${yieldKg}kg を記録しました 🍯` : `作業記録を保存しました`;
+    this.showToast(yieldMsg, 'ok');
     this.nav('workHistory');
   }
 
@@ -2175,12 +2239,15 @@ class Component extends DCLogic {
       // ===== タスク完了チェック =====
       ...(() => {
         const TASK_ICONS = { '給餌':'🍼', '内検':'🔍', '採蜜':'🍯', '治療':'💊', '移動':'🚚', 'その他':'📋' };
-        const builtinTasks = this.TASKS.map(t2 => ({ ...t2, done: !!s.taskDoneMap[t2.id], toggle: () => this.toggleTaskDone(t2.id) }));
-        const userTasksMapped = s.userTasks.map(t2 => ({ ...t2, icon: TASK_ICONS[t2.type]||'📋', done: !!s.taskDoneMap[t2.id], toggle: () => this.toggleTaskDone(t2.id), sk: s.taskDoneMap[t2.id]?'done':'todo', status: s.taskDoneMap[t2.id]?'完了':'未着手', when: t2.date, scope: 'today' }));
-        const allTasks = [...userTasksMapped, ...builtinTasks];
+        const builtinTasks = this.TASKS.map(t2 => ({ ...t2, done: !!s.taskDoneMap[t2.id], toggle: () => this.toggleTaskDone(t2.id), archive: () => this.archiveTask(t2.id) }));
+        const userTasksMapped = s.userTasks.map(t2 => ({ ...t2, icon: TASK_ICONS[t2.type]||'📋', done: !!s.taskDoneMap[t2.id], toggle: () => this.toggleTaskDone(t2.id), archive: () => this.archiveTask(t2.id), sk: s.taskDoneMap[t2.id]?'done':'todo', status: s.taskDoneMap[t2.id]?'完了':'未着手', when: t2.date, scope: 'today' }));
+        const allTasksRaw = [...userTasksMapped, ...builtinTasks];
+        const showArchived = s.showArchived || false;
+        const allTasks = showArchived ? allTasksRaw : allTasksRaw.filter(t2 => !s.archivedTaskIds[t2.id]);
+        const archivedCount = allTasksRaw.filter(t2 => s.archivedTaskIds[t2.id]).length;
         const tasksDoneCount = allTasks.filter(t2 => t2.done || t2.sk==='done').length;
         const tasksTotalCount = allTasks.length;
-        return { allTasks, tasksDoneCount, tasksTotalCount };
+        return { allTasks, tasksDoneCount, tasksTotalCount, archivedCount, showArchived, toggleShowArchived: () => this.setState(st => ({ showArchived: !st.showArchived })) };
       })(),
       // ===== 作業履歴フィルター =====
       ...(() => {
@@ -2680,6 +2747,10 @@ class Component extends DCLogic {
       exportingJSON: s.exportingJSON || false,
       jsonImportSuccess: s.jsonImportSuccess || false,
       jsonImportError: s.jsonImportError || '',
+      // ===== トースト =====
+      toast: s.toast,
+      // ===== ローディング =====
+      isLoading: s.isLoading,
       // ===== オフライン =====
       isOffline: s.isOffline,
       // ===== バッジフィルタ =====
@@ -2698,6 +2769,13 @@ class Component extends DCLogic {
       setRecType: (e) => this.setState(st => ({ f: { ...st.f, recType: e.target.value } })),
       recTypeIsHarvest: s.f.recType === '採蜜',
       recYieldKg: this._fieldBuf['recYieldKg'] || '',
+      recPricePerKg: this._fieldBuf['recPricePerKg'] || '',
+      harvestRevenue: (() => {
+        const kg = parseFloat(this._fieldBuf['recYieldKg'] || '0');
+        const price = parseFloat(this._fieldBuf['recPricePerKg'] || '0');
+        if (!kg || !price) return null;
+        return (kg * price).toLocaleString('ja-JP');
+      })(),
       inspSummaryColony: s.inspColony,
       inspPreFill: (() => {
         const last = (s.lastInspByColony || {})[s.inspColony];
@@ -2895,6 +2973,45 @@ class Component extends DCLogic {
     const rows = [['日付','種別','蜂群','採蜜量(kg)','メモ']];
     allWork.forEach(w => rows.push([w.date||'', w.type||'', w.colony||'', w.yieldKg||'', (w.memo||w.detail||'').replace(/,/g,'、')]));
     this._downloadCSV('work_history.csv', rows);
+  }
+
+  // ===== トースト通知 =====
+  showToast(msg, type = 'info') {
+    this.setState({ toast: { msg, type, id: Date.now() } });
+    clearTimeout(this._toastTimer);
+    this._toastTimer = setTimeout(() => this.setState({ toast: null }), 3200);
+  }
+
+  // ===== プッシュ通知（21日未内検チェック） =====
+  _checkAndNotify(inspHistory) {
+    if (!('Notification' in window) || Notification.permission !== 'granted') return;
+    const lastMap = this._buildLastInspByColony(inspHistory);
+    const COLONIES = ['A-01','A-02','A-03','A-04','A-05','A-06','A-07','A-08','A-09','A-10','A-11','A-12'];
+    const overdue = COLONIES.filter(c => {
+      const last = lastMap[c];
+      if (!last) return true;
+      const days = (Date.now() - new Date(last.date || '').getTime()) / 86400000;
+      return days > 21;
+    });
+    if (overdue.length === 0) return;
+    const body = overdue.slice(0, 3).join('、') + (overdue.length > 3 ? ` ほか${overdue.length - 3}群` : '') + ' が21日以上未内検です';
+    try {
+      new Notification('HoneyOS 🐝 内検リマインダー', { body, icon: './icon-192.png', tag: 'insp-reminder' });
+    } catch(e) {}
+  }
+
+  // ===== タスクアーカイブ =====
+  archiveTask(id) {
+    this.setState(s => ({ archivedTaskIds: { ...s.archivedTaskIds, [id]: true } }));
+    this.showToast('タスクをアーカイブしました', 'ok');
+  }
+
+  unarchiveTask(id) {
+    this.setState(s => {
+      const m = { ...s.archivedTaskIds };
+      delete m[id];
+      return { archivedTaskIds: m };
+    });
   }
 
   _downloadCSV(filename, rows) {

@@ -1,4 +1,4 @@
-const CACHE = 'honeyos-v2';
+const CACHE = 'honeyos-v3';
 const PRECACHE = [
   '/HoneyOS/',
   '/HoneyOS/index.html',
@@ -21,6 +21,31 @@ self.addEventListener('activate', e => {
     caches.keys().then(keys =>
       Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
     ).then(() => self.clients.claim())
+  );
+});
+
+self.addEventListener('push', e => {
+  const data = e.data ? e.data.json() : {};
+  const title = data.title || 'HoneyOS 🐝';
+  const options = {
+    body: data.body || '',
+    icon: '/HoneyOS/icon-192.png',
+    badge: '/HoneyOS/icon-192.png',
+    tag: data.tag || 'honeyos',
+    data: { url: data.url || '/HoneyOS/' },
+  };
+  e.waitUntil(self.registration.showNotification(title, options));
+});
+
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  const url = (e.notification.data && e.notification.data.url) || '/HoneyOS/';
+  e.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
+      const existing = list.find(c => c.url.includes('/HoneyOS/'));
+      if (existing) return existing.focus();
+      return clients.openWindow(url);
+    })
   );
 });
 
