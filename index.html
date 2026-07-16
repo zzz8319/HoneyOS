@@ -242,10 +242,32 @@ if('serviceWorker' in navigator){
             <div style="font-size:26px; font-weight:800; color:{{ t.text }}; margin-bottom:30px;">ログイン</div>
             <div style="margin-bottom:18px;"><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">メールアドレス</label><input type="email" value="{{ f.loginEmail }}" onInput="{{ h.loginEmail }}" placeholder="you@example.com" style="width:100%; padding:14px 16px; font-size:16px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:14px; outline:none;" style-focus="border-color:{{ t.primary }};"></div>
             <div style="margin-bottom:10px;"><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">パスワード</label><input type="password" value="{{ f.loginPw }}" onInput="{{ h.loginPw }}" placeholder="••••••••" style="width:100%; padding:14px 16px; font-size:16px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:14px; outline:none;" style-focus="border-color:{{ t.primary }};"></div>
-            <div style="text-align:right; margin-bottom:18px;"><span style="font-size:13px; color:{{ t.primary }}; font-weight:600; cursor:pointer;">パスワードをお忘れですか？</span></div>
+            <div style="text-align:right; margin-bottom:18px;"><span onClick="{{ openPwReset }}" style="font-size:13px; color:{{ t.primary }}; font-weight:600; cursor:pointer;">パスワードをお忘れですか？</span></div>
             <sc-if value="{{ loginError }}"><div style="margin-bottom:14px; padding:12px 14px; background:{{ t.dangerBg }}; border-radius:10px; font-size:13px; color:{{ t.danger }}; font-weight:600;">{{ loginError }}</div></sc-if>
             <button onClick="{{ submitLogin }}" style="width:100%; padding:16px; font-size:16px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};" style-active="transform:translateY(1px);">ログイン</button>
             <div style="margin-top:auto; padding-top:30px; text-align:center; font-size:14px; color:{{ t.textMuted }};">アカウントをお持ちでない方は <span onClick="{{ goRegister }}" style="color:{{ t.primary }}; font-weight:700; cursor:pointer;">新規登録</span></div>
+          </div>
+        </sc-if>
+
+        <!-- パスワードリセットモーダル -->
+        <sc-if value="{{ showPwReset }}" hint-placeholder-val="{{ false }}">
+          <div style="position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:999; display:flex; align-items:center; justify-content:center; padding:24px;">
+            <div style="background:{{ t.surface }}; border-radius:20px; padding:28px 24px; width:100%; max-width:360px; box-shadow:0 20px 60px rgba(0,0,0,.3);">
+              <div style="font-size:18px; font-weight:800; color:{{ t.text }}; margin-bottom:6px;">パスワードをリセット</div>
+              <div style="font-size:13px; color:{{ t.textMuted }}; margin-bottom:20px; line-height:1.6;">登録済みのメールアドレスにリセット用リンクを送信します。</div>
+              <sc-if value="{{ !pwResetSent }}">
+                <input type="email" onInput="{{ hPwResetEmail }}" placeholder="your@email.com" style="width:100%; padding:13px 15px; font-size:15px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surfaceAlt }}; border:1.5px solid {{ t.border }}; border-radius:12px; outline:none; box-sizing:border-box; margin-bottom:14px;" style-focus="border-color:{{ t.primary }};">
+                <button onClick="{{ sendPasswordReset }}" style="width:100%; padding:14px; font-size:15px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:12px; cursor:pointer; margin-bottom:10px;">{{ pwResetLoading ? '送信中...' : 'リセットメールを送る' }}</button>
+              </sc-if>
+              <sc-if value="{{ pwResetSent }}">
+                <div style="text-align:center; padding:16px 0;">
+                  <div style="font-size:40px; margin-bottom:12px;">📧</div>
+                  <div style="font-size:14px; font-weight:700; color:{{ t.ok }};">送信しました！</div>
+                  <div style="font-size:13px; color:{{ t.textMuted }}; margin-top:6px; line-height:1.6;">メールを確認してリンクをタップしてください。</div>
+                </div>
+              </sc-if>
+              <button onClick="{{ closePwReset }}" style="width:100%; padding:12px; font-size:14px; font-weight:700; font-family:{{ t.font }}; color:{{ t.textMuted }}; background:transparent; border:1px solid {{ t.border }}; border-radius:12px; cursor:pointer; margin-top:4px;">閉じる</button>
+            </div>
           </div>
         </sc-if>
 
@@ -789,6 +811,19 @@ if('serviceWorker' in navigator){
                       </div>
                     </div>
                   </sc-if>
+                  <!-- 削除確認モーダル -->
+                  <sc-if value="{{ confirmDeleteId }}">
+                    <div style="position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:9999; display:flex; align-items:center; justify-content:center; padding:24px;">
+                      <div style="background:{{ t.surface }}; border-radius:20px; padding:24px; width:100%; max-width:320px; box-shadow:0 20px 60px rgba(0,0,0,.3);">
+                        <div style="font-size:17px; font-weight:800; color:{{ t.danger }}; margin-bottom:8px;">本当に削除しますか？</div>
+                        <div style="font-size:13px; color:{{ t.textMuted }}; margin-bottom:20px; line-height:1.6;">この操作は取り消せません。</div>
+                        <div style="display:flex; gap:8px;">
+                          <button onClick="{{ cancelDelete }}" style="flex:1; padding:13px; font-size:14px; font-weight:700; font-family:{{ t.font }}; color:{{ t.textMuted }}; background:{{ t.surfaceAlt }}; border:none; border-radius:10px; cursor:pointer;">キャンセル</button>
+                          <button onClick="{{ execDelete }}" style="flex:1; padding:13px; font-size:14px; font-weight:700; font-family:{{ t.font }}; color:#fff; background:{{ t.danger }}; border:none; border-radius:10px; cursor:pointer;">削除する</button>
+                        </div>
+                      </div>
+                    </div>
+                  </sc-if>
                   <!-- Structure settings -->
                   <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:14px; padding:12px 14px; margin-bottom:14px;">
                     <div style="font-size:12px; font-weight:700; color:{{ t.textMuted }}; margin-bottom:10px;">巣箱設定</div>
@@ -1209,7 +1244,7 @@ if('serviceWorker' in navigator){
                   <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px;">
                     <button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button>
                     <div><div style="font-size:18px; font-weight:800; color:{{ t.text }};">{{ detailColony }} 内検記録</div><div style="font-size:12px; color:{{ t.textMuted }}; margin-top:1px;">{{ detailDate }} ・ {{ detailWeather }}</div></div>
-                    <span style="margin-left:auto; font-size:12px; font-weight:700; color:{{ t.chipText }}; background:{{ t.chipBg }}; padding:4px 10px; border-radius:999px;">{{ detailModeLabel }}</span>
+                    <button onClick="{{ confirmDeleteInsp }}" style="margin-left:auto; padding:6px 12px; font-size:12px; font-weight:700; font-family:{{ t.font }}; color:{{ t.danger }}; background:{{ t.dangerBg }}; border:none; border-radius:999px; cursor:pointer;">🗑 削除</button>
                   </div>
                   <!-- 枠式詳細 -->
                   <sc-if value="{{ detailIsFrame }}">
@@ -1601,7 +1636,7 @@ if('serviceWorker' in navigator){
                         <div style="position:absolute; left:5px; top:6px; bottom:6px; width:2px; background:{{ t.border }};"></div>
                         <div style="display:flex; flex-direction:column; gap:10px;">
                           <sc-for list="{{ mg.items }}" as="w">
-                            <div style="position:relative;"><span style="position:absolute; left:-22px; top:4px; width:12px; height:12px; border-radius:50%; background:{{ t.primary }}; border:2px solid {{ t.bg }};"></span><div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:14px; padding:12px 14px;"><div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;"><span style="font-size:14px; font-weight:700; color:{{ t.text }};">{{ w.icon }} {{ w.type }}</span><span style="font-size:11px; color:{{ t.textMuted }};">{{ w.date }}</span></div><div style="font-size:13px; color:{{ t.textMuted }};">{{ w.detail }}</div></div></div>
+                            <div style="position:relative;"><span style="position:absolute; left:-22px; top:4px; width:12px; height:12px; border-radius:50%; background:{{ t.primary }}; border:2px solid {{ t.bg }};"></span><div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:14px; padding:12px 14px;"><div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;"><span style="font-size:14px; font-weight:700; color:{{ t.text }};">{{ w.icon }} {{ w.type }}</span><div style="display:flex; align-items:center; gap:8px;"><span style="font-size:11px; color:{{ t.textMuted }};">{{ w.date }}</span><button onClick="{{ w.confirmDelete }}" style="padding:3px 8px; font-size:10px; font-weight:700; font-family:{{ t.font }}; color:{{ t.danger }}; background:{{ t.dangerBg }}; border:none; border-radius:999px; cursor:pointer;">削除</button></div></div><div style="font-size:13px; color:{{ t.textMuted }};">{{ w.detail }}</div></div></div>
                           </sc-for>
                         </div>
                       </div>
@@ -1746,15 +1781,13 @@ if('serviceWorker' in navigator){
                       <div style="padding:15px 16px; border-bottom:1px solid {{ t.border }};"><div style="font-size:12px; color:{{ t.textMuted }}; margin-bottom:3px;">メールアドレス</div><div style="font-size:14px; color:{{ t.text }};">（メール確認は認証画面で確認可能）</div></div>
                       <div style="padding:15px 16px;"><div style="font-size:12px; color:{{ t.textMuted }}; margin-bottom:3px;">パスワード</div><div style="font-size:14px; color:{{ t.text }};">••••••••</div></div>
                     </div>
-                    <div style="display:flex; flex-direction:column; align-items:center; gap:10px; padding:24px; background:{{ t.chipBg }}; border-radius:{{ t.radius }}px; text-align:center;">
-                      <div style="font-size:13px; color:{{ t.textMuted }}; line-height:1.7;">パスワード変更・メール変更は<br>今後のアップデートで対応予定です。</div>
-                    </div>
+                    <button onClick="{{ openPwResetInApp }}" style="width:100%; padding:13px; font-size:14px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primary }}; background:{{ t.chipBg }}; border:1.5px solid {{ t.primary }}; border-radius:12px; cursor:pointer;">🔑 パスワードリセットメールを送る</button>
                   </sc-if>
                   <!-- 通知設定 -->
                   <sc-if value="{{ settingDetailKey === 'notif' }}">
                     <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; margin-bottom:14px; display:flex; flex-direction:column; gap:14px;">
                       <div style="font-size:14px; color:{{ t.text }}; line-height:1.7;">内検推奨日・タスク期限をデバイスのプッシュ通知で受け取れます。</div>
-                      <button onClick="{{ requestNotifPermission }}" style="padding:13px; font-size:14px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:12px; cursor:pointer;">🔔 通知を有効にする</button>
+                      <button onClick="{{ registerPushSubscription }}" style="padding:13px; font-size:14px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:12px; cursor:pointer;">🔔 通知を有効にする</button>
                       <div style="font-size:12px; color:{{ notifStatusColor }}; font-weight:700; text-align:center;">{{ notifStatusLabel }}</div>
                     </div>
                     <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; overflow:hidden;">
@@ -1808,7 +1841,8 @@ if('serviceWorker' in navigator){
                   <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; margin-bottom:14px;">
                     <div style="font-size:13px; font-weight:700; color:{{ t.text }}; margin-bottom:14px;">蜂群別収量ランキング</div>
                     <div style="display:flex; flex-direction:column; gap:12px;">
-                      <sc-for list="{{ reportColonyYield }}" as="cy" hint-placeholder-count="3">
+                      <sc-if value="{{ !reportHasReal }}"><div style="font-size:13px; color:{{ t.textMuted }}; text-align:center; padding:12px 0;">採蜜記録がありません</div></sc-if>
+                      <sc-for list="{{ reportColonyYield }}" as="cy" hint-placeholder-count="0">
                         <div><div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:5px;"><span style="color:{{ t.text }}; font-weight:600;">{{ cy.colony }}</span><span style="color:{{ t.textMuted }};">{{ cy.kg }}kg</span></div><div style="height:9px; border-radius:99px; background:{{ t.surfaceAlt }}; overflow:hidden;"><div style="height:100%; width:{{ cy.pct }}%; background:{{ t.primary }}; border-radius:99px;"></div></div></div>
                       </sc-for>
                     </div>
@@ -1890,6 +1924,52 @@ if('serviceWorker' in navigator){
                       <div style="background:{{ t.surfaceAlt }}; border-radius:10px; padding:20px; text-align:center;">
                         <div style="font-size:28px; margin-bottom:6px;">🗺️</div>
                         <div style="font-size:12px; color:{{ t.textMuted }};">位置が未設定です</div>
+                      </div>
+                    </sc-if>
+                  </div>
+                  <!-- 蜂群管理 -->
+                  <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; margin-bottom:16px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                      <div style="font-size:13px; font-weight:700; color:{{ t.text }};">🐝 蜂群管理</div>
+                      <button onClick="{{ toggleColonyEditMode }}" style="padding:5px 12px; font-size:12px; font-weight:700; font-family:{{ t.font }}; color:{{ colonyEditMode ? t.danger : t.primary }}; background:{{ colonyEditMode ? t.dangerBg : t.chipBg }}; border:none; border-radius:999px; cursor:pointer;">{{ colonyEditMode ? '完了' : '編集' }}</button>
+                    </div>
+                    <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px;">
+                      <sc-for list="{{ coloniesManage }}" as="cm">
+                        <div style="display:flex; align-items:center; gap:4px; padding:5px 10px; background:{{ t.surfaceAlt }}; border:1px solid {{ t.border }}; border-radius:999px; font-size:13px; color:{{ t.text }};">
+                          <span>{{ cm.id }}</span>
+                          <sc-if value="{{ colonyEditMode }}">
+                            <span onClick="{{ cm.del }}" style="margin-left:2px; color:{{ t.danger }}; font-weight:700; cursor:pointer; font-size:14px; line-height:1;">×</span>
+                          </sc-if>
+                        </div>
+                      </sc-for>
+                    </div>
+                    <sc-if value="{{ colonyEditMode }}">
+                      <div style="display:flex; gap:8px;">
+                        <input type="text" value="{{ newColonyId }}" onInput="{{ hNewColonyId }}" placeholder="例: B-01" style="flex:1; padding:9px 12px; font-size:14px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surfaceAlt }}; border:1.5px solid {{ t.border }}; border-radius:10px; outline:none;" style-focus="border-color:{{ t.primary }};">
+                        <button onClick="{{ addColony }}" style="padding:9px 16px; font-size:13px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:10px; cursor:pointer;">追加</button>
+                      </div>
+                    </sc-if>
+                  </div>
+                  <!-- 養蜂場DB管理 -->
+                  <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; margin-bottom:16px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                      <div style="font-size:13px; font-weight:700; color:{{ t.text }};">🏡 養蜂場リスト</div>
+                      <button onClick="{{ openFarmForm }}" style="padding:5px 12px; font-size:12px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primary }}; background:{{ t.chipBg }}; border:none; border-radius:999px; cursor:pointer;">＋ 追加</button>
+                    </div>
+                    <sc-if value="{{ farmsEmpty }}">
+                      <div style="font-size:12px; color:{{ t.textMuted }}; padding:8px 0;">養蜂場が登録されていません</div>
+                    </sc-if>
+                    <sc-for list="{{ farmsManage }}" as="fm">
+                      <div style="display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid {{ t.border }};">
+                        <span style="flex:1; font-size:14px; color:{{ t.text }};">{{ fm.name }}</span>
+                        <button onClick="{{ fm.del }}" style="padding:4px 10px; font-size:12px; font-weight:700; font-family:{{ t.font }}; color:{{ t.danger }}; background:{{ t.dangerBg }}; border:none; border-radius:8px; cursor:pointer;">削除</button>
+                      </div>
+                    </sc-for>
+                    <sc-if value="{{ showFarmForm }}">
+                      <div style="margin-top:10px; display:flex; gap:8px;">
+                        <input type="text" value="{{ farmEditName }}" onInput="{{ hFarmEditName }}" placeholder="養蜂場名を入力" style="flex:1; padding:9px 12px; font-size:14px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surfaceAlt }}; border:1.5px solid {{ t.border }}; border-radius:10px; outline:none;" style-focus="border-color:{{ t.primary }};">
+                        <button onClick="{{ saveFarm }}" style="padding:9px 16px; font-size:13px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:10px; cursor:pointer;">保存</button>
+                        <button onClick="{{ closeFarmForm }}" style="padding:9px 12px; font-size:13px; font-weight:700; font-family:{{ t.font }}; color:{{ t.textMuted }}; background:{{ t.surfaceAlt }}; border:1px solid {{ t.border }}; border-radius:10px; cursor:pointer;">×</button>
                       </div>
                     </sc-if>
                   </div>
@@ -2078,9 +2158,24 @@ class Component extends DCLogic {
     colonyMemoEditId: null,
     summaryMode: localStorage.getItem('honeyos_summaryMode') || 'card',
     summaryFilter: 'all',
+    colonies: JSON.parse(localStorage.getItem('honeyos_colonies') || 'null') || ['A-01','A-02','A-03','A-04','A-05','A-06','A-07','A-08','A-09','A-10','A-11','A-12'],
+    coloniesLoaded: false,
+    colonyEditMode: false,
+    newColonyId: '',
+    farms: [],
+    farmsLoaded: false,
+    farmEditName: '',
+    farmEditId: null,
+    showFarmForm: false,
+    pwResetEmail: '',
+    pwResetSent: false,
+    pwResetLoading: false,
+    showPwReset: false,
+    confirmDeleteId: null,
+    confirmDeleteKind: null,
   };
 
-  COLONIES = ['A-01','A-02','A-03','A-04','A-05','A-06','A-07','A-08','A-09','A-10','A-11','A-12'];
+  get COLONIES() { return this.state.colonies || ['A-01','A-02','A-03','A-04','A-05','A-06','A-07','A-08','A-09','A-10','A-11','A-12']; }
 
   constructor() {
     super();
@@ -2194,8 +2289,8 @@ class Component extends DCLogic {
     const next = this.COLONIES.find(c => !taken.has(c)) || '';
     this.setState({ cloneColonyFrom: fromId, cloneColonyTo: next });
   }
-  confirmCloneColony() {
-    const { cloneColonyFrom, cloneColonyTo, colonyMemos, colonyTags, lastInspByColony } = this.state;
+  async confirmCloneColony() {
+    const { cloneColonyFrom, cloneColonyTo, colonyMemos, colonyTags, inspHistory } = this.state;
     if (!cloneColonyTo) { this.showToast('コピー先IDを入力してください', 'error'); return; }
     const newMemos = { ...colonyMemos };
     if (colonyMemos[cloneColonyFrom]) newMemos[cloneColonyTo] = colonyMemos[cloneColonyFrom] + '\n（' + cloneColonyFrom + ' からコピー）';
@@ -2205,6 +2300,23 @@ class Component extends DCLogic {
       localStorage.setItem('honeyos_colonyMemos', JSON.stringify(newMemos));
       localStorage.setItem('honeyos_colonyTags', JSON.stringify(newTags));
     } catch(e) {}
+    // コピー先を蜂群リストに追加
+    if (!this.state.colonies.includes(cloneColonyTo)) {
+      const newColonies = [...this.state.colonies, cloneColonyTo];
+      this.setState({ colonies: newColonies });
+      try { localStorage.setItem('honeyos_colonies', JSON.stringify(newColonies)); } catch(e) {}
+      window.HoneyDB.saveColony(cloneColonyTo, cloneColonyTo, newColonies.length - 1).catch(() => {});
+    }
+    // 最新内検記録をDBにコピー保存
+    const srcRec = inspHistory.find(r => r.colony === cloneColonyFrom);
+    if (srcRec) {
+      const cloned = { ...srcRec, colony: cloneColonyTo };
+      delete cloned.id;
+      window.HoneyDB.saveInspRecord(cloned).catch(() => {});
+      const newRec = { ...cloned, id: Date.now() };
+      const newHistory = [newRec, ...inspHistory];
+      this.setState({ inspHistory: newHistory, lastInspByColony: this._buildLastInspByColony(newHistory) });
+    }
     this.setState({ colonyMemos: newMemos, colonyTags: newTags, cloneColonyFrom: null });
     this.showToast(`${cloneColonyFrom} → ${cloneColonyTo} にコピーしました`, 'ok');
     this._logActivity('clone', `${cloneColonyFrom} → ${cloneColonyTo} 蜂群クローン`);
@@ -2358,6 +2470,108 @@ class Component extends DCLogic {
     return { score, label, color };
   }
 
+  // ===== 蜂群管理 =====
+  async addColony() {
+    const id = (this._fieldBuf['newColonyId'] || this.state.newColonyId || '').trim().toUpperCase();
+    if (!id) { this.showToast('蜂群IDを入力してください', 'error'); return; }
+    if (this.state.colonies.includes(id)) { this.showToast('すでに存在するIDです', 'error'); return; }
+    const newColonies = [...this.state.colonies, id];
+    this._fieldBuf['newColonyId'] = '';
+    this.setState({ colonies: newColonies, newColonyId: '' });
+    try { localStorage.setItem('honeyos_colonies', JSON.stringify(newColonies)); } catch(e) {}
+    try { await window.HoneyDB.saveColony(id, id, newColonies.length - 1); } catch(e) {}
+    this.showToast(`${id} を追加しました`, 'ok');
+  }
+
+  async deleteColony(id) {
+    const newColonies = this.state.colonies.filter(c => c !== id);
+    this.setState({ colonies: newColonies });
+    try { localStorage.setItem('honeyos_colonies', JSON.stringify(newColonies)); } catch(e) {}
+    try { await window.HoneyDB.deleteColony(id); } catch(e) {}
+    this.showToast(`${id} を削除しました`, 'ok');
+  }
+
+  // ===== 内検・作業記録削除 =====
+  async deleteInspRecord(id) {
+    this.setState({ confirmDeleteId: null, confirmDeleteKind: null });
+    try { await window.HoneyDB.deleteInspRecord(id); } catch(e) { this.showToast('削除に失敗しました', 'error'); return; }
+    const inspHistory = this.state.inspHistory.filter(r => r.id !== id);
+    this.setState({ inspHistory, lastInspByColony: this._buildLastInspByColony(inspHistory) });
+    this.showToast('内検記録を削除しました', 'ok');
+    this.back();
+  }
+
+  async deleteWorkRecord(id) {
+    this.setState({ confirmDeleteId: null, confirmDeleteKind: null });
+    try { await window.HoneyDB.deleteWorkRecord(id); } catch(e) { this.showToast('削除に失敗しました', 'error'); return; }
+    this.setState(s => ({ workHistory: s.workHistory.filter(r => r.id !== id) }));
+    this.showToast('作業記録を削除しました', 'ok');
+  }
+
+  async execDelete() {
+    const id = this.state.confirmDeleteId;
+    const kind = this.state.confirmDeleteKind;
+    if (id == null) return;
+    if (kind === 'insp') { await this.deleteInspRecord(id); }
+    else if (kind === 'work') { await this.deleteWorkRecord(id); }
+  }
+
+  // ===== パスワードリセット =====
+  async sendPasswordReset() {
+    const email = (this.state.pwResetEmail || this._fieldBuf['pwResetEmail'] || '').trim();
+    if (!email) { this.showToast('メールアドレスを入力してください', 'error'); return; }
+    this.setState({ pwResetLoading: true });
+    try {
+      await window.HoneyDB.resetPassword(email);
+      this.setState({ pwResetSent: true, pwResetLoading: false });
+    } catch(e) {
+      this.setState({ pwResetLoading: false });
+      this.showToast('送信に失敗しました: ' + (e.message || ''), 'error');
+    }
+  }
+
+  // ===== 養蜂場管理 =====
+  async saveFarm() {
+    const name = (this._fieldBuf['hFarmEditName'] || '').trim();
+    if (!name) { this.showToast('養蜂場名を入力してください', 'error'); return; }
+    try {
+      await window.HoneyDB.saveFarm(name, this.state.farmEditId || undefined);
+      const farms = await window.HoneyDB.loadFarms();
+      this._fieldBuf['hFarmEditName'] = '';
+      this.setState({ farms, showFarmForm: false, farmEditId: null });
+      this.showToast('養蜂場を保存しました', 'ok');
+    } catch(e) { this.showToast('保存に失敗しました', 'error'); }
+  }
+
+  async deleteFarm(id) {
+    try {
+      await window.HoneyDB.deleteFarm(id);
+      const farms = await window.HoneyDB.loadFarms();
+      this.setState({ farms });
+      this.showToast('養蜂場を削除しました', 'ok');
+    } catch(e) { this.showToast('削除に失敗しました', 'error'); }
+  }
+
+  // ===== Push通知購読 =====
+  async registerPushSubscription() {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+      this.showToast('このブラウザはプッシュ通知に対応していません', 'error'); return;
+    }
+    const perm = await Notification.requestPermission();
+    this.setState({ notifPermission: perm });
+    if (perm !== 'granted') { this.showToast('通知がブロックされています', 'error'); return; }
+    try {
+      const reg = await navigator.serviceWorker.ready;
+      const existing = await reg.pushManager.getSubscription();
+      const sub = existing || await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: null,
+      });
+      if (sub) { await window.HoneyDB.savePushSubscription(sub).catch(() => {}); }
+      this.showToast('プッシュ通知を有効にしました 🔔', 'ok');
+    } catch(e) { this.showToast('通知の設定に失敗しました', 'error'); }
+  }
+
   // ===== 入力バリデーション =====
   _validateWorkRecord(type, yieldKgRaw) {
     if (type === '採蜜') {
@@ -2395,11 +2609,17 @@ class Component extends DCLogic {
       const session = await db.getSession();
       if (!session) { this.setState({ isLoading: false }); return; }
       const profile = await db.getUserProfile();
-      const [inspHistory, workHistory] = await Promise.all([
+      const [inspHistory, workHistory, coloniesData, farmsData] = await Promise.all([
         db.loadInspRecords(),
         db.loadWorkRecords(),
+        db.loadColonies().catch(() => []),
+        db.loadFarms().catch(() => []),
       ]);
       const lastInspByColony = this._buildLastInspByColony(inspHistory);
+      const defaultColonies = Array.from({length:12},(_,i)=>'A-'+String(i+1).padStart(2,'0'));
+      if (coloniesData.length === 0) { db.initDefaultColonies(defaultColonies).catch(()=>{}); }
+      const colonies = coloniesData.length > 0 ? coloniesData.map(c => c.id) : defaultColonies;
+      try { localStorage.setItem('honeyos_colonies', JSON.stringify(colonies)); } catch(e) {}
       this.setState({
         screen: 'app',
         userName: profile ? profile.name : session.user.email,
@@ -2407,6 +2627,9 @@ class Component extends DCLogic {
         inspHistory,
         workHistory,
         lastInspByColony,
+        colonies,
+        coloniesLoaded: true,
+        farms: farmsData,
         isLoading: false,
       });
       this._setupRealtime();
@@ -2606,12 +2829,18 @@ class Component extends DCLogic {
     try {
       const data = await window.HoneyDB.signIn(email, pw);
       const profile = await window.HoneyDB.getUserProfile();
-      const [inspHistory, workHistory] = await Promise.all([
+      const [inspHistory, workHistory, coloniesData, farmsData] = await Promise.all([
         window.HoneyDB.loadInspRecords(),
         window.HoneyDB.loadWorkRecords(),
+        window.HoneyDB.loadColonies().catch(() => []),
+        window.HoneyDB.loadFarms().catch(() => []),
       ]);
       const lastInspByColony = this._buildLastInspByColony(inspHistory);
-      this.setState({ loginError: '', userName: profile ? profile.name : email, userFarm: profile ? profile.farm_name : '', inspHistory, workHistory, lastInspByColony });
+      const defaultColonies = Array.from({length:12},(_,i)=>'A-'+String(i+1).padStart(2,'0'));
+      if (coloniesData.length === 0) { window.HoneyDB.initDefaultColonies(defaultColonies).catch(()=>{}); }
+      const colonies = coloniesData.length > 0 ? coloniesData.map(c => c.id) : defaultColonies;
+      try { localStorage.setItem('honeyos_colonies', JSON.stringify(colonies)); } catch(e) {}
+      this.setState({ loginError: '', userName: profile ? profile.name : email, userFarm: profile ? profile.farm_name : '', inspHistory, workHistory, lastInspByColony, colonies, coloniesLoaded: true, farms: farmsData });
       this._setupRealtime();
       this._checkAndNotify(inspHistory);
       this.tab('home');
@@ -3003,26 +3232,28 @@ class Component extends DCLogic {
     const gl=this.linePath(gd.data,300,150,12,false); const ga=this.linePath(gd.data,300,150,12,true);
 
     // report trend + real harvest data
-    const rt=this.linePath([72,75,78,80,82,84,86],300,110,12,false); const rta=this.linePath([72,75,78,80,82,84,86],300,110,12,true);
+    // Health score trend from real insp data
+    const healthTrendData = (() => { const weeks = {}; (s.inspHistory||[]).forEach(r => { const score = this._calcHealthScore(r.colony, s.inspHistory).score; const w = (r.date||'').slice(0,7); weeks[w] = weeks[w] ? (weeks[w]+score)/2 : score; }); const ks = Object.keys(weeks).sort(); return ks.length >= 2 ? ks.map(k => weeks[k]) : []; })();
+    const rt=this.linePath(healthTrendData.length ? healthTrendData : [0,0],300,110,12,false); const rta=this.linePath(healthTrendData.length ? healthTrendData : [0,0],300,110,12,true);
     const maxKg=Math.max(...this.REPORT_FARMS.map(r=>r.kg));
     const reportFarms=this.REPORT_FARMS.map(r=>({ ...r, pct:Math.round(r.kg/maxKg*100) }));
     // Real harvest aggregation from workHistory
     const harvestRecs = s.workHistory.filter(w => w.type === '採蜜' && w.yieldKg);
     const realTotalYieldKg = harvestRecs.reduce((sum, w) => sum + (parseFloat(w.yieldKg)||0), 0);
-    const reportTotalYield = realTotalYieldKg > 0 ? realTotalYieldKg.toFixed(1) : 458;
+    const reportTotalYield = realTotalYieldKg > 0 ? realTotalYieldKg.toFixed(1) : '0';
     const reportHasReal = realTotalYieldKg > 0;
     // Monthly harvest for sparkline
     const harvestByMonth = {};
     harvestRecs.forEach(w => { const m = (w.date||'').slice(0,7); harvestByMonth[m] = (harvestByMonth[m]||0) + (parseFloat(w.yieldKg)||0); });
     const harvestMonths = Object.keys(harvestByMonth).sort();
-    const harvestSparkData = harvestMonths.length >= 2 ? harvestMonths.map(m => harvestByMonth[m]) : [30,45,62,80,95,115,128];
-    const hs = this.linePath(harvestSparkData, 300, 110, 12, false);
-    const hsa = this.linePath(harvestSparkData, 300, 110, 12, true);
+    const harvestSparkData = harvestMonths.length >= 2 ? harvestMonths.map(m => harvestByMonth[m]) : [];
+    const hs = this.linePath(harvestSparkData.length ? harvestSparkData : [0,0], 300, 110, 12, false);
+    const hsa = this.linePath(harvestSparkData.length ? harvestSparkData : [0,0], 300, 110, 12, true);
     // Colony yield ranking
     const colonyYield = {};
     harvestRecs.forEach(w => { if(w.colony) colonyYield[w.colony] = (colonyYield[w.colony]||0) + (parseFloat(w.yieldKg)||0); });
     const colonyYieldRank = Object.entries(colonyYield).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([col,kg])=>({ colony:col, kg:kg.toFixed(1), pct:Math.round(kg/realTotalYieldKg*100||0) }));
-    const reportColonyYield = colonyYieldRank.length ? colonyYieldRank : [{ colony:'A-01', kg:'45.2', pct:40 },{ colony:'A-05', kg:'38.8', pct:33 },{ colony:'A-09', kg:'28.5', pct:25 }];
+    const reportColonyYield = colonyYieldRank;
 
     // tasks filtered
     const skMap = { todo:{c:t.warn,b:t.warnBg}, done:{c:t.ok,b:t.chipBg}, plan:{c:t.textMuted,b:t.surfaceAlt} };
@@ -4032,7 +4263,10 @@ class Component extends DCLogic {
         };
       }),
       inspHistoryEmpty: s.inspHistory.length === 0,
-      workHistoryItems: s.workHistory,
+      workHistoryItems: s.workHistory.map(w => ({
+        ...w,
+        confirmDelete: () => this.setState({ confirmDeleteId: w.id, confirmDeleteKind: 'work' }),
+      })),
       workHistoryEmpty: s.workHistory.length === 0,
       // dashboard live stats
       todayLabel: (() => { const d = new Date(); const days = ['日','月','火','水','木','金','土']; return d.getFullYear() + '年' + (d.getMonth()+1) + '月' + d.getDate() + '日（' + days[d.getDay()] + '）'; })(),
@@ -4087,6 +4321,46 @@ class Component extends DCLogic {
       jInspStart:()=>this.jump('inspStart'), jInspCapture:()=>this.jump('inspCapture'), jInspFrame:()=>this.jump('inspFrame'), jInspAI:()=>this.jump('inspAI'), jInspSummary:()=>this.jump('inspSummary'), jInspHistory:()=>this.jump('inspHistory'),
       jSensor:()=>this.jump('sensor'), jWeight:()=>this.jumpGraph('weight'), jTemp:()=>this.jumpGraph('temp'), jHumid:()=>this.jumpGraph('humid'), jCamera:()=>this.jump('camera'), jAiDiagnosis:()=>this.jump('aiDiagnosis'), jAiRecommend:()=>this.jump('aiRecommend'),
       jTasks:()=>this.jump('tasks'), jTaskCreate:()=>this.jump('taskCreate'), jWorkRecord:()=>this.jump('workRecord'), jWorkHistory:()=>this.jump('workHistory'), jReport:()=>this.jump('report'),
+      // ===== 蜂群管理 =====
+      colonyEditMode: s.colonyEditMode || false,
+      newColonyId: this._fieldBuf['newColonyId'] || '',
+      hNewColonyId: (e) => { this._fieldBuf['newColonyId'] = e.target.value; this.setState({}); },
+      toggleColonyEditMode: () => this.setState(st => ({ colonyEditMode: !st.colonyEditMode })),
+      addColony: () => this.addColony(),
+      coloniesManage: this.COLONIES.map(id => ({
+        id,
+        del: () => this.deleteColony(id),
+      })),
+      // ===== 養蜂場DB管理 =====
+      farmsManage: (s.farms || []).map(f => ({
+        id: f.id,
+        name: f.name,
+        del: () => this.deleteFarm(f.id),
+      })),
+      farmsEmpty: !(s.farms && s.farms.length),
+      showFarmForm: s.showFarmForm || false,
+      farmEditName: this._fieldBuf['hFarmEditName'] || '',
+      hFarmEditName: (e) => { this._fieldBuf['hFarmEditName'] = e.target.value; this.setState({}); },
+      openFarmForm: () => { this._fieldBuf['hFarmEditName'] = ''; this.setState({ showFarmForm: true, farmEditId: null }); },
+      closeFarmForm: () => this.setState({ showFarmForm: false }),
+      saveFarm: () => this.saveFarm(),
+      deleteFarm: (id) => this.deleteFarm(id),
+      // ===== パスワードリセット（設定内） =====
+      openPwResetInApp: () => this.setState({ showPwReset: true, pwResetSent: false }),
+      openPwReset: () => this.setState({ showPwReset: true, pwResetSent: false }),
+      closePwReset: () => this.setState({ showPwReset: false }),
+      pwResetSent: s.pwResetSent || false,
+      pwResetLoading: s.pwResetLoading || false,
+      showPwReset: s.showPwReset || false,
+      hPwResetEmail: (e) => this.setState({ pwResetEmail: e.target.value }),
+      sendPasswordReset: () => this.sendPasswordReset(),
+      // ===== 削除確認モーダル =====
+      confirmDeleteId: s.confirmDeleteId,
+      confirmDeleteInsp: () => { const id = (s.inspDetail || {}).id; if (id != null) this.setState({ confirmDeleteId: id, confirmDeleteKind: 'insp' }); },
+      cancelDelete: () => this.setState({ confirmDeleteId: null, confirmDeleteKind: null }),
+      execDelete: () => this.execDelete(),
+      // ===== Push通知 =====
+      registerPushSubscription: () => this.registerPushSubscription(),
     };
   }
   navGraph(kind) { this.setState(s=>({ screen:'app', graphKind:kind, view:kind, hist:[...s.hist, s.view], anim:'scrIn' })); }

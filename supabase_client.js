@@ -193,6 +193,105 @@
   }
 
   // ==================
+  // 蜂群管理
+  // ==================
+  async function loadColonies() {
+    const { data, error } = await sb
+      .from('colonies')
+      .select('*')
+      .order('sort_order', { ascending: true });
+    if (error) throw error;
+    return (data || []).map(r => ({ id: r.id, name: r.name, sortOrder: r.sort_order }));
+  }
+
+  async function saveColony(id, name, sortOrder) {
+    const session = await getSession();
+    if (!session) throw new Error('ログインが必要です');
+    const { error } = await sb.from('colonies').upsert({
+      id,
+      user_id: session.user.id,
+      name: name || id,
+      sort_order: sortOrder || 0,
+    }, { onConflict: 'id,user_id' });
+    if (error) throw error;
+  }
+
+  async function deleteColony(id) {
+    const { error } = await sb.from('colonies').delete().eq('id', id);
+    if (error) throw error;
+  }
+
+  async function initDefaultColonies(ids) {
+    const session = await getSession();
+    if (!session) return;
+    const existing = await loadColonies();
+    if (existing.length > 0) return;
+    for (let i = 0; i < ids.length; i++) {
+      await saveColony(ids[i], ids[i], i);
+    }
+  }
+
+  // ==================
+  // 養蜂場管理
+  // ==================
+  async function loadFarms() {
+    const { data, error } = await sb
+      .from('farms')
+      .select('*')
+      .order('sort_order', { ascending: true });
+    if (error) throw error;
+    return (data || []).map(r => ({ id: r.id, name: r.name, sortOrder: r.sort_order }));
+  }
+
+  async function saveFarm(name, id) {
+    const session = await getSession();
+    if (!session) throw new Error('ログインが必要です');
+    if (id) {
+      const { error } = await sb.from('farms').update({ name }).eq('id', id).eq('user_id', session.user.id);
+      if (error) throw error;
+    } else {
+      const { error } = await sb.from('farms').insert({ user_id: session.user.id, name });
+      if (error) throw error;
+    }
+  }
+
+  async function deleteFarm(id) {
+    const { error } = await sb.from('farms').delete().eq('id', id);
+    if (error) throw error;
+  }
+
+  // ==================
+  // パスワードリセット
+  // ==================
+  async function resetPassword(email) {
+    const { error } = await sb.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin + '/HoneyOS/',
+    });
+    if (error) throw error;
+  }
+
+  // ==================
+  // Push通知購読
+  // ==================
+  async function savePushSubscription(sub) {
+    const session = await getSession();
+    if (!session) throw new Error('ログインが必要です');
+    const keys = sub.toJSON ? sub.toJSON().keys : sub.keys;
+    const { error } = await sb.from('push_subscriptions').upsert({
+      user_id: session.user.id,
+      endpoint: sub.endpoint,
+      p256dh: keys.p256dh,
+      auth_key: keys.auth,
+    }, { onConflict: 'user_id,endpoint' });
+    if (error) throw error;
+  }
+
+  async function deletePushSubscription(endpoint) {
+    const { error } = await sb.from('push_subscriptions').delete().eq('endpoint', endpoint);
+    if (error) throw error;
+  }
+
+  // ==================
   // データエクスポート
   // ==================
   async function exportAllData() {
@@ -213,6 +312,16 @@
 
   // Expose API
   window.HoneyDB = {
+    resetPassword,
+    loadColonies,
+    saveColony,
+    deleteColony,
+    initDefaultColonies,
+    loadFarms,
+    saveFarm,
+    deleteFarm,
+    savePushSubscription,
+    deletePushSubscription,
     signUp,
     signIn,
     signOut,
