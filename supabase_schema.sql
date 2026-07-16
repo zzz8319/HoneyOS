@@ -5,16 +5,22 @@
 -- insp_records: 内検履歴
 -- =====================
 create table if not exists public.insp_records (
-  id         bigint generated always as identity primary key,
-  user_id    uuid references auth.users(id) on delete cascade not null,
-  colony     text not null,
-  date       text not null,
-  time       text not null,
-  weather    text not null default '晴れ',
-  frames     integer[] not null default '{}',
-  frame_memo text not null default '',
-  ai_memo    text not null default '',
-  created_at timestamptz not null default now()
+  id            bigint generated always as identity primary key,
+  user_id       uuid references auth.users(id) on delete cascade not null,
+  colony        text not null,
+  date          text not null,
+  time          text not null,
+  weather       text not null default '晴れ',
+  frames        integer[] not null default '{}',
+  count_mode    text not null default 'frame',
+  frame_details jsonb not null default '{}',
+  space_count   integer,
+  space_levels  jsonb not null default '{}',
+  queen_present boolean,
+  bees_total    integer,
+  frame_memo    text not null default '',
+  ai_memo       text not null default '',
+  created_at    timestamptz not null default now()
 );
 
 alter table public.insp_records enable row level security;
@@ -35,10 +41,13 @@ create policy "users delete own insp_records"
   on public.insp_records for delete
   using (auth.uid() = user_id);
 
--- Add frame detail columns (run if upgrading existing DB)
+-- Add columns (run if upgrading existing DB)
 alter table public.insp_records add column if not exists count_mode text not null default 'frame';
 alter table public.insp_records add column if not exists frame_details jsonb not null default '{}';
 alter table public.insp_records add column if not exists space_count integer;
+alter table public.insp_records add column if not exists space_levels jsonb not null default '{}';
+alter table public.insp_records add column if not exists queen_present boolean;
+alter table public.insp_records add column if not exists bees_total integer;
 
 -- =====================
 -- work_records: 作業履歴

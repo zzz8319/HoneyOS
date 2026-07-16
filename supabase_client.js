@@ -68,9 +68,15 @@
       date: r.date,
       time: r.time,
       weather: r.weather,
-      frames: r.frames,
-      frameMemo: r.frame_memo,
-      aiMemo: r.ai_memo,
+      frames: r.frames || [],
+      countMode: r.count_mode || 'frame',
+      frameDetails: r.frame_details || {},
+      spaceCount: r.space_count || 10,
+      spaceLevels: r.space_levels && Object.keys(r.space_levels).length ? r.space_levels : (r.frame_details && r.count_mode === 'space' ? r.frame_details : {}),
+      queenPresent: r.queen_present != null ? r.queen_present : null,
+      beesTotal: r.bees_total != null ? r.bees_total : null,
+      frameMemo: r.frame_memo || '',
+      aiMemo: r.ai_memo || '',
     }));
   }
 
@@ -83,13 +89,21 @@
       date: record.date,
       time: record.time,
       weather: record.weather,
-      frames: record.frames,
+      frames: record.frames || [],
       count_mode: record.countMode || 'frame',
-      frame_details: record.countMode === 'frame' ? (record.frameDetails || {}) : (record.spaceLevels || {}),
+      frame_details: record.frameDetails || {},
       space_count: record.spaceCount || null,
+      space_levels: record.spaceLevels || {},
+      queen_present: record.queenPresent != null ? record.queenPresent : null,
+      bees_total: record.beesTotal != null ? record.beesTotal : null,
       frame_memo: record.frameMemo || '',
       ai_memo: record.aiMemo || '',
     });
+    if (error) throw error;
+  }
+
+  async function deleteInspRecord(id) {
+    const { error } = await sb.from('insp_records').delete().eq('id', id);
     if (error) throw error;
   }
 
@@ -108,19 +122,10 @@
       colony: r.colony,
       date: r.date,
       time: r.time,
-      memo: r.memo,
+      memo: r.memo || '',
+      yieldKg: r.yield_kg != null ? r.yield_kg : null,
       detail: (r.colony ? r.colony + ' ' : '') + (r.memo || r.type),
     }));
-  }
-
-  async function updateProfile(name, farmName) {
-    const session = await getSession();
-    if (!session) throw new Error('ログインが必要です');
-    const { error } = await sb.from('profiles').update({
-      name,
-      farm_name: farmName,
-    }).eq('id', session.user.id);
-    if (error) throw error;
   }
 
   async function saveWorkRecord(record) {
@@ -133,8 +138,26 @@
       date: record.date,
       time: record.time,
       memo: record.memo || '',
-      yield_kg: record.yieldKg || null,
+      yield_kg: record.yieldKg != null ? record.yieldKg : null,
     });
+    if (error) throw error;
+  }
+
+  async function deleteWorkRecord(id) {
+    const { error } = await sb.from('work_records').delete().eq('id', id);
+    if (error) throw error;
+  }
+
+  // ==================
+  // プロファイル
+  // ==================
+  async function updateProfile(name, farmName) {
+    const session = await getSession();
+    if (!session) throw new Error('ログインが必要です');
+    const { error } = await sb.from('profiles').update({
+      name,
+      farm_name: farmName,
+    }).eq('id', session.user.id);
     if (error) throw error;
   }
 
@@ -170,7 +193,7 @@
   }
 
   // ==================
-  // Full data export
+  // データエクスポート
   // ==================
   async function exportAllData() {
     const session = await getSession();
@@ -198,8 +221,10 @@
     updateProfile,
     loadInspRecords,
     saveInspRecord,
+    deleteInspRecord,
     loadWorkRecords,
     saveWorkRecord,
+    deleteWorkRecord,
     subscribeRealtime,
     unsubscribeRealtime,
     exportAllData,
