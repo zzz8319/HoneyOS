@@ -102,6 +102,25 @@
     if (error) throw error;
   }
 
+  async function updateInspRecord(id, record) {
+    const { error } = await sb.from('insp_records').update({
+      colony: record.colony,
+      date: record.date,
+      time: record.time,
+      weather: record.weather,
+      frames: record.frames || [],
+      count_mode: record.countMode || 'frame',
+      frame_details: record.frameDetails || {},
+      space_count: record.spaceCount || null,
+      space_levels: record.spaceLevels || {},
+      queen_present: record.queenPresent != null ? record.queenPresent : null,
+      bees_total: record.beesTotal != null ? record.beesTotal : null,
+      frame_memo: record.frameMemo || '',
+      ai_memo: record.aiMemo || '',
+    }).eq('id', id);
+    if (error) throw error;
+  }
+
   async function deleteInspRecord(id) {
     const { error } = await sb.from('insp_records').delete().eq('id', id);
     if (error) throw error;
@@ -330,6 +349,7 @@
     updateProfile,
     loadInspRecords,
     saveInspRecord,
+    updateInspRecord,
     deleteInspRecord,
     loadWorkRecords,
     saveWorkRecord,
