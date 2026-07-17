@@ -1813,9 +1813,9 @@ if('serviceWorker' in navigator){
                   <div style="font-size:22px; font-weight:800; color:{{ t.text }}; margin-bottom:16px; padding:0 4px;">レポート</div>
                   <div style="display:flex; gap:6px; background:{{ t.surfaceAlt }}; border:1px solid {{ t.border }}; padding:5px; border-radius:12px; margin-bottom:16px;"><button onClick="{{ rMonth }}" style="{{ repSegMonth }}">月次</button><button onClick="{{ rWeek }}" style="{{ repSegWeek }}">週次</button><button onClick="{{ rYear }}" style="{{ repSegYear }}">年次</button></div>
                   <div style="display:flex; gap:10px; margin-bottom:14px;">
-                    <div style="flex:1; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:14px;"><div style="font-size:11px; color:{{ t.textMuted }};">{{ TR.totalYield }}</div><div style="margin-top:6px;"><span style="font-size:20px; font-weight:800; color:{{ t.text }};">{{ reportTotalYield }}</span><span style="font-size:11px; color:{{ t.textMuted }};">kg</span></div><sc-if value="{{ reportHasReal }}"><div style="font-size:11px; font-weight:700; color:{{ t.ok }};">実データ</div></sc-if><sc-if value="{{ !reportHasReal }}"><div style="font-size:11px; color:{{ t.textMuted }};">デモ</div></sc-if></div>
-                    <div style="flex:1; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:14px;"><div style="font-size:11px; color:{{ t.textMuted }};">{{ TR.revenue }}</div><div style="margin-top:6px;"><span style="font-size:20px; font-weight:800; color:{{ t.text }};">91</span><span style="font-size:11px; color:{{ t.textMuted }};">万</span></div><div style="font-size:11px; font-weight:700; color:{{ t.accent }};">+8%</div></div>
-                    <div style="flex:1; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:14px;"><div style="font-size:11px; color:{{ t.textMuted }};">{{ TR.cost }}</div><div style="margin-top:6px;"><span style="font-size:20px; font-weight:800; color:{{ t.text }};">23</span><span style="font-size:11px; color:{{ t.textMuted }};">万</span></div><div style="font-size:11px; color:{{ t.textMuted }};">前月同等</div></div>
+                    <div style="flex:1; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:14px;"><div style="font-size:11px; color:{{ t.textMuted }};">{{ TR.totalYield }}</div><div style="margin-top:6px;"><span style="font-size:20px; font-weight:800; color:{{ t.text }};">{{ reportTotalYield }}</span><span style="font-size:11px; color:{{ t.textMuted }};">kg</span></div><sc-if value="{{ reportHasReal }}"><div style="font-size:11px; font-weight:700; color:{{ t.ok }};">実データ</div></sc-if><sc-if value="{{ !reportHasReal }}"><div style="font-size:11px; color:{{ t.textMuted }};">記録なし</div></sc-if></div>
+                    <div style="flex:1; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:14px;"><div style="font-size:11px; color:{{ t.textMuted }};">採蜜回数</div><div style="margin-top:6px;"><span style="font-size:20px; font-weight:800; color:{{ t.text }};">{{ reportHarvestCount }}</span><span style="font-size:11px; color:{{ t.textMuted }};">回</span></div><sc-if value="{{ reportHasReal }}"><div style="font-size:11px; color:{{ t.ok }};">採蜜記録あり</div></sc-if><sc-if value="{{ !reportHasReal }}"><div style="font-size:11px; color:{{ t.textMuted }};">記録なし</div></sc-if></div>
+                    <div style="flex:1; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:14px;"><div style="font-size:11px; color:{{ t.textMuted }};">内検回数</div><div style="margin-top:6px;"><span style="font-size:20px; font-weight:800; color:{{ t.text }};">{{ reportInspCount }}</span><span style="font-size:11px; color:{{ t.textMuted }};">回</span></div><sc-if value="{{ reportInspCount }}"><div style="font-size:11px; color:{{ t.ok }};">内検記録あり</div></sc-if><sc-if value="{{ !reportInspCount }}"><div style="font-size:11px; color:{{ t.textMuted }};">記録なし</div></sc-if></div>
                   </div>
                   <!-- 年間採蜜目標 -->
                   <sc-if value="{{ harvestGoalProgress.hasGoal }}">
@@ -2668,13 +2668,7 @@ class Component extends DCLogic {
     { id:'f3', name:'第三養蜂場', colonies:4, yield:55, delta:'+4%', up:true },
   ];
   COLONY_STATUS = ['ok','ok','warn','ok','ok','ok','ok','danger','ok','ok','ok','ok'];
-  TASKS = [
-    { id:'t1', colony:'A-02', type:'給餌', icon:'🍼', when:'今日 09:00', status:'未着手', sk:'todo', scope:'today' },
-    { id:'t2', colony:'A-03', type:'内検', icon:'🔍', when:'今日 10:00', status:'未着手', sk:'todo', scope:'today' },
-    { id:'t3', colony:'A-05', type:'採蜜', icon:'🍯', when:'今日 13:00', status:'完了', sk:'done', scope:'today' },
-    { id:'t4', colony:'A-07', type:'内検', icon:'🔍', when:'明日 09:00', status:'予定', sk:'plan', scope:'week' },
-    { id:'t5', colony:'A-04', type:'治療', icon:'💊', when:'6/11 11:00', status:'予定', sk:'plan', scope:'week' },
-  ];
+  TASKS = [];
   AI_RESULTS = [
     { icon:'🍯', label:'封蓋率', value:'72%', conf:'高' }, { icon:'🟩', label:'育児域面積比', value:'58%', conf:'高' },
     { icon:'🌸', label:'花粉の有無', value:'あり', conf:'高' }, { icon:'🍯', label:'蜜域面積比', value:'21%', conf:'中' },
@@ -2687,13 +2681,8 @@ class Component extends DCLogic {
     { num:2, title:'箱の整備', tag:'分蜂に備えて事前に実施', urgency:'mid' },
     { num:3, title:'給餌の確認', tag:'経過観察（2週間後）', urgency:'low' },
   ];
-  WORK_HIST = [
-    { date:'2026/05/12', type:'給餌', detail:'砂糖水 2L 給餌' },
-    { date:'2026/05/08', type:'内検', detail:'異常なし・健康スコア 82' },
-    { date:'2026/05/01', type:'採蜜', detail:'採蜜量：12.5kg' },
-    { date:'2026/04/25', type:'給餌', detail:'砂糖水 2L 給餌' },
-  ];
-  REPORT_FARMS = [ { name:'第一養蜂場', kg:245 }, { name:'第二養蜂場', kg:158 }, { name:'第三養蜂場', kg:55 } ];
+  WORK_HIST = [];
+  REPORT_FARMS = [];
   SETTINGS = [
     { icon:'🏡', label:'養蜂場の管理', key:'farm', desc:'管理する養蜂場・蜂群の設定' },
     { icon:'📡', label:'センサー・デバイス', key:'sensor', desc:'IoTセンサーの接続・管理' },
@@ -3201,27 +3190,44 @@ class Component extends DCLogic {
     const aiResults = this.AI_RESULTS.map(r=>({ ...r, confColor:confColor(r.conf), confBg:confBg(r.conf) }));
 
     // summary score cells
-    const scoreVals = [85,78,90,72,88,80,68,82,91,76];
+    // health score cells — real data from all colonies
     const scoreColor = (n)=> n>=85?t.ok : n>=75?t.warn : t.danger;
-    const scoreCells = scoreVals.map((sv,i)=>({ n:i+1, score:sv, bg:scoreColor(sv), fg:'#fff' }));
+    const scoreCells = this.COLONIES.map((cid, i) => {
+      const { score } = this._calcHealthScore(cid, s.inspHistory);
+      return { n: i + 1, colony: cid, score, bg: scoreColor(score), fg: '#fff' };
+    });
 
-    // calendar June 2026 (starts Monday=1). June 1 2026 is Monday. Build 35 cells.
-    const inspectionDays = { 8:true, 15:true, 22:true, 28:true };
+    // calendar — current month, highlight insp/work days
+    const now = new Date();
+    const calYear = now.getFullYear(); const calMonth = now.getMonth();
+    const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+    const firstDow = new Date(calYear, calMonth, 1).getDay();
+    const inspDaySet = new Set();
+    (s.inspHistory || []).forEach(r => { if (r.date) { const d = new Date(r.date); if (d.getFullYear()===calYear && d.getMonth()===calMonth) inspDaySet.add(d.getDate()); } });
     const calCells = [];
-    // June 2026: 1st is Monday -> offset 1 (Sun col empty)
-    for(let i=0;i<1;i++) calCells.push({ label:'', bg:'transparent', fg:t.textMuted, weight:400 });
-    for(let d=1;d<=30;d++){ const ins=inspectionDays[d]; calCells.push({ label:String(d), bg:ins?t.primary:'transparent', fg:ins?'#fff':t.text, weight:ins?800:400 }); }
+    for (let i = 0; i < firstDow; i++) calCells.push({ label:'', bg:'transparent', fg:t.textMuted, weight:400 });
+    for (let d = 1; d <= daysInMonth; d++) { const ins = inspDaySet.has(d); calCells.push({ label:String(d), bg:ins?t.primary:'transparent', fg:ins?'#fff':t.text, weight:ins?800:400 }); }
 
-    // health trend
-    const healthVals=[68,72,78,80,85];
+    // health trend — real colony trend from inspHistory (selected colony or all avg)
+    const trendColony = s.trendColony || (this.COLONIES[0] || 'A-01');
+    const trendRecs = (s.inspHistory || []).filter(r => r.colony === trendColony).sort((a,b)=>(a.date||'')>(b.date||'')?1:-1).slice(-8);
+    const healthVals = trendRecs.length >= 2 ? trendRecs.map(r => this._calcHealthScore(r.colony, s.inspHistory).score) : [0, 0];
     const htPts=this.polyPts(healthVals,300,110,12);
     const healthTrendPts = htPts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ');
     const healthDots = htPts.map(p=>({ x:p[0].toFixed(1), y:p[1].toFixed(1) }));
 
-    // heatmap
-    const heat = [ {label:'枠1',v:[80,84,88]}, {label:'枠2',v:[70,74,80]}, {label:'枠5',v:[60,52,48]}, {label:'枠7',v:[75,68,62]} ];
+    // heatmap — frame details from latest insp of trend colony
+    const latestTrend = trendRecs[trendRecs.length - 1];
     const heatColor = (n)=>{ if(n>=80) return t.ok; if(n>=65) return t.warn; return t.danger; };
-    const heatRows = heat.map(h=>({ label:h.label, c0:heatColor(h.v[0]), c1:heatColor(h.v[1]), c2:heatColor(h.v[2]) }));
+    const heatRows = (() => {
+      if (!latestTrend || !latestTrend.frames || latestTrend.frames.length === 0) return [];
+      const beeScale = [0, 33, 66, 100];
+      return latestTrend.frames.slice(0, 4).map(fn => {
+        const d = (latestTrend.frameDetails || {})[fn] || {};
+        const beeScore = beeScale[d.bees != null ? d.bees : 2] || 66;
+        return { label: '枠' + fn, c0: heatColor(beeScore), c1: heatColor(d.honey ? 85 : 40), c2: heatColor(d.brood != null && d.brood > 0 ? 80 : 40) };
+      });
+    })();
 
     // sensor mini chart
     const sm=this.linePath([37.6,37.8,37.7,38.0,38.1,38.3,38.2,38.5],300,90,8,false);
@@ -3235,11 +3241,16 @@ class Component extends DCLogic {
     // Health score trend from real insp data
     const healthTrendData = (() => { const weeks = {}; (s.inspHistory||[]).forEach(r => { const score = this._calcHealthScore(r.colony, s.inspHistory).score; const w = (r.date||'').slice(0,7); weeks[w] = weeks[w] ? (weeks[w]+score)/2 : score; }); const ks = Object.keys(weeks).sort(); return ks.length >= 2 ? ks.map(k => weeks[k]) : []; })();
     const rt=this.linePath(healthTrendData.length ? healthTrendData : [0,0],300,110,12,false); const rta=this.linePath(healthTrendData.length ? healthTrendData : [0,0],300,110,12,true);
-    const maxKg=Math.max(...this.REPORT_FARMS.map(r=>r.kg));
-    const reportFarms=this.REPORT_FARMS.map(r=>({ ...r, pct:Math.round(r.kg/maxKg*100) }));
     // Real harvest aggregation from workHistory
     const harvestRecs = s.workHistory.filter(w => w.type === '採蜜' && w.yieldKg);
     const realTotalYieldKg = harvestRecs.reduce((sum, w) => sum + (parseFloat(w.yieldKg)||0), 0);
+    // Farm yield from real data (farms in DB with their colony harvest sums)
+    const farmKgMap = {};
+    harvestRecs.forEach(w => { if(w.colony) farmKgMap[w.colony] = (farmKgMap[w.colony]||0) + (parseFloat(w.yieldKg)||0); });
+    const farmMaxKg = Math.max(1, ...Object.values(farmKgMap));
+    const reportFarms = (s.farms && s.farms.length)
+      ? s.farms.map(f => { const kg = farmKgMap[f.name] || 0; return { name: f.name, kg, pct: Math.round(kg / farmMaxKg * 100) }; })
+      : [];
     const reportTotalYield = realTotalYieldKg > 0 ? realTotalYieldKg.toFixed(1) : '0';
     const reportHasReal = realTotalYieldKg > 0;
     // Monthly harvest for sparkline
@@ -3254,6 +3265,8 @@ class Component extends DCLogic {
     harvestRecs.forEach(w => { if(w.colony) colonyYield[w.colony] = (colonyYield[w.colony]||0) + (parseFloat(w.yieldKg)||0); });
     const colonyYieldRank = Object.entries(colonyYield).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([col,kg])=>({ colony:col, kg:kg.toFixed(1), pct:Math.round(kg/realTotalYieldKg*100||0) }));
     const reportColonyYield = colonyYieldRank;
+    const reportHarvestCount = harvestRecs.length;
+    const reportInspCount = s.inspHistory ? s.inspHistory.length : 0;
 
     // tasks filtered
     const skMap = { todo:{c:t.warn,b:t.warnBg}, done:{c:t.ok,b:t.chipBg}, plan:{c:t.textMuted,b:t.surfaceAlt} };
@@ -3299,7 +3312,7 @@ class Component extends DCLogic {
       vColonyTrend:app&&v==='colonyTrend',
       vColonyCompare:app&&v==='colonyCompare',
       nc, notifs, hasUnread, farms, colonies, mapPins, frameChips, selectedCount, aiResults, scoreCells, calCells, healthTrendPts, healthDots, heatRows, tasksView, tasksEmpty, recActions, reportFarms,
-      workHist:this.WORK_HIST,
+      workHist: s.workHistory,
       // ===== タスク完了チェック =====
       ...(() => {
         const TASK_ICONS = { '給餌':'🍼', '内検':'🔍', '採蜜':'🍯', '治療':'💊', '移動':'🚚', 'その他':'📋' };
@@ -3320,7 +3333,7 @@ class Component extends DCLogic {
       // ===== 作業履歴フィルター =====
       ...(() => {
         const WORK_TYPE_ICONS = { '給餌':'🍼', '内検':'🔍', '採蜜':'🍯', '治療':'💊' };
-        const allWork = [...s.workHistory, ...this.WORK_HIST.map(w => ({ ...w, id: w.date + w.type }))];
+        const allWork = [...s.workHistory];
         const wFilter = s.workHistoryFilter || 'all';
         const wq = (s.workSearch || '').trim().toLowerCase();
         const filtered = allWork.filter(w => {
@@ -3428,7 +3441,7 @@ class Component extends DCLogic {
       graphTitle:gk.title, graphValue:gk.value, graphUnit:gk.unit, graphColor:gk.color, graphStat:gd.stat, graphLabels:gd.labels, graphLine:gl.d, graphArea:ga.d, graphLastX:gl.last[0].toFixed(1), graphLastY:gl.last[1].toFixed(1),
       reportLine:rt.d, reportArea:rta.d,
       harvestLine:hs.d, harvestArea:hsa.d,
-      reportTotalYield, reportHasReal, reportColonyYield,
+      reportTotalYield, reportHasReal, reportColonyYield, reportHarvestCount, reportInspCount,
       // theme segs
       segHoney:seg(s.theme==='honey'), segCharcoal:seg(s.theme==='charcoal'), segSage:seg(s.theme==='sage'), segKraft:seg(s.theme==='kraft'), segSky:seg(s.theme==='sky'), segBlossom:seg(s.theme==='blossom'),
       thHoney:()=>this.setTheme('honey'), thCharcoal:()=>this.setTheme('charcoal'), thSage:()=>this.setTheme('sage'), thKraft:()=>this.setTheme('kraft'), thSky:()=>this.setTheme('sky'), thBlossom:()=>this.setTheme('blossom'),
@@ -4448,7 +4461,7 @@ class Component extends DCLogic {
   }
 
   exportWorkCSV() {
-    const allWork = [...this.state.workHistory, ...this.WORK_HIST];
+    const allWork = [...this.state.workHistory];
     const rows = [['日付','種別','蜂群','採蜜量(kg)','メモ']];
     allWork.forEach(w => rows.push([w.date||'', w.type||'', w.colony||'', w.yieldKg||'', (w.memo||w.detail||'').replace(/,/g,'、')]));
     this._downloadCSV('work_history.csv', rows);
