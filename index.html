@@ -1363,6 +1363,23 @@ if('serviceWorker' in navigator){
                       </div>
                     </div>
                   </sc-if>
+                  <!-- 前回比較 diff -->
+                  <sc-if value="{{ inspDiff }}">
+                    <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:14px 16px; margin-bottom:14px;">
+                      <div style="font-size:12px; font-weight:700; color:{{ t.textMuted }}; margin-bottom:10px;">📊 前回比較（{{ inspDiff.prevDate }}から{{ inspDiff.daysBetween }}日）</div>
+                      <sc-if value="{{ !inspDiff.hasChanges }}">
+                        <div style="font-size:13px; color:{{ t.textMuted }};">前回から変化なし</div>
+                      </sc-if>
+                      <sc-if value="{{ inspDiff.hasChanges }}">
+                        <div style="display:flex; flex-direction:column; gap:6px;">
+                          <sc-if value="{{ inspDiff.queenDiff }}"><div style="display:flex; align-items:center; gap:8px; font-size:13px;"><span style="font-size:16px;">👑</span><span style="color:{{ t.text }};">女王: {{ inspDiff.queenDiff }}</span></div></sc-if>
+                          <sc-if value="{{ inspDiff.beesDiff }}"><div style="display:flex; align-items:center; gap:8px; font-size:13px;"><span style="font-size:16px;">🐝</span><span style="color:{{ t.text }};">蜂数: {{ inspDiff.beesDiff }}</span></div></sc-if>
+                          <sc-if value="{{ inspDiff.spaceDiff }}"><div style="display:flex; align-items:center; gap:8px; font-size:13px;"><span style="font-size:16px;">📦</span><span style="color:{{ t.text }};">スペース: {{ inspDiff.spaceDiff }}</span></div></sc-if>
+                          <sc-if value="{{ inspDiff.frameDiff }}"><div style="display:flex; align-items:center; gap:8px; font-size:13px;"><span style="font-size:16px;">🖼</span><span style="color:{{ t.text }};">枠数: {{ inspDiff.frameDiff }}</span></div></sc-if>
+                        </div>
+                      </sc-if>
+                    </div>
+                  </sc-if>
                   <!-- Memo -->
                   <sc-if value="{{ detailFrameMemo }}">
                     <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:14px 16px; margin-bottom:14px;">
@@ -1653,7 +1670,7 @@ if('serviceWorker' in navigator){
               <!-- SCR-027 WORK HISTORY -->
               <sc-if value="{{ vWorkHistory }}" hint-placeholder-val="{{ false }}">
                 <div data-screen-label="SCR-027 作業履歴" style="padding:60px 16px 16px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1); overflow-y:auto; height:100%;">
-                  <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;"><button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button><span style="font-size:20px; font-weight:800; color:{{ t.text }}; flex:1;">作業履歴</span><button onClick="{{ exportWorkCSV }}" style="padding:7px 12px; font-size:12px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primary }}; background:{{ t.chipBg }}; border:none; border-radius:999px; cursor:pointer;">📥 CSV</button></div>
+                  <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;"><button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button><span style="font-size:20px; font-weight:800; color:{{ t.text }}; flex:1;">作業履歴</span><button onClick="{{ importWorkCSV }}" style="padding:7px 12px; font-size:12px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primary }}; background:{{ t.chipBg }}; border:none; border-radius:999px; cursor:pointer;">📤 取込</button><button onClick="{{ exportWorkCSV }}" style="padding:7px 12px; font-size:12px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primary }}; background:{{ t.chipBg }}; border:none; border-radius:999px; cursor:pointer;">📥 CSV</button></div>
                   <!-- 検索バー -->
                   <div style="position:relative; margin-bottom:10px;"><span style="position:absolute; left:13px; top:50%; transform:translateY(-50%); font-size:14px; pointer-events:none;">🔍</span><input value="{{ workSearch }}" onInput="{{ hWorkSearch }}" type="text" placeholder="蜂群・種別・メモで検索..." style="width:100%; padding:11px 13px 11px 38px; font-size:14px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px; outline:none; box-sizing:border-box;" style-focus="border-color:{{ t.primary }};"></div>
                   <!-- フィルター -->
@@ -2011,6 +2028,54 @@ if('serviceWorker' in navigator){
                       </div>
                     </sc-if>
                   </div>
+                  <!-- 蜂群タグ/メモ 一括編集 -->
+                  <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; margin-bottom:16px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                      <div style="font-size:13px; font-weight:700; color:{{ t.text }};">🏷 蜂群タグ/メモ 一括編集</div>
+                      <button onClick="{{ toggleBulkTagMode }}" style="padding:5px 12px; font-size:12px; font-weight:700; font-family:{{ t.font }}; color:{{ bulkTagMode ? t.danger : t.primary }}; background:{{ bulkTagMode ? t.dangerBg : t.chipBg }}; border:none; border-radius:999px; cursor:pointer;">{{ bulkTagMode ? '閉じる' : '編集' }}</button>
+                    </div>
+                    <sc-if value="{{ bulkTagMode }}">
+                      <div style="font-size:12px; color:{{ t.textMuted }}; margin-bottom:8px;">蜂群を選択してタグ・メモを一括設定できます</div>
+                      <div style="display:flex; gap:8px; margin-bottom:8px;">
+                        <button onClick="{{ bulkSelectAll }}" style="padding:4px 10px; font-size:11px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primary }}; background:{{ t.chipBg }}; border:none; border-radius:999px; cursor:pointer;">全選択</button>
+                        <button onClick="{{ bulkSelectNone }}" style="padding:4px 10px; font-size:11px; font-weight:700; font-family:{{ t.font }}; color:{{ t.textMuted }}; background:{{ t.surfaceAlt }}; border:none; border-radius:999px; cursor:pointer;">解除</button>
+                        <span style="font-size:12px; color:{{ t.textMuted }}; align-self:center;">{{ bulkTagSelectedCount }}群選択中</span>
+                      </div>
+                      <div style="display:flex; flex-wrap:wrap; gap:5px; margin-bottom:12px;">
+                        <sc-for list="{{ bulkColonyItems }}" as="bc">
+                          <button onClick="{{ bc.toggle }}" style="padding:5px 11px; font-size:12px; font-weight:700; font-family:{{ t.font }}; border:1.5px solid {{ bc.selected ? t.primary : t.border }}; background:{{ bc.selected ? t.primary : t.surfaceAlt }}; color:{{ bc.selected ? t.primaryText : t.text }}; border-radius:999px; cursor:pointer;">{{ bc.id }}</button>
+                        </sc-for>
+                      </div>
+                      <div style="font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:6px;">タグ付与 / 削除</div>
+                      <div style="display:flex; flex-wrap:wrap; gap:5px; margin-bottom:12px;">
+                        <sc-for list="{{ bulkTagOptions }}" as="bto">
+                          <div style="display:flex; gap:0;">
+                            <button onClick="{{ bto.apply }}" style="padding:5px 10px; font-size:11px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primary }}; background:{{ t.chipBg }}; border:1px solid {{ t.border }}; border-right:none; border-radius:999px 0 0 999px; cursor:pointer;">＋{{ bto.tag }}</button>
+                            <button onClick="{{ bto.remove }}" style="padding:5px 8px; font-size:11px; font-weight:700; font-family:{{ t.font }}; color:{{ t.danger }}; background:{{ t.dangerBg }}; border:1px solid {{ t.border }}; border-left:none; border-radius:0 999px 999px 0; cursor:pointer;">－</button>
+                          </div>
+                        </sc-for>
+                      </div>
+                      <div style="font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:6px;">メモ一括設定</div>
+                      <div style="display:flex; gap:8px;">
+                        <input type="text" value="{{ bulkMemo }}" onInput="{{ hBulkMemo }}" placeholder="メモを入力（空欄でクリア）" style="flex:1; padding:9px 12px; font-size:13px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surfaceAlt }}; border:1.5px solid {{ t.border }}; border-radius:10px; outline:none;" style-focus="border-color:{{ t.primary }};">
+                        <button onClick="{{ bulkApplyMemo }}" style="padding:9px 14px; font-size:12px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:10px; cursor:pointer;">適用</button>
+                      </div>
+                    </sc-if>
+                  </div>
+                  <!-- 内検リマインダー期間（群ごと） -->
+                  <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; margin-bottom:16px;">
+                    <div style="font-size:13px; font-weight:700; color:{{ t.text }}; margin-bottom:4px;">⏰ 内検リマインダー期間（群ごと）</div>
+                    <div style="font-size:12px; color:{{ t.textMuted }}; margin-bottom:12px;">内検の間隔がこの日数を超えるとリマインダーを表示します（デフォルト: 21日）</div>
+                    <div style="display:flex; flex-direction:column; gap:8px;">
+                      <sc-for list="{{ reminderDaysItems }}" as="rd">
+                        <div style="display:flex; align-items:center; gap:10px; padding:6px 0; border-bottom:1px solid {{ t.border }}22;">
+                          <span style="font-size:13px; font-weight:600; color:{{ t.text }}; width:60px; flex-shrink:0;">{{ rd.id }}</span>
+                          <input type="number" value="{{ rd.days }}" min="7" max="90" step="1" onInput="{{ rd.onChangeDays }}" style="width:70px; padding:6px 10px; font-size:13px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surfaceAlt }}; border:1.5px solid {{ t.border }}; border-radius:8px; outline:none; text-align:center;" style-focus="border-color:{{ t.primary }};">
+                          <span style="font-size:12px; color:{{ t.textMuted }};">日</span>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </div>
                   <!-- 年間採蜜目標 -->
                   <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; margin-bottom:16px;">
                     <div style="font-size:13px; font-weight:700; color:{{ t.text }}; margin-bottom:4px;">🍯 年間採蜜目標</div>
@@ -2192,8 +2257,11 @@ class Component extends DCLogic {
     harvestGoalKg: parseInt(localStorage.getItem('honeyos_harvestGoal') || '0') || 0,
     colonyTags: (() => { try { return JSON.parse(localStorage.getItem('honeyos_colonyTags') || '{}'); } catch(e) { return {}; } })(),
     colonyMemos: (() => { try { return JSON.parse(localStorage.getItem('honeyos_colonyMemos') || '{}'); } catch(e) { return {}; } })(),
+    inspReminderDays: (() => { try { return JSON.parse(localStorage.getItem('honeyos_inspReminderDays') || '{}'); } catch(e) { return {}; } })(),
     tagFilter: 'all',
     colonyMemoEditId: null,
+    bulkTagColonies: [],
+    bulkTagMode: false,
     summaryMode: localStorage.getItem('honeyos_summaryMode') || 'card',
     summaryFilter: 'all',
     colonies: JSON.parse(localStorage.getItem('honeyos_colonies') || 'null') || ['A-01','A-02','A-03','A-04','A-05','A-06','A-07','A-08','A-09','A-10','A-11','A-12'],
@@ -3745,6 +3813,31 @@ class Component extends DCLogic {
           detailQueenBorder: idr.queenPresent===true?'#D4C87A':t.border,
           detailBeesLabel: idr.beesTotal!=null?(['少','並','多','密'][idr.beesTotal]||'未記録'):'未記録',
           detailAllFrameBars,
+          // ===== 前回比較 diff =====
+          inspDiff: (() => {
+            const cur = s.inspDetailRecord;
+            if (!cur || !cur.colony || !cur.date) return null;
+            const prev = (s.inspHistory || [])
+              .filter(r => r.colony === cur.colony && r.date < cur.date)
+              .sort((a, b) => (b.date||'') < (a.date||'') ? -1 : 1)[0];
+            if (!prev) return null;
+            const daysBetween = Math.round((new Date(cur.date).getTime() - new Date(prev.date).getTime()) / 86400000);
+            const beeLabels = ['少','並','多','密'];
+            const queenDiff = cur.queenPresent !== prev.queenPresent
+              ? (cur.queenPresent === true ? '確認 → あり ✅' : cur.queenPresent === false ? '確認 → なし ⚠️' : '変化あり')
+              : null;
+            const beesDiff = (cur.beesTotal != null && prev.beesTotal != null && cur.beesTotal !== prev.beesTotal)
+              ? (beeLabels[prev.beesTotal]||'?') + ' → ' + (beeLabels[cur.beesTotal]||'?') + (cur.beesTotal > prev.beesTotal ? ' ↑' : ' ↓')
+              : null;
+            const spaceDiff = (cur.spaceCount != null && prev.spaceCount != null && cur.spaceCount !== prev.spaceCount)
+              ? (prev.spaceCount||0) + ' → ' + (cur.spaceCount||0) + 'スペース'
+              : null;
+            const frameDiff = (cur.frames && prev.frames && cur.frames.length !== prev.frames.length)
+              ? (prev.frames.length||0) + ' → ' + (cur.frames.length||0) + '枠'
+              : null;
+            return { prevDate: prev.date, daysBetween, queenDiff, beesDiff, spaceDiff, frameDiff,
+              hasChanges: !!(queenDiff || beesDiff || spaceDiff || frameDiff) };
+          })(),
           colonyBarcodes: filteredColonyBarcodes,
           // ===== Hive Detail (巣箱サマリー) =====
           ...(() => {
@@ -3950,6 +4043,7 @@ class Component extends DCLogic {
       // ===== CSVエクスポート =====
       exportInspCSV: () => this.exportInspCSV(),
       exportWorkCSV: () => this.exportWorkCSV(),
+      importWorkCSV: () => this.importWorkCSV(),
       // ===== JSONバックアップ =====
       exportJSON: () => this.exportJSON(),
       importJSON: () => this.importJSON(),
@@ -4017,12 +4111,15 @@ class Component extends DCLogic {
       // ===== 内検リマインダー（ホーム） =====
       reminderColonies: (() => {
         const now = Date.now();
+        const rdMap = s.inspReminderDays || {};
         return this.COLONIES.map(cid => {
+          const threshold = rdMap[cid] || 21;
+          const warnAt = Math.max(7, threshold - 7);
           const last = (s.lastInspByColony || {})[cid];
           if (!last) return { colony: cid, daysSince: null, label: '未内検', urgent: true };
           const days = Math.floor((now - new Date(last.date || '').getTime()) / 86400000);
-          if (days < 14) return null;
-          return { colony: cid, daysSince: days, label: days + '日経過', urgent: days > 21 };
+          if (days < warnAt) return null;
+          return { colony: cid, daysSince: days, label: days + '日経過', urgent: days >= threshold };
         }).filter(Boolean).sort((a,b) => (b.daysSince||999) - (a.daysSince||999)).slice(0, 5);
       })(),
       // ===== グローバル検索 =====
@@ -4077,6 +4174,42 @@ class Component extends DCLogic {
           style: 'flex-shrink:0; padding:6px 12px; border:none; border-radius:999px; cursor:pointer; font-size:12px; font-weight:700; font-family:'+t.font+'; background:'+((s.tagFilter||'all')===tag?t.primary:t.chipBg)+'; color:'+((s.tagFilter||'all')===tag?t.primaryText:t.text)+';',
         }));
       })(),
+      // ===== 蜂群タグ/メモ一括編集 =====
+      bulkTagMode: s.bulkTagMode || false,
+      bulkTagColonies: s.bulkTagColonies || [],
+      toggleBulkTagMode: () => this.setState(st => ({ bulkTagMode: !st.bulkTagMode, bulkTagColonies: [] })),
+      bulkColonyItems: this.COLONIES.map(cid => ({
+        id: cid,
+        tags: (s.colonyTags||{})[cid]||[],
+        memo: (s.colonyMemos||{})[cid]||'',
+        selected: (s.bulkTagColonies||[]).includes(cid),
+        toggle: () => this.setState(st => {
+          const sel = st.bulkTagColonies || [];
+          return { bulkTagColonies: sel.includes(cid) ? sel.filter(x=>x!==cid) : [...sel, cid] };
+        }),
+      })),
+      bulkSelectAll: () => this.setState({ bulkTagColonies: [...this.COLONIES] }),
+      bulkSelectNone: () => this.setState({ bulkTagColonies: [] }),
+      bulkApplyMemo: () => this.bulkApplyMemo(),
+      bulkMemo: this._fieldBuf['bulkMemo'] || '',
+      hBulkMemo: this.field('bulkMemo'),
+      bulkTagOptions: ['採蜜用', '育成中', '要注意', '新群', '越冬中'].map(tag => ({
+        tag,
+        apply: () => this.bulkApplyTag(tag),
+        remove: () => this.bulkRemoveTag(tag),
+      })),
+      bulkTagSelectedCount: (s.bulkTagColonies||[]).length,
+      // ===== 内検リマインダー期間設定 =====
+      inspReminderDays: s.inspReminderDays || {},
+      reminderDaysItems: this.COLONIES.map(cid => ({
+        id: cid,
+        days: (s.inspReminderDays||{})[cid] || 21,
+        onChangeDays: (e) => {
+          const rd = { ...(s.inspReminderDays||{}), [cid]: parseInt(e.target.value)||21 };
+          try { localStorage.setItem('honeyos_inspReminderDays', JSON.stringify(rd)); } catch(e2) {}
+          this.setState({ inspReminderDays: rd });
+        },
+      })),
       // ===== 蜂群固定メモ =====
       colonyMemoEditId: s.colonyMemoEditId || null,
       colonyMemos: s.colonyMemos || {},
@@ -4598,6 +4731,99 @@ class Component extends DCLogic {
     this._downloadCSV('work_history.csv', rows);
   }
 
+  importWorkCSV() {
+    const inp = document.createElement('input');
+    inp.type = 'file'; inp.accept = '.csv,text/csv';
+    inp.addEventListener('change', async (ev) => {
+      const file = ev.target.files && ev.target.files[0];
+      if (!file) return;
+      const text = await file.text();
+      const lines = text.replace(/^﻿/, '').split(/\r?\n/).filter(l => l.trim());
+      if (lines.length < 2) { this.showToast('CSVに行がありません', 'error'); return; }
+      const parseRow = (line) => {
+        const cols = []; let cur = ''; let inQ = false;
+        for (let i = 0; i < line.length; i++) {
+          const ch = line[i];
+          if (ch === '"') { if (inQ && line[i+1] === '"') { cur += '"'; i++; } else inQ = !inQ; }
+          else if (ch === ',' && !inQ) { cols.push(cur); cur = ''; }
+          else cur += ch;
+        }
+        cols.push(cur);
+        return cols.map(c => c.trim());
+      };
+      const header = parseRow(lines[0]);
+      const dateIdx = header.findIndex(h => h.includes('日付'));
+      const typeIdx = header.findIndex(h => h.includes('種別'));
+      const colonyIdx = header.findIndex(h => h.includes('蜂群'));
+      const yieldIdx = header.findIndex(h => h.includes('採蜜'));
+      const memoIdx = header.findIndex(h => h.includes('メモ'));
+      let imported = 0; let failed = 0;
+      this.showToast('インポート中...', 'info');
+      for (let i = 1; i < lines.length; i++) {
+        const cols = parseRow(lines[i]);
+        const record = {
+          date: dateIdx >= 0 ? (cols[dateIdx]||'') : '',
+          type: typeIdx >= 0 ? (cols[typeIdx]||'作業') : '作業',
+          colony: colonyIdx >= 0 ? (cols[colonyIdx]||'') : '',
+          yieldKg: yieldIdx >= 0 && cols[yieldIdx] ? parseFloat(cols[yieldIdx])||null : null,
+          memo: memoIdx >= 0 ? (cols[memoIdx]||'') : '',
+          time: '',
+        };
+        if (!record.date || !record.type) { failed++; continue; }
+        try {
+          await window.HoneyDB.saveWorkRecord(record);
+          imported++;
+        } catch(e) { failed++; }
+      }
+      const wh = await window.HoneyDB.loadWorkRecords();
+      this.setState({ workHistory: wh });
+      this.showToast(`${imported}件インポート完了${failed ? ' ('+failed+'件失敗)' : ''}`, imported > 0 ? 'ok' : 'error');
+    });
+    inp.click();
+  }
+
+  bulkApplyTag(tag) {
+    const colonies = this.state.bulkTagColonies || [];
+    if (!colonies.length) { this.showToast('蜂群を選択してください', 'error'); return; }
+    this.setState(st => {
+      const tags = { ...st.colonyTags };
+      colonies.forEach(cid => {
+        const cur = tags[cid] || [];
+        if (!cur.includes(tag)) tags[cid] = [...cur, tag];
+      });
+      try { localStorage.setItem('honeyos_colonyTags', JSON.stringify(tags)); } catch(e) {}
+      return { colonyTags: tags };
+    });
+    this.showToast(`${colonies.length}群に「${tag}」を付与しました`, 'ok');
+  }
+
+  bulkRemoveTag(tag) {
+    const colonies = this.state.bulkTagColonies || [];
+    if (!colonies.length) { this.showToast('蜂群を選択してください', 'error'); return; }
+    this.setState(st => {
+      const tags = { ...st.colonyTags };
+      colonies.forEach(cid => {
+        if (tags[cid]) tags[cid] = tags[cid].filter(t => t !== tag);
+      });
+      try { localStorage.setItem('honeyos_colonyTags', JSON.stringify(tags)); } catch(e) {}
+      return { colonyTags: tags };
+    });
+    this.showToast(`${colonies.length}群から「${tag}」を削除しました`, 'ok');
+  }
+
+  bulkApplyMemo() {
+    const colonies = this.state.bulkTagColonies || [];
+    if (!colonies.length) { this.showToast('蜂群を選択してください', 'error'); return; }
+    const memo = (this._fieldBuf['bulkMemo'] || '').trim();
+    this.setState(st => {
+      const memos = { ...st.colonyMemos };
+      colonies.forEach(cid => { if (memo) memos[cid] = memo; else delete memos[cid]; });
+      try { localStorage.setItem('honeyos_colonyMemos', JSON.stringify(memos)); } catch(e) {}
+      return { colonyMemos: memos };
+    });
+    this.showToast(`${colonies.length}群のメモを更新しました`, 'ok');
+  }
+
   // ===== トースト通知 =====
   showToast(msg, type = 'info') {
     this.setState({ toast: { msg, type, id: Date.now() } });
@@ -4609,15 +4835,16 @@ class Component extends DCLogic {
   _checkAndNotify(inspHistory) {
     if (!('Notification' in window) || Notification.permission !== 'granted') return;
     const lastMap = this._buildLastInspByColony(inspHistory);
-    const COLONIES = ['A-01','A-02','A-03','A-04','A-05','A-06','A-07','A-08','A-09','A-10','A-11','A-12'];
-    const overdue = COLONIES.filter(c => {
+    const rdMap = this.state.inspReminderDays || {};
+    const overdue = this.COLONIES.filter(c => {
+      const threshold = rdMap[c] || 21;
       const last = lastMap[c];
       if (!last) return true;
       const days = (Date.now() - new Date(last.date || '').getTime()) / 86400000;
-      return days > 21;
+      return days >= threshold;
     });
     if (overdue.length === 0) return;
-    const body = overdue.slice(0, 3).join('、') + (overdue.length > 3 ? ` ほか${overdue.length - 3}群` : '') + ' が21日以上未内検です';
+    const body = overdue.slice(0, 3).join('、') + (overdue.length > 3 ? ` ほか${overdue.length - 3}群` : '') + ' が期限を超えた未内検です';
     try {
       new Notification('HoneyOS 🐝 内検リマインダー', { body, icon: './icon-192.png', tag: 'insp-reminder' });
     } catch(e) {}
