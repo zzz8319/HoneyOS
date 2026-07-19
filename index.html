@@ -9,6 +9,16 @@
 <meta name="apple-mobile-web-app-title" content="HoneyOS">
 <link rel="manifest" href="./manifest.json">
 <script>
+// ===== グローバルエラーハンドラー =====
+window.onerror = function(msg, src, line, col, err) {
+  console.error('[HoneyOS] Uncaught error:', msg, 'at', src + ':' + line, err);
+  if (window._honeyApp) window._honeyApp.showToast('予期しないエラーが発生しました', 'error');
+};
+window.addEventListener('unhandledrejection', function(e) {
+  console.error('[HoneyOS] Unhandled promise rejection:', e.reason);
+  if (window._honeyApp) window._honeyApp.showToast('通信エラーが発生しました', 'error');
+});
+
 if('serviceWorker' in navigator){
   navigator.serviceWorker.register('./sw.js').then(reg => {
     // 新しいSWが見つかったらすぐにskipWaitingを要求
@@ -2412,6 +2422,7 @@ class Component extends DCLogic {
     this._setupSWUpdateDetect();
     this._setupOfflineQueue();
     this._handlePwaShortcut();
+    window._honeyApp = this;
   }
 
   // ===== ⑨ PWAショートカット URLパラメータ処理 =====
@@ -2710,7 +2721,7 @@ class Component extends DCLogic {
     const newColonies = this.state.colonies.filter(c => c !== id);
     this.setState({ colonies: newColonies });
     try { localStorage.setItem('honeyos_colonies', JSON.stringify(newColonies)); } catch(e) {}
-    try { await window.HoneyDB.deleteColony(id); } catch(e) {}
+    try { await window.HoneyDB.deleteColony(id); } catch(e) { this._err(e, '蜂群の削除に失敗しました'); return; }
     this.showToast(`${id} を削除しました`, 'ok');
   }
 
@@ -5012,6 +5023,13 @@ class Component extends DCLogic {
     this.setState({ toast: { msg, type, id: Date.now() } });
     clearTimeout(this._toastTimer);
     this._toastTimer = setTimeout(() => this.setState({ toast: null }), 3200);
+  }
+
+  // エラーをコンソールに記録しつつユーザーに通知する共通ヘルパー
+  _err(e, userMsg = 'エラーが発生しました') {
+    const detail = e?.message ? '：' + e.message : '';
+    console.error('[HoneyOS]', userMsg, e);
+    this.showToast(userMsg + detail, 'error');
   }
 
   // ===== プッシュ通知（21日未内検チェック） =====

@@ -1,0 +1,30 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Bump service worker cache version
+        run: |
+          VERSION="honeyos-$(date -u +%Y%m%d-%H%M%S)"
+          sed -i "s/const CACHE = '[^']*'/const CACHE = '$VERSION'/" sw.js
+          echo "SW cache version: $VERSION"
+
+      - name: Commit bumped SW version
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add sw.js
+          git diff --staged --quiet || git commit -m "ci: bump SW cache version [skip ci]"
+          git push
