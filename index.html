@@ -379,7 +379,34 @@ if('serviceWorker' in navigator){
                     <div style="flex:1; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px;"><div style="font-size:12px; color:{{ t.textMuted }};">今月の収量</div><div style="margin-top:8px; display:flex; align-items:baseline; flex-wrap:wrap;"><span style="font-size:28px; font-weight:800; color:{{ t.text }};">458</span><span style="font-size:14px; color:{{ t.textMuted }}; margin-left:3px;">kg</span><span style="font-size:12px; font-weight:700; color:{{ t.accent }}; background:{{ t.chipBg }}; padding:2px 7px; border-radius:999px; margin-left:6px;">+12%</span></div></div>
                   </div>
                   <sc-if value="{{ dashAlertCount > 0 }}">
-                    <div onClick="{{ goFarmDetail }}" style="background:{{ t.warnBg }}; border:1px solid {{ t.warn }}; border-radius:{{ t.radius }}px; padding:14px 16px; display:flex; align-items:center; gap:12px; margin-bottom:26px; cursor:pointer;"><span style="font-size:22px;">⚠️</span><div style="flex:1;"><div style="font-size:14px; font-weight:700; color:{{ t.text }};">要注意の蜂群が {{ dashAlertCount }}群 あります</div><div style="font-size:12px; color:{{ t.textMuted }}; margin-top:2px;">{{ dashAlertNames }} を確認してください</div></div><span style="color:{{ t.textMuted }};">›</span></div>
+                    <div onClick="{{ goFarmDetail }}" style="background:{{ t.warnBg }}; border:1px solid {{ t.warn }}; border-radius:{{ t.radius }}px; padding:14px 16px; display:flex; align-items:center; gap:12px; margin-bottom:12px; cursor:pointer;"><span style="font-size:22px;">⚠️</span><div style="flex:1;"><div style="font-size:14px; font-weight:700; color:{{ t.text }};">要注意の蜂群が {{ dashAlertCount }}群 あります</div><div style="font-size:12px; color:{{ t.textMuted }}; margin-top:2px;">{{ dashAlertNames }} を確認してください</div></div><span style="color:{{ t.textMuted }};">›</span></div>
+                  </sc-if>
+                  <!-- ⑦ 分蜂予兆アラート -->
+                  <sc-if value="{{ swarmAlertColonies.length > 0 }}">
+                    <div style="background:#FFF8DC; border:1.5px solid #D4C87A; border-radius:{{ t.radius }}px; padding:14px 16px; display:flex; align-items:center; gap:12px; margin-bottom:12px;"><span style="font-size:22px;">👑</span><div style="flex:1;"><div style="font-size:14px; font-weight:700; color:#7a6010;">王台（分蜂予兆）を確認</div><div style="font-size:12px; color:#7a6010; margin-top:2px;">
+                      <sc-for list="{{ swarmAlertColonies }}" as="sa"><span>{{ sa.colony }}（{{ sa.date }}）　</span></sc-for>
+                    </div></div></div>
+                  </sc-if>
+                  <!-- ④ 越冬リスクパネル -->
+                  <sc-if value="{{ winterRiskItems.length > 0 }}">
+                    <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:14px 16px; margin-bottom:16px;">
+                      <div onClick="{{ toggleWinterRisk }}" style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                        <span style="font-size:18px;">❄️</span>
+                        <div style="flex:1; font-size:13px; font-weight:700; color:{{ t.text }};">越冬リスク評価</div>
+                        <span style="font-size:12px; color:{{ t.textMuted }};">▾</span>
+                      </div>
+                      <sc-if value="{{ winterRiskOpen }}">
+                        <div style="margin-top:10px; display:flex; flex-direction:column; gap:6px;">
+                          <sc-for list="{{ winterRiskItems }}" as="wr">
+                            <div style="display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid {{ t.border }}22;">
+                              <span style="font-size:13px; font-weight:600; color:{{ t.text }}; width:56px; flex-shrink:0;">{{ wr.id }}</span>
+                              <div style="flex:1; height:6px; background:{{ t.surfaceAlt }}; border-radius:99px; overflow:hidden;"><div style="height:100%; width:{{ wr.score }}%; background:{{ wr.color }}; border-radius:99px;"></div></div>
+                              <span style="font-size:11px; font-weight:700; color:{{ wr.color }}; flex-shrink:0; min-width:44px; text-align:right;">{{ wr.label }}</span>
+                            </div>
+                          </sc-for>
+                        </div>
+                      </sc-if>
+                    </div>
                   </sc-if>
                   <div style="font-size:12px; font-weight:700; letter-spacing:.08em; color:{{ t.textMuted }}; margin-bottom:10px;">本日の作業</div>
                   <div style="display:flex; gap:10px; margin-bottom:26px;">
@@ -986,10 +1013,15 @@ if('serviceWorker' in navigator){
               <!-- SCR-011 INSPECTION START -->
               <sc-if value="{{ vInspStart }}" hint-placeholder-val="{{ false }}">
                 <div data-screen-label="SCR-011 内検開始" style="padding:60px 16px 16px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
-                  <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px;"><button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button><span style="font-size:20px; font-weight:800; color:{{ t.text }};">内検を開始</span></div>
-                  <div style="margin-bottom:16px;"><label style="display:block; font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:6px;">対象巣箱</label><select onChange="{{ setInspColony }}" style="width:100%; padding:13px 14px; font-size:15px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px; outline:none;">
-                    <sc-for list="{{ coloniesOpts }}" as="col"><option>{{ col }}</option></sc-for>
-                  </select></div>
+                  <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px;"><button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button><span style="font-size:20px; font-weight:800; color:{{ t.text }}; flex:1;">内検を開始</span><button onClick="{{ startQRScan }}" style="padding:6px 12px; font-size:12px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primary }}; background:{{ t.chipBg }}; border:none; border-radius:999px; cursor:pointer;">📷 QR</button></div>
+                  <div style="margin-bottom:16px;"><label style="display:block; font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:6px;">対象巣箱</label>
+                  <div style="display:flex; gap:8px;">
+                    <select onChange="{{ setInspColony }}" style="flex:1; padding:13px 14px; font-size:15px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px; outline:none;">
+                      <sc-for list="{{ coloniesOpts }}" as="col"><option>{{ col }}</option></sc-for>
+                    </select>
+                    <sc-if value="{{ hasLastInsp }}"><button onClick="{{ continueFromLastInsp }}" style="padding:8px 12px; font-size:11px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primary }}; background:{{ t.chipBg }}; border:none; border-radius:12px; cursor:pointer; flex-shrink:0; white-space:nowrap;">🔁 続きから</button></sc-if>
+                  </div>
+                  </div>
                   <div style="display:flex; gap:10px; margin-bottom:16px;"><div style="flex:1.4;"><label style="display:block; font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:6px;">日時</label><div style="padding:13px 14px; font-size:14px; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px;">{{ inspSummaryDate }}</div></div></div>
                   <label style="display:block; font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:8px;">天気</label>
                   <div style="display:flex; gap:8px; margin-bottom:18px;"><button onClick="{{ wSun }}" style="{{ wxSun }}">☀️ 晴れ</button><button onClick="{{ wCloud }}" style="{{ wxCloud }}">⛅ 曇り</button><button onClick="{{ wRain }}" style="{{ wxRain }}">🌧️ 雨</button></div>
@@ -1121,8 +1153,19 @@ if('serviceWorker' in navigator){
 
                   <!-- 観察メモ -->
                   <div style="margin-bottom:12px;">
-                    <div style="font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:6px;">観察メモ（任意）</div>
-                    <textarea value="{{ f.frameMemo }}" onInput="{{ h.frameMemo }}" placeholder="全体的に活発、蜜源豊富..." rows="2" style="width:100%; padding:13px 14px; font-size:14px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px; outline:none; resize:none;" style-focus="border-color:{{ t.primary }};"></textarea>
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+                      <div style="font-size:12px; font-weight:600; color:{{ t.textMuted }};">観察メモ（任意）</div>
+                      <button onClick="{{ startVoiceMemo }}" style="padding:4px 10px; font-size:11px; font-weight:700; font-family:{{ t.font }}; color:{{ voiceMemoActive ? '#fff' : t.primary }}; background:{{ voiceMemoActive ? '#D9534F' : t.chipBg }}; border:none; border-radius:999px; cursor:pointer;">{{ voiceMemoActive ? '🔴 録音中' : '🎙 音声入力' }}</button>
+                    </div>
+                    <textarea value="{{ f.frameMemo }}" onInput="{{ h.frameMemo }}" placeholder="全体的に活発、蜜源豊富..." rows="2" style="width:100%; padding:13px 14px; font-size:14px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ voiceMemoActive ? '#D9534F' : t.border }}; border-radius:12px; outline:none; resize:none;" style-focus="border-color:{{ t.primary }};"></textarea>
+                  </div>
+                  <!-- 分蜂予兆チェック -->
+                  <div style="display:flex; align-items:center; gap:10px; padding:10px 14px; background:{{ swarmRiskFlag ? '#FFF8DC' : t.surfaceAlt }}; border:1.5px solid {{ swarmRiskFlag ? '#D4C87A' : t.border }}; border-radius:12px; margin-bottom:14px; cursor:pointer;" onClick="{{ () => hSwarmRisk({ target: { checked: !swarmRiskFlag } }) }}">
+                    <input type="checkbox" checked="{{ swarmRiskFlag }}" onChange="{{ hSwarmRisk }}" style="width:18px; height:18px; accent-color:{{ t.primary }}; cursor:pointer; flex-shrink:0;">
+                    <div>
+                      <div style="font-size:13px; font-weight:700; color:{{ t.text }};">⚠️ 王台（分蜂予兆）を確認した</div>
+                      <div style="font-size:11px; color:{{ t.textMuted }};">チェックするとホーム画面にアラートが表示されます</div>
+                    </div>
                   </div>
 
                   <!-- 完了ボタン -->
@@ -1712,10 +1755,11 @@ if('serviceWorker' in navigator){
                     </sc-for>
                   </div>
                   <!-- タブ -->
-                  <div style="display:flex; gap:4px; background:{{ t.surfaceAlt }}; border:1px solid {{ t.border }}; padding:4px; border-radius:12px; margin-bottom:14px;">
+                  <div style="display:flex; gap:4px; background:{{ t.surfaceAlt }}; border:1px solid {{ t.border }}; padding:4px; border-radius:12px; margin-bottom:14px; overflow-x:auto;">
                     <button onClick="{{ setTrendBees }}" style="{{ trendTabBees }}">🐝 蜂数推移</button>
                     <button onClick="{{ setTrendQueen }}" style="{{ trendTabQueen }}">👑 女王確認</button>
                     <button onClick="{{ setTrendHealth }}" style="{{ trendTabHealth }}">💚 健康スコア</button>
+                    <button onClick="{{ setTrendWeather }}" style="{{ trendTabWeather }}">🌡 気温相関</button>
                   </div>
                   <sc-if value="{{ !trendHasData }}">
                     <div style="text-align:center; padding:48px 16px; color:{{ t.textMuted }};">{{ trendColony }}の内検記録がありません</div>
@@ -1762,6 +1806,37 @@ if('serviceWorker' in navigator){
                         </div>
                       </sc-for>
                     </div>
+                  </sc-if>
+                  <!-- ⑧ 気温×蜂数 相関 -->
+                  <sc-if value="{{ trendTab === 'weather' }}">
+                    <sc-if value="{{ !weatherData }}">
+                      <div style="text-align:center; padding:32px 16px; color:{{ t.textMuted }}; font-size:13px;">
+                        <sc-if value="{{ weatherLoading }}"><div>🌡 気温データを読み込み中...</div></sc-if>
+                        <sc-if value="{{ !weatherLoading }}"><div>養蜂場のGPS位置が設定されていません。<br>設定 → 養蜂場の位置 で設定してください。</div></sc-if>
+                      </div>
+                    </sc-if>
+                    <sc-if value="{{ weatherData }}">
+                      <sc-if value="{{ weatherCorrPoints.length < 3 }}">
+                        <div style="text-align:center; padding:32px 16px; color:{{ t.textMuted }}; font-size:13px;">内検記録が不足しています（3件以上必要）</div>
+                      </sc-if>
+                      <sc-if value="{{ weatherCorrPoints.length >= 3 }}">
+                        <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:14px; padding:14px; margin-bottom:14px;">
+                          <div style="font-size:13px; font-weight:700; color:{{ t.text }}; margin-bottom:12px;">🌡 気温 × 蜂数 相関</div>
+                          <svg viewBox="0 0 300 160" width="100%" style="display:block; overflow:visible;">
+                            <line x1="30" y1="10" x2="30" y2="140" stroke="{{ t.border }}" stroke-width="1"></line>
+                            <line x1="30" y1="140" x2="290" y2="140" stroke="{{ t.border }}" stroke-width="1"></line>
+                            <text x="15" y="15" text-anchor="middle" font-size="8" fill="{{ t.textMuted }}" font-family="system-ui">蜂数</text>
+                            <text x="160" y="158" text-anchor="middle" font-size="8" fill="{{ t.textMuted }}" font-family="system-ui">気温 (℃)</text>
+                            <sc-for list="{{ weatherCorrPoints }}" as="wcp">
+                              <circle cx="{{ wcp.cx }}" cy="{{ wcp.cy }}" r="5" fill="{{ t.primary }}" fill-opacity="0.72" stroke="{{ t.primaryText }}" stroke-width="0.5">
+                                <title>{{ wcp.colony }} {{ wcp.date }} {{ wcp.temp }}℃</title>
+                              </circle>
+                            </sc-for>
+                          </svg>
+                          <div style="font-size:11px; color:{{ t.textMuted }}; margin-top:8px; text-align:center;">各点は1回の内検記録（蜂数: 少=1〜密=4）</div>
+                        </div>
+                      </sc-if>
+                    </sc-if>
                   </sc-if>
                 </div>
               </sc-if>
@@ -1906,7 +1981,33 @@ if('serviceWorker' in navigator){
                     <div style="font-size:13px; font-weight:700; color:{{ t.text }}; margin-bottom:12px;">蜂群健康スコア推移</div>
                     <svg viewBox="0 0 300 110" width="100%" style="display:block;"><defs><linearGradient id="rg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="{{ t.accent }}" stop-opacity="0.25"></stop><stop offset="100%" stop-color="{{ t.accent }}" stop-opacity="0"></stop></linearGradient></defs><path d="{{ reportArea }}" fill="url(#rg)"></path><path d="{{ reportLine }}" fill="none" stroke="{{ t.accent }}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg>
                   </div>
-                  <div style="display:flex; gap:10px;"><button onClick="{{ noop }}" style="flex:1.4; padding:15px; font-size:14px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};">PDFを出力</button><button onClick="{{ exportWorkCSV }}" style="flex:1; padding:15px; font-size:14px; font-weight:700; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:14px; cursor:pointer;">CSV</button></div>
+                  <!-- ⑨ 匿名ベンチマーク -->
+                  <sc-if value="{{ benchmarkData }}">
+                    <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; margin-bottom:14px;">
+                      <div style="font-size:13px; font-weight:700; color:{{ t.text }}; margin-bottom:12px;">🏆 全国ベンチマーク（匿名）</div>
+                      <div style="display:flex; gap:10px; margin-bottom:12px;">
+                        <div style="flex:1; text-align:center; padding:12px; background:{{ t.surfaceAlt }}; border-radius:12px;">
+                          <div style="font-size:22px; font-weight:800; color:{{ t.primary }};">{{ myAvgHealth }}</div>
+                          <div style="font-size:11px; color:{{ t.textMuted }}; margin-top:2px;">あなたの平均</div>
+                        </div>
+                        <div style="flex:1; text-align:center; padding:12px; background:{{ t.surfaceAlt }}; border-radius:12px;">
+                          <div style="font-size:22px; font-weight:800; color:{{ t.text }};">{{ benchmarkData.avgAll }}</div>
+                          <div style="font-size:11px; color:{{ t.textMuted }}; margin-top:2px;">全国平均</div>
+                        </div>
+                        <div style="flex:1; text-align:center; padding:12px; background:{{ t.surfaceAlt }}; border-radius:12px;">
+                          <div style="font-size:22px; font-weight:800; color:{{ t.text }};">{{ benchmarkData.totalUsers }}</div>
+                          <div style="font-size:11px; color:{{ t.textMuted }}; margin-top:2px;">参加養蜂家</div>
+                        </div>
+                      </div>
+                      <div style="height:8px; background:{{ t.surfaceAlt }}; border-radius:99px; overflow:hidden; position:relative;">
+                        <div style="position:absolute; left:0; top:0; height:100%; background:{{ t.border }}; width:{{ benchmarkData.avgAll }}%; border-radius:99px;"></div>
+                        <div style="position:absolute; left:0; top:0; height:100%; background:{{ t.primary }}; width:{{ myAvgHealth }}%; border-radius:99px; opacity:0.85;"></div>
+                      </div>
+                      <div style="font-size:11px; color:{{ t.textMuted }}; margin-top:6px; text-align:center;">あなた: {{ myAvgHealth }}点　全国平均: {{ benchmarkData.avgAll }}点</div>
+                    </div>
+                  </sc-if>
+                  <!-- ⑥ カルテPDF -->
+                  <div style="display:flex; gap:10px;"><button onClick="{{ generateCurrentColonyPDF }}" style="flex:1.4; padding:15px; font-size:14px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};">🖨 年間カルテPDF</button><button onClick="{{ exportWorkCSV }}" style="flex:1; padding:15px; font-size:14px; font-weight:700; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:14px; cursor:pointer;">CSV</button></div>
                 </div>
               </sc-if>
 
@@ -2279,6 +2380,22 @@ class Component extends DCLogic {
     showPwReset: false,
     confirmDeleteId: null,
     confirmDeleteKind: null,
+    // ① 音声入力
+    voiceActive: false,
+    voiceField: null,
+    voiceTranscript: '',
+    // ② QRスキャン
+    qrScanActive: false,
+    // ④ 越冬リスク
+    winterRiskOpen: false,
+    // ⑦ 分蜂予兆
+    swarmRiskFlag: false,
+    // ⑧ 気温相関
+    weatherData: null,
+    weatherLoading: false,
+    // ⑨ ベンチマーク
+    benchmarkData: null,
+    benchmarkLoading: false,
   };
 
   get COLONIES() { return this.state.colonies || ['A-01','A-02','A-03','A-04','A-05','A-06','A-07','A-08','A-09','A-10','A-11','A-12']; }
@@ -2756,6 +2873,9 @@ class Component extends DCLogic {
       });
       this._setupRealtime();
       this._checkAndNotify(inspHistory);
+      this._checkHarvestReadiness(inspHistory);
+      this.loadWeatherData();
+      this.loadBenchmark();
     } catch(e) { this.setState({ isLoading: false }); }
   }
 
@@ -3106,6 +3226,7 @@ class Component extends DCLogic {
       spaceType: 'honey',
       inspQueenPresent: null, inspBeesTotal: null,
       f: { ...s2.f, frameMemo: '', aiMemo: '' },
+      swarmRiskFlag: false,
     }));
     this._fieldBuf = {};
     this.nav('inspCapture');
@@ -3165,6 +3286,7 @@ class Component extends DCLogic {
       beesTotal: s.inspBeesTotal,
       frameMemo: this.f('frameMemo').trim(),
       aiMemo: this.f('aiMemo').trim(),
+      swarmRisk: s.swarmRiskFlag || false,
     };
     if (this.state.isOffline) {
       this._enqueueOfflineInsp(record);
@@ -3525,6 +3647,7 @@ class Component extends DCLogic {
         const trendTabBees = pill(s.trendTab === 'bees');
         const trendTabQueen = pill(s.trendTab === 'queen');
         const trendTabHealth = pill(s.trendTab === 'health');
+        const trendTabWeather = pill(s.trendTab === 'weather');
         const healthScores = records.map(r => this._calcHealthScore(tc, [r]));
         const healthSparkPts = (() => {
           if (healthScores.length < 2) return '';
@@ -3537,9 +3660,11 @@ class Component extends DCLogic {
         })();
         return { trendColony: tc, trendColonyOpts, trendRecords, trendHasData, beesSparkPts,
           trendTabBees, trendTabQueen, trendTabHealth,
+          trendTabWeather,
           setTrendBees:()=>this.setState({trendTab:'bees'}),
           setTrendQueen:()=>this.setState({trendTab:'queen'}),
           setTrendHealth:()=>this.setState({trendTab:'health'}),
+          setTrendWeather:()=>this.setState({trendTab:'weather'}),
           trendShowBees: s.trendTab === 'bees',
           trendShowQueen: s.trendTab === 'queen',
           trendShowHealth: s.trendTab === 'health',
@@ -4247,6 +4372,64 @@ class Component extends DCLogic {
       confirmCloneColony: () => this.confirmCloneColony(),
       cancelCloneColony: () => this.setState({ cloneColonyFrom: null }),
       hCloneColonyTo: (e) => this.setState({ cloneColonyTo: e.target.value }),
+      // ===== ① 音声入力 =====
+      voiceActive: s.voiceActive || false,
+      voiceField: s.voiceField || null,
+      startVoiceMemo: () => this.startVoice('frameMemo'),
+      voiceMemoActive: s.voiceActive && s.voiceField === 'frameMemo',
+      // ===== ② QRスキャン =====
+      qrScanActive: s.qrScanActive || false,
+      startQRScan: () => this.startQRScan(),
+      // ===== ③ 続きから =====
+      continueFromLastInsp: () => this.continueFromLastInsp(),
+      hasLastInsp: !!(s.lastInspByColony || {})[s.inspColony],
+      // ===== ④ 越冬リスク =====
+      winterRiskOpen: s.winterRiskOpen || false,
+      toggleWinterRisk: () => this.setState(st => ({ winterRiskOpen: !st.winterRiskOpen })),
+      winterRiskItems: this.COLONIES.map(cid => {
+        const wr = this._calcWinterRisk(cid);
+        return { id: cid, ...wr };
+      }).filter(w => w.score > 0).sort((a,b) => b.score - a.score),
+      // ===== ⑦ 分蜂予兆 =====
+      swarmRiskFlag: s.swarmRiskFlag || false,
+      hSwarmRisk: (e) => this.setState({ swarmRiskFlag: e.target.checked }),
+      swarmAlertColonies: (() => {
+        return (s.inspHistory || [])
+          .filter(r => r.swarmRisk)
+          .sort((a,b) => (b.date||'') > (a.date||'') ? 1 : -1)
+          .reduce((acc, r) => {
+            if (!acc.find(x => x.colony === r.colony)) acc.push({ colony: r.colony, date: r.date });
+            return acc;
+          }, []).slice(0,5);
+      })(),
+      // ===== ⑧ 外気温相関 =====
+      weatherData: s.weatherData || null,
+      weatherLoading: s.weatherLoading || false,
+      weatherCorrPoints: (() => {
+        const wd = s.weatherData;
+        if (!wd) return [];
+        const pts = (s.inspHistory || []).filter(r => r.date && wd[r.date] && r.beesTotal != null).map(r => ({
+          date: r.date, temp: wd[r.date].avg, bees: r.beesTotal + 1, colony: r.colony,
+        }));
+        if (pts.length < 2) return pts.map(p => ({ ...p, cx: 160, cy: 80 }));
+        const temps = pts.map(p => p.temp);
+        const minT = Math.min(...temps); const maxT = Math.max(...temps) || minT + 1;
+        return pts.map(p => ({
+          ...p,
+          cx: Math.round(30 + (p.temp - minT) / (maxT - minT) * 255),
+          cy: Math.round(140 - (p.bees / 4) * 120),
+        }));
+      })(),
+      // ===== ⑨ 匿名ベンチマーク =====
+      benchmarkData: s.benchmarkData || null,
+      benchmarkLoading: s.benchmarkLoading || false,
+      myAvgHealth: (() => {
+        const scores = this.COLONIES.map(c => this._calcHealthScore(c, s.inspHistory).score).filter(v => v > 0);
+        return scores.length ? Math.round(scores.reduce((a,b)=>a+b,0)/scores.length) : 0;
+      })(),
+      // ===== ⑥ 年間カルテPDF =====
+      generateColonyPDF: (cid) => this.generateColonyPDF(cid),
+      generateCurrentColonyPDF: () => this.generateColonyPDF(s.hiveDetailColony || s.inspColony || 'A-01'),
       // ===== ⑧ アクティビティログ =====
       activityLog: s.activityLog || [],
       activityLogEmpty: !(s.activityLog && s.activityLog.length),
@@ -4848,6 +5031,202 @@ class Component extends DCLogic {
     try {
       new Notification('HoneyOS 🐝 内検リマインダー', { body, icon: './icon-192.png', tag: 'insp-reminder' });
     } catch(e) {}
+  }
+
+  // ===== ③ 前回内検の続きから =====
+  continueFromLastInsp() {
+    const last = (this.state.lastInspByColony || {})[this.state.inspColony];
+    if (!last) { this.showToast('前回記録がありません', 'error'); return; }
+    const frames = {};
+    (last.frames || [1,2,3,4,5,6,7,8]).forEach(n => { frames[n] = true; });
+    this.setState({
+      frameCount: last.frames ? last.frames.length : 8,
+      frames,
+      countMode: last.countMode || 'frame',
+      spaceCount: last.spaceCount || 10,
+      inspQueenPresent: last.queenPresent != null ? last.queenPresent : null,
+    });
+    this.showToast('前回記録を引き継ぎました', 'ok');
+  }
+
+  // ===== ④ 越冬リスクスコア =====
+  _calcWinterRisk(colony) {
+    const recs = (this.state.inspHistory || []).filter(r => r.colony === colony).sort((a,b) => (b.date||'') > (a.date||'') ? 1 : -1);
+    if (!recs.length) return { score: 0, level: 'unknown', label: '記録なし', color: '#aaa' };
+    const latest = recs[0];
+    let risk = 0;
+    if (latest.queenPresent === false) risk += 40;
+    const beesTotal = latest.beesTotal;
+    if (beesTotal != null && beesTotal <= 1) risk += 30;
+    else if (beesTotal === 2) risk += 10;
+    const honeyCount = Object.values(latest.spaceLevels || {}).filter(v => v === 'honey').length;
+    const spaceCount = latest.spaceCount || 10;
+    const honeyPct = honeyCount / spaceCount;
+    if (honeyPct < 0.2) risk += 30;
+    else if (honeyPct < 0.4) risk += 15;
+    const daysSince = (Date.now() - new Date(latest.date||'').getTime()) / 86400000;
+    if (daysSince > 30) risk += 15;
+    risk = Math.min(100, risk);
+    const level = risk >= 60 ? 'high' : risk >= 30 ? 'medium' : 'low';
+    const label = level === 'high' ? '要対処' : level === 'medium' ? '要注意' : '問題なし';
+    const color = level === 'high' ? '#D9534F' : level === 'medium' ? '#E8961B' : '#3E9D6B';
+    return { score: risk, level, label, color };
+  }
+
+  // ===== ⑤ 採蜜タイミング通知 =====
+  _checkHarvestReadiness(inspHistory) {
+    if (!('Notification' in window) || Notification.permission !== 'granted') return;
+    const ready = this.COLONIES.filter(cid => {
+      const recs = (inspHistory || []).filter(r => r.colony === cid).sort((a,b) => (b.date||'') > (a.date||'') ? 1 : -1);
+      if (!recs.length) return false;
+      const lat = recs[0];
+      const honeyCount = Object.values(lat.spaceLevels || {}).filter(v => v === 'honey').length;
+      const total = lat.spaceCount || 10;
+      return honeyCount / total >= 0.6;
+    });
+    if (!ready.length) return;
+    try {
+      new Notification('HoneyOS 🍯 採蜜タイミング', {
+        body: ready.slice(0,3).join('、') + (ready.length > 3 ? ` ほか${ready.length-3}群` : '') + ' が採蜜適期です',
+        icon: './icon-192.png', tag: 'harvest-ready',
+      });
+    } catch(e) {}
+  }
+
+  // ===== ① 音声入力 =====
+  startVoice(field) {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) { this.showToast('このブラウザは音声入力に対応していません', 'error'); return; }
+    if (this._voiceRecog) { this._voiceRecog.stop(); this._voiceRecog = null; this.setState({ voiceActive: false, voiceField: null }); return; }
+    const recog = new SR();
+    recog.lang = 'ja-JP'; recog.continuous = false; recog.interimResults = false;
+    recog.onresult = (e) => {
+      const text = Array.from(e.results).map(r => r[0].transcript).join('');
+      this._fieldBuf[field] = (this._fieldBuf[field] || '') + text;
+      this.setState({ voiceActive: false, voiceField: null, voiceTranscript: text });
+      this.showToast('音声入力: ' + text.slice(0,30) + (text.length > 30 ? '…' : ''), 'ok');
+    };
+    recog.onerror = () => { this.setState({ voiceActive: false, voiceField: null }); this._voiceRecog = null; };
+    recog.onend = () => { this.setState({ voiceActive: false, voiceField: null }); this._voiceRecog = null; };
+    this._voiceRecog = recog;
+    recog.start();
+    this.setState({ voiceActive: true, voiceField: field });
+  }
+
+  // ===== ② QRコードスキャン =====
+  async startQRScan() {
+    if (!('BarcodeDetector' in window)) { this.showToast('QRスキャンはChrome/Edge対応です', 'error'); return; }
+    this.setState({ qrScanActive: true });
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+      const video = document.createElement('video');
+      video.srcObject = stream; video.setAttribute('playsinline', true); video.autoplay = true;
+      const overlay = document.createElement('div');
+      overlay.style = 'position:fixed;inset:0;z-index:99999;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;';
+      overlay.innerHTML = '<div style="color:#fff;font-size:14px;font-weight:700;">QRコードを巣箱にかざしてください</div><button id="qr-cancel" style="position:absolute;top:20px;right:20px;padding:8px 16px;background:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;">キャンセル</button>';
+      overlay.insertBefore(video, overlay.firstChild);
+      video.style = 'width:100%;max-width:400px;border-radius:12px;';
+      document.body.appendChild(overlay);
+      overlay.querySelector('#qr-cancel').onclick = () => { stream.getTracks().forEach(t=>t.stop()); overlay.remove(); this.setState({ qrScanActive: false }); };
+      const detector = new window.BarcodeDetector({ formats: ['qr_code'] });
+      const scan = async () => {
+        if (!document.body.contains(overlay)) return;
+        try {
+          const barcodes = await detector.detect(video);
+          if (barcodes.length > 0) {
+            const val = barcodes[0].rawValue.trim().toUpperCase();
+            stream.getTracks().forEach(t=>t.stop()); overlay.remove();
+            this.setState({ inspColony: val, qrScanActive: false });
+            this.showToast(`蜂群 ${val} を選択しました`, 'ok');
+            return;
+          }
+        } catch(e) {}
+        requestAnimationFrame(scan);
+      };
+      video.onplay = () => requestAnimationFrame(scan);
+    } catch(e) {
+      this.setState({ qrScanActive: false });
+      this.showToast('カメラへのアクセスに失敗しました', 'error');
+    }
+  }
+
+  // ===== ⑥ 年間カルテPDF（印刷用HTML） =====
+  generateColonyPDF(cid) {
+    const recs = (this.state.inspHistory || []).filter(r => r.colony === cid).sort((a,b) => (a.date||'') < (b.date||'') ? -1 : 1);
+    if (!recs.length) { this.showToast('内検記録がありません', 'error'); return; }
+    const beeL = ['少','並','多','密'];
+    const rows = recs.map(r => `
+      <tr>
+        <td>${r.date||''}</td>
+        <td>${r.weather||''}</td>
+        <td>${r.queenPresent===true?'👑 あり':r.queenPresent===false?'なし':'未記録'}</td>
+        <td>${r.beesTotal!=null?beeL[r.beesTotal]||'':'未記録'}</td>
+        <td>${r.countMode==='frame'?(r.frames||[]).length+'枠':(r.spaceCount||'')+'sp'}</td>
+        <td style="max-width:200px;">${(r.frameMemo||'').replace(/</g,'&lt;')}</td>
+      </tr>`).join('');
+    const hs = this._calcHealthScore(cid, this.state.inspHistory);
+    const wr = this._calcWinterRisk(cid);
+    const html = `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>${cid} 年間カルテ</title>
+    <style>body{font-family:-apple-system,sans-serif;margin:24px;color:#222;}h1{font-size:22px;margin:0 0 4px;}
+    .meta{font-size:13px;color:#666;margin-bottom:20px;}
+    .scores{display:flex;gap:16px;margin-bottom:20px;}
+    .score-card{padding:12px 18px;border-radius:10px;border:1px solid #ddd;min-width:100px;text-align:center;}
+    .score-card .val{font-size:24px;font-weight:800;}.score-card .lbl{font-size:11px;color:#666;margin-top:2px;}
+    table{width:100%;border-collapse:collapse;font-size:13px;}
+    th{background:#f5f5f5;padding:8px;text-align:left;border-bottom:2px solid #ddd;font-weight:700;}
+    td{padding:8px;border-bottom:1px solid #eee;}
+    @media print{body{margin:0;}button{display:none!important;}}</style></head>
+    <body>
+    <h1>🐝 ${cid} 年間カルテ</h1>
+    <div class="meta">出力日: ${new Date().toLocaleDateString('ja-JP')} / 記録件数: ${recs.length}件</div>
+    <div class="scores">
+      <div class="score-card"><div class="val" style="color:${hs.color}">${hs.score}</div><div class="lbl">健康スコア</div></div>
+      <div class="score-card"><div class="val" style="color:${wr.color}">${wr.score}</div><div class="lbl">越冬リスク</div></div>
+    </div>
+    <button onclick="window.print()" style="margin-bottom:16px;padding:10px 20px;background:#E8961B;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;">🖨 印刷 / PDFで保存</button>
+    <table><thead><tr><th>日付</th><th>天気</th><th>女王</th><th>蜂数</th><th>枠/SP</th><th>メモ</th></tr></thead>
+    <tbody>${rows}</tbody></table></body></html>`;
+    const win = window.open('', '_blank');
+    if (win) { win.document.write(html); win.document.close(); }
+    else this.showToast('ポップアップをブロックしています。許可してください', 'error');
+  }
+
+  // ===== ⑧ 外気温データ取得（Open-Meteo） =====
+  async loadWeatherData() {
+    const lat = this.state.farmLat;
+    const lng = this.state.farmLng;
+    if (!lat || !lng) return;
+    this.setState({ weatherLoading: true });
+    try {
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&daily=temperature_2m_max,temperature_2m_min&past_days=90&forecast_days=1&timezone=Asia%2FTokyo`;
+      const res = await fetch(url);
+      const json = await res.json();
+      if (json.daily) {
+        const dates = json.daily.time;
+        const maxT = json.daily.temperature_2m_max;
+        const minT = json.daily.temperature_2m_min;
+        const byDate = {};
+        dates.forEach((d, i) => { byDate[d] = { max: maxT[i], min: minT[i], avg: ((maxT[i]+minT[i])/2) }; });
+        this.setState({ weatherData: byDate, weatherLoading: false });
+      }
+    } catch(e) { this.setState({ weatherLoading: false }); }
+  }
+
+  // ===== ⑨ 匿名ベンチマーク =====
+  async loadBenchmark() {
+    try {
+      const session = await window.HoneyDB.getSession();
+      if (!session) return;
+      this.setState({ benchmarkLoading: true });
+      const avgScore = (() => {
+        const cols = this.COLONIES;
+        const scores = cols.map(c => this._calcHealthScore(c, this.state.inspHistory).score).filter(s => s > 0);
+        return scores.length ? Math.round(scores.reduce((a,b)=>a+b,0)/scores.length) : 0;
+      })();
+      await window.HoneyDB.upsertBenchmark(avgScore, this.COLONIES.length);
+      const data = await window.HoneyDB.loadBenchmarkStats();
+      this.setState({ benchmarkData: data, benchmarkLoading: false });
+    } catch(e) { this.setState({ benchmarkLoading: false }); }
   }
 
   // ===== タスクアーカイブ =====

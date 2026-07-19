@@ -77,6 +77,7 @@
       beesTotal: r.bees_total != null ? r.bees_total : null,
       frameMemo: r.frame_memo || '',
       aiMemo: r.ai_memo || '',
+      swarmRisk: r.swarm_risk || false,
     }));
   }
 
@@ -98,6 +99,7 @@
       bees_total: record.beesTotal != null ? record.beesTotal : null,
       frame_memo: record.frameMemo || '',
       ai_memo: record.aiMemo || '',
+      swarm_risk: record.swarmRisk || false,
     });
     if (error) throw error;
   }
@@ -329,6 +331,32 @@
     };
   }
 
+  // ==================
+  // 匿名ベンチマーク
+  // ==================
+  async function upsertBenchmark(avgHealth, colonyCount) {
+    const session = await getSession();
+    if (!session) return;
+    const { error } = await sb.from('benchmarks').upsert({
+      user_id: session.user.id,
+      avg_health: avgHealth,
+      colony_count: colonyCount,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: 'user_id' });
+    if (error) throw error;
+  }
+
+  async function loadBenchmarkStats() {
+    const { data, error } = await sb.from('benchmarks').select('avg_health, colony_count');
+    if (error) throw error;
+    const rows = data || [];
+    if (!rows.length) return null;
+    const avgAll = Math.round(rows.reduce((s, r) => s + (r.avg_health || 0), 0) / rows.length);
+    const totalUsers = rows.length;
+    const totalColonies = rows.reduce((s, r) => s + (r.colony_count || 0), 0);
+    return { avgAll, totalUsers, totalColonies };
+  }
+
   // Expose API
   window.HoneyDB = {
     resetPassword,
@@ -357,5 +385,7 @@
     subscribeRealtime,
     unsubscribeRealtime,
     exportAllData,
+    upsertBenchmark,
+    loadBenchmarkStats,
   };
 })();
