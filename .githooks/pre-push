@@ -1,0 +1,14 @@
+#!/bin/sh
+# Auto-bump the service worker cache version before every push to main.
+# Set up once with: git config core.hooksPath .githooks
+
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
+if [ "$BRANCH" != "main" ]; then
+  exit 0
+fi
+
+VERSION="honeyos-$(date -u +%Y%m%d-%H%M%S)"
+sed -i "s/const CACHE = '[^']*'/const CACHE = '$VERSION'/" sw.js
+git add sw.js
+git diff --staged --quiet || git commit -m "chore: bump SW cache version to $VERSION"
+echo "[HoneyOS] SW cache version bumped to $VERSION"

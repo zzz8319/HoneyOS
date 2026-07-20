@@ -113,6 +113,71 @@ create policy "users update own profile"
   on public.profiles for update
   using (auth.uid() = id);
 
+-- =====================
+-- colonies: 蜂群管理
+-- =====================
+create table if not exists public.colonies (
+  id         text not null,
+  user_id    uuid references auth.users(id) on delete cascade not null,
+  name       text not null default '',
+  sort_order integer not null default 0,
+  created_at timestamptz not null default now(),
+  primary key (id, user_id)
+);
+
+alter table public.colonies enable row level security;
+
+drop policy if exists "users see own colonies" on public.colonies;
+drop policy if exists "users insert own colonies" on public.colonies;
+drop policy if exists "users update own colonies" on public.colonies;
+drop policy if exists "users delete own colonies" on public.colonies;
+
+create policy "users see own colonies"   on public.colonies for select using (auth.uid() = user_id);
+create policy "users insert own colonies" on public.colonies for insert with check (auth.uid() = user_id);
+create policy "users update own colonies" on public.colonies for update using (auth.uid() = user_id);
+create policy "users delete own colonies" on public.colonies for delete using (auth.uid() = user_id);
+
+-- =====================
+-- farms: 養蜂場管理
+-- =====================
+create table if not exists public.farms (
+  id         bigint generated always as identity primary key,
+  user_id    uuid references auth.users(id) on delete cascade not null,
+  name       text not null,
+  sort_order integer not null default 0,
+  created_at timestamptz not null default now()
+);
+
+alter table public.farms enable row level security;
+
+drop policy if exists "users see own farms" on public.farms;
+drop policy if exists "users insert own farms" on public.farms;
+drop policy if exists "users update own farms" on public.farms;
+drop policy if exists "users delete own farms" on public.farms;
+
+create policy "users see own farms"    on public.farms for select using (auth.uid() = user_id);
+create policy "users insert own farms"  on public.farms for insert with check (auth.uid() = user_id);
+create policy "users update own farms"  on public.farms for update using (auth.uid() = user_id);
+create policy "users delete own farms"  on public.farms for delete using (auth.uid() = user_id);
+
+-- =====================
+-- push_subscriptions: プッシュ通知購読
+-- =====================
+create table if not exists public.push_subscriptions (
+  id         bigint generated always as identity primary key,
+  user_id    uuid references auth.users(id) on delete cascade not null,
+  endpoint   text not null,
+  p256dh     text not null,
+  auth_key   text not null,
+  created_at timestamptz not null default now(),
+  unique(user_id, endpoint)
+);
+
+alter table public.push_subscriptions enable row level security;
+
+drop policy if exists "users manage own push subs" on public.push_subscriptions;
+create policy "users manage own push subs" on public.push_subscriptions for all using (auth.uid() = user_id);
+
 -- Auto-create profile on signup
 create or replace function public.handle_new_user()
 returns trigger language plpgsql security definer set search_path = public as $$

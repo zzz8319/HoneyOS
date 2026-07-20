@@ -77,6 +77,7 @@
       beesTotal: r.bees_total != null ? r.bees_total : null,
       frameMemo: r.frame_memo || '',
       aiMemo: r.ai_memo || '',
+      swarmRisk: r.swarm_risk || false,
     }));
   }
 
@@ -98,7 +99,27 @@
       bees_total: record.beesTotal != null ? record.beesTotal : null,
       frame_memo: record.frameMemo || '',
       ai_memo: record.aiMemo || '',
+      swarm_risk: record.swarmRisk || false,
     });
+    if (error) throw error;
+  }
+
+  async function updateInspRecord(id, record) {
+    const { error } = await sb.from('insp_records').update({
+      colony: record.colony,
+      date: record.date,
+      time: record.time,
+      weather: record.weather,
+      frames: record.frames || [],
+      count_mode: record.countMode || 'frame',
+      frame_details: record.frameDetails || {},
+      space_count: record.spaceCount || null,
+      space_levels: record.spaceLevels || {},
+      queen_present: record.queenPresent != null ? record.queenPresent : null,
+      bees_total: record.beesTotal != null ? record.beesTotal : null,
+      frame_memo: record.frameMemo || '',
+      ai_memo: record.aiMemo || '',
+    }).eq('id', id);
     if (error) throw error;
   }
 
@@ -193,6 +214,105 @@
   }
 
   // ==================
+  // 蜂群管理
+  // ==================
+  async function loadColonies() {
+    const { data, error } = await sb
+      .from('colonies')
+      .select('*')
+      .order('sort_order', { ascending: true });
+    if (error) throw error;
+    return (data || []).map(r => ({ id: r.id, name: r.name, sortOrder: r.sort_order }));
+  }
+
+  async function saveColony(id, name, sortOrder) {
+    const session = await getSession();
+    if (!session) throw new Error('ログインが必要です');
+    const { error } = await sb.from('colonies').upsert({
+      id,
+      user_id: session.user.id,
+      name: name || id,
+      sort_order: sortOrder || 0,
+    }, { onConflict: 'id,user_id' });
+    if (error) throw error;
+  }
+
+  async function deleteColony(id) {
+    const { error } = await sb.from('colonies').delete().eq('id', id);
+    if (error) throw error;
+  }
+
+  async function initDefaultColonies(ids) {
+    const session = await getSession();
+    if (!session) return;
+    const existing = await loadColonies();
+    if (existing.length > 0) return;
+    for (let i = 0; i < ids.length; i++) {
+      await saveColony(ids[i], ids[i], i);
+    }
+  }
+
+  // ==================
+  // 養蜂場管理
+  // ==================
+  async function loadFarms() {
+    const { data, error } = await sb
+      .from('farms')
+      .select('*')
+      .order('sort_order', { ascending: true });
+    if (error) throw error;
+    return (data || []).map(r => ({ id: r.id, name: r.name, sortOrder: r.sort_order }));
+  }
+
+  async function saveFarm(name, id) {
+    const session = await getSession();
+    if (!session) throw new Error('ログインが必要です');
+    if (id) {
+      const { error } = await sb.from('farms').update({ name }).eq('id', id).eq('user_id', session.user.id);
+      if (error) throw error;
+    } else {
+      const { error } = await sb.from('farms').insert({ user_id: session.user.id, name });
+      if (error) throw error;
+    }
+  }
+
+  async function deleteFarm(id) {
+    const { error } = await sb.from('farms').delete().eq('id', id);
+    if (error) throw error;
+  }
+
+  // ==================
+  // パスワードリセット
+  // ==================
+  async function resetPassword(email) {
+    const { error } = await sb.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin + '/HoneyOS/',
+    });
+    if (error) throw error;
+  }
+
+  // ==================
+  // Push通知購読
+  // ==================
+  async function savePushSubscription(sub) {
+    const session = await getSession();
+    if (!session) throw new Error('ログインが必要です');
+    const keys = sub.toJSON ? sub.toJSON().keys : sub.keys;
+    const { error } = await sb.from('push_subscriptions').upsert({
+      user_id: session.user.id,
+      endpoint: sub.endpoint,
+      p256dh: keys.p256dh,
+      auth_key: keys.auth,
+    }, { onConflict: 'user_id,endpoint' });
+    if (error) throw error;
+  }
+
+  async function deletePushSubscription(endpoint) {
+    const { error } = await sb.from('push_subscriptions').delete().eq('endpoint', endpoint);
+    if (error) throw error;
+  }
+
+  // ==================
   // データエクスポート
   // ==================
   async function exportAllData() {
@@ -211,8 +331,44 @@
     };
   }
 
+  // ==================
+  // 匿名ベンチマーク
+  // ==================
+  async function upsertBenchmark(avgHealth, colonyCount) {
+    const session = await getSession();
+    if (!session) return;
+    const { error } = await sb.from('benchmarks').upsert({
+      user_id: session.user.id,
+      avg_health: avgHealth,
+      colony_count: colonyCount,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: 'user_id' });
+    if (error) throw error;
+  }
+
+  async function loadBenchmarkStats() {
+    const { data, error } = await sb.from('benchmarks').select('avg_health, colony_count');
+    if (error) throw error;
+    const rows = data || [];
+    if (!rows.length) return null;
+    const avgAll = Math.round(rows.reduce((s, r) => s + (r.avg_health || 0), 0) / rows.length);
+    const totalUsers = rows.length;
+    const totalColonies = rows.reduce((s, r) => s + (r.colony_count || 0), 0);
+    return { avgAll, totalUsers, totalColonies };
+  }
+
   // Expose API
   window.HoneyDB = {
+    resetPassword,
+    loadColonies,
+    saveColony,
+    deleteColony,
+    initDefaultColonies,
+    loadFarms,
+    saveFarm,
+    deleteFarm,
+    savePushSubscription,
+    deletePushSubscription,
     signUp,
     signIn,
     signOut,
@@ -221,6 +377,7 @@
     updateProfile,
     loadInspRecords,
     saveInspRecord,
+    updateInspRecord,
     deleteInspRecord,
     loadWorkRecords,
     saveWorkRecord,
@@ -228,5 +385,7 @@
     subscribeRealtime,
     unsubscribeRealtime,
     exportAllData,
+    upsertBenchmark,
+    loadBenchmarkStats,
   };
 })();
