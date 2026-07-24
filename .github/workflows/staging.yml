@@ -1,0 +1,48 @@
+name: Staging Deploy
+
+# feature ブランチへの push で自動的にステージング環境へデプロイ。
+# GitHub Pages の設定:
+#   Settings → Pages → Source: "Deploy from a branch"
+#   branch: gh-pages-staging / folder: / (root)
+#   URL: https://zzz8319.github.io/HoneyOS/  ← 本番と同じ origin だが別ブランチ
+#
+# ステージングへアクセスするには gh-pages-staging ブランチに向けた
+# 別のサブドメインを Cloudflare 等で設定するか、
+# staging リポジトリ(HoneyOS-staging)にデプロイする運用を推奨。
+
+on:
+  push:
+    branches:
+      - 'claude/**'
+      - 'feat/**'
+      - 'fix/**'
+
+permissions:
+  contents: write
+
+jobs:
+  staging:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set staging SW cache version
+        run: |
+          VERSION="honeyos-staging-$(date -u +%Y%m%d-%H%M%S)"
+          sed -i "s/const CACHE = '[^']*'/const CACHE = '$VERSION'/" sw.js
+          echo "Staging SW cache version: $VERSION"
+
+      - name: Inject STAGING banner into index.html
+        run: |
+          sed -i 's|<meta name="theme-color" content="#E8961B">|<meta name="theme-color" content="#7C3AED">\n<meta name="staging" content="true">|' index.html
+          sed -i 's|<title>HoneyOS</title>|<title>[STAGING] HoneyOS</title>|' index.html
+
+      - name: Deploy to gh-pages-staging branch
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./
+          publish_branch: gh-pages-staging
+          commit_message: "staging: ${{ github.event.head_commit.message }}"

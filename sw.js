@@ -4,6 +4,7 @@ const PRECACHE = [
   '/HoneyOS/index.html',
   '/HoneyOS/support.js',
   '/HoneyOS/supabase_client.js',
+  '/HoneyOS/utils.js',
   '/HoneyOS/manifest.json',
   '/HoneyOS/icon-192.png',
   '/HoneyOS/icon-512.png',
@@ -54,8 +55,12 @@ self.addEventListener('message', e => {
 });
 
 self.addEventListener('fetch', e => {
-  // Network-first for Supabase API calls
-  if (e.request.url.includes('supabase.co')) {
+  // Network-first: 外部 API・エラー監視は常に最新を取得
+  if (e.request.url.includes('supabase.co') ||
+      e.request.url.includes('sentry.io') ||
+      e.request.url.includes('sentry-cdn.com') ||
+      e.request.url.includes('open-meteo.com') ||
+      e.request.url.includes('nominatim.openstreetmap.org')) {
     e.respondWith(
       fetch(e.request).catch(() => caches.match(e.request))
     );

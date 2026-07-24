@@ -16,15 +16,33 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Bump service worker cache version
+        id: sw_version
         run: |
           VERSION="honeyos-$(date -u +%Y%m%d-%H%M%S)"
           sed -i "s/const CACHE = '[^']*'/const CACHE = '$VERSION'/" sw.js
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "SW cache version: $VERSION"
 
-      - name: Commit bumped SW version
+      - name: Inject SW version into HTML meta tag
+        run: |
+          VERSION="${{ steps.sw_version.outputs.version }}"
+          # sw-version meta タグがあれば更新、なければ追加
+          if grep -q 'name="sw-version"' index.html; then
+            sed -i "s|<meta name=\"sw-version\" content=\"[^\"]*\">|<meta name=\"sw-version\" content=\"$VERSION\">|" index.html
+          else
+            sed -i "s|<meta name=\"theme-color\"|<meta name=\"sw-version\" content=\"$VERSION\">\n<meta name=\"theme-color\"|" index.html
+          fi
+
+      - name: Inject Sentry DSN from GitHub Secret
+        if: ${{ secrets.SENTRY_DSN != '' }}
+        run: |
+          # window.__SENTRY_DSN__ をハードコードせず GitHub Secret から注入
+          sed -i "s|var SENTRY_DSN = window.__SENTRY_DSN__ || '';|var SENTRY_DSN = '${{ secrets.SENTRY_DSN }}';|" index.html
+
+      - name: Commit version bumps
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add sw.js
-          git diff --staged --quiet || git commit -m "ci: bump SW cache version [skip ci]"
+          git add sw.js index.html
+          git diff --staged --quiet || git commit -m "ci: bump versions to ${{ steps.sw_version.outputs.version }} [skip ci]"
           git push
