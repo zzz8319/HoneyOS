@@ -1,4 +1,4 @@
-const CACHE = 'honeyos-staging-20260724-112404';
+const CACHE = 'honeyos-staging-20260726-041153';
 const PRECACHE = [
   '/HoneyOS/',
   '/HoneyOS/index.html',
@@ -55,7 +55,7 @@ self.addEventListener('message', e => {
 });
 
 self.addEventListener('fetch', e => {
-  // Network-first: 外部 API・エラー監視は常に最新を取得
+  // Network-first: 外部 API・Sentry は常に最新を取得
   if (e.request.url.includes('supabase.co') ||
       e.request.url.includes('sentry.io') ||
       e.request.url.includes('sentry-cdn.com') ||

@@ -1,17 +1,24 @@
-(function () {
+(function (root, factory) {
+  // Node.js (Jest) とブラウザ両対応
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports = factory();
+  } else {
+    root.HoneyUtils = factory();
+  }
+}(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
 
   // ===================================================
-  // HoneyOS ユーティリティ
-  // Component クラスに依存しない純粋関数のみここに置く。
-  // Component 側は this._calcHealthScore() → 中で
-  //   window.HoneyUtils.calcHealthScore() を呼ぶ形に移行中。
+  // HoneyOS ユーティリティ — 純粋関数のみ
+  // Component クラスには依存しない。ブラウザ/Node.js 両方で動作する。
   // ===================================================
 
-  // 健康スコア計算
-  // @param colony      string  蜂群ID
-  // @param inspHistory array   全内検履歴
-  // @returns { score: number, label: string, color: string }
+  /**
+   * 蜂群の健康スコアを計算する。
+   * @param {string} colony
+   * @param {Array}  inspHistory  全内検履歴
+   * @returns {{ score: number, label: string, color: string }}
+   */
   function calcHealthScore(colony, inspHistory) {
     const recs = (inspHistory || [])
       .filter(r => r.colony === colony)
@@ -29,7 +36,7 @@
 
     const spaceUsed = Object.values(latest.spaceLevels || {}).filter(v => v && v !== 'empty').length;
     const spaceTotal = latest.spaceCount || 10;
-    const usePct = spaceUsed / spaceTotal;
+    const usePct = spaceTotal > 0 ? spaceUsed / spaceTotal : 0;
     if (usePct < 0.2) score -= 20;
     else if (usePct < 0.4) score -= 10;
 
@@ -41,10 +48,12 @@
     return { score, label, color };
   }
 
-  // 越冬リスクスコア計算
-  // @param colony      string  蜂群ID
-  // @param inspHistory array   全内検履歴
-  // @returns { score: number, level: 'high'|'medium'|'low'|'unknown', label: string, color: string }
+  /**
+   * 越冬リスクスコアを計算する。
+   * @param {string} colony
+   * @param {Array}  inspHistory
+   * @returns {{ score: number, level: 'high'|'medium'|'low'|'unknown', label: string, color: string }}
+   */
   function calcWinterRisk(colony, inspHistory) {
     const recs = (inspHistory || [])
       .filter(r => r.colony === colony)
@@ -62,7 +71,7 @@
 
     const honeyCount = Object.values(latest.spaceLevels || {}).filter(v => v === 'honey').length;
     const spaceCount = latest.spaceCount || 10;
-    const honeyPct = honeyCount / spaceCount;
+    const honeyPct = spaceCount > 0 ? honeyCount / spaceCount : 0;
     if (honeyPct < 0.2) risk += 30;
     else if (honeyPct < 0.4) risk += 15;
 
@@ -76,10 +85,12 @@
     return { score: risk, level, label, color };
   }
 
-  // 採蜜適期チェック
-  // @param colony      string
-  // @param inspHistory array
-  // @returns boolean
+  /**
+   * 採蜜適期かどうかを返す（封蓋蜜60%以上）。
+   * @param {string} colony
+   * @param {Array}  inspHistory
+   * @returns {boolean}
+   */
   function isHarvestReady(colony, inspHistory) {
     const recs = (inspHistory || [])
       .filter(r => r.colony === colony)
@@ -87,13 +98,16 @@
     if (!recs.length) return false;
     const lat = recs[0];
     const honeyCount = Object.values(lat.spaceLevels || {}).filter(v => v === 'honey').length;
-    return honeyCount / (lat.spaceCount || 10) >= 0.6;
+    const total = lat.spaceCount || 10;
+    return total > 0 && honeyCount / total >= 0.6;
   }
 
-  // 分蜂リスクチェック (最新内検で王台確認済みの群)
-  // @param colony      string
-  // @param inspHistory array
-  // @returns boolean
+  /**
+   * 分蜂リスクあり（最新内検で王台確認）かどうかを返す。
+   * @param {string} colony
+   * @param {Array}  inspHistory
+   * @returns {boolean}
+   */
   function hasSwarmRisk(colony, inspHistory) {
     const recs = (inspHistory || [])
       .filter(r => r.colony === colony)
@@ -101,5 +115,5 @@
     return recs.length > 0 && !!recs[0].swarmRisk;
   }
 
-  window.HoneyUtils = { calcHealthScore, calcWinterRisk, isHarvestReady, hasSwarmRisk };
-})();
+  return { calcHealthScore, calcWinterRisk, isHarvestReady, hasSwarmRisk };
+}));
