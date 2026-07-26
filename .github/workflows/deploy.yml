@@ -8,7 +8,19 @@ permissions:
   contents: write
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm test -- --no-coverage
+
   deploy:
+    needs: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -16,15 +28,21 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Bump service worker cache version
+        id: sw_version
         run: |
           VERSION="honeyos-$(date -u +%Y%m%d-%H%M%S)"
           sed -i "s/const CACHE = '[^']*'/const CACHE = '$VERSION'/" sw.js
-          echo "SW cache version: $VERSION"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
-      - name: Commit bumped SW version
+      - name: Inject Sentry DSN from GitHub Secret
+        if: ${{ secrets.SENTRY_DSN != '' }}
+        run: |
+          sed -i "s|var DSN = window.__SENTRY_DSN__ || '';|var DSN = '${{ secrets.SENTRY_DSN }}';|" index.html
+
+      - name: Commit version bumps
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add sw.js
-          git diff --staged --quiet || git commit -m "ci: bump SW cache version [skip ci]"
+          git add sw.js index.html
+          git diff --staged --quiet || git commit -m "ci: bump SW to ${{ steps.sw_version.outputs.version }} [skip ci]"
           git push
