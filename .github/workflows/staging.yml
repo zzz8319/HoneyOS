@@ -1,0 +1,50 @@
+name: Staging Deploy
+
+# feature ブランチへの push で gh-pages-staging ブランチに自動デプロイ。
+# GitHub Pages → Settings → Pages → Branch: gh-pages-staging で有効化。
+
+on:
+  push:
+    branches:
+      - 'claude/**'
+      - 'feat/**'
+      - 'fix/**'
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm test -- --no-coverage
+
+  deploy-staging:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set staging SW cache version
+        run: |
+          VERSION="honeyos-staging-$(date -u +%Y%m%d-%H%M%S)"
+          sed -i "s/const CACHE = '[^']*'/const CACHE = '$VERSION'/" sw.js
+
+      - name: Inject staging banner
+        run: |
+          sed -i 's|<meta name="theme-color" content="#E8961B">|<meta name="theme-color" content="#7C3AED">|' index.html
+          sed -i 's|<title>HoneyOS</title>|<title>[STAGING] HoneyOS</title>|' index.html
+
+      - name: Deploy to gh-pages-staging
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./
+          publish_branch: gh-pages-staging
+          commit_message: "staging: ${{ github.event.head_commit.message }}"
