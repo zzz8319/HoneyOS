@@ -2635,17 +2635,24 @@ class Component extends DCLogic {
     const db = window.HoneyDB;
     if (!db) return;
     const failed = [];
+    let synced = 0;
     for (const item of q) {
       try {
         if (item.kind === 'insp') await db.saveInspRecord(item.record);
+        synced++;
       } catch(e) { failed.push(item); }
     }
     const remaining = failed;
     try { localStorage.setItem('honeyos_offlineQ', JSON.stringify(remaining)); } catch(e) {}
     this.setState({ offlineQueue: remaining });
-    if (q.length - remaining.length > 0) {
-      this.showToast(`${q.length - remaining.length}件のオフライン内検を同期しました ✓`, 'ok');
-      this._logActivity('sync', `${q.length - remaining.length}件オフライン同期`);
+    if (synced > 0) {
+      this.showToast(`${synced}件のオフライン内検を同期しました ✓`, 'ok');
+      this._logActivity('sync', `${synced}件オフライン同期`);
+      // Reload from DB to replace temp IDs with the DB-assigned UUIDs
+      try {
+        const records = await db.loadInspRecords();
+        this.setState({ inspHistory: records, lastInspByColony: this._buildLastInspByColony(records) });
+      } catch(e) {}
     }
   }
 
@@ -2781,7 +2788,8 @@ class Component extends DCLogic {
     if (!r || r.id == null) return;
     const date = (this._fieldBuf['inspEditDate'] || r.date || '').trim();
     const queenRaw = this._fieldBuf['inspEditQueen'];
-    const queenPresent = queenRaw === 'true' ? true : queenRaw === 'false' ? false : null;
+    // undefined means the user didn't touch the field — keep original value
+    const queenPresent = queenRaw === 'true' ? true : queenRaw === 'false' ? false : (queenRaw === undefined ? r.queenPresent : null);
     const frameMemo = (this._fieldBuf['inspEditMemo'] != null ? this._fieldBuf['inspEditMemo'] : r.frameMemo || '');
     const updated = { ...r, date, queenPresent, frameMemo };
     try {
@@ -3336,8 +3344,9 @@ class Component extends DCLogic {
     if (this.state.isOffline) {
       this._enqueueOfflineInsp(record);
     } else {
+      let savedId = null;
       try {
-        await window.HoneyDB.saveInspRecord(record);
+        savedId = await window.HoneyDB.saveInspRecord(record);
       } catch(e) {
         if (this._handleAuthError(e)) return;
         this._enqueueOfflineInsp(record);
@@ -3347,13 +3356,22 @@ class Component extends DCLogic {
         this.tab('tasks');
         return;
       }
+      // Use the DB-assigned UUID so delete/edit use the correct ID
+      const newRec = { id: savedId || now.getTime(), ...record };
+      const inspHistory = [newRec, ...s.inspHistory];
+      const lastInspByColony = this._buildLastInspByColony(inspHistory);
+      this.setState({ inspHistory, lastInspByColony });
+      this._logActivity('insp', `${record.colony} 内検記録`);
+      this.showToast(`${record.colony} の内検を記録しました ✓`, 'ok');
+      this.tab('tasks');
+      return;
     }
     const newRec = { id: now.getTime(), ...record };
     const inspHistory = [newRec, ...s.inspHistory];
     const lastInspByColony = this._buildLastInspByColony(inspHistory);
     this.setState({ inspHistory, lastInspByColony });
     this._logActivity('insp', `${record.colony} 内検記録`);
-    if (!this.state.isOffline) this.showToast(`${record.colony} の内検を記録しました ✓`, 'ok');
+    this.showToast(`${record.colony} の内検を記録しました ✓`, 'ok');
     this.tab('tasks');
   }
 
