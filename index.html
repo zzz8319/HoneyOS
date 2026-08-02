@@ -595,31 +595,32 @@ if('serviceWorker' in navigator){
                               <!-- Status badge top-right -->
                               <div style="position:absolute; top:8px; right:8px; font-size:14px; line-height:1;">{{ cc.statusIcon }}</div>
                               <!-- Detailed wooden beehive SVG -->
-                              <svg width="68" height="62" viewBox="0 0 68 62" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <svg width="68" height="64" viewBox="0 0 68 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <!-- Roof shadow -->
+                                <polygon points="34,4 64,22 4,22" fill="{{ cc.roofColor }}44"/>
                                 <!-- Roof -->
-                                <polygon points="34,3 63,21 5,21" fill="{{ cc.roofColor }}"/>
-                                <rect x="5" y="18" width="58" height="5" rx="0" fill="{{ cc.roofColor }}cc"/>
-                                <!-- Top super box -->
-                                <rect x="9" y="23" width="50" height="11" rx="1.5" fill="{{ cc.boxColor }}"/>
-                                <line x1="9" y1="26.5" x2="59" y2="26.5" stroke="#8B5E30" stroke-width="0.8"/>
-                                <line x1="9" y1="30" x2="59" y2="30" stroke="#8B5E30" stroke-width="0.8"/>
-                                <circle cx="23" cy="27.5" r="1.8" fill="#7A5028"/>
-                                <circle cx="45" cy="27.5" r="1.8" fill="#7A5028"/>
-                                <!-- Main brood box -->
-                                <rect x="7" y="34" width="54" height="16" rx="1.5" fill="#B87C3C"/>
-                                <line x1="7" y1="38" x2="61" y2="38" stroke="#8B5E30" stroke-width="0.8"/>
-                                <line x1="7" y1="42" x2="61" y2="42" stroke="#8B5E30" stroke-width="0.8"/>
-                                <line x1="7" y1="46" x2="61" y2="46" stroke="#8B5E30" stroke-width="0.8"/>
-                                <circle cx="23" cy="40" r="1.8" fill="#7A5028"/>
-                                <circle cx="45" cy="40" r="1.8" fill="#7A5028"/>
+                                <polygon points="34,2 62,20 6,20" fill="{{ cc.roofColor }}"/>
+                                <!-- Roof edge -->
+                                <rect x="4" y="19" width="60" height="4" rx="1" fill="{{ cc.roofColor }}dd"/>
+                                <!-- Super box (upper) -->
+                                <rect x="8" y="23" width="52" height="10" rx="2" fill="{{ cc.boxColor }}"/>
+                                <rect x="8" y="23" width="52" height="10" rx="2" fill="url(#woodGrain1cc)" opacity="0.3"/>
+                                <line x1="8" y1="27" x2="60" y2="27" stroke="#5C3317" stroke-width="0.7" opacity="0.6"/>
+                                <line x1="8" y1="30" x2="60" y2="30" stroke="#5C3317" stroke-width="0.7" opacity="0.6"/>
+                                <!-- Brood box (main) -->
+                                <rect x="6" y="33" width="56" height="15" rx="2" fill="#B87C3C"/>
+                                <line x1="6" y1="37" x2="62" y2="37" stroke="#7A4B1E" stroke-width="0.7" opacity="0.6"/>
+                                <line x1="6" y1="41" x2="62" y2="41" stroke="#7A4B1E" stroke-width="0.7" opacity="0.6"/>
+                                <line x1="6" y1="44" x2="62" y2="44" stroke="#7A4B1E" stroke-width="0.7" opacity="0.6"/>
                                 <!-- Entrance board -->
-                                <rect x="7" y="50" width="54" height="4" rx="1" fill="#8B5E30"/>
-                                <rect x="26" y="51" width="16" height="2" rx="1" fill="#3B200A"/>
+                                <rect x="6" y="48" width="56" height="4" rx="1" fill="#8B5E30"/>
+                                <!-- Entrance hole -->
+                                <rect x="22" y="49" width="24" height="2" rx="1" fill="#2C1500"/>
                                 <!-- Bottom board -->
-                                <rect x="4" y="54" width="60" height="3" rx="1" fill="#7A5028"/>
+                                <rect x="3" y="52" width="62" height="3" rx="1" fill="#7A5028"/>
                                 <!-- Stand legs -->
-                                <rect x="12" y="57" width="5" height="5" rx="1" fill="#6B4520"/>
-                                <rect x="51" y="57" width="5" height="5" rx="1" fill="#6B4520"/>
+                                <rect x="11" y="55" width="6" height="9" rx="1.5" fill="#6B4520"/>
+                                <rect x="51" y="55" width="6" height="9" rx="1.5" fill="#6B4520"/>
                               </svg>
                             </div>
                             <!-- Colony info -->
@@ -669,13 +670,13 @@ if('serviceWorker' in navigator){
                             <div style="position:absolute; left:-22px; top:12px; width:10px; height:10px; border-radius:50%; background:{{ tc.roofColor }}; border:2px solid {{ t.surface }};"></div>
                             <div style="background:{{ t.surface }}; border:1.5px solid {{ tc.borderColor }}; border-radius:12px; padding:10px 12px; display:flex; align-items:center; gap:10px;">
                               <!-- Mini SVG hive -->
-                              <svg width="32" height="30" viewBox="0 0 68 62" fill="none" style="flex-shrink:0;">
-                                <polygon points="34,3 63,21 5,21" fill="{{ tc.roofColor }}"/>
-                                <rect x="5" y="18" width="58" height="5" fill="{{ tc.roofColor }}cc"/>
-                                <rect x="9" y="23" width="50" height="11" rx="1.5" fill="{{ tc.boxColor }}"/>
-                                <rect x="7" y="34" width="54" height="16" rx="1.5" fill="#B87C3C"/>
-                                <rect x="7" y="50" width="54" height="4" rx="1" fill="#8B5E30"/>
-                                <rect x="26" y="51" width="16" height="2" rx="1" fill="#3B200A"/>
+                              <svg width="32" height="30" viewBox="0 0 68 64" fill="none" style="flex-shrink:0;">
+                                <polygon points="34,2 62,20 6,20" fill="{{ tc.roofColor }}"/>
+                                <rect x="4" y="19" width="60" height="4" rx="1" fill="{{ tc.roofColor }}dd"/>
+                                <rect x="8" y="23" width="52" height="10" rx="2" fill="{{ tc.boxColor }}"/>
+                                <rect x="6" y="33" width="56" height="15" rx="2" fill="#B87C3C"/>
+                                <rect x="6" y="48" width="56" height="4" rx="1" fill="#8B5E30"/>
+                                <rect x="22" y="49" width="24" height="2" rx="1" fill="#2C1500"/>
                                 <rect x="4" y="54" width="60" height="3" rx="1" fill="#7A5028"/>
                               </svg>
                               <div style="flex:1; min-width:0;">
@@ -728,13 +729,13 @@ if('serviceWorker' in navigator){
                         <sc-for list="{{ colonyCards }}" as="lc">
                           <div onClick="{{ lc.open }}" style="background:{{ t.surface }}; border:1.5px solid {{ lc.borderColor }}; border-radius:12px; padding:10px 12px; cursor:pointer; display:flex; align-items:center; gap:10px;">
                             <!-- Mini hive -->
-                            <svg width="28" height="26" viewBox="0 0 68 62" fill="none" style="flex-shrink:0;">
-                              <polygon points="34,3 63,21 5,21" fill="{{ lc.roofColor }}"/>
-                              <rect x="5" y="18" width="58" height="5" fill="{{ lc.roofColor }}cc"/>
-                              <rect x="9" y="23" width="50" height="11" rx="1.5" fill="{{ lc.boxColor }}"/>
-                              <rect x="7" y="34" width="54" height="16" rx="1.5" fill="#B87C3C"/>
-                              <rect x="7" y="50" width="54" height="4" rx="1" fill="#8B5E30"/>
-                              <rect x="26" y="51" width="16" height="2" rx="1" fill="#3B200A"/>
+                            <svg width="28" height="26" viewBox="0 0 68 64" fill="none" style="flex-shrink:0;">
+                              <polygon points="34,2 62,20 6,20" fill="{{ lc.roofColor }}"/>
+                              <rect x="4" y="19" width="60" height="4" rx="1" fill="{{ lc.roofColor }}dd"/>
+                              <rect x="8" y="23" width="52" height="10" rx="2" fill="{{ lc.boxColor }}"/>
+                              <rect x="6" y="33" width="56" height="15" rx="2" fill="#B87C3C"/>
+                              <rect x="6" y="48" width="56" height="4" rx="1" fill="#8B5E30"/>
+                              <rect x="22" y="49" width="24" height="2" rx="1" fill="#2C1500"/>
                               <rect x="4" y="54" width="60" height="3" rx="1" fill="#7A5028"/>
                             </svg>
                             <!-- Info -->
@@ -2094,179 +2095,196 @@ if('serviceWorker' in navigator){
 
               <!-- SETTINGS -->
               <sc-if value="{{ vSettings }}" hint-placeholder-val="{{ false }}">
-                <div data-screen-label="設定" style="padding:64px 16px 24px; overflow-y:auto; position:absolute; inset:0; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
-                  <div style="font-size:22px; font-weight:800; color:{{ t.text }}; margin-bottom:18px; padding:0 4px;">設定</div>
-                  <!-- Profile card -->
-                  <div style="display:flex; align-items:center; gap:14px; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; margin-bottom:20px;">
-                    <div style="width:52px; height:52px; border-radius:50%; background:{{ t.chipBg }}; display:flex; align-items:center; justify-content:center; font-size:24px; flex-shrink:0;">🧑‍🌾</div>
-                    <div style="flex:1; min-width:0;">
-                      <div style="font-size:16px; font-weight:800; color:{{ t.text }};">{{ userName }}</div>
-                      <div style="font-size:13px; color:{{ t.textMuted }}; margin-top:2px;">{{ userFarm }}</div>
-                    </div>
-                    <button onClick="{{ goEditProfile }}" style="padding:7px 14px; font-size:13px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primary }}; background:{{ t.chipBg }}; border:none; border-radius:999px; cursor:pointer;">編集</button>
+                <div data-screen-label="設定" style="padding:64px 0 90px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
+                  <div style="font-size:22px; font-weight:800; color:{{ t.text }}; margin-bottom:12px; padding:0 20px;">設定</div>
+                  <!-- Tab bar -->
+                  <div style="display:flex; gap:0; background:{{ t.surfaceAlt }}; border-radius:12px; padding:3px; margin:0 16px 16px; box-sizing:border-box;">
+                    <button onClick="{{ setSettingsTabBasic }}" style="flex:1; padding:9px 4px; font-size:13px; font-weight:700; font-family:{{ t.font }}; border:none; border-radius:9px; cursor:pointer; background:{{ settingsTabBasic ? t.surface : 'transparent' }}; color:{{ settingsTabBasic ? t.primary : t.textMuted }}; box-shadow:{{ settingsTabBasic ? '0 1px 4px rgba(0,0,0,.1)' : 'none' }}; transition:all .2s;">基本</button>
+                    <button onClick="{{ setSettingsTabColony }}" style="flex:1; padding:9px 4px; font-size:13px; font-weight:700; font-family:{{ t.font }}; border:none; border-radius:9px; cursor:pointer; background:{{ settingsTabColony ? t.surface : 'transparent' }}; color:{{ settingsTabColony ? t.primary : t.textMuted }}; box-shadow:{{ settingsTabColony ? '0 1px 4px rgba(0,0,0,.1)' : 'none' }}; transition:all .2s;">蜂群・農場</button>
+                    <button onClick="{{ setSettingsTabOther }}" style="flex:1; padding:9px 4px; font-size:13px; font-weight:700; font-family:{{ t.font }}; border:none; border-radius:9px; cursor:pointer; background:{{ settingsTabOther ? t.surface : 'transparent' }}; color:{{ settingsTabOther ? t.primary : t.textMuted }}; box-shadow:{{ settingsTabOther ? '0 1px 4px rgba(0,0,0,.1)' : 'none' }}; transition:all .2s;">その他</button>
                   </div>
-                  <!-- Edit profile form -->
-                  <sc-if value="{{ settingEditOpen }}">
-                    <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; margin-bottom:20px;">
-                      <div style="font-size:14px; font-weight:700; color:{{ t.text }}; margin-bottom:14px;">プロフィール編集</div>
-                      <div style="margin-bottom:12px;"><label style="display:block; font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:6px;">お名前</label><input type="text" value="{{ editName }}" onInput="{{ h.editName }}" style="width:100%; padding:12px 14px; font-size:15px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surfaceAlt }}; border:1.5px solid {{ t.border }}; border-radius:10px; outline:none;" style-focus="border-color:{{ t.primary }};"></div>
-                      <div style="margin-bottom:16px;"><label style="display:block; font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:6px;">養蜂場名</label><input type="text" value="{{ editFarm }}" onInput="{{ h.editFarm }}" style="width:100%; padding:12px 14px; font-size:15px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surfaceAlt }}; border:1.5px solid {{ t.border }}; border-radius:10px; outline:none;" style-focus="border-color:{{ t.primary }};"></div>
-                      <sc-if value="{{ settingError }}"><div style="margin-bottom:12px; padding:10px 12px; background:{{ t.dangerBg }}; border-radius:8px; font-size:13px; color:{{ t.danger }}; font-weight:600;">{{ settingError }}</div></sc-if>
-                      <sc-if value="{{ settingSaved }}"><div style="margin-bottom:12px; padding:10px 12px; background:{{ t.chipBg }}; border-radius:8px; font-size:13px; color:{{ t.ok }}; font-weight:600;">✓ 保存しました</div></sc-if>
-                      <div style="display:flex; gap:8px;">
-                        <button onClick="{{ cancelEditProfile }}" style="flex:1; padding:12px; font-size:14px; font-weight:700; font-family:{{ t.font }}; color:{{ t.textMuted }}; background:{{ t.surfaceAlt }}; border:1px solid {{ t.border }}; border-radius:10px; cursor:pointer;">キャンセル</button>
-                        <button onClick="{{ saveProfile }}" style="flex:2; padding:12px; font-size:14px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:10px; cursor:pointer; box-shadow:0 4px 12px {{ t.primaryShadow }};">保存する</button>
+
+                  <!-- ===== TAB: 基本 ===== -->
+                  <sc-if value="{{ settingsTabBasic }}">
+                    <div style="padding:0 16px; display:flex; flex-direction:column; gap:12px;">
+                      <!-- Profile card -->
+                      <div style="display:flex; align-items:center; gap:14px; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px;">
+                        <div style="width:52px; height:52px; border-radius:50%; background:{{ t.chipBg }}; display:flex; align-items:center; justify-content:center; font-size:24px; flex-shrink:0;">🧑‍🌾</div>
+                        <div style="flex:1; min-width:0;">
+                          <div style="font-size:16px; font-weight:800; color:{{ t.text }};">{{ userName }}</div>
+                          <div style="font-size:13px; color:{{ t.textMuted }}; margin-top:2px;">{{ userFarm }}</div>
+                        </div>
+                        <button onClick="{{ goEditProfile }}" style="padding:7px 14px; font-size:13px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primary }}; background:{{ t.chipBg }}; border:none; border-radius:999px; cursor:pointer;">編集</button>
+                      </div>
+                      <!-- Edit profile form -->
+                      <sc-if value="{{ settingEditOpen }}">
+                        <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px;">
+                          <div style="font-size:14px; font-weight:700; color:{{ t.text }}; margin-bottom:14px;">プロフィール編集</div>
+                          <div style="margin-bottom:12px;"><label style="display:block; font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:6px;">お名前</label><input type="text" value="{{ editName }}" onInput="{{ h.editName }}" style="width:100%; padding:12px 14px; font-size:15px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surfaceAlt }}; border:1.5px solid {{ t.border }}; border-radius:10px; outline:none; box-sizing:border-box;" style-focus="border-color:{{ t.primary }};"></div>
+                          <div style="margin-bottom:16px;"><label style="display:block; font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:6px;">養蜂場名</label><input type="text" value="{{ editFarm }}" onInput="{{ h.editFarm }}" style="width:100%; padding:12px 14px; font-size:15px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surfaceAlt }}; border:1.5px solid {{ t.border }}; border-radius:10px; outline:none; box-sizing:border-box;" style-focus="border-color:{{ t.primary }};"></div>
+                          <sc-if value="{{ settingError }}"><div style="margin-bottom:12px; padding:10px 12px; background:{{ t.dangerBg }}; border-radius:8px; font-size:13px; color:{{ t.danger }}; font-weight:600;">{{ settingError }}</div></sc-if>
+                          <sc-if value="{{ settingSaved }}"><div style="margin-bottom:12px; padding:10px 12px; background:{{ t.chipBg }}; border-radius:8px; font-size:13px; color:{{ t.ok }}; font-weight:600;">✓ 保存しました</div></sc-if>
+                          <div style="display:flex; gap:8px;">
+                            <button onClick="{{ cancelEditProfile }}" style="flex:1; padding:12px; font-size:14px; font-weight:700; font-family:{{ t.font }}; color:{{ t.textMuted }}; background:{{ t.surfaceAlt }}; border:1px solid {{ t.border }}; border-radius:10px; cursor:pointer;">キャンセル</button>
+                            <button onClick="{{ saveProfile }}" style="flex:2; padding:12px; font-size:14px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:10px; cursor:pointer; box-shadow:0 4px 12px {{ t.primaryShadow }};">保存する</button>
+                          </div>
+                        </div>
+                      </sc-if>
+                      <!-- Language switcher -->
+                      <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px;">
+                        <div style="font-size:13px; font-weight:700; color:{{ t.textMuted }}; margin-bottom:10px;">🌐 {{ TR.langJa }} / {{ TR.langEn }}</div>
+                        <div style="display:flex; gap:8px;">
+                          <button onClick="{{ setLangJa }}" style="{{ langJaStyle }}">🇯🇵 日本語</button>
+                          <button onClick="{{ setLangEn }}" style="{{ langEnStyle }}">🇺🇸 English</button>
+                        </div>
+                      </div>
+                      <!-- Account / other settings rows -->
+                      <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; overflow:hidden;">
+                        <sc-for list="{{ settingsRows }}" as="sr">
+                          <div onClick="{{ sr.open }}" style="display:flex; align-items:center; gap:12px; padding:15px 16px; border-bottom:1px solid {{ t.border }}; cursor:pointer;" style-active="background:{{ t.surfaceAlt }};"><span style="font-size:18px; width:24px; text-align:center;">{{ sr.icon }}</span><div style="flex:1;"><div style="font-size:14px; color:{{ t.text }};">{{ sr.label }}</div><div style="font-size:11px; color:{{ t.textMuted }}; margin-top:2px;">{{ sr.desc }}</div></div><span style="color:{{ t.textMuted }};">›</span></div>
+                        </sc-for>
                       </div>
                     </div>
                   </sc-if>
-                  <!-- Language switcher -->
-                  <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; margin-bottom:16px;">
-                    <div style="font-size:13px; font-weight:700; color:{{ t.textMuted }}; margin-bottom:10px;">🌐 {{ TR.langJa }} / {{ TR.langEn }}</div>
-                    <div style="display:flex; gap:8px;">
-                      <button onClick="{{ setLangJa }}" style="{{ langJaStyle }}">🇯🇵 日本語</button>
-                      <button onClick="{{ setLangEn }}" style="{{ langEnStyle }}">🇺🇸 English</button>
-                    </div>
-                  </div>
-                  <!-- Other settings rows -->
-                  <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; overflow:hidden; margin-bottom:16px;">
-                    <sc-for list="{{ settingsRows }}" as="sr">
-                      <div onClick="{{ sr.open }}" style="display:flex; align-items:center; gap:12px; padding:15px 16px; border-bottom:1px solid {{ t.border }}; cursor:pointer;" style-active="background:{{ t.surfaceAlt }};"><span style="font-size:18px; width:24px; text-align:center;">{{ sr.icon }}</span><div style="flex:1;"><div style="font-size:14px; color:{{ t.text }};">{{ sr.label }}</div><div style="font-size:11px; color:{{ t.textMuted }}; margin-top:2px;">{{ sr.desc }}</div></div><span style="color:{{ t.textMuted }};">›</span></div>
-                    </sc-for>
-                  </div>
-                  <!-- 養蜂場位置設定 -->
-                  <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; margin-bottom:16px;">
-                    <div style="font-size:13px; font-weight:700; color:{{ t.text }}; margin-bottom:4px;">📍 養蜂場の位置</div>
-                    <div style="font-size:12px; color:{{ t.textMuted }}; margin-bottom:12px;">地図上に養蜂場の位置を記録します。住所検索または現在地から設定できます。</div>
-                    <!-- 住所検索 -->
-                    <div style="display:flex; gap:8px; margin-bottom:10px;">
-                      <input type="text" value="{{ farmLocSearch }}" onInput="{{ hFarmLocSearch }}" placeholder="例：北海道札幌市、または住所・地名" style="flex:1; padding:11px 14px; font-size:14px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surfaceAlt }}; border:1.5px solid {{ t.border }}; border-radius:10px; outline:none;" style-focus="border-color:{{ t.primary }};">
-                      <button onClick="{{ searchFarmLocation }}" style="padding:11px 16px; font-size:12px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:10px; cursor:pointer; white-space:nowrap; opacity:{{ farmLocSearching ? 0.6 : 1 }};">{{ farmLocSearching ? '検索中…' : '検索' }}</button>
-                    </div>
-                    <!-- 現在地ボタン -->
-                    <button onClick="{{ setFarmGPS }}" style="width:100%; padding:11px; font-size:13px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primary }}; background:{{ t.chipBg }}; border:1.5px solid {{ t.primary }}; border-radius:10px; cursor:pointer; margin-bottom:12px; opacity:{{ farmGpsLoading ? 0.6 : 1 }};">{{ farmGpsLoading ? '📡 取得中…' : '📡 現在地を養蜂場に設定' }}</button>
-                    <!-- 位置設定済み表示 -->
-                    <sc-if value="{{ farmHasLocation }}">
-                      <div style="background:{{ t.surfaceAlt }}; border-radius:10px; overflow:hidden; margin-bottom:10px;">
-                        <iframe src="{{ farmMapEmbedUrl }}" width="100%" height="200" frameborder="0" scrolling="no" style="display:block; border:none;"></iframe>
-                      </div>
-                      <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
-                        <span style="font-size:12px; color:{{ t.textMuted }}; flex:1; word-break:break-all;">📍 {{ farmLocationName || farmLat + ', ' + farmLng }}</span>
-                      </div>
-                      <div style="display:flex; gap:8px;">
-                        <a href="{{ farmMapsUrl }}" target="_blank" rel="noopener" style="flex:1; padding:9px; font-size:12px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primary }}; background:{{ t.chipBg }}; border:1.5px solid {{ t.primary }}; border-radius:8px; cursor:pointer; text-align:center; text-decoration:none;">Googleマップで開く</a>
-                        <button onClick="{{ clearFarmLocation }}" style="padding:9px 14px; font-size:12px; font-weight:700; font-family:{{ t.font }}; color:{{ t.danger }}; background:{{ t.dangerBg }}; border:none; border-radius:8px; cursor:pointer;">クリア</button>
-                      </div>
-                    </sc-if>
-                    <sc-if value="{{ !farmHasLocation }}">
-                      <div style="background:{{ t.surfaceAlt }}; border-radius:10px; padding:20px; text-align:center;">
-                        <div style="font-size:28px; margin-bottom:6px;">🗺️</div>
-                        <div style="font-size:12px; color:{{ t.textMuted }};">位置が未設定です</div>
-                      </div>
-                    </sc-if>
-                  </div>
-                  <!-- 蜂群管理 -->
-                  <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; margin-bottom:16px;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                      <div style="font-size:13px; font-weight:700; color:{{ t.text }};">🐝 蜂群管理</div>
-                      <button onClick="{{ toggleColonyEditMode }}" style="padding:5px 12px; font-size:12px; font-weight:700; font-family:{{ t.font }}; color:{{ colonyEditMode ? t.danger : t.primary }}; background:{{ colonyEditMode ? t.dangerBg : t.chipBg }}; border:none; border-radius:999px; cursor:pointer;">{{ colonyEditMode ? '完了' : '編集' }}</button>
-                    </div>
-                    <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px;">
-                      <sc-for list="{{ coloniesManage }}" as="cm">
-                        <div style="display:flex; align-items:center; gap:4px; padding:5px 10px; background:{{ t.surfaceAlt }}; border:1px solid {{ t.border }}; border-radius:999px; font-size:13px; color:{{ t.text }};">
-                          <span>{{ cm.id }}</span>
-                          <sc-if value="{{ colonyEditMode }}">
-                            <span onClick="{{ cm.del }}" style="margin-left:2px; color:{{ t.danger }}; font-weight:700; cursor:pointer; font-size:14px; line-height:1;">×</span>
-                          </sc-if>
+
+                  <!-- ===== TAB: 蜂群・農場 ===== -->
+                  <sc-if value="{{ settingsTabColony }}">
+                    <div style="padding:0 16px; display:flex; flex-direction:column; gap:12px;">
+                      <!-- 蜂群管理 -->
+                      <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                          <div style="font-size:13px; font-weight:700; color:{{ t.text }};">🐝 蜂群管理</div>
+                          <button onClick="{{ toggleColonyEditMode }}" style="padding:5px 12px; font-size:12px; font-weight:700; font-family:{{ t.font }}; color:{{ colonyEditMode ? t.danger : t.primary }}; background:{{ colonyEditMode ? t.dangerBg : t.chipBg }}; border:none; border-radius:999px; cursor:pointer;">{{ colonyEditMode ? '完了' : '編集' }}</button>
                         </div>
-                      </sc-for>
-                    </div>
-                    <sc-if value="{{ colonyEditMode }}">
-                      <div style="display:flex; gap:8px;">
-                        <input type="text" value="{{ newColonyId }}" onInput="{{ hNewColonyId }}" placeholder="例: B-01" style="flex:1; padding:9px 12px; font-size:14px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surfaceAlt }}; border:1.5px solid {{ t.border }}; border-radius:10px; outline:none;" style-focus="border-color:{{ t.primary }};">
-                        <button onClick="{{ addColony }}" style="padding:9px 16px; font-size:13px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:10px; cursor:pointer;">追加</button>
+                        <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px;">
+                          <sc-for list="{{ coloniesManage }}" as="cm">
+                            <div style="display:flex; align-items:center; gap:4px; padding:5px 10px; background:{{ t.surfaceAlt }}; border:1px solid {{ t.border }}; border-radius:999px; font-size:13px; color:{{ t.text }};">
+                              <span>{{ cm.id }}</span>
+                              <sc-if value="{{ colonyEditMode }}">
+                                <span onClick="{{ cm.del }}" style="margin-left:2px; color:{{ t.danger }}; font-weight:700; cursor:pointer; font-size:14px; line-height:1;">×</span>
+                              </sc-if>
+                            </div>
+                          </sc-for>
+                        </div>
+                        <sc-if value="{{ colonyEditMode }}">
+                          <div style="display:flex; gap:8px;">
+                            <input type="text" value="{{ newColonyId }}" onInput="{{ hNewColonyId }}" placeholder="例: B-01" style="flex:1; padding:9px 12px; font-size:14px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surfaceAlt }}; border:1.5px solid {{ t.border }}; border-radius:10px; outline:none;" style-focus="border-color:{{ t.primary }};">
+                            <button onClick="{{ addColony }}" style="padding:9px 16px; font-size:13px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:10px; cursor:pointer;">追加</button>
+                          </div>
+                        </sc-if>
                       </div>
-                    </sc-if>
-                  </div>
-                  <!-- 養蜂場DB管理 -->
-                  <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; margin-bottom:16px;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                      <div style="font-size:13px; font-weight:700; color:{{ t.text }};">🏡 養蜂場リスト</div>
-                      <button onClick="{{ openFarmForm }}" style="padding:5px 12px; font-size:12px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primary }}; background:{{ t.chipBg }}; border:none; border-radius:999px; cursor:pointer;">＋ 追加</button>
-                    </div>
-                    <sc-if value="{{ farmsEmpty }}">
-                      <div style="font-size:12px; color:{{ t.textMuted }}; padding:8px 0;">養蜂場が登録されていません</div>
-                    </sc-if>
-                    <sc-for list="{{ farmsManage }}" as="fm">
-                      <div style="display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid {{ t.border }};">
-                        <span style="flex:1; font-size:14px; color:{{ t.text }};">{{ fm.name }}</span>
-                        <button onClick="{{ fm.del }}" style="padding:4px 10px; font-size:12px; font-weight:700; font-family:{{ t.font }}; color:{{ t.danger }}; background:{{ t.dangerBg }}; border:none; border-radius:8px; cursor:pointer;">削除</button>
-                      </div>
-                    </sc-for>
-                    <sc-if value="{{ showFarmForm }}">
-                      <div style="margin-top:10px; display:flex; gap:8px;">
-                        <input type="text" value="{{ farmEditName }}" onInput="{{ hFarmEditName }}" placeholder="養蜂場名を入力" style="flex:1; padding:9px 12px; font-size:14px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surfaceAlt }}; border:1.5px solid {{ t.border }}; border-radius:10px; outline:none;" style-focus="border-color:{{ t.primary }};">
-                        <button onClick="{{ saveFarm }}" style="padding:9px 16px; font-size:13px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:10px; cursor:pointer;">保存</button>
-                        <button onClick="{{ closeFarmForm }}" style="padding:9px 12px; font-size:13px; font-weight:700; font-family:{{ t.font }}; color:{{ t.textMuted }}; background:{{ t.surfaceAlt }}; border:1px solid {{ t.border }}; border-radius:10px; cursor:pointer;">×</button>
-                      </div>
-                    </sc-if>
-                  </div>
-                  <!-- 蜂群タグ/メモ 一括編集 -->
-                  <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; margin-bottom:16px;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                      <div style="font-size:13px; font-weight:700; color:{{ t.text }};">🏷 蜂群タグ/メモ 一括編集</div>
-                      <button onClick="{{ toggleBulkTagMode }}" style="padding:5px 12px; font-size:12px; font-weight:700; font-family:{{ t.font }}; color:{{ bulkTagMode ? t.danger : t.primary }}; background:{{ bulkTagMode ? t.dangerBg : t.chipBg }}; border:none; border-radius:999px; cursor:pointer;">{{ bulkTagMode ? '閉じる' : '編集' }}</button>
-                    </div>
-                    <sc-if value="{{ bulkTagMode }}">
-                      <div style="font-size:12px; color:{{ t.textMuted }}; margin-bottom:8px;">蜂群を選択してタグ・メモを一括設定できます</div>
-                      <div style="display:flex; gap:8px; margin-bottom:8px;">
-                        <button onClick="{{ bulkSelectAll }}" style="padding:4px 10px; font-size:11px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primary }}; background:{{ t.chipBg }}; border:none; border-radius:999px; cursor:pointer;">全選択</button>
-                        <button onClick="{{ bulkSelectNone }}" style="padding:4px 10px; font-size:11px; font-weight:700; font-family:{{ t.font }}; color:{{ t.textMuted }}; background:{{ t.surfaceAlt }}; border:none; border-radius:999px; cursor:pointer;">解除</button>
-                        <span style="font-size:12px; color:{{ t.textMuted }}; align-self:center;">{{ bulkTagSelectedCount }}群選択中</span>
-                      </div>
-                      <div style="display:flex; flex-wrap:wrap; gap:5px; margin-bottom:12px;">
-                        <sc-for list="{{ bulkColonyItems }}" as="bc">
-                          <button onClick="{{ bc.toggle }}" style="padding:5px 11px; font-size:12px; font-weight:700; font-family:{{ t.font }}; border:1.5px solid {{ bc.selected ? t.primary : t.border }}; background:{{ bc.selected ? t.primary : t.surfaceAlt }}; color:{{ bc.selected ? t.primaryText : t.text }}; border-radius:999px; cursor:pointer;">{{ bc.id }}</button>
-                        </sc-for>
-                      </div>
-                      <div style="font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:6px;">タグ付与 / 削除</div>
-                      <div style="display:flex; flex-wrap:wrap; gap:5px; margin-bottom:12px;">
-                        <sc-for list="{{ bulkTagOptions }}" as="bto">
-                          <div style="display:flex; gap:0;">
-                            <button onClick="{{ bto.apply }}" style="padding:5px 10px; font-size:11px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primary }}; background:{{ t.chipBg }}; border:1px solid {{ t.border }}; border-right:none; border-radius:999px 0 0 999px; cursor:pointer;">＋{{ bto.tag }}</button>
-                            <button onClick="{{ bto.remove }}" style="padding:5px 8px; font-size:11px; font-weight:700; font-family:{{ t.font }}; color:{{ t.danger }}; background:{{ t.dangerBg }}; border:1px solid {{ t.border }}; border-left:none; border-radius:0 999px 999px 0; cursor:pointer;">－</button>
+                      <!-- 養蜂場リスト -->
+                      <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                          <div style="font-size:13px; font-weight:700; color:{{ t.text }};">🏡 養蜂場リスト</div>
+                          <button onClick="{{ openFarmForm }}" style="padding:5px 12px; font-size:12px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primary }}; background:{{ t.chipBg }}; border:none; border-radius:999px; cursor:pointer;">＋ 追加</button>
+                        </div>
+                        <sc-if value="{{ farmsEmpty }}">
+                          <div style="font-size:12px; color:{{ t.textMuted }}; padding:8px 0;">養蜂場が登録されていません</div>
+                        </sc-if>
+                        <sc-for list="{{ farmsManage }}" as="fm">
+                          <div style="display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid {{ t.border }};">
+                            <span style="flex:1; font-size:14px; color:{{ t.text }};">{{ fm.name }}</span>
+                            <button onClick="{{ fm.del }}" style="padding:4px 10px; font-size:12px; font-weight:700; font-family:{{ t.font }}; color:{{ t.danger }}; background:{{ t.dangerBg }}; border:none; border-radius:8px; cursor:pointer;">削除</button>
                           </div>
                         </sc-for>
+                        <sc-if value="{{ showFarmForm }}">
+                          <div style="margin-top:10px; display:flex; gap:8px;">
+                            <input type="text" value="{{ farmEditName }}" onInput="{{ hFarmEditName }}" placeholder="養蜂場名を入力" style="flex:1; padding:9px 12px; font-size:14px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surfaceAlt }}; border:1.5px solid {{ t.border }}; border-radius:10px; outline:none;" style-focus="border-color:{{ t.primary }};">
+                            <button onClick="{{ saveFarm }}" style="padding:9px 16px; font-size:13px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:10px; cursor:pointer;">保存</button>
+                            <button onClick="{{ closeFarmForm }}" style="padding:9px 12px; font-size:13px; font-weight:700; font-family:{{ t.font }}; color:{{ t.textMuted }}; background:{{ t.surfaceAlt }}; border:1px solid {{ t.border }}; border-radius:10px; cursor:pointer;">×</button>
+                          </div>
+                        </sc-if>
                       </div>
-                      <div style="font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:6px;">メモ一括設定</div>
-                      <div style="display:flex; gap:8px;">
-                        <input type="text" value="{{ bulkMemo }}" onInput="{{ hBulkMemo }}" placeholder="メモを入力（空欄でクリア）" style="flex:1; padding:9px 12px; font-size:13px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surfaceAlt }}; border:1.5px solid {{ t.border }}; border-radius:10px; outline:none;" style-focus="border-color:{{ t.primary }};">
-                        <button onClick="{{ bulkApplyMemo }}" style="padding:9px 14px; font-size:12px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:10px; cursor:pointer;">適用</button>
-                      </div>
-                    </sc-if>
-                  </div>
-                  <!-- 内検リマインダー期間（群ごと） -->
-                  <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; margin-bottom:16px;">
-                    <div style="font-size:13px; font-weight:700; color:{{ t.text }}; margin-bottom:4px;">⏰ 内検リマインダー期間（群ごと）</div>
-                    <div style="font-size:12px; color:{{ t.textMuted }}; margin-bottom:12px;">内検の間隔がこの日数を超えるとリマインダーを表示します（デフォルト: 21日）</div>
-                    <div style="display:flex; flex-direction:column; gap:8px;">
-                      <sc-for list="{{ reminderDaysItems }}" as="rd">
-                        <div style="display:flex; align-items:center; gap:10px; padding:6px 0; border-bottom:1px solid {{ t.border }}22;">
-                          <span style="font-size:13px; font-weight:600; color:{{ t.text }}; width:60px; flex-shrink:0;">{{ rd.id }}</span>
-                          <input type="number" value="{{ rd.days }}" min="7" max="90" step="1" onInput="{{ rd.onChangeDays }}" style="width:70px; padding:6px 10px; font-size:13px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surfaceAlt }}; border:1.5px solid {{ t.border }}; border-radius:8px; outline:none; text-align:center;" style-focus="border-color:{{ t.primary }};">
-                          <span style="font-size:12px; color:{{ t.textMuted }};">日</span>
+                      <!-- 養蜂場位置設定 -->
+                      <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px;">
+                        <div style="font-size:13px; font-weight:700; color:{{ t.text }}; margin-bottom:4px;">📍 養蜂場の位置</div>
+                        <div style="font-size:12px; color:{{ t.textMuted }}; margin-bottom:12px;">住所検索または現在地から設定できます。</div>
+                        <div style="display:flex; gap:8px; margin-bottom:10px;">
+                          <input type="text" value="{{ farmLocSearch }}" onInput="{{ hFarmLocSearch }}" placeholder="例：北海道札幌市、または住所・地名" style="flex:1; padding:11px 14px; font-size:14px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surfaceAlt }}; border:1.5px solid {{ t.border }}; border-radius:10px; outline:none;" style-focus="border-color:{{ t.primary }};">
+                          <button onClick="{{ searchFarmLocation }}" style="padding:11px 16px; font-size:12px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:10px; cursor:pointer; white-space:nowrap; opacity:{{ farmLocSearching ? 0.6 : 1 }};">{{ farmLocSearching ? '検索中…' : '検索' }}</button>
                         </div>
-                      </sc-for>
+                        <button onClick="{{ setFarmGPS }}" style="width:100%; padding:11px; font-size:13px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primary }}; background:{{ t.chipBg }}; border:1.5px solid {{ t.primary }}; border-radius:10px; cursor:pointer; margin-bottom:12px; opacity:{{ farmGpsLoading ? 0.6 : 1 }};">{{ farmGpsLoading ? '📡 取得中…' : '📡 現在地を養蜂場に設定' }}</button>
+                        <sc-if value="{{ farmHasLocation }}">
+                          <div style="background:{{ t.surfaceAlt }}; border-radius:10px; overflow:hidden; margin-bottom:10px;">
+                            <iframe src="{{ farmMapEmbedUrl }}" width="100%" height="180" frameborder="0" scrolling="no" style="display:block; border:none;"></iframe>
+                          </div>
+                          <div style="font-size:12px; color:{{ t.textMuted }}; margin-bottom:10px; word-break:break-all;">📍 {{ farmLocationName || farmLat + ', ' + farmLng }}</div>
+                          <div style="display:flex; gap:8px;">
+                            <a href="{{ farmMapsUrl }}" target="_blank" rel="noopener" style="flex:1; padding:9px; font-size:12px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primary }}; background:{{ t.chipBg }}; border:1.5px solid {{ t.primary }}; border-radius:8px; cursor:pointer; text-align:center; text-decoration:none;">Googleマップで開く</a>
+                            <button onClick="{{ clearFarmLocation }}" style="padding:9px 14px; font-size:12px; font-weight:700; font-family:{{ t.font }}; color:{{ t.danger }}; background:{{ t.dangerBg }}; border:none; border-radius:8px; cursor:pointer;">クリア</button>
+                          </div>
+                        </sc-if>
+                        <sc-if value="{{ !farmHasLocation }}">
+                          <div style="background:{{ t.surfaceAlt }}; border-radius:10px; padding:20px; text-align:center;">
+                            <div style="font-size:28px; margin-bottom:6px;">🗺️</div>
+                            <div style="font-size:12px; color:{{ t.textMuted }};">位置が未設定です</div>
+                          </div>
+                        </sc-if>
+                      </div>
+                      <!-- 蜂群タグ/メモ 一括編集 -->
+                      <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                          <div style="font-size:13px; font-weight:700; color:{{ t.text }};">🏷 蜂群タグ/メモ 一括編集</div>
+                          <button onClick="{{ toggleBulkTagMode }}" style="padding:5px 12px; font-size:12px; font-weight:700; font-family:{{ t.font }}; color:{{ bulkTagMode ? t.danger : t.primary }}; background:{{ bulkTagMode ? t.dangerBg : t.chipBg }}; border:none; border-radius:999px; cursor:pointer;">{{ bulkTagMode ? '閉じる' : '編集' }}</button>
+                        </div>
+                        <sc-if value="{{ bulkTagMode }}">
+                          <div style="font-size:12px; color:{{ t.textMuted }}; margin-bottom:8px;">蜂群を選択してタグ・メモを一括設定できます</div>
+                          <div style="display:flex; gap:8px; margin-bottom:8px;">
+                            <button onClick="{{ bulkSelectAll }}" style="padding:4px 10px; font-size:11px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primary }}; background:{{ t.chipBg }}; border:none; border-radius:999px; cursor:pointer;">全選択</button>
+                            <button onClick="{{ bulkSelectNone }}" style="padding:4px 10px; font-size:11px; font-weight:700; font-family:{{ t.font }}; color:{{ t.textMuted }}; background:{{ t.surfaceAlt }}; border:none; border-radius:999px; cursor:pointer;">解除</button>
+                            <span style="font-size:12px; color:{{ t.textMuted }}; align-self:center;">{{ bulkTagSelectedCount }}群選択中</span>
+                          </div>
+                          <div style="display:flex; flex-wrap:wrap; gap:5px; margin-bottom:12px;">
+                            <sc-for list="{{ bulkColonyItems }}" as="bc">
+                              <button onClick="{{ bc.toggle }}" style="padding:5px 11px; font-size:12px; font-weight:700; font-family:{{ t.font }}; border:1.5px solid {{ bc.selected ? t.primary : t.border }}; background:{{ bc.selected ? t.primary : t.surfaceAlt }}; color:{{ bc.selected ? t.primaryText : t.text }}; border-radius:999px; cursor:pointer;">{{ bc.id }}</button>
+                            </sc-for>
+                          </div>
+                          <div style="font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:6px;">タグ付与 / 削除</div>
+                          <div style="display:flex; flex-wrap:wrap; gap:5px; margin-bottom:12px;">
+                            <sc-for list="{{ bulkTagOptions }}" as="bto">
+                              <div style="display:flex; gap:0;">
+                                <button onClick="{{ bto.apply }}" style="padding:5px 10px; font-size:11px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primary }}; background:{{ t.chipBg }}; border:1px solid {{ t.border }}; border-right:none; border-radius:999px 0 0 999px; cursor:pointer;">＋{{ bto.tag }}</button>
+                                <button onClick="{{ bto.remove }}" style="padding:5px 8px; font-size:11px; font-weight:700; font-family:{{ t.font }}; color:{{ t.danger }}; background:{{ t.dangerBg }}; border:1px solid {{ t.border }}; border-left:none; border-radius:0 999px 999px 0; cursor:pointer;">－</button>
+                              </div>
+                            </sc-for>
+                          </div>
+                          <div style="font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:6px;">メモ一括設定</div>
+                          <div style="display:flex; gap:8px;">
+                            <input type="text" value="{{ bulkMemo }}" onInput="{{ hBulkMemo }}" placeholder="メモを入力（空欄でクリア）" style="flex:1; padding:9px 12px; font-size:13px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surfaceAlt }}; border:1.5px solid {{ t.border }}; border-radius:10px; outline:none;" style-focus="border-color:{{ t.primary }};">
+                            <button onClick="{{ bulkApplyMemo }}" style="padding:9px 14px; font-size:12px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:10px; cursor:pointer;">適用</button>
+                          </div>
+                        </sc-if>
+                      </div>
                     </div>
-                  </div>
-                  <!-- 年間採蜜目標 -->
-                  <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; margin-bottom:16px;">
-                    <div style="font-size:13px; font-weight:700; color:{{ t.text }}; margin-bottom:4px;">🍯 年間採蜜目標</div>
-                    <div style="font-size:12px; color:{{ t.textMuted }}; margin-bottom:12px;">目標収量を設定するとレポートに進捗バーが表示されます。</div>
-                    <div style="display:flex; gap:8px; align-items:center;">
-                      <input type="number" value="{{ harvestGoalKg }}" onInput="{{ hHarvestGoalKg }}" min="0" max="9999" step="10" placeholder="500" style="flex:1; padding:11px 14px; font-size:15px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surfaceAlt }}; border:1.5px solid {{ t.border }}; border-radius:10px; outline:none;" style-focus="border-color:{{ t.primary }};"><span style="font-size:14px; color:{{ t.textMuted }}; flex-shrink:0;">kg</span>
-                      <button onClick="{{ saveHarvestGoal }}" style="padding:11px 18px; font-size:13px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:10px; cursor:pointer;">設定</button>
-                    </div>
-                  </div>
+                  </sc-if>
+
+                  <!-- ===== TAB: その他 ===== -->
+                  <sc-if value="{{ settingsTabOther }}">
+                    <div style="padding:0 16px; display:flex; flex-direction:column; gap:12px;">
+                      <!-- 内検リマインダー期間 -->
+                      <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px;">
+                        <div style="font-size:13px; font-weight:700; color:{{ t.text }}; margin-bottom:4px;">⏰ 内検リマインダー期間（群ごと）</div>
+                        <div style="font-size:12px; color:{{ t.textMuted }}; margin-bottom:12px;">内検の間隔がこの日数を超えるとリマインダーを表示します（デフォルト: 21日）</div>
+                        <div style="display:flex; flex-direction:column; gap:8px;">
+                          <sc-for list="{{ reminderDaysItems }}" as="rd">
+                            <div style="display:flex; align-items:center; gap:10px; padding:6px 0; border-bottom:1px solid {{ t.border }}22;">
+                              <span style="font-size:13px; font-weight:600; color:{{ t.text }}; width:60px; flex-shrink:0;">{{ rd.id }}</span>
+                              <input type="number" value="{{ rd.days }}" min="7" max="90" step="1" onInput="{{ rd.onChangeDays }}" style="width:70px; padding:6px 10px; font-size:13px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surfaceAlt }}; border:1.5px solid {{ t.border }}; border-radius:8px; outline:none; text-align:center;" style-focus="border-color:{{ t.primary }};">
+                              <span style="font-size:12px; color:{{ t.textMuted }};">日</span>
+                            </div>
+                          </sc-for>
+                        </div>
+                      </div>
+                      <!-- 年間採蜜目標 -->
+                      <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px;">
+                        <div style="font-size:13px; font-weight:700; color:{{ t.text }}; margin-bottom:4px;">🍯 年間採蜜目標</div>
+                        <div style="font-size:12px; color:{{ t.textMuted }}; margin-bottom:12px;">目標収量を設定するとレポートに進捗バーが表示されます。</div>
+                        <div style="display:flex; gap:8px; align-items:center;">
+                          <input type="number" value="{{ harvestGoalKg }}" onInput="{{ hHarvestGoalKg }}" min="0" max="9999" step="10" placeholder="500" style="flex:1; padding:11px 14px; font-size:15px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surfaceAlt }}; border:1.5px solid {{ t.border }}; border-radius:10px; outline:none;" style-focus="border-color:{{ t.primary }};"><span style="font-size:14px; color:{{ t.textMuted }}; flex-shrink:0;">kg</span>
+                          <button onClick="{{ saveHarvestGoal }}" style="padding:11px 18px; font-size:13px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:10px; cursor:pointer;">設定</button>
+                        </div>
+                      </div>
                   <!-- ⑧ アクティビティログ -->
                   <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:{{ t.radius }}px; padding:16px; margin-bottom:16px;">
                     <div onClick="{{ toggleActivityLog }}" style="display:flex; justify-content:space-between; align-items:center; cursor:pointer;">
@@ -2390,7 +2408,7 @@ class Component extends DCLogic {
     f: { loginEmail:'', loginPw:'', regName:'', regEmail:'', regPw:'', regFarm:'', frameMemo:'', aiMemo:'', taskType:'給餌', taskColony:'A-02', taskMemo:'', recType:'給餌', recColony:'A-02', recMemo:'' },
     loginError: '', regError: '', userName: '', userFarm: '',
     settingEditOpen: false, settingError: '', settingSaved: false,
-    settingDetailKey: '',
+    settingDetailKey: '', settingsTab: 'basic',
     inspColony: 'A-01', inspHistory: [],
     workHistory: [],
     frameDetails: {}, selectedFrameNum: 1, frameCount: 8, spaceCount: 10, spaceLevels: {}, spaceType: 'honey',
@@ -3813,6 +3831,13 @@ class Component extends DCLogic {
       settingEditOpen: s.settingEditOpen, settingError: s.settingError, settingSaved: s.settingSaved,
       editName: s.userName, editFarm: s.userFarm || '',
       goEditProfile: () => this.goEditProfile(), cancelEditProfile: () => this.cancelEditProfile(), saveProfile: () => this.saveProfile(),
+      settingsTab: s.settingsTab || 'basic',
+      settingsTabBasic: (s.settingsTab || 'basic') === 'basic',
+      settingsTabColony: s.settingsTab === 'colony',
+      settingsTabOther: s.settingsTab === 'other',
+      setSettingsTabBasic: () => this.setState({ settingsTab: 'basic' }),
+      setSettingsTabColony: () => this.setState({ settingsTab: 'colony' }),
+      setSettingsTabOther: () => this.setState({ settingsTab: 'other' }),
       // inspection
       inspColony: s.inspColony,
       setInspColony: (e) => this.setState({ inspColony: e.target.value }),
@@ -4617,12 +4642,12 @@ class Component extends DCLogic {
           else if (!queenOk) status = 'danger';
           else if (daysSince > 21 || (density != null && density < 20)) status = 'warn';
           else status = 'good';
-          const statusIcon = { good:'👑', warn:'⚠️', danger:'🔴', unknown:'❓' }[status];
-          const roofColor = { good:'#2D6A2D', warn:'#E8961B', danger:'#DC2626', unknown:'#9CA3AF' }[status];
-          const boxColor = { good:'#C8924A', warn:'#C8924A', danger:'#C8924A', unknown:'#B0B0B0' }[status];
+          const statusIcon = { good:'👑', warn:'⚠️', danger:'🔺', unknown:'？' }[status];
+          const roofColor = { good:'#22C55E', warn:'#F59E0B', danger:'#EF4444', unknown:'#9CA3AF' }[status];
+          const boxColor = { good:'#A0724A', warn:'#A0724A', danger:'#8C5A3A', unknown:'#B0B0B0' }[status];
           const bodyColor = { good:'#F7F2E8', warn:'#FFFBEB', danger:'#FEF2F2', unknown:'#F9FAFB' }[status];
-          const borderColor = { good:'#2D6A2D', warn: t.warn, danger: t.danger, unknown: t.border }[status];
-          const sparkLineColor = { good:'#2D6A2D', warn:'#E8961B', danger:'#DC2626', unknown:'#9CA3AF' }[status];
+          const borderColor = { good:'#22C55E', warn:'#F59E0B', danger:'#EF4444', unknown: t.border }[status];
+          const sparkLineColor = { good:'#22C55E', warn:'#F59E0B', danger:'#EF4444', unknown:'#9CA3AF' }[status];
           const changeLabel = densityChange != null ? (densityChange >= 0 ? '+' : '') + densityChange + '%' : '—';
           const changeColor = densityChange == null ? t.textMuted : densityChange > 0 ? '#16A34A' : densityChange < 0 ? t.danger : t.textMuted;
           return {
