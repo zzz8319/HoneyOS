@@ -62,7 +62,9 @@ self.addEventListener('fetch', e => {
       e.request.url.includes('open-meteo.com') ||
       e.request.url.includes('nominatim.openstreetmap.org')) {
     e.respondWith(
-      fetch(e.request).catch(() => caches.match(e.request))
+      fetch(e.request).catch(() =>
+        caches.match(e.request).then(r => r || new Response('', { status: 503 }))
+      )
     );
     return;
   }
@@ -76,7 +78,7 @@ self.addEventListener('fetch', e => {
           caches.open(CACHE).then(c => c.put(e.request, clone));
         }
         return res;
-      });
+      }).catch(() => new Response('', { status: 503 }));
     })
   );
 });
