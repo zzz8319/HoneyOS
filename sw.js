@@ -1,4 +1,4 @@
-const CACHE = 'honeyos-staging-20260802-034807';
+const CACHE = 'honeyos-staging-20260802-053343';
 const PRECACHE = [
   '/HoneyOS/',
   '/HoneyOS/index.html',
@@ -8,6 +8,10 @@ const PRECACHE = [
   '/HoneyOS/manifest.json',
   '/HoneyOS/icon-192.png',
   '/HoneyOS/icon-512.png',
+  '/HoneyOS/hive_good.png',
+  '/HoneyOS/hive_warn.png',
+  '/HoneyOS/hive_unknown.png',
+  '/HoneyOS/hive_danger.png',
 ];
 
 self.addEventListener('install', e => {
