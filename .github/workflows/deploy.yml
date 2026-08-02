@@ -10,6 +10,8 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -36,8 +38,11 @@ jobs:
 
       - name: Inject Sentry DSN from GitHub Secret
         if: ${{ secrets.SENTRY_DSN != '' }}
+        env:
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
         run: |
-          sed -i "s|var DSN = window.__SENTRY_DSN__ || '';|var DSN = '${{ secrets.SENTRY_DSN }}';|" index.html
+          # Use a different delimiter (@) to avoid conflict with || in the pattern
+          sed -i "s@var DSN = window.__SENTRY_DSN__ || '';@var DSN = '${SENTRY_DSN}';@" index.html
 
       - name: Commit version bumps
         run: |
