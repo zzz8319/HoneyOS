@@ -84,7 +84,7 @@
   async function saveInspRecord(record) {
     const session = await getSession();
     if (!session) throw new Error('ログインが必要です');
-    const { error } = await sb.from('insp_records').insert({
+    const { data, error } = await sb.from('insp_records').insert({
       user_id: session.user.id,
       colony: record.colony,
       date: record.date,
@@ -100,8 +100,9 @@
       frame_memo: record.frameMemo || '',
       ai_memo: record.aiMemo || '',
       swarm_risk: record.swarmRisk || false,
-    });
+    }).select('id').single();
     if (error) throw error;
+    return data ? data.id : null;
   }
 
   async function updateInspRecord(id, record) {
@@ -119,6 +120,7 @@
       bees_total: record.beesTotal != null ? record.beesTotal : null,
       frame_memo: record.frameMemo || '',
       ai_memo: record.aiMemo || '',
+      swarm_risk: record.swarmRisk != null ? record.swarmRisk : false,
     }).eq('id', id);
     if (error) throw error;
   }
