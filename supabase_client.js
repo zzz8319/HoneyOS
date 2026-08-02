@@ -21,7 +21,13 @@
       password,
       options: { data: { name, farm_name: farmName } },
     });
-    if (error) throw error;
+    if (error) {
+      if (!error.message || error.message === '{}') {
+        const e = new Error(error.status === 429 ? 'リクエストが多すぎます。しばらく待ってから再試行してください' : 'サーバーエラーが発生しました');
+        throw e;
+      }
+      throw error;
+    }
     return data;
   }
 
