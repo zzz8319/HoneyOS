@@ -164,8 +164,8 @@ if('serviceWorker' in navigator){
       align-items: stretch !important;
       justify-content: flex-start !important;
     }
-    /* Show left branding panel */
-    #desktop-auth-panel {
+    /* Show left branding panel — only on auth screens (no sidebar) */
+    #proto-wrapper:not(:has(#desktop-sidebar)) #desktop-auth-panel {
       display: flex;
       flex: 1;
       flex-direction: column;
