@@ -164,8 +164,8 @@ if('serviceWorker' in navigator){
       align-items: stretch !important;
       justify-content: flex-start !important;
     }
-    /* Show left branding panel */
-    #desktop-auth-panel {
+    /* Show left branding panel — only on auth screens (no sidebar) */
+    #proto-wrapper:not(:has(#desktop-sidebar)) #desktop-auth-panel {
       display: flex;
       flex: 1;
       flex-direction: column;
@@ -595,7 +595,7 @@ if('serviceWorker' in navigator){
                               <!-- Status badge top-right -->
                               <div style="position:absolute; top:8px; right:8px; font-size:14px; line-height:1;">{{ cc.statusIcon }}</div>
                               <!-- Detailed wooden beehive SVG -->
-                              <img src="{{ cc.hiveImgSrc }}" width="68" height="115" style="object-fit:contain; filter:{{ cc.hiveImgFilter }}; image-rendering:auto;">
+                              <img src="{{ cc.hiveImgSrc }}" width="68" style="height:auto; display:block; filter:{{ cc.hiveImgFilter }}; image-rendering:auto;">
                             </div>
                             <!-- Colony info -->
                             <div style="padding:8px 10px 10px;">
