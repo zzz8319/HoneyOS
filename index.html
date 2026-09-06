@@ -1065,11 +1065,35 @@ if('serviceWorker' in navigator){
                   <div style="display:flex; gap:10px; margin-bottom:16px;"><div style="flex:1.4;"><label style="display:block; font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:6px;">日時</label><div style="padding:13px 14px; font-size:14px; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px;">{{ inspSummaryDate }}</div></div></div>
                   <label style="display:block; font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:8px;">天気</label>
                   <div style="display:flex; gap:8px; margin-bottom:18px;"><button onClick="{{ wSun }}" style="{{ wxSun }}">☀️ 晴れ</button><button onClick="{{ wCloud }}" style="{{ wxCloud }}">⛅ 曇り</button><button onClick="{{ wRain }}" style="{{ wxRain }}">🌧️ 雨</button></div>
-                  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;"><label style="font-size:12px; font-weight:600; color:{{ t.textMuted }};">検査する枠を選択（最大10枠）</label><span onClick="{{ selectAllFrames }}" style="font-size:12px; font-weight:700; color:{{ t.primary }}; cursor:pointer;">全枠選択</span></div>
-                  <div style="display:grid; grid-template-columns:repeat(5,1fr); gap:8px; margin-bottom:22px;">
-                    <sc-for list="{{ frameChips }}" as="fr" hint-placeholder-count="10">
-                      <div onClick="{{ fr.toggle }}" style="aspect-ratio:1; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:800; cursor:pointer; background:{{ fr.bg }}; color:{{ fr.fg }}; border:1.5px solid {{ fr.border }};">{{ fr.n }}</div>
+                  <!-- 段・枠構成設定 -->
+                  <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:14px; padding:14px; margin-bottom:14px;">
+                    <div style="font-size:12px; font-weight:700; color:{{ t.textMuted }}; margin-bottom:12px;">📦 段・枠構成</div>
+                    <!-- 段数 -->
+                    <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                      <span style="font-size:13px; color:{{ t.text }}; flex:1;">段数</span>
+                      <button onClick="{{ decStageCount }}" style="width:32px; height:32px; border-radius:8px; background:{{ t.surfaceAlt }}; border:1px solid {{ t.border }}; font-size:18px; cursor:pointer; font-family:{{ t.font }}; color:{{ t.text }}; display:flex; align-items:center; justify-content:center;">−</button>
+                      <span style="font-size:16px; font-weight:800; color:{{ t.text }}; min-width:24px; text-align:center;">{{ inspStageCount }}</span>
+                      <button onClick="{{ incStageCount }}" style="width:32px; height:32px; border-radius:8px; background:{{ t.surfaceAlt }}; border:1px solid {{ t.border }}; font-size:18px; cursor:pointer; font-family:{{ t.font }}; color:{{ t.text }}; display:flex; align-items:center; justify-content:center;">＋</button>
+                    </div>
+                    <!-- 枠数（段ごと） -->
+                    <sc-for list="{{ stageConfigs }}" as="sgc">
+                      <div style="display:flex; align-items:center; gap:10px; padding:7px 0; border-top:1px solid {{ t.border }};">
+                        <span style="font-size:12px; color:{{ t.textMuted }}; flex:1; min-width:36px;">段{{ sgc.n }}</span>
+                        <button onClick="{{ sgc.decFrames }}" style="width:28px; height:28px; border-radius:7px; background:{{ t.surfaceAlt }}; border:1px solid {{ t.border }}; font-size:16px; cursor:pointer; font-family:{{ t.font }}; color:{{ t.text }}; display:flex; align-items:center; justify-content:center;">−</button>
+                        <span style="font-size:14px; font-weight:800; color:{{ t.text }}; min-width:24px; text-align:center;">{{ sgc.frameCount }}</span>
+                        <button onClick="{{ sgc.incFrames }}" style="width:28px; height:28px; border-radius:7px; background:{{ t.surfaceAlt }}; border:1px solid {{ t.border }}; font-size:16px; cursor:pointer; font-family:{{ t.font }}; color:{{ t.text }}; display:flex; align-items:center; justify-content:center;">＋</button>
+                        <span style="font-size:11px; color:{{ t.textMuted }};">枠</span>
+                      </div>
                     </sc-for>
+                    <!-- 記録方式 -->
+                    <div style="margin-top:10px; padding-top:10px; border-top:1px solid {{ t.border }};">
+                      <div style="font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:8px;">記録方式</div>
+                      <div style="display:flex; gap:8px; margin-bottom:6px;">
+                        <button onClick="{{ setHiveTypeFrame }}" style="flex:1; padding:9px; font-size:13px; font-weight:700; font-family:{{ t.font }}; border-radius:10px; border:1.5px solid {{ inspHiveType==='frame' ? t.primary : t.border }}; background:{{ inspHiveType==='frame' ? t.chipBg : t.surface }}; color:{{ inspHiveType==='frame' ? t.primary : t.textMuted }}; cursor:pointer;">分類式</button>
+                        <button onClick="{{ setHiveTypeFrameless }}" style="flex:1; padding:9px; font-size:13px; font-weight:700; font-family:{{ t.font }}; border-radius:10px; border:1.5px solid {{ inspHiveType==='frameless' ? t.primary : t.border }}; background:{{ inspHiveType==='frameless' ? t.chipBg : t.surface }}; color:{{ inspHiveType==='frameless' ? t.primary : t.textMuted }}; cursor:pointer;">割合式</button>
+                      </div>
+                      <div style="font-size:10px; color:{{ t.textMuted }};">分類式：枠1枚＝1カテゴリ　割合式：枠1枚＝構成比（%）</div>
+                    </div>
                   </div>
                   <!-- 前回値プリロードバナー -->
                   <sc-if value="{{ inspPreFill }}">
@@ -1106,110 +1130,178 @@ if('serviceWorker' in navigator){
                   <sc-if value="{{ !currentColonyMemo && !colonyMemoEditActive }}">
                     <button onClick="{{ openInspColonyMemoEdit }}" style="width:100%; padding:10px; font-size:12px; font-weight:700; font-family:{{ t.font }}; color:{{ t.textMuted }}; background:transparent; border:1.5px dashed {{ t.border }}; border-radius:10px; cursor:pointer; margin-bottom:14px;">📌 この蜂群のメモを追加</button>
                   </sc-if>
-                  <button onClick="{{ startInspection }}" style="width:100%; padding:16px; font-size:16px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};" style-active="transform:translateY(1px);">内検を開始する（{{ selectedCount }}枠）</button>
+                  <button onClick="{{ startInspection }}" style="width:100%; padding:16px; font-size:16px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};" style-active="transform:translateY(1px);">内検を開始する（計{{ inspTotalFrames }}枠）</button>
                 </div>
               </sc-if>
 
-              <!-- SCR-012 内検記録 -->
+              <!-- SCR-012 内検記録（段→枠2階層） -->
               <sc-if value="{{ vInspCapture }}" hint-placeholder-val="{{ false }}">
-                <div data-screen-label="SCR-012 内検記録" style="padding:60px 16px 24px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
-                  <!-- 下書き復元バナー -->
-                  <sc-if value="{{ hasDraft }}">
-                    <div style="background:{{ t.warnBg }}; border:1px solid {{ t.warn }}; border-radius:12px; padding:12px 14px; margin-bottom:12px; display:flex; align-items:center; gap:10px; animation:scrIn .3s ease;">
-                      <span style="font-size:18px;">📝</span>
-                      <div style="flex:1; font-size:13px; color:{{ t.text }};">前回の下書きがあります</div>
-                      <button onClick="{{ restoreDraft }}" style="padding:6px 12px; font-size:12px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:999px; cursor:pointer;">復元</button>
-                      <button onClick="{{ discardDraft }}" style="padding:6px 10px; font-size:12px; font-weight:700; font-family:{{ t.font }}; color:{{ t.textMuted }}; background:transparent; border:none; cursor:pointer;">✕</button>
-                    </div>
-                  </sc-if>
+                <div data-screen-label="SCR-012 内検記録" style="display:flex; flex-direction:column; height:100%; padding-top:60px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
                   <!-- Header -->
-                  <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px;">
+                  <div style="padding:0 16px 8px; display:flex; align-items:center; gap:10px; flex-shrink:0;">
                     <button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button>
                     <div style="flex:1; min-width:0;">
-                      <div style="font-size:17px; font-weight:800; color:{{ t.text }};">{{ inspColony }} 内検記録</div>
-                      <div style="font-size:12px; color:{{ t.textMuted }}; margin-top:1px;">{{ inspSummaryDate }} ・ {{ inspSummaryWeather }}</div>
+                      <div style="font-size:16px; font-weight:800; color:{{ t.text }};">{{ inspColony }} 内検記録</div>
+                      <div style="font-size:11px; color:{{ t.textMuted }};">{{ inspSummaryDate }} ・ {{ inspSummaryWeather }}</div>
                     </div>
+                    <div style="font-size:12px; font-weight:700; color:{{ t.primary }}; background:{{ t.chipBg }}; padding:4px 10px; border-radius:999px;">{{ inspCurFrameLabel }}</div>
                   </div>
-
-                  <!-- 内容タイプ選択 -->
-                  <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:14px; padding:12px 14px; margin-bottom:12px;">
-                    <div style="font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:9px;">内容タイプを選んでスペースをタップ</div>
-                    <div style="display:flex; gap:5px; flex-wrap:wrap;">
-                      <sc-for list="{{ spaceTypePicker }}" as="stp">
-                        <button onClick="{{ stp.select }}" style="{{ stp.style }}">{{ stp.icon }}{{ stp.label }}</button>
-                      </sc-for>
-                    </div>
-                  </div>
-
-                  <!-- 集計 -->
-                  <div style="display:flex; gap:6px; margin-bottom:12px; overflow-x:auto; padding-bottom:2px;">
-                    <sc-for list="{{ spaceStats }}" as="ss">
-                      <div style="flex-shrink:0; background:{{ ss.bg }}; border:1px solid {{ ss.border }}; border-radius:10px; padding:8px 10px; text-align:center; min-width:48px;">
-                        <div style="font-size:13px; font-weight:800; color:{{ ss.textColor }};">{{ ss.count }}</div>
-                        <div style="font-size:10px; color:{{ ss.labelColor }}; margin-top:2px; white-space:nowrap;">{{ ss.label }}</div>
-                      </div>
+                  <!-- Stage tabs -->
+                  <div style="padding:0 16px; flex-shrink:0; overflow-x:auto; display:flex; gap:6px; margin-bottom:6px; padding-bottom:2px;">
+                    <sc-for list="{{ inspStageTabs }}" as="st">
+                      <button onClick="{{ st.go }}" style="flex-shrink:0; padding:6px 16px; font-size:13px; font-weight:700; font-family:{{ t.font }}; border:1.5px solid {{ st.active ? t.primary : t.border }}; background:{{ st.active ? t.chipBg : t.surface }}; color:{{ st.active ? t.primary : t.textMuted }}; border-radius:999px; cursor:pointer;">{{ st.label }}</button>
                     </sc-for>
                   </div>
-
-                  <!-- バーコードビジュアライズ -->
-                  <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:14px; padding:14px; margin-bottom:12px;">
-                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
-                      <div style="font-size:12px; font-weight:700; color:{{ t.text }};">{{ inspColony }}</div>
-                      <div style="font-size:11px; color:{{ t.textMuted }};">タップでペイント</div>
-                    </div>
-                    <div style="display:flex; gap:2px; height:100px; background:{{ t.surfaceAlt }}; border-radius:8px; padding:8px; overflow:hidden;">
-                      <sc-for list="{{ spaceBars }}" as="sb">
-                        <div onClick="{{ sb.tap }}" style="flex:1; border-radius:3px; background:{{ sb.bg }}; cursor:pointer; border:1.5px solid {{ sb.border }};"></div>
-                      </sc-for>
-                    </div>
+                  <!-- Frame tabs -->
+                  <div style="padding:0 16px; flex-shrink:0; overflow-x:auto; display:flex; gap:5px; margin-bottom:10px; padding-bottom:2px;">
+                    <sc-for list="{{ inspFrameTabs }}" as="ft">
+                      <div onClick="{{ ft.go }}" style="flex-shrink:0; width:36px; height:36px; border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; cursor:pointer; background:{{ ft.bg }}; color:{{ ft.fg }}; border:1.5px solid {{ ft.border }};">{{ ft.label }}</div>
+                    </sc-for>
                   </div>
-
-                  <!-- スペース数調整 -->
-                  <div style="display:flex; align-items:center; gap:10px; background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:12px; padding:10px 14px; margin-bottom:12px;">
-                    <span style="font-size:12px; font-weight:600; color:{{ t.textMuted }}; flex:1;">スペース数</span>
-                    <button onClick="{{ decSpaceCount }}" style="width:32px; height:32px; border-radius:8px; background:{{ t.surfaceAlt }}; border:1px solid {{ t.border }}; font-size:18px; cursor:pointer; font-family:{{ t.font }}; color:{{ t.text }}; display:flex; align-items:center; justify-content:center;">−</button>
-                    <span style="font-size:16px; font-weight:800; color:{{ t.text }}; min-width:28px; text-align:center;">{{ spaceCount }}</span>
-                    <button onClick="{{ incSpaceCount }}" style="width:32px; height:32px; border-radius:8px; background:{{ t.surfaceAlt }}; border:1px solid {{ t.border }}; font-size:18px; cursor:pointer; font-family:{{ t.font }}; color:{{ t.text }}; display:flex; align-items:center; justify-content:center;">＋</button>
-                  </div>
-
-                  <!-- 女王の有無 -->
-                  <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:14px; padding:12px 14px; margin-bottom:12px;">
-                    <div style="font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:9px;">👑 女王の有無</div>
-                    <div style="display:flex; gap:8px;">
-                      <button onClick="{{ setQueenYes }}" style="{{ inspQueenStyle(true) }}">確認あり</button>
-                      <button onClick="{{ setQueenNo }}" style="{{ inspQueenStyle(false) }}">確認なし</button>
+                  <!-- Scrollable content -->
+                  <div style="flex:1; overflow-y:auto; padding:0 16px 100px;">
+                    <!-- 分類式: カテゴリ選択 -->
+                    <sc-if value="{{ inspIsFrame }}">
+                      <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:14px; padding:14px; margin-bottom:12px;">
+                        <div style="font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:10px;">カテゴリを選択</div>
+                        <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px;">
+                          <sc-for list="{{ frameCatChips }}" as="fcc">
+                            <button onClick="{{ fcc.set }}" style="padding:10px 4px; font-size:12px; font-weight:700; font-family:{{ t.font }}; border-radius:12px; border:1.5px solid {{ fcc.borderColor }}; background:{{ fcc.bg }}; color:{{ fcc.fgColor }}; cursor:pointer;">{{ fcc.icon }} {{ fcc.label }}</button>
+                          </sc-for>
+                        </div>
+                      </div>
+                    </sc-if>
+                    <!-- 割合式 -->
+                    <sc-if value="{{ inspIsFrameless }}">
+                      <!-- 簡易/詳細 切替 -->
+                      <div style="display:flex; gap:6px; margin-bottom:12px;">
+                        <button onClick="{{ setInspDepthSimple }}" style="flex:1; padding:8px; font-size:13px; font-weight:700; font-family:{{ t.font }}; border-radius:10px; border:1.5px solid {{ inspDepthSimple ? t.primary : t.border }}; background:{{ inspDepthSimple ? t.chipBg : t.surface }}; color:{{ inspDepthSimple ? t.primary : t.textMuted }}; cursor:pointer;">簡易（スライダー）</button>
+                        <button onClick="{{ setInspDepthDetail }}" style="flex:1; padding:8px; font-size:13px; font-weight:700; font-family:{{ t.font }}; border-radius:10px; border:1.5px solid {{ inspDepthDetail ? t.primary : t.border }}; background:{{ inspDepthDetail ? t.chipBg : t.surface }}; color:{{ inspDepthDetail ? t.primary : t.textMuted }}; cursor:pointer;">詳細（5×2）</button>
+                      </div>
+                      <!-- 簡易モード: スライダー -->
+                      <sc-if value="{{ inspDepthSimple }}">
+                        <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:14px; padding:14px; margin-bottom:12px;">
+                          <div style="font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:8px;">割合を設定（合計100%）</div>
+                          <!-- Ratio preview bar -->
+                          <div style="display:flex; height:12px; border-radius:6px; overflow:hidden; margin-bottom:14px; gap:1px; background:{{ t.surfaceAlt }};">
+                            <sc-for list="{{ inspRatioBarSegs }}" as="rbs">
+                              <div style="flex:{{ rbs.flex }}; background:{{ rbs.bg }};"></div>
+                            </sc-for>
+                          </div>
+                          <sc-for list="{{ inspRatioSliders }}" as="rs">
+                            <div style="margin-bottom:12px;">
+                              <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                                <div style="width:10px; height:10px; border-radius:3px; flex-shrink:0;" style-extra="background:{{ rs.color }}"></div>
+                                <span style="font-size:12px; font-weight:600; color:{{ t.text }}; flex:1;">{{ rs.icon }} {{ rs.label }}</span>
+                                <span style="font-size:13px; font-weight:800; min-width:36px; text-align:right; font-variant-numeric:tabular-nums; color:{{ rs.color }};">{{ rs.value }}%</span>
+                              </div>
+                              <input type="range" min="0" max="100" value="{{ rs.value }}" onInput="{{ rs.slide }}" style="width:100%; accent-color:{{ rs.color }};">
+                            </div>
+                          </sc-for>
+                        </div>
+                      </sc-if>
+                      <!-- 詳細モード: 5×2グリッド -->
+                      <sc-if value="{{ inspDepthDetail }}">
+                        <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:14px; padding:14px; margin-bottom:12px;">
+                          <div style="font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:10px;">5×2グリッドを塗ってください</div>
+                          <!-- Paint chips -->
+                          <div style="display:flex; gap:5px; flex-wrap:wrap; margin-bottom:12px;">
+                            <sc-for list="{{ inspPaintChips }}" as="pc">
+                              <button onClick="{{ pc.select }}" style="padding:6px 10px; font-size:11px; font-weight:700; font-family:{{ t.font }}; border-radius:8px; border:1.5px solid {{ pc.borderColor }}; background:{{ pc.bg }}; color:{{ pc.fgColor }}; cursor:pointer;">{{ pc.icon }} {{ pc.label }}</button>
+                            </sc-for>
+                          </div>
+                          <!-- 5×2 grid -->
+                          <div style="display:grid; grid-template-columns:repeat(5,1fr); gap:5px; margin-bottom:8px;">
+                            <sc-for list="{{ inspGridCells }}" as="gc">
+                              <div onClick="{{ gc.tap }}" style="aspect-ratio:1; border-radius:6px; cursor:pointer; background:{{ gc.bg }}; border:1.5px solid {{ gc.border }};"></div>
+                            </sc-for>
+                          </div>
+                          <div style="font-size:11px; color:{{ t.textMuted }}; text-align:center;">{{ inspGridRatioLabel }}</div>
+                        </div>
+                      </sc-if>
+                    </sc-if>
+                    <!-- ナビゲーション -->
+                    <div style="display:flex; gap:8px; margin-bottom:16px;">
+                      <button onClick="{{ prevInspFrame }}" style="flex:1; padding:10px; font-size:13px; font-weight:700; font-family:{{ t.font }}; background:{{ t.surfaceAlt }}; border:1px solid {{ t.border }}; border-radius:12px; cursor:pointer; color:{{ t.text }};">← 前の枠</button>
+                      <button onClick="{{ nextInspFrame }}" style="flex:1; padding:10px; font-size:13px; font-weight:700; font-family:{{ t.font }}; background:{{ inspIsLastFrame ? t.surface : t.surfaceAlt }}; border:1.5px solid {{ inspIsLastFrame ? t.primary : t.border }}; border-radius:12px; cursor:pointer; color:{{ inspIsLastFrame ? t.primary : t.text }};">{{ inspIsLastFrame ? '✓ 全枠完了' : '次の枠 →' }}</button>
                     </div>
-                  </div>
-
-                  <!-- 蜂数 -->
-                  <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:14px; padding:12px 14px; margin-bottom:12px;">
-                    <div style="font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:9px;">🐝 蜂数</div>
-                    <div style="display:flex; gap:6px;">
-                      <sc-for list="{{ beesTotalChips }}" as="btc">
-                        <button onClick="{{ btc.set }}" style="{{ btc.style }}">{{ btc.label }}</button>
-                      </sc-for>
+                    <!-- Stage mini map -->
+                    <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:14px; padding:12px; margin-bottom:12px;">
+                      <div style="font-size:11px; font-weight:700; color:{{ t.textMuted }}; margin-bottom:8px;">段{{ inspCurStageNum }} 全枠マップ</div>
+                      <div style="display:flex; gap:3px;">
+                        <sc-for list="{{ inspStageMap }}" as="sm">
+                          <div style="flex:1; min-width:0; display:flex; flex-direction:column; gap:1px;">
+                            <div style="height:28px; border-radius:4px; background:{{ sm.bg }}; border:1.5px solid {{ sm.border }};"></div>
+                            <div style="font-size:9px; text-align:center; color:{{ t.textMuted }};">{{ sm.n }}</div>
+                          </div>
+                        </sc-for>
+                      </div>
                     </div>
-                  </div>
-
-                  <!-- 観察メモ -->
-                  <div style="margin-bottom:12px;">
-                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
-                      <div style="font-size:12px; font-weight:600; color:{{ t.textMuted }};">観察メモ（任意）</div>
-                      <button onClick="{{ startVoiceMemo }}" style="padding:4px 10px; font-size:11px; font-weight:700; font-family:{{ t.font }}; color:{{ voiceMemoActive ? '#fff' : t.primary }}; background:{{ voiceMemoActive ? '#D9534F' : t.chipBg }}; border:none; border-radius:999px; cursor:pointer;">{{ voiceMemoActive ? '🔴 録音中' : '🎙 音声入力' }}</button>
+                    <!-- 全群共通の記録 -->
+                    <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:14px; padding:12px 14px; margin-bottom:12px;">
+                      <div style="font-size:12px; font-weight:700; color:{{ t.textMuted }}; margin-bottom:12px;">全群共通の記録</div>
+                      <!-- 女王確認 -->
+                      <div style="margin-bottom:12px;">
+                        <div style="font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">👑 女王の確認</div>
+                        <div style="display:flex; gap:8px;">
+                          <button onClick="{{ setQueenYes }}" style="{{ inspQueenStyle(true) }}">確認あり</button>
+                          <button onClick="{{ setQueenNo }}" style="{{ inspQueenStyle(false) }}">確認なし</button>
+                        </div>
+                      </div>
+                      <!-- 蜂数（密度） -->
+                      <div style="margin-bottom:12px;">
+                        <div style="font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">🐝 蜂数（密度）</div>
+                        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                          <sc-for list="{{ beeDensityChips }}" as="bdc">
+                            <button onClick="{{ bdc.set }}" style="{{ bdc.style }}">{{ bdc.label }}</button>
+                          </sc-for>
+                        </div>
+                      </div>
+                      <!-- 王台 -->
+                      <div>
+                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:7px;">
+                          <div style="font-size:12px; font-weight:600; color:{{ t.textMuted }};">🏛 王台</div>
+                          <button onClick="{{ addQueenCell }}" style="padding:4px 10px; font-size:11px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primary }}; background:{{ t.chipBg }}; border:none; border-radius:999px; cursor:pointer;">＋ 追加</button>
+                        </div>
+                        <sc-if value="{{ inspQueenCellsEmpty }}">
+                          <div style="font-size:12px; color:{{ t.textMuted }};">王台なし</div>
+                        </sc-if>
+                        <sc-for list="{{ inspQueenCellItems }}" as="qci">
+                          <div style="background:{{ t.surfaceAlt }}; border-radius:10px; padding:10px; margin-bottom:8px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                              <span style="font-size:12px; font-weight:700; color:{{ t.text }};">王台 {{ qci.n }}</span>
+                              <button onClick="{{ qci.del }}" style="padding:2px 8px; font-size:11px; color:{{ t.danger }}; background:{{ t.dangerBg }}; border:none; border-radius:6px; cursor:pointer;">削除</button>
+                            </div>
+                            <div style="font-size:11px; color:{{ t.textMuted }}; margin-bottom:5px;">タイプ</div>
+                            <div style="display:flex; gap:5px; flex-wrap:wrap; margin-bottom:8px;">
+                              <sc-for list="{{ qci.typeOpts }}" as="qt">
+                                <button onClick="{{ qt.set }}" style="padding:4px 9px; font-size:11px; font-weight:700; font-family:{{ t.font }}; border:1.5px solid {{ qt.active ? t.primary : t.border }}; background:{{ qt.active ? t.chipBg : t.surface }}; color:{{ qt.active ? t.primary : t.textMuted }}; border-radius:8px; cursor:pointer;">{{ qt.label }}</button>
+                              </sc-for>
+                            </div>
+                            <div style="font-size:11px; color:{{ t.textMuted }}; margin-bottom:5px;">状態</div>
+                            <div style="display:flex; gap:5px; flex-wrap:wrap; margin-bottom:8px;">
+                              <sc-for list="{{ qci.statusOpts }}" as="qs">
+                                <button onClick="{{ qs.set }}" style="padding:4px 9px; font-size:11px; font-weight:700; font-family:{{ t.font }}; border:1.5px solid {{ qs.active ? t.primary : t.border }}; background:{{ qs.active ? t.chipBg : t.surface }}; color:{{ qs.active ? t.primary : t.textMuted }}; border-radius:8px; cursor:pointer;">{{ qs.label }}</button>
+                              </sc-for>
+                            </div>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                              <span style="font-size:11px; color:{{ t.textMuted }}; flex:1;">個数</span>
+                              <button onClick="{{ qci.decCount }}" style="width:26px; height:26px; border-radius:6px; background:{{ t.surfaceAlt }}; border:1px solid {{ t.border }}; font-size:14px; cursor:pointer; font-family:{{ t.font }}; color:{{ t.text }}; display:flex; align-items:center; justify-content:center;">−</button>
+                              <span style="font-size:14px; font-weight:800; color:{{ t.text }}; min-width:20px; text-align:center;">{{ qci.count }}</span>
+                              <button onClick="{{ qci.incCount }}" style="width:26px; height:26px; border-radius:6px; background:{{ t.surfaceAlt }}; border:1px solid {{ t.border }}; font-size:14px; cursor:pointer; font-family:{{ t.font }}; color:{{ t.text }}; display:flex; align-items:center; justify-content:center;">＋</button>
+                            </div>
+                          </div>
+                        </sc-for>
+                      </div>
                     </div>
-                    <textarea value="{{ f.frameMemo }}" onInput="{{ h.frameMemo }}" placeholder="全体的に活発、蜜源豊富..." rows="2" style="width:100%; padding:13px 14px; font-size:14px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ voiceMemoActive ? '#D9534F' : t.border }}; border-radius:12px; outline:none; resize:none;" style-focus="border-color:{{ t.primary }};"></textarea>
-                  </div>
-                  <!-- 分蜂予兆チェック -->
-                  <div style="display:flex; align-items:center; gap:10px; padding:10px 14px; background:{{ swarmRiskFlag ? '#FFF8DC' : t.surfaceAlt }}; border:1.5px solid {{ swarmRiskFlag ? '#D4C87A' : t.border }}; border-radius:12px; margin-bottom:14px; cursor:pointer;" onClick="{{ () => hSwarmRisk({ target: { checked: !swarmRiskFlag } }) }}">
-                    <input type="checkbox" checked="{{ swarmRiskFlag }}" onChange="{{ hSwarmRisk }}" style="width:18px; height:18px; accent-color:{{ t.primary }}; cursor:pointer; flex-shrink:0;">
-                    <div>
-                      <div style="font-size:13px; font-weight:700; color:{{ t.text }};">⚠️ 王台（分蜂予兆）を確認した</div>
-                      <div style="font-size:11px; color:{{ t.textMuted }};">チェックするとホーム画面にアラートが表示されます</div>
+                    <!-- 観察メモ -->
+                    <div style="margin-bottom:12px;">
+                      <div style="font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:6px;">観察メモ（任意）</div>
+                      <textarea value="{{ f.frameMemo }}" onInput="{{ h.frameMemo }}" placeholder="全体的に活発、蜜源豊富..." rows="2" style="width:100%; padding:13px 14px; font-size:14px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px; outline:none; resize:none; box-sizing:border-box;" style-focus="border-color:{{ t.primary }};"></textarea>
                     </div>
+                    <!-- 完了ボタン -->
+                    <button onClick="{{ goInspSummary }}" style="width:100%; padding:16px; font-size:16px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};" style-active="transform:translateY(1px);">記録完了・サマリーへ</button>
                   </div>
-
-                  <!-- 完了ボタン -->
-                  <button onClick="{{ goInspSummary }}" style="width:100%; margin-top:14px; padding:16px; font-size:16px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};" style-active="transform:translateY(1px);">記録完了・サマリーへ</button>
                 </div>
               </sc-if>
 
@@ -2372,8 +2464,10 @@ class Component extends DCLogic {
     settingDetailKey: '', settingsTab: 'basic',
     inspColony: 'A-01', inspHistory: [],
     workHistory: [],
-    frameDetails: {}, selectedFrameNum: 1, frameCount: 8, spaceCount: 10, spaceLevels: {}, spaceType: 'honey',
-    inspQueenPresent: null, inspBeesTotal: null,
+    inspStages: [], inspCurStage: 0, inspCurFrame: 0, inspHiveType: 'frame',
+    inspDepth: 'simple', inspPaintCat: 'honey', inspQueenCells: [],
+    inspStageCount: 1, inspStageFrameCounts: [8], colonyMeta: {},
+    inspQueenPresent: null, inspBeesTotal: null, inspBeeDensity: null,
     inspSearch: '', inspDetailRecord: null, inspEditOpen: false, inspFilter: 'all',
     hiveStructures: {}, hiveDetailColony: null,
     userTasks: [], taskDoneMap: {},
@@ -3146,80 +3240,172 @@ class Component extends DCLogic {
     }
   }
 
-  startInspection() {
-    const frameNums = Object.keys(this.state.frames).map(Number).sort((a,b)=>a-b);
-    this.setState(s => ({
-      frameDetails: {}, selectedFrameNum: 1, frameCount: s.frameCount || 8, spaceCount: 10, spaceLevels: {}, spaceType: 'honey', inspQueenPresent: null, inspBeesTotal: null,
-      f: { ...s.f, frameMemo:'', aiMemo:'' },
+  _initInspStages(hiveType, stageCount, frameCounts) {
+    return Array.from({length: stageCount}, (_, si) => ({
+      frames: Array.from({length: frameCounts[si] || 8}, () =>
+        hiveType === 'frame'
+          ? { cat: 'empty' }
+          : { ratios: {egg:0, larva:0, capped:0, honey:0, pollen:0, empty:100}, grid: Array(10).fill('empty') }
+      )
     }));
-    // clear frame memo buffers
-    for (let i = 1; i <= 10; i++) delete this._fieldBuf['fdmemo_' + i];
+  }
+
+  startInspection() {
+    const s = this.state;
+    const hiveType = s.inspHiveType || 'frame';
+    const stageCount = s.inspStageCount || 1;
+    const frameCounts = (s.inspStageFrameCounts || []).slice(0, stageCount);
+    while (frameCounts.length < stageCount) frameCounts.push(8);
+    const stages = this._initInspStages(hiveType, stageCount, frameCounts);
+    this.setState(sv => ({
+      inspStages: stages, inspCurStage: 0, inspCurFrame: 0,
+      inspHiveType: hiveType, inspQueenCells: [],
+      inspQueenPresent: null, inspBeesTotal: null, inspBeeDensity: null,
+      swarmRiskFlag: false, f: { ...sv.f, frameMemo:'', aiMemo:'' },
+    }));
     this.nav('inspCapture');
   }
 
-  tapSpace(i) {
-    const type = this.state.spaceType || 'bee';
+  setInspFrameCat(cat) {
     this.setState(s => {
-      const lvls = { ...(s.spaceLevels || {}) };
-      lvls[i] = lvls[i] === type ? '' : type;
-      return { spaceLevels: lvls };
-    });
-    setTimeout(() => this._saveDraft(), 0);
-  }
-
-  setSpaceType(type) { this.setState({ spaceType: type }); }
-
-  tapFrameZone(frameNum, zoneIdx) {
-    const CYCLE = ['', 'egg', 'larva', 'capped', 'honey', 'pollen'];
-    this.setState(s => {
-      const fd = { ...(s.frameDetails[frameNum] || {}) };
-      const zones = { ...(fd.zones || {}) };
-      zones[zoneIdx] = CYCLE[(CYCLE.indexOf(zones[zoneIdx] || '') + 1) % CYCLE.length];
-      fd.zones = zones;
-      return { frameDetails: { ...s.frameDetails, [frameNum]: fd } };
+      const stages = s.inspStages.map((sg, si) =>
+        si !== s.inspCurStage ? sg : {
+          ...sg, frames: sg.frames.map((fr, fi) =>
+            fi !== s.inspCurFrame ? fr : { ...fr, cat }
+          )
+        }
+      );
+      return { inspStages: stages };
     });
   }
 
-  setFrameType(num, type) {
+  setInspFrameRatio(cat, rawVal) {
+    const val = Math.min(100, Math.max(0, parseInt(rawVal) || 0));
     this.setState(s => {
-      const fd = { ...(s.frameDetails[num] || {}) };
-      fd.type = fd.type === type ? '' : type;
-      return { frameDetails: { ...s.frameDetails, [num]: fd } };
+      const CATS = ['egg','larva','capped','honey','pollen','empty'];
+      const stages = s.inspStages.map((sg, si) =>
+        si !== s.inspCurStage ? sg : {
+          ...sg, frames: sg.frames.map((fr, fi) => {
+            if (fi !== s.inspCurFrame) return fr;
+            const old = fr.ratios || {};
+            const oldVal = old[cat] || 0;
+            const diff = val - oldVal;
+            const newR = { ...old, [cat]: val };
+            const others = CATS.filter(c => c !== cat);
+            const otherTotal = others.reduce((sum,c) => sum+(old[c]||0), 0);
+            if (diff !== 0 && otherTotal > 0) {
+              let adj = 0;
+              others.forEach(c => { newR[c] = Math.max(0, Math.round((old[c]||0) - diff*(old[c]||0)/otherTotal)); adj += newR[c]; });
+              const total = val + adj;
+              if (total !== 100) { const big = others.reduce((a,c) => (newR[c]||0) > (newR[a]||0) ? c : a, others[0]); if(big) newR[big] = Math.max(0,(newR[big]||0)+(100-total)); }
+            } else if (diff !== 0 && otherTotal === 0) {
+              newR['empty'] = Math.max(0, 100 - val);
+            }
+            return { ...fr, ratios: newR };
+          })
+        }
+      );
+      return { inspStages: stages };
     });
   }
 
-  toggleFrameQueen(num) {
+  tapInspGrid(pos) {
+    const cat = this.state.inspPaintCat || 'empty';
     this.setState(s => {
-      const cur = (s.frameDetails[num] || {}).queenPos;
-      const fd = { ...(s.frameDetails[num] || {}) };
-      fd.queenPos = cur === 0 ? null : 0;
-      return { frameDetails: { ...s.frameDetails, [num]: fd } };
+      const CATS = ['egg','larva','capped','honey','pollen','empty'];
+      const stages = s.inspStages.map((sg, si) =>
+        si !== s.inspCurStage ? sg : {
+          ...sg, frames: sg.frames.map((fr, fi) => {
+            if (fi !== s.inspCurFrame) return fr;
+            const grid = [...(fr.grid || Array(10).fill('empty'))];
+            grid[pos] = grid[pos] === cat ? 'empty' : cat;
+            const ratios = {};
+            CATS.forEach(c => { ratios[c] = Math.round(grid.filter(g => g===c).length / 10 * 100); });
+            return { ...fr, grid, ratios };
+          })
+        }
+      );
+      return { inspStages: stages };
     });
   }
 
-  incFrameCount() { this.setState(s => ({ frameCount: Math.min(12, (s.frameCount||8) + 1), selectedFrameNum: s.selectedFrameNum })); }
-  decFrameCount() {
+  nextInspFrame() {
     this.setState(s => {
-      const nc = Math.max(1, (s.frameCount||8) - 1);
-      return { frameCount: nc, selectedFrameNum: Math.min(s.selectedFrameNum, nc) };
+      const stages = s.inspStages || [];
+      const curStage = stages[s.inspCurStage] || { frames: [] };
+      if (s.inspCurFrame + 1 < curStage.frames.length) return { inspCurFrame: s.inspCurFrame + 1 };
+      const nextSi = s.inspCurStage + 1;
+      if (nextSi < stages.length) return { inspCurStage: nextSi, inspCurFrame: 0 };
+      return {};
     });
   }
 
-  toggleQueenPos(frameNum, zoneIdx) {
+  prevInspFrame() {
     this.setState(s => {
-      const fd = { ...(s.frameDetails[frameNum] || {}) };
-      fd.queenPos = fd.queenPos === zoneIdx ? null : zoneIdx;
-      return { frameDetails: { ...s.frameDetails, [frameNum]: fd } };
+      if (s.inspCurFrame > 0) return { inspCurFrame: s.inspCurFrame - 1 };
+      if (s.inspCurStage > 0) {
+        const prevFrames = (s.inspStages[s.inspCurStage-1]||{frames:[]}).frames.length;
+        return { inspCurStage: s.inspCurStage-1, inspCurFrame: Math.max(0,prevFrames-1) };
+      }
+      return {};
     });
   }
 
-  setFrameBees(frameNum, val) {
+  addQueenCell() { this.setState(s => ({ inspQueenCells: [...(s.inspQueenCells||[]), { type:'swarm', status:'immature', count:1 }] })); }
+  removeQueenCell(idx) { this.setState(s => ({ inspQueenCells: (s.inspQueenCells||[]).filter((_,i) => i!==idx) })); }
+  setQueenCellProp(idx, prop, val) { this.setState(s => ({ inspQueenCells: (s.inspQueenCells||[]).map((qc,i) => i===idx ? {...qc,[prop]:val} : qc) })); }
+
+  incStageCount() {
     this.setState(s => {
-      const fd = { ...(s.frameDetails[frameNum] || {}) };
-      fd.bees = fd.bees === val ? undefined : val;
-      return { frameDetails: { ...s.frameDetails, [frameNum]: fd } };
+      const sc = (s.inspStageCount||1)+1;
+      const fcs = [...(s.inspStageFrameCounts||[8])];
+      if (fcs.length < sc) fcs.push(fcs[fcs.length-1]||8);
+      return { inspStageCount: sc, inspStageFrameCounts: fcs };
     });
   }
+  decStageCount() {
+    this.setState(s => {
+      const sc = Math.max(1,(s.inspStageCount||1)-1);
+      return { inspStageCount: sc, inspStageFrameCounts: (s.inspStageFrameCounts||[8]).slice(0,sc) };
+    });
+  }
+  incStageFrames(si) { this.setState(s => { const fcs=[...(s.inspStageFrameCounts||[8])]; fcs[si]=Math.min(20,(fcs[si]||8)+1); return {inspStageFrameCounts:fcs}; }); }
+  decStageFrames(si) { this.setState(s => { const fcs=[...(s.inspStageFrameCounts||[8])]; fcs[si]=Math.max(1,(fcs[si]||8)-1); return {inspStageFrameCounts:fcs}; }); }
+
+  setHiveTypeFrame() { this.setState({ inspHiveType:'frame' }); }
+  setHiveTypeFrameless() { this.setState({ inspHiveType:'frameless' }); }
+  setInspDepthSimple() { this.setState({ inspDepth:'simple' }); }
+  setInspDepthDetail() { this.setState({ inspDepth:'detail' }); }
+  setInspPaintCat(cat) { this.setState({ inspPaintCat:cat }); }
+  setBeeDensity(val) { this.setState({ inspBeeDensity:val }); }
+
+  _calcSwarmRisk(s) {
+    let score = 0;
+    const qc = s.inspQueenCells || [];
+    const swarmQC = qc.filter(c => c.type==='swarm');
+    if (swarmQC.length >= 2) score += 50;
+    else if (swarmQC.length === 1) score += 40;
+    else if (qc.length > 0) score += 25;
+    const stages = s.inspStages || [];
+    const allFr = stages.flatMap(sg => sg.frames || []);
+    const total = allFr.length;
+    if (total > 0) {
+      const isFrame = (s.inspHiveType||'frame') === 'frame';
+      const cappedRatio = isFrame ? allFr.filter(f=>f.cat==='capped').length/total : allFr.reduce((sum,f)=>sum+(f.ratios?.capped||0),0)/total/100;
+      if (cappedRatio>0.4) score += Math.min(20, Math.round(20*(cappedRatio-0.4)/0.6));
+      const occRatio = isFrame ? allFr.filter(f=>f.cat!=='empty').length/total : allFr.filter(f=>(f.ratios?.empty||100)<100).length/total;
+      if (occRatio>0.8) score += Math.min(20, Math.round(20*(occRatio-0.8)/0.2));
+      const emptyRatio = isFrame ? allFr.filter(f=>f.cat==='empty').length/total : allFr.filter(f=>(f.ratios?.empty||0)>=90).length/total;
+      if (emptyRatio<0.1) score += 10;
+    }
+    if (s.inspBeeDensity==='many'||s.inspBeeDensity==='very_many') score += 10;
+    const month = new Date().getMonth()+1;
+    if (month>=3&&month<=6) score = Math.round(score*1.2);
+    return Math.min(100, Math.max(0, score));
+  }
+
+  tapSpace(i) { }
+  setSpaceType(type) { }
 
   openInspDetail(record) {
     this._fieldBuf['inspEditDate'] = '';
@@ -3279,16 +3465,19 @@ class Component extends DCLogic {
   // ===== 前回記録プリロード =====
   startInspectionWithPreload() {
     const s = this.state;
-    const prev = s.inspHistory.find(r => r.colony === s.inspColony);
-    this.setState(s2 => ({
-      frameDetails: {}, selectedFrameNum: 1, frameCount: s2.frameCount || 8,
-      spaceCount: prev ? (prev.spaceCount || 10) : 10,
-      spaceLevels: prev ? { ...(prev.spaceLevels || {}) } : {},
-      spaceType: 'honey',
-      inspQueenPresent: null, inspBeesTotal: null,
-      f: { ...s2.f, frameMemo: '', aiMemo: '' },
-      swarmRiskFlag: false,
-    }));
+    const meta = (s.colonyMeta || {})[s.inspColony] || {};
+    const hiveType = meta.hiveType || 'frame';
+    const stageCount = meta.stageCount || s.inspStageCount || 1;
+    const frameCounts = meta.stageCounts || s.inspStageFrameCounts || [8];
+    this._initInspStages(hiveType, stageCount, frameCounts);
+    this.setState({
+      inspHiveType: hiveType,
+      inspStageCount: stageCount,
+      inspStageFrameCounts: frameCounts,
+      inspQueenPresent: null, inspBeesTotal: null, inspBeeDensity: null,
+      inspQueenCells: [],
+      f: { ...(s.f || {}), frameMemo: '', aiMemo: '' },
+    });
     this._fieldBuf = {};
     this.nav('inspCapture');
   }
@@ -3324,30 +3513,24 @@ class Component extends DCLogic {
 
   async saveInspection() {
     const s = this.state;
-    // flush current frame memo from buf
-    const curNum = s.selectedFrameNum;
-    const curMemo = this._fieldBuf['fdmemo_' + curNum] !== undefined ? this._fieldBuf['fdmemo_' + curNum] : ((s.frameDetails[curNum] || {}).memo || '');
-    const mergedDetails = { ...s.frameDetails };
-    if (mergedDetails[curNum]) mergedDetails[curNum] = { ...mergedDetails[curNum], memo: curMemo };
     const wxMap = { sun:'晴れ', cloud:'曇り', rain:'雨' };
     const now = new Date();
     const dateStr = now.toLocaleDateString('ja-JP', { year:'numeric', month:'2-digit', day:'2-digit' });
     const timeStr = now.toLocaleTimeString('ja-JP', { hour:'2-digit', minute:'2-digit' });
+    const swarmRiskScore = this._calcSwarmRisk(s);
     const record = {
       colony: s.inspColony,
       date: dateStr,
       time: timeStr,
       weather: wxMap[s.weather] || '晴れ',
-      frames: Array.from({length: s.frameCount || 8}, (_, i) => i + 1),
-      countMode: s.countMode || 'frame',
-      frameDetails: mergedDetails,
-      spaceCount: s.spaceCount,
-      spaceLevels: s.spaceLevels || {},
+      hiveType: s.inspHiveType || 'frame',
+      stages: s.inspStages || [],
       queenPresent: s.inspQueenPresent,
-      beesTotal: s.inspBeesTotal,
+      beeDensity: s.inspBeeDensity,
+      queenCells: s.inspQueenCells || [],
       frameMemo: this.f('frameMemo').trim(),
       aiMemo: this.f('aiMemo').trim(),
-      swarmRisk: s.swarmRiskFlag || false,
+      swarmRiskScore,
     };
     if (this.state.isOffline) {
       this._enqueueOfflineInsp(record);
@@ -4000,6 +4183,170 @@ class Component extends DCLogic {
         const filteredColonyBarcodes = colonyBarcodes
           .filter(cb => badgeFilter === 'all' ? true : badgeFilter === 'warn' ? cb.alertBadge === '⚠️' : (cb.alertBadge === '🔴' || cb.alertBadge === '❓'))
           .filter(cb => tagF === 'all' ? true : (cb.tags || []).includes(tagF));
+        // ===== 新内検 computed props =====
+        const CAT_COLORS = { egg:'#D4A017', larva:'#A0784A', capped:'#8B5E3C', honey:'#F59E0B', pollen:'#EAB308', empty:'#9CA3AF' };
+        const CAT_LABELS = { egg:'卵', larva:'幼虫', capped:'封蓋', honey:'蜜', pollen:'花粉', empty:'空' };
+        const CATS = ['egg','larva','capped','honey','pollen','empty'];
+        const inspStages = s.inspStages || [];
+        const curSt = Math.min(s.inspCurStage || 0, inspStages.length - 1);
+        const curStageObj = inspStages[curSt] || { frames: [] };
+        const curFr = Math.min(s.inspCurFrame || 0, (curStageObj.frames||[]).length - 1);
+        const curFrameObj = (curStageObj.frames || [])[curFr] || {};
+        const inspHiveType = s.inspHiveType || 'frame';
+        const inspIsFrame = inspHiveType === 'frame';
+        const inspIsFrameless = inspHiveType === 'frameless';
+        const inspDepthSimple = (s.inspDepth || 'simple') === 'simple';
+        const inspDepthDetail = !inspDepthSimple;
+
+        // Stage tabs
+        const inspStageTabs = inspStages.map((st, si) => ({
+          label: (si + 1) + '段',
+          active: si === curSt,
+          select: () => this.setState({ inspCurStage: si, inspCurFrame: 0 }),
+          bg: si === curSt ? t.primary : t.surface,
+          color: si === curSt ? t.primaryText : t.textMuted,
+          border: si === curSt ? t.primary : t.border,
+        }));
+
+        // Frame tabs
+        const inspFrameTabs = (curStageObj.frames || []).map((fr, fi) => {
+          let dotBg = t.surfaceAlt;
+          if (inspIsFrame && fr.cat) dotBg = CAT_COLORS[fr.cat] || dotBg;
+          else if (inspIsFrameless) {
+            const dominant = CATS.slice(0,-1).reduce((best, c) => ((fr.ratios||{})[c]||0) > ((fr.ratios||{})[best]||0) ? c : best, CATS[0]);
+            if ((fr.ratios||{})[dominant] > 0) dotBg = CAT_COLORS[dominant];
+          }
+          return {
+            label: String(fi + 1),
+            active: fi === curFr,
+            select: () => this.setState({ inspCurFrame: fi }),
+            bg: fi === curFr ? t.primary : t.surface,
+            color: fi === curFr ? t.primaryText : t.textMuted,
+            border: fi === curFr ? t.primary : t.border,
+            dotBg,
+          };
+        });
+
+        // Frame cat chips (for frame-type hives)
+        const frameCatChips = CATS.map(cat => {
+          const active = curFrameObj.cat === cat;
+          return {
+            label: CAT_LABELS[cat],
+            cat,
+            bg: active ? CAT_COLORS[cat] : t.surface,
+            color: active ? '#fff' : t.textMuted,
+            border: active ? CAT_COLORS[cat] : t.border,
+            select: () => this.setInspFrameCat(cat),
+            active,
+          };
+        });
+
+        // Ratio sliders (for frameless simple mode)
+        const curRatios = curFrameObj.ratios || {};
+        const inspRatioSliders = CATS.slice(0, -1).map(cat => ({
+          cat,
+          label: CAT_LABELS[cat],
+          color: CAT_COLORS[cat],
+          value: Math.round((curRatios[cat] || 0)),
+          onChange: (v) => this.setInspFrameRatio(cat, v),
+        }));
+
+        // Ratio bar segments
+        const inspRatioBarSegs = CATS.map(cat => ({
+          cat,
+          bg: CAT_COLORS[cat],
+          flex: curRatios[cat] || 0,
+        })).filter(seg => seg.flex > 0);
+
+        // Grid cells (5×2 = 10 cells, for frameless detail mode)
+        const curGrid = curFrameObj.grid || Array(10).fill('empty');
+        const inspGridCells = curGrid.map((cat, pos) => ({
+          pos,
+          bg: CAT_COLORS[cat] || t.surfaceAlt,
+          label: CAT_LABELS[cat] || '',
+          tap: () => this.tapInspGrid(pos),
+        }));
+        const gridRatioMap = {};
+        curGrid.forEach(cat => { gridRatioMap[cat] = (gridRatioMap[cat] || 0) + 10; });
+        const inspGridRatioLabel = CATS.filter(c => gridRatioMap[c]).map(c => CAT_LABELS[c] + ' ' + gridRatioMap[c] + '%').join(' / ');
+
+        // Paint cat chips
+        const inspPaintChips = CATS.map(cat => ({
+          label: CAT_LABELS[cat],
+          active: (s.inspPaintCat || 'honey') === cat,
+          bg: (s.inspPaintCat || 'honey') === cat ? CAT_COLORS[cat] : t.surface,
+          color: (s.inspPaintCat || 'honey') === cat ? '#fff' : t.textMuted,
+          border: (s.inspPaintCat || 'honey') === cat ? CAT_COLORS[cat] : t.border,
+          select: () => this.setInspPaintCat(cat),
+        }));
+
+        // Stage mini map
+        const inspStageMap = inspStages.map((st, si) => ({
+          label: (si + 1) + '段',
+          frames: (st.frames || []).map((fr, fi) => {
+            let bg = t.surfaceAlt;
+            if (inspIsFrame && fr.cat) bg = CAT_COLORS[fr.cat] || bg;
+            else if (inspIsFrameless) {
+              const dom = CATS.slice(0,-1).reduce((best, c) => ((fr.ratios||{})[c]||0) > ((fr.ratios||{})[best]||0) ? c : best, CATS[0]);
+              if ((fr.ratios||{})[dom] > 0) bg = CAT_COLORS[dom];
+            }
+            return { bg, isCur: si === curSt && fi === curFr };
+          }),
+        }));
+
+        // Stage configs (for SCR-011 setup)
+        const stageConfigs = Array.from({ length: s.inspStageCount || 1 }, (_, si) => ({
+          stageNum: si + 1,
+          frameCount: (s.inspStageFrameCounts || [])[si] || 8,
+          inc: () => this.incStageFrames(si),
+          dec: () => this.decStageFrames(si),
+        }));
+        const inspTotalFrames = (s.inspStageFrameCounts || [8]).reduce((a, b) => a + b, 0);
+
+        // Bee density chips
+        const BEE_DENSITY = [
+          { val: 'few', label: '少' },
+          { val: 'normal', label: '並' },
+          { val: 'many', label: '多' },
+          { val: 'very_many', label: '密' },
+        ];
+        const curDens = s.inspBeeDensity;
+        const beeDensityChips = BEE_DENSITY.map(bd => ({
+          label: bd.label,
+          val: bd.val,
+          active: curDens === bd.val,
+          bg: curDens === bd.val ? t.primary : t.surface,
+          color: curDens === bd.val ? t.primaryText : t.textMuted,
+          border: curDens === bd.val ? t.primary : t.border,
+          set: () => this.setBeeDensity(bd.val),
+        }));
+
+        // Queen cell items
+        const QC_TYPES = { swarm:'分蜂', replacement:'交替', emergency:'緊急', unknown:'不明' };
+        const QC_STATUS = { immature:'未成熟', capped:'封蓋済', open:'開放' };
+        const inspQueenCells = s.inspQueenCells || [];
+        const inspQueenCellItems = inspQueenCells.map((qc, idx) => ({
+          idx,
+          typeLabel: QC_TYPES[qc.type] || '不明',
+          statusLabel: QC_STATUS[qc.status] || '未成熟',
+          count: qc.count || 1,
+          remove: () => this.removeQueenCell(idx),
+          setType: (v) => this.setQueenCellProp(idx, 'type', v),
+          setStatus: (v) => this.setQueenCellProp(idx, 'status', v),
+          setCount: (v) => this.setQueenCellProp(idx, 'count', parseInt(v) || 1),
+          typeOptions: Object.entries(QC_TYPES).map(([v, l]) => ({ val: v, label: l, active: qc.type === v })),
+          statusOptions: Object.entries(QC_STATUS).map(([v, l]) => ({ val: v, label: l, active: qc.status === v })),
+        }));
+        const inspQueenCellsEmpty = inspQueenCells.length === 0;
+
+        // Navigation
+        const totalFrames = inspStages.reduce((a, st) => a + (st.frames||[]).length, 0);
+        let framesBeforeCur = 0;
+        for (let si = 0; si < curSt; si++) framesBeforeCur += (inspStages[si]||{frames:[]}).frames.length;
+        const globalFrameIdx = framesBeforeCur + curFr;
+        const inspIsLastFrame = globalFrameIdx >= totalFrames - 1;
+        const inspCurFrameLabel = (curSt + 1) + '段 / ' + (curFr + 1) + '枠';
+
         return {
           frameZones, queenDots, queenPosLabel, zoneTypeLegend, beesChips, spaceTypePicker, spaceBars, spaceStats,
           allFrameBars,
@@ -4007,6 +4354,26 @@ class Component extends DCLogic {
           frameCountVal, incFrameCount, decFrameCount,
           inspQueenPresent, setQueenYes, setQueenNo, inspQueenStyle,
           beesTotalChips,
+          // ===== 新内検 props =====
+          inspStageTabs, inspFrameTabs, frameCatChips,
+          inspRatioSliders, inspRatioBarSegs,
+          inspGridCells, inspGridRatioLabel, inspPaintChips,
+          inspStageMap, stageConfigs, inspTotalFrames,
+          beeDensityChips, inspQueenCellItems, inspQueenCellsEmpty,
+          inspIsLastFrame, inspCurFrameLabel,
+          inspIsFrame, inspIsFrameless, inspDepthSimple, inspDepthDetail,
+          inspStageCount: s.inspStageCount || 1,
+          inspCurStage: curSt, inspCurFrame: curFr,
+          addQueenCell: () => this.addQueenCell(),
+          setInspDepthSimple: () => this.setInspDepthSimple(),
+          setInspDepthDetail: () => this.setInspDepthDetail(),
+          setHiveTypeFrame: () => this.setHiveTypeFrame(),
+          setHiveTypeFrameless: () => this.setHiveTypeFrameless(),
+          incStageCount: () => this.incStageCount(),
+          decStageCount: () => this.decStageCount(),
+          startInspection: () => this.startInspection(),
+          nextInspFrame: () => this.nextInspFrame(),
+          prevInspFrame: () => this.prevInspFrame(),
           // insp detail
           detailColony: idr.colony||'', detailDate: idr.date||'', detailWeather: idr.weather||'',
           detailModeLabel: '記録', detailIsFrame: idrIsFrame,
