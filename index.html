@@ -2424,14 +2424,7 @@ if('serviceWorker' in navigator){
               </div>
             </sc-if>
 
-            <!-- INSTALL PROMPT BANNER -->
-            <sc-if value="{{ showInstallBanner }}">
-              <div style="position:absolute; bottom:90px; left:16px; right:16px; z-index:9995; background:{{ t.surface }}; border:1.5px solid {{ t.primary }}; border-radius:16px; padding:12px 14px; display:flex; align-items:center; gap:10px; box-shadow:0 8px 24px rgba(0,0,0,.12); animation:scrIn .3s ease;">
-                <span style="font-size:24px;">🐝</span>
-                <div style="flex:1; min-width:0;"><div style="font-size:13px; font-weight:800; color:{{ t.text }};">HoneyOS をインストール</div><div style="font-size:11px; color:{{ t.textMuted }};">ホーム画面に追加してオフラインでも使えます</div></div>
-                <button onClick="{{ triggerInstallPrompt }}" style="padding:8px 12px; font-size:12px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:999px; cursor:pointer; flex-shrink:0;">追加</button>
-              </div>
-            </sc-if>
+            <!-- INSTALL PROMPT BANNER (一時非表示) -->
 
             <!-- BOTTOM NAV -->
             <div id="bottom-tabbar" style="display:flex; background:{{ t.navBarBg }}; border-top:1px solid {{ t.border }}; padding:8px 6px 26px;">
@@ -4188,11 +4181,12 @@ class Component extends DCLogic {
         // ===== 新内検 computed props =====
         const CAT_COLORS = { egg:'#D4A017', larva:'#A0784A', capped:'#8B5E3C', honey:'#F59E0B', pollen:'#EAB308', empty:'#9CA3AF' };
         const CAT_LABELS = { egg:'卵', larva:'幼虫', capped:'封蓋', honey:'蜜', pollen:'花粉', empty:'空' };
+        const CAT_ICONS  = { egg:'🥚', larva:'🐛', capped:'🫙', honey:'🍯', pollen:'🌸', empty:'⬜' };
         const CATS = ['egg','larva','capped','honey','pollen','empty'];
         const inspStages = s.inspStages || [];
-        const curSt = Math.min(s.inspCurStage || 0, inspStages.length - 1);
+        const curSt = inspStages.length > 0 ? Math.min(s.inspCurStage || 0, inspStages.length - 1) : 0;
         const curStageObj = inspStages[curSt] || { frames: [] };
-        const curFr = Math.min(s.inspCurFrame || 0, (curStageObj.frames||[]).length - 1);
+        const curFr = (curStageObj.frames||[]).length > 0 ? Math.min(s.inspCurFrame || 0, curStageObj.frames.length - 1) : 0;
         const curFrameObj = (curStageObj.frames || [])[curFr] || {};
         const inspHiveType = s.inspHiveType || 'frame';
         const inspIsFrame = inspHiveType === 'frame';
@@ -4200,18 +4194,22 @@ class Component extends DCLogic {
         const inspDepthSimple = (s.inspDepth || 'simple') === 'simple';
         const inspDepthDetail = !inspDepthSimple;
 
-        // Stage tabs
-        const inspStageTabs = inspStages.map((st, si) => ({
-          label: (si + 1) + '段',
-          active: si === curSt,
-          select: () => this.setState({ inspCurStage: si, inspCurFrame: 0 }),
-          bg: si === curSt ? t.primary : t.surface,
-          color: si === curSt ? t.primaryText : t.textMuted,
-          border: si === curSt ? t.primary : t.border,
-        }));
+        // Stage tabs (HTML: st.go, st.label, st.active, st.border, st.bg, st.color — using t.primary etc.)
+        const inspStageTabs = inspStages.map((st, si) => {
+          const active = si === curSt;
+          return {
+            label: (si + 1) + '段',
+            active,
+            go: () => this.setState({ inspCurStage: si, inspCurFrame: 0 }),
+            bg: active ? t.chipBg : t.surface,
+            color: active ? t.primary : t.textMuted,
+            border: active ? t.primary : t.border,
+          };
+        });
 
-        // Frame tabs
+        // Frame tabs (HTML: ft.go, ft.label, ft.bg, ft.fg, ft.border)
         const inspFrameTabs = (curStageObj.frames || []).map((fr, fi) => {
+          const active = fi === curFr;
           let dotBg = t.surfaceAlt;
           if (inspIsFrame && fr.cat) dotBg = CAT_COLORS[fr.cat] || dotBg;
           else if (inspIsFrameless) {
@@ -4220,37 +4218,39 @@ class Component extends DCLogic {
           }
           return {
             label: String(fi + 1),
-            active: fi === curFr,
-            select: () => this.setState({ inspCurFrame: fi }),
-            bg: fi === curFr ? t.primary : t.surface,
-            color: fi === curFr ? t.primaryText : t.textMuted,
-            border: fi === curFr ? t.primary : t.border,
+            active,
+            go: () => this.setState({ inspCurFrame: fi }),
+            bg: active ? t.primary : t.surface,
+            fg: active ? t.primaryText : t.textMuted,
+            border: active ? t.primary : t.border,
             dotBg,
           };
         });
 
-        // Frame cat chips (for frame-type hives)
+        // Frame cat chips (HTML: fcc.set, fcc.bg, fcc.borderColor, fcc.fgColor, fcc.icon, fcc.label)
         const frameCatChips = CATS.map(cat => {
           const active = curFrameObj.cat === cat;
           return {
             label: CAT_LABELS[cat],
+            icon: CAT_ICONS[cat],
             cat,
             bg: active ? CAT_COLORS[cat] : t.surface,
-            color: active ? '#fff' : t.textMuted,
-            border: active ? CAT_COLORS[cat] : t.border,
-            select: () => this.setInspFrameCat(cat),
+            fgColor: active ? '#fff' : t.textMuted,
+            borderColor: active ? CAT_COLORS[cat] : t.border,
+            set: () => this.setInspFrameCat(cat),
             active,
           };
         });
 
-        // Ratio sliders (for frameless simple mode)
+        // Ratio sliders (HTML: rs.slide, rs.icon, rs.label, rs.color, rs.value)
         const curRatios = curFrameObj.ratios || {};
         const inspRatioSliders = CATS.slice(0, -1).map(cat => ({
           cat,
           label: CAT_LABELS[cat],
+          icon: CAT_ICONS[cat],
           color: CAT_COLORS[cat],
           value: Math.round((curRatios[cat] || 0)),
-          onChange: (v) => this.setInspFrameRatio(cat, v),
+          slide: (e) => this.setInspFrameRatio(cat, e.target ? e.target.value : e),
         }));
 
         // Ratio bar segments
@@ -4260,52 +4260,54 @@ class Component extends DCLogic {
           flex: curRatios[cat] || 0,
         })).filter(seg => seg.flex > 0);
 
-        // Grid cells (5×2 = 10 cells, for frameless detail mode)
+        // Grid cells (HTML: gc.tap, gc.bg, gc.border)
         const curGrid = curFrameObj.grid || Array(10).fill('empty');
         const inspGridCells = curGrid.map((cat, pos) => ({
           pos,
           bg: CAT_COLORS[cat] || t.surfaceAlt,
-          label: CAT_LABELS[cat] || '',
+          border: cat && cat !== 'empty' ? CAT_COLORS[cat] : t.border,
           tap: () => this.tapInspGrid(pos),
         }));
         const gridRatioMap = {};
         curGrid.forEach(cat => { gridRatioMap[cat] = (gridRatioMap[cat] || 0) + 10; });
-        const inspGridRatioLabel = CATS.filter(c => gridRatioMap[c]).map(c => CAT_LABELS[c] + ' ' + gridRatioMap[c] + '%').join(' / ');
+        const inspGridRatioLabel = CATS.filter(c => gridRatioMap[c] && c !== 'empty').map(c => CAT_LABELS[c] + ' ' + gridRatioMap[c] + '%').join(' / ') || '未記録';
 
-        // Paint cat chips
-        const inspPaintChips = CATS.map(cat => ({
-          label: CAT_LABELS[cat],
-          active: (s.inspPaintCat || 'honey') === cat,
-          bg: (s.inspPaintCat || 'honey') === cat ? CAT_COLORS[cat] : t.surface,
-          color: (s.inspPaintCat || 'honey') === cat ? '#fff' : t.textMuted,
-          border: (s.inspPaintCat || 'honey') === cat ? CAT_COLORS[cat] : t.border,
-          select: () => this.setInspPaintCat(cat),
-        }));
+        // Paint cat chips (HTML: pc.select, pc.bg, pc.borderColor, pc.fgColor, pc.icon, pc.label)
+        const inspPaintChips = CATS.map(cat => {
+          const active = (s.inspPaintCat || 'honey') === cat;
+          return {
+            label: CAT_LABELS[cat],
+            icon: CAT_ICONS[cat],
+            active,
+            bg: active ? CAT_COLORS[cat] : t.surface,
+            fgColor: active ? '#fff' : t.textMuted,
+            borderColor: active ? CAT_COLORS[cat] : t.border,
+            select: () => this.setInspPaintCat(cat),
+          };
+        });
 
-        // Stage mini map
-        const inspStageMap = inspStages.map((st, si) => ({
-          label: (si + 1) + '段',
-          frames: (st.frames || []).map((fr, fi) => {
-            let bg = t.surfaceAlt;
-            if (inspIsFrame && fr.cat) bg = CAT_COLORS[fr.cat] || bg;
-            else if (inspIsFrameless) {
-              const dom = CATS.slice(0,-1).reduce((best, c) => ((fr.ratios||{})[c]||0) > ((fr.ratios||{})[best]||0) ? c : best, CATS[0]);
-              if ((fr.ratios||{})[dom] > 0) bg = CAT_COLORS[dom];
-            }
-            return { bg, isCur: si === curSt && fi === curFr };
-          }),
-        }));
+        // Stage mini map — flat array of current-stage frames (HTML: sm.bg, sm.border, sm.n)
+        const inspStageMap = (curStageObj.frames || []).map((fr, fi) => {
+          let bg = t.surfaceAlt;
+          if (inspIsFrame && fr.cat) bg = CAT_COLORS[fr.cat] || bg;
+          else if (inspIsFrameless) {
+            const dom = CATS.slice(0,-1).reduce((best, c) => ((fr.ratios||{})[c]||0) > ((fr.ratios||{})[best]||0) ? c : best, CATS[0]);
+            if ((fr.ratios||{})[dom] > 0) bg = CAT_COLORS[dom];
+          }
+          const isCur = fi === curFr;
+          return { bg, border: isCur ? t.primary : t.border, n: fi + 1 };
+        });
 
-        // Stage configs (for SCR-011 setup)
+        // Stage configs (HTML: sgc.n, sgc.frameCount, sgc.incFrames, sgc.decFrames)
         const stageConfigs = Array.from({ length: s.inspStageCount || 1 }, (_, si) => ({
-          stageNum: si + 1,
+          n: si + 1,
           frameCount: (s.inspStageFrameCounts || [])[si] || 8,
-          inc: () => this.incStageFrames(si),
-          dec: () => this.decStageFrames(si),
+          incFrames: () => this.incStageFrames(si),
+          decFrames: () => this.decStageFrames(si),
         }));
         const inspTotalFrames = (s.inspStageFrameCounts || [8]).reduce((a, b) => a + b, 0);
 
-        // Bee density chips
+        // Bee density chips (HTML: bdc.set, bdc.style, bdc.label)
         const BEE_DENSITY = [
           { val: 'few', label: '少' },
           { val: 'normal', label: '並' },
@@ -4313,41 +4315,43 @@ class Component extends DCLogic {
           { val: 'very_many', label: '密' },
         ];
         const curDens = s.inspBeeDensity;
+        const _bdBase = 'flex:1; padding:10px 4px; border:none; border-radius:10px; cursor:pointer; font-size:13px; font-weight:700; font-family:' + t.font + ';';
         const beeDensityChips = BEE_DENSITY.map(bd => ({
           label: bd.label,
           val: bd.val,
           active: curDens === bd.val,
-          bg: curDens === bd.val ? t.primary : t.surface,
-          color: curDens === bd.val ? t.primaryText : t.textMuted,
-          border: curDens === bd.val ? t.primary : t.border,
           set: () => this.setBeeDensity(bd.val),
+          style: _bdBase + ' background:' + (curDens === bd.val ? t.primary : t.surface) + '; color:' + (curDens === bd.val ? t.primaryText : t.textMuted) + '; border:1.5px solid ' + (curDens === bd.val ? t.primary : t.border) + ';',
         }));
 
-        // Queen cell items
+        // Queen cell items (HTML: qci.n, qci.del, qci.typeOpts[qt.set,qt.label,qt.active], qci.statusOpts[qs.set], qci.count, qci.decCount, qci.incCount)
         const QC_TYPES = { swarm:'分蜂', replacement:'交替', emergency:'緊急', unknown:'不明' };
         const QC_STATUS = { immature:'未成熟', capped:'封蓋済', open:'開放' };
         const inspQueenCells = s.inspQueenCells || [];
         const inspQueenCellItems = inspQueenCells.map((qc, idx) => ({
-          idx,
-          typeLabel: QC_TYPES[qc.type] || '不明',
-          statusLabel: QC_STATUS[qc.status] || '未成熟',
+          n: idx + 1,
           count: qc.count || 1,
-          remove: () => this.removeQueenCell(idx),
-          setType: (v) => this.setQueenCellProp(idx, 'type', v),
-          setStatus: (v) => this.setQueenCellProp(idx, 'status', v),
-          setCount: (v) => this.setQueenCellProp(idx, 'count', parseInt(v) || 1),
-          typeOptions: Object.entries(QC_TYPES).map(([v, l]) => ({ val: v, label: l, active: qc.type === v })),
-          statusOptions: Object.entries(QC_STATUS).map(([v, l]) => ({ val: v, label: l, active: qc.status === v })),
+          del: () => this.removeQueenCell(idx),
+          decCount: () => this.setQueenCellProp(idx, 'count', Math.max(1, (qc.count || 1) - 1)),
+          incCount: () => this.setQueenCellProp(idx, 'count', (qc.count || 1) + 1),
+          typeOpts: Object.entries(QC_TYPES).map(([v, l]) => ({
+            label: l, active: qc.type === v,
+            set: () => this.setQueenCellProp(idx, 'type', v),
+          })),
+          statusOpts: Object.entries(QC_STATUS).map(([v, l]) => ({
+            label: l, active: qc.status === v,
+            set: () => this.setQueenCellProp(idx, 'status', v),
+          })),
         }));
         const inspQueenCellsEmpty = inspQueenCells.length === 0;
 
         // Navigation
-        const totalFrames = inspStages.reduce((a, st) => a + (st.frames||[]).length, 0);
+        const totalFramesCount = inspStages.reduce((a, st) => a + (st.frames||[]).length, 0);
         let framesBeforeCur = 0;
         for (let si = 0; si < curSt; si++) framesBeforeCur += (inspStages[si]||{frames:[]}).frames.length;
         const globalFrameIdx = framesBeforeCur + curFr;
-        const inspIsLastFrame = globalFrameIdx >= totalFrames - 1;
-        const inspCurFrameLabel = (curSt + 1) + '段 / ' + (curFr + 1) + '枠';
+        const inspIsLastFrame = totalFramesCount > 0 && globalFrameIdx >= totalFramesCount - 1;
+        const inspCurFrameLabel = inspStages.length > 0 ? ((curSt + 1) + '段 / ' + (curFr + 1) + '枠') : '設定中';
 
         return {
           frameZones, queenDots, queenPosLabel, zoneTypeLegend, beesChips, spaceTypePicker, spaceBars, spaceStats,
@@ -4376,6 +4380,7 @@ class Component extends DCLogic {
           startInspection: () => this.startInspection(),
           nextInspFrame: () => this.nextInspFrame(),
           prevInspFrame: () => this.prevInspFrame(),
+          inspCurStageNum: curSt + 1,
           // insp detail
           detailColony: idr.colony||'', detailDate: idr.date||'', detailWeather: idr.weather||'',
           detailModeLabel: '記録', detailIsFrame: idrIsFrame,
