@@ -999,66 +999,63 @@ if('serviceWorker' in navigator){
                     </div>
                   </div>
 
-                  <!-- Hive Diagram -->
+                  <!-- Hive Diagram - Beewise style -->
                   <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:14px; padding:16px; margin-bottom:14px;">
-                    <div style="font-size:12px; font-weight:700; color:{{ t.textMuted }}; margin-bottom:14px;">🏠 巣箱構造図</div>
-                    <div style="display:flex; flex-direction:column; align-items:center; gap:0;">
-                      <!-- Roof -->
-                      <div style="width:calc(100% + 24px); height:14px; background:linear-gradient(180deg,#a07840,#8B6530); border-radius:8px 8px 0 0; margin-bottom:-1px;"></div>
-                      <!-- Boxes + QE stack -->
-                      <div style="width:100%; display:flex; flex-direction:column; gap:0;">
-                        <sc-for list="{{ hiveItems }}" as="hi">
-                          <!-- Queen Excluder -->
-                          <sc-if value="{{ hi.isQE }}">
-                            <div style="display:flex; flex-direction:column; align-items:center; padding:2px 0; position:relative; z-index:2;">
-                              <div style="font-size:10px; font-weight:700; color:#6B5E00; background:#FFF8DC; border:1px solid #D4C87A; padding:2px 10px; border-radius:99px; white-space:nowrap; margin:2px 0;">👑 隔王板</div>
-                              <div style="width:100%; height:8px; background:repeating-linear-gradient(90deg,#D4C87A 0px,#D4C87A 2px,transparent 2px,transparent 8px); border-top:2px solid #D4C87A; border-bottom:2px solid #D4C87A; opacity:.7;"></div>
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+                      <div style="font-size:12px; font-weight:700; color:{{ t.textMuted }};">🏠 巣箱構造図</div>
+                      <div style="font-size:10px; font-weight:700; color:{{ t.textMuted }}; background:{{ t.surfaceAlt }}; padding:2px 9px; border-radius:99px; border:1px solid {{ t.border }};">{{ hIsFrame ? '枠式' : '割合式' }}</div>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:10px;">
+                      <sc-for list="{{ hiveItems }}" as="hi">
+                        <!-- Queen Excluder -->
+                        <sc-if value="{{ hi.isQE }}">
+                          <div style="display:flex; align-items:center; gap:8px;">
+                            <div style="flex:1; height:2px; background:repeating-linear-gradient(90deg,#D4C87A 0,#D4C87A 4px,transparent 4px,transparent 9px);"></div>
+                            <div style="font-size:10px; font-weight:700; color:#6B5E00; background:#FFF8DC; border:1px solid #D4C87A; padding:2px 9px; border-radius:99px; white-space:nowrap;">👑 隔王板</div>
+                            <div style="flex:1; height:2px; background:repeating-linear-gradient(90deg,#D4C87A 0,#D4C87A 4px,transparent 4px,transparent 9px);"></div>
+                          </div>
+                        </sc-if>
+                        <!-- Box -->
+                        <sc-if value="{{ !hi.isQE }}">
+                          <div style="background:{{ t.surfaceAlt }}; border:1px solid {{ t.border }}; border-radius:10px; overflow:hidden;">
+                            <!-- Box header -->
+                            <div style="display:flex; align-items:center; justify-content:space-between; padding:7px 10px 6px; border-bottom:1px solid {{ t.border }};">
+                              <span style="font-size:11px; font-weight:700; color:{{ t.textMuted }}; letter-spacing:.05em;">{{ hi.label }}</span>
+                              <span style="font-size:10px; font-weight:700; background:{{ hi.typeBg }}; color:{{ hi.typeClr }}; border:1px solid {{ hi.typeBorder }}; padding:2px 8px; border-radius:99px;">{{ hi.typeLabel }}</span>
                             </div>
-                          </sc-if>
-                          <!-- Box -->
-                          <sc-if value="{{ !hi.isQE }}">
-                            <div style="width:100%; border:2.5px solid #c4a07a; background:{{ t.surfaceAlt }}; border-radius:6px; margin:1px 0; overflow:hidden;">
-                              <!-- Box label -->
-                              <div style="display:flex; align-items:center; justify-content:space-between; padding:5px 10px 4px; background:rgba(196,160,122,.1); border-bottom:1px solid #e0c9a8;">
-                                <span style="font-size:11px; font-weight:700; color:{{ t.textMuted }};">{{ hi.label }}</span>
-                                <span style="font-size:10px; font-weight:700; background:{{ hi.typeBg }}; color:{{ hi.typeClr }}; border:1px solid {{ hi.typeBorder }}; padding:2px 8px; border-radius:99px;">{{ hi.typeLabel }}</span>
-                              </div>
-                              <!-- Frame bars -->
-                              <div style="display:flex; gap:3px; height:80px; padding:7px; background:{{ t.surfaceAlt }};">
+                            <!-- Frame bars - Beewise style -->
+                            <div style="padding:10px 8px 4px;">
+                              <div style="display:flex; gap:3px; height:96px; align-items:flex-end;">
                                 <sc-for list="{{ hi.frameBars }}" as="hfb">
-                                  <div style="flex:1; min-width:0; display:flex; flex-direction:column; border-radius:4px; overflow:hidden; border:1.5px solid #d4b896; position:relative;">
-                                    <sc-if value="{{ hfb.hasQueen }}"><div style="position:absolute; top:1px; left:0; right:0; text-align:center; font-size:8px; z-index:2; pointer-events:none; line-height:1;">👑</div></sc-if>
-                                    <sc-for list="{{ hfb.segs }}" as="hs">
-                                      <div style="background:{{ hs.bg }}; flex:{{ hs.flex }};"></div>
-                                    </sc-for>
+                                  <div style="flex:1; min-width:0; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; height:100%; position:relative;">
+                                    <!-- Queen crown -->
+                                    <sc-if value="{{ hfb.hasQueen }}">
+                                      <div style="position:absolute; top:0; left:0; right:0; text-align:center; font-size:9px; line-height:1; z-index:2;">👑</div>
+                                    </sc-if>
+                                    <!-- Bar - height % = bee density -->
+                                    <div style="width:100%; height:{{ hfb.barPct }}%; display:flex; flex-direction:column; border-radius:4px 4px 2px 2px; overflow:hidden; min-height:12px;">
+                                      <sc-for list="{{ hfb.segs }}" as="hs">
+                                        <div style="background:{{ hs.bg }}; flex:{{ hs.flex }};"></div>
+                                      </sc-for>
+                                    </div>
+                                    <!-- Frame number -->
+                                    <div style="font-size:7px; font-weight:700; color:{{ t.textMuted }}; margin-top:3px; text-align:center;">{{ hfb.fnum }}</div>
                                   </div>
                                 </sc-for>
                               </div>
-                              <!-- Frame numbers -->
-                              <div style="display:flex; gap:3px; padding:2px 7px 5px;">
-                                <sc-for list="{{ hi.frameBars }}" as="hfbn">
-                                  <div style="flex:1; min-width:0; text-align:center; font-size:8px; font-weight:600; color:{{ t.textMuted }};">{{ hfbn.fnum }}</div>
-                                </sc-for>
-                              </div>
                             </div>
-                          </sc-if>
-                        </sc-for>
-                      </div>
-                      <!-- Bottom board -->
-                      <div style="width:calc(100% + 24px); height:10px; background:linear-gradient(0deg,#6B4F20,#8B6530); border-radius:0 0 6px 6px; margin-top:-1px;"></div>
-                      <!-- Entrance -->
-                      <div style="width:36px; height:6px; background:#3d2a10; border-radius:3px; margin-top:3px;"></div>
-                      <!-- Stand legs -->
-                      <div style="display:flex; gap:60px; margin-top:4px;">
-                        <div style="width:10px; height:20px; background:#8B6530; border-radius:0 0 4px 4px;"></div>
-                        <div style="width:10px; height:20px; background:#8B6530; border-radius:0 0 4px 4px;"></div>
-                      </div>
+                          </div>
+                        </sc-if>
+                      </sc-for>
                     </div>
                     <!-- Legend -->
-                    <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:14px;">
-                      <sc-for list="{{ zoneTypeLegend }}" as="ztl3">
-                        <span style="display:flex; align-items:center; gap:3px; font-size:10px; font-weight:700; color:{{ t.textMuted }};"><span style="width:10px; height:10px; border-radius:2px; background:{{ ztl3.bg }}; border:1px solid {{ ztl3.border }};"></span>{{ ztl3.label }}</span>
-                      </sc-for>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:12px;">
+                      <span style="display:flex;align-items:center;gap:3px;font-size:10px;font-weight:700;color:{{ t.textMuted }};"><span style="width:10px;height:10px;border-radius:2px;background:#F97316;"></span>蜜</span>
+                      <span style="display:flex;align-items:center;gap:3px;font-size:10px;font-weight:700;color:{{ t.textMuted }};"><span style="width:10px;height:10px;border-radius:2px;background:#22C55E;"></span>幼虫</span>
+                      <span style="display:flex;align-items:center;gap:3px;font-size:10px;font-weight:700;color:{{ t.textMuted }};"><span style="width:10px;height:10px;border-radius:2px;background:#FCA5A5;"></span>卵</span>
+                      <span style="display:flex;align-items:center;gap:3px;font-size:10px;font-weight:700;color:{{ t.textMuted }};"><span style="width:10px;height:10px;border-radius:2px;background:#DC2626;"></span>有蓋</span>
+                      <span style="display:flex;align-items:center;gap:3px;font-size:10px;font-weight:700;color:{{ t.textMuted }};"><span style="width:10px;height:10px;border-radius:2px;background:#A855F7;"></span>花粉</span>
+                      <span style="display:flex;align-items:center;gap:3px;font-size:10px;font-weight:700;color:{{ t.textMuted }};"><span style="width:10px;height:10px;border-radius:2px;background:#E5E7EB;border:1px solid #d1d5db;"></span>空</span>
                     </div>
                   </div>
 
@@ -4555,14 +4552,36 @@ class Component extends DCLogic {
               'pollen': { bg:'#FFFFF0', text:'#5D4037', border:'#E6B800', icon:'🌸', label:'花粉' },
             };
             const hiveItems = [];
+            // Beewise-style vivid colors for frame bars
+            const BW_COLORS = {
+              honey:   '#F97316', brood: '#F43F5E', larva: '#22C55E',
+              egg:     '#FCA5A5', capped:'#DC2626',  pollen:'#A855F7',
+              empty:   '#E5E7EB', foundation:'#BBF7D0', unknown:'#D1D5DB',
+              '':      '#E5E7EB',
+            };
             for (let bn = numBoxes; bn >= 1; bn--) {
               const fnums = hFrameNums.slice((bn-1)*hFPB, bn*hFPB);
               const frameBars = fnums.map(fnum => {
                 const ifd = hHasInsp ? ((latestInsp2.frameDetails||{})[fnum]||{}) : {};
                 const izones = ifd.zones || {};
-                const tcMap = {}; for(let i=0;i<8;i++){const tp=izones[i]||'';tcMap[tp]=(tcMap[tp]||0)+1;}
-                const segs = Object.entries(tcMap).sort((a,b)=>b[1]-a[1]).map(([tp,cnt])=>({bg:ZONE_COLORS[tp]?.bg||t.surfaceAlt, flex:cnt}));
-                return { fnum, segs, hasQueen: ifd.queenPos!=null, beeLabel: ifd.bees!=null?bL2[ifd.bees]:'' };
+                const bees = ifd.bees != null ? ifd.bees : -1; // 0-3
+                // barHeight: 40%-100% based on bee level (-1=no data→60%, 0=少→40%, 1=並→60%, 2=多→80%, 3=満→100%)
+                const barPct = bees < 0 ? 60 : [40,60,80,100][Math.min(bees,3)];
+                let segs;
+                if (hIsFrame) {
+                  // 枠式: count zones, pick dominant, single color bar
+                  const tcMap = {}; for(let i=0;i<8;i++){const tp=izones[i]||'';tcMap[tp]=(tcMap[tp]||0)+1;}
+                  const sorted = Object.entries(tcMap).sort((a,b)=>b[1]-a[1]);
+                  const dominant = sorted[0]?.[0] || '';
+                  segs = [{ bg: BW_COLORS[dominant] || '#E5E7EB', flex: 1 }];
+                } else {
+                  // 割合式: stacked segments by zone count
+                  const tcMap = {}; for(let i=0;i<8;i++){const tp=izones[i]||'';tcMap[tp]=(tcMap[tp]||0)+1;}
+                  segs = Object.entries(tcMap).filter(([tp])=>tp&&tp!=='').sort((a,b)=>b[1]-a[1])
+                    .map(([tp,cnt])=>({bg:BW_COLORS[tp]||'#E5E7EB', flex:cnt}));
+                  if (!segs.length) segs = [{ bg:'#E5E7EB', flex:1 }];
+                }
+                return { fnum, segs, hasQueen: ifd.queenPos!=null, beeLabel: ifd.bees!=null?bL2[ifd.bees]:'', barPct };
               });
               const boxTypeCounts = {};
               fnums.forEach(fnum => {
@@ -4637,7 +4656,7 @@ class Component extends DCLogic {
               { label: '最終内検からの日数', value: daysSinceLastInsp != null ? Math.floor(daysSinceLastInsp) + '日' : '—', color: daysSinceLastInsp != null && daysSinceLastInsp > 21 ? '#EF4444' : '#6B7280', pct: 0, hasBar: false },
             ];
             return {
-              hiveItems, hiveQEOptions,
+              hiveItems, hiveQEOptions, hIsFrame,
               hiveDetailColonyName: hcid,
               hiveDetailLastDate: hHasInsp ? (latestInsp2.date||'') : '記録なし',
               hiveDetailNumBoxes: numBoxes,
