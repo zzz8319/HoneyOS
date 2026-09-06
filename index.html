@@ -724,6 +724,25 @@ if('serviceWorker' in navigator){
                     </div>
                   </sc-if>
 
+                  <!-- ===== ALERT SECTION ===== -->
+                  <sc-if value="{{ hasColonyAlerts }}">
+                    <div style="padding:16px 16px 0;">
+                      <div style="font-size:13px; font-weight:700; color:{{ t.text }}; margin-bottom:10px;">⚠️ 要注意アラート</div>
+                      <div style="display:flex; flex-direction:column; gap:8px;">
+                        <sc-for list="{{ colonyAlerts }}" as="ca">
+                          <div style="background:{{ t.surface }}; border-radius:12px; padding:10px 12px; border:1px solid {{ t.border }}; display:flex; align-items:center; gap:10px;">
+                            <div style="width:5px; height:36px; border-radius:3px; background:{{ ca.color }}; flex-shrink:0;"></div>
+                            <div style="flex:1; min-width:0;">
+                              <div style="font-size:12.5px; font-weight:700; color:{{ t.text }}; line-height:1.4;">{{ ca.title }}</div>
+                              <div style="font-size:11px; color:{{ t.textMuted }}; margin-top:2px;">{{ ca.hive }} ・ {{ ca.time }}</div>
+                            </div>
+                            <span style="font-size:10px; font-weight:700; color:{{ ca.color }}; background:{{ ca.bg }}; padding:4px 8px; border-radius:6px; flex-shrink:0; white-space:nowrap;">{{ ca.badge }}</span>
+                          </div>
+                        </sc-for>
+                      </div>
+                    </div>
+                  </sc-if>
+
                 </div>
               </sc-if>
 
@@ -826,6 +845,64 @@ if('serviceWorker' in navigator){
                     </div>
                   </div>
 
+                  <!-- Detail tabs -->
+                  <div style="display:flex; gap:0; background:{{ t.surfaceAlt }}; border:1px solid {{ t.border }}; border-radius:12px; padding:4px; margin-bottom:14px;">
+                    <button onClick="{{ setHiveDetailTabOverview }}" style="flex:1; padding:7px 0; font-size:12px; font-weight:700; font-family:{{ t.font }}; border:none; border-radius:9px; cursor:pointer; background:{{ hiveDetailTabOverview ? t.surface : 'transparent' }}; color:{{ hiveDetailTabOverview ? t.primary : t.textMuted }}; box-shadow:{{ hiveDetailTabOverview ? '0 1px 4px rgba(0,0,0,.08)' : 'none' }};">概要</button>
+                    <button onClick="{{ setHiveDetailTabHeatmap }}" style="flex:1; padding:7px 0; font-size:12px; font-weight:700; font-family:{{ t.font }}; border:none; border-radius:9px; cursor:pointer; background:{{ hiveDetailTabHeatmap ? t.surface : 'transparent' }}; color:{{ hiveDetailTabHeatmap ? t.primary : t.textMuted }}; box-shadow:{{ hiveDetailTabHeatmap ? '0 1px 4px rgba(0,0,0,.08)' : 'none' }};">ヒートマップ</button>
+                    <button onClick="{{ setHiveDetailTabMetrics }}" style="flex:1; padding:7px 0; font-size:12px; font-weight:700; font-family:{{ t.font }}; border:none; border-radius:9px; cursor:pointer; background:{{ hiveDetailTabMetrics ? t.surface : 'transparent' }}; color:{{ hiveDetailTabMetrics ? t.primary : t.textMuted }}; box-shadow:{{ hiveDetailTabMetrics ? '0 1px 4px rgba(0,0,0,.08)' : 'none' }};">指標</button>
+                  </div>
+
+                  <!-- Heatmap tab -->
+                  <sc-if value="{{ hiveDetailTabHeatmap }}">
+                    <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:14px; padding:14px; margin-bottom:14px;">
+                      <div style="font-size:12px; font-weight:700; color:{{ t.textMuted }}; margin-bottom:10px;">巣枠カテゴリーマップ（最終内検）</div>
+                      <sc-if value="{{ hiveHeatmapCols.length }}">
+                        <div style="display:flex; gap:3px;">
+                          <sc-for list="{{ hiveHeatmapCols }}" as="hmc">
+                            <div style="display:flex; flex-direction:column; gap:3px; flex:1; min-width:0;">
+                              <sc-for list="{{ hmc.cells }}" as="hmcell">
+                                <div style="height:26px; border-radius:3px; background:{{ hmcell.bg }}; display:flex; align-items:center; justify-content:center; font-size:8px; overflow:hidden; white-space:nowrap;" title="{{ hmcell.label }}"></div>
+                              </sc-for>
+                            </div>
+                          </sc-for>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; font-size:9px; color:{{ t.textMuted }}; margin-top:4px;"><span>枠1</span><span>枠{{ hiveHeatmapFrameCount }}</span></div>
+                        <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:12px;">
+                          <sc-for list="{{ hiveHeatmapLegend }}" as="hl">
+                            <div style="display:flex; align-items:center; gap:4px;">
+                              <div style="width:10px; height:10px; border-radius:2px; background:{{ hl.color }};"></div>
+                              <span style="font-size:10px; color:{{ t.textMuted }};">{{ hl.label }}</span>
+                            </div>
+                          </sc-for>
+                        </div>
+                      </sc-if>
+                      <sc-if value="{{ !hiveHeatmapCols.length }}">
+                        <div style="text-align:center; padding:24px 0; font-size:13px; color:{{ t.textMuted }};">内検データがありません</div>
+                      </sc-if>
+                    </div>
+                  </sc-if>
+
+                  <!-- Metrics tab -->
+                  <sc-if value="{{ hiveDetailTabMetrics }}">
+                    <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:14px; padding:16px; margin-bottom:14px; display:flex; flex-direction:column; gap:14px;">
+                      <sc-for list="{{ hiveMetrics }}" as="hm">
+                        <div>
+                          <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:700; color:{{ t.text }}; margin-bottom:6px;">
+                            <span>{{ hm.label }}</span>
+                            <span style="color:{{ hm.color }};">{{ hm.value }}</span>
+                          </div>
+                          <sc-if value="{{ hm.hasBar }}">
+                            <div style="height:6px; background:{{ t.surfaceAlt }}; border-radius:3px; overflow:hidden;">
+                              <div style="height:100%; width:{{ hm.pct }}%; background:{{ hm.color }}; border-radius:3px; transition:width .3s;"></div>
+                            </div>
+                          </sc-if>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </sc-if>
+
+                  <!-- Overview tab (existing content) -->
+                  <sc-if value="{{ hiveDetailTabOverview }}">
                   <!-- タグ・固定メモ -->
                   <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:14px; padding:14px; margin-bottom:14px;">
                     <div style="font-size:12px; font-weight:700; color:{{ t.textMuted }}; margin-bottom:8px;">タグ</div>
@@ -996,6 +1073,7 @@ if('serviceWorker' in navigator){
                       </sc-if>
                     </sc-for>
                   </div>
+                  </sc-if><!-- /hiveDetailTabOverview -->
                 </div>
               </sc-if>
 
@@ -2455,7 +2533,7 @@ class Component extends DCLogic {
     inspStageCount: 1, inspStageFrameCounts: [8], colonyMeta: {},
     inspQueenPresent: null, inspBeesTotal: null, inspBeeDensity: null,
     inspSearch: '', inspDetailRecord: null, inspEditOpen: false, inspFilter: 'all',
-    hiveStructures: {}, hiveDetailColony: null,
+    hiveStructures: {}, hiveDetailColony: null, hiveDetailTab: 'overview',
     userTasks: [], taskDoneMap: {},
     workHistoryFilter: 'all',
     activeFarm: 'f1',
@@ -3402,7 +3480,7 @@ class Component extends DCLogic {
   }
 
   openHiveDetail(colonyId) {
-    this.setState({ hiveDetailColony: colonyId });
+    this.setState({ hiveDetailColony: colonyId, hiveDetailTab: 'overview' });
     this.nav('hiveDetail');
   }
 
@@ -4480,6 +4558,36 @@ class Component extends DCLogic {
             const hiveDetailMemo = (s.colonyMemos || {})[hcid] || '';
             const hiveDetailMemoEditing = s.colonyMemoEditId === hcid;
             const hiveDetailMemoVal = this._fieldBuf['colonyMemo_' + hcid] !== undefined ? this._fieldBuf['colonyMemo_' + hcid] : hiveDetailMemo;
+            // ===== DETAIL TABS =====
+            const hdTab = s.hiveDetailTab || 'overview';
+            const catColors = { honey:'#F59E0B', brood:'#EF4444', larva:'#F97316', capped:'#DC2626', egg:'#FCA5A5', pollen:'#8B5CF6', empty:'#E5E7EB', foundation:'#D1FAE5', unknown:'#D1D5DB' };
+            const hiveHeatmapCols = (() => {
+              if (!hHasInsp) return [];
+              const stages = latestInsp2.inspStages || [];
+              if (!stages.length) return [];
+              const maxFrames = Math.max(...stages.map(st => (st.frames||[]).length), 1);
+              return Array.from({length: maxFrames}, (_, fi) => ({
+                cells: stages.map(st => {
+                  const frame = (st.frames||[])[fi];
+                  const cat = frame ? (frame.cat || 'empty') : 'empty';
+                  return { bg: catColors[cat] || '#E5E7EB', label: cat };
+                }),
+              }));
+            })();
+            const hiveHeatmapLegend = [
+              { color: catColors.honey, label: '蜜' },
+              { color: catColors.brood, label: '育児' },
+              { color: catColors.pollen, label: '花粉' },
+              { color: catColors.empty, label: '空' },
+              { color: catColors.foundation, label: '巣礎' },
+            ];
+            const daysSinceLastInsp = hHasInsp ? (Date.now() - new Date(latestInsp2.date||'').getTime()) / 86400000 : null;
+            const hiveMetrics = [
+              { label: '貯蜜率', value: hiveHoneyCount && hiveTotalFrames2 ? Math.round((hiveHoneyCount/hiveTotalFrames2)*100)+'%' : '—', color: '#F59E0B', pct: hiveTotalFrames2 ? Math.round((hiveHoneyCount/hiveTotalFrames2)*100) : 0, hasBar: hiveTotalFrames2 > 0 },
+              { label: '育児ゾーン', value: hiveTotalFrames2 ? hiveBroodCount + '枠' : '—', color: '#EF4444', pct: hiveTotalFrames2 ? Math.round((hiveBroodCount/hiveTotalFrames2)*100) : 0, hasBar: hiveTotalFrames2 > 0 },
+              { label: '女王確認', value: hiveQueenFound ? '確認済み' : '未確認', color: hiveQueenFound ? '#16A34A' : '#9CA3AF', pct: 0, hasBar: false },
+              { label: '最終内検からの日数', value: daysSinceLastInsp != null ? Math.floor(daysSinceLastInsp) + '日' : '—', color: daysSinceLastInsp != null && daysSinceLastInsp > 21 ? '#EF4444' : '#6B7280', pct: 0, hasBar: false },
+            ];
             return {
               hiveItems, hiveQEOptions,
               hiveDetailColonyName: hcid,
@@ -4499,6 +4607,16 @@ class Component extends DCLogic {
               saveHiveDetailMemo: () => this.saveColonyMemo(hcid),
               cancelHiveDetailMemoEdit: () => this.setState({ colonyMemoEditId: null }),
               hHiveDetailMemo: this.field('colonyMemo_' + hcid),
+              hiveDetailTabOverview: hdTab === 'overview',
+              hiveDetailTabHeatmap: hdTab === 'heatmap',
+              hiveDetailTabMetrics: hdTab === 'metrics',
+              setHiveDetailTabOverview: () => this.setState({ hiveDetailTab: 'overview' }),
+              setHiveDetailTabHeatmap: () => this.setState({ hiveDetailTab: 'heatmap' }),
+              setHiveDetailTabMetrics: () => this.setState({ hiveDetailTab: 'metrics' }),
+              hiveHeatmapCols,
+              hiveHeatmapLegend,
+              hiveHeatmapFrameCount: hiveHeatmapCols.length,
+              hiveMetrics,
             };
           })(),
           frameBarLight: t.primary+'66', frameBarMid: t.primary+'aa',
@@ -5045,6 +5163,26 @@ class Component extends DCLogic {
             avgStrength: ['少','並','多','密'][Math.round(avgStrength/33)] || '並',
           },
           timelineCards: colonyCards.filter(cc => cc.hasData).slice().sort((a,b) => (b.lastDate||'') > (a.lastDate||'') ? 1 : -1),
+          colonyAlerts: (() => {
+            const todayMs2 = Date.now();
+            const alerts = [];
+            colonyCards.forEach(cc => {
+              if (cc.status === 'danger') {
+                alerts.push({ title: '女王蜂が確認できていません', hive: cc.id, time: cc.lastDate, color: '#EF4444', bg: '#FEF2F2', badge: '要対応' });
+              } else if (cc.status === 'warn') {
+                const recs2 = (s.inspHistory || []).filter(r => r.colony === cc.id).sort((a,b) => (b.date||'') > (a.date||'') ? 1 : -1);
+                const lat2 = recs2[0];
+                const daysSince2 = lat2 ? (todayMs2 - new Date(lat2.date||'').getTime()) / 86400000 : Infinity;
+                if (cc.densityNum < 20 && cc.hasData) {
+                  alerts.push({ title: '貯蜜率が低下しています（' + cc.densityNum + '%）', hive: cc.id, time: cc.lastDate, color: '#F59E0B', bg: '#FFFBEB', badge: '注意' });
+                } else if (daysSince2 > 21) {
+                  alerts.push({ title: '内検から' + Math.floor(daysSince2) + '日が経過しています', hive: cc.id, time: cc.lastDate, color: '#F59E0B', bg: '#FFFBEB', badge: '注意' });
+                }
+              }
+            });
+            return alerts;
+          })(),
+          hasColonyAlerts: (colonyCards.filter(cc => cc.status === 'warn' || cc.status === 'danger').length > 0),
         };
       })(),
       // ===== オフライン =====
