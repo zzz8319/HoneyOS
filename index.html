@@ -3479,7 +3479,7 @@ class Component extends DCLogic {
 
   setFrameDetail(num, key, val) {
     this.setState(s => {
-      const fd = { ...(s.frameDetails[num] || {}) };
+      const fd = { ...((s.frameDetails||{})[num] || {}) };
       fd[key] = val;
       return { frameDetails: { ...s.frameDetails, [num]: fd } };
     });
@@ -3674,8 +3674,9 @@ class Component extends DCLogic {
     const mapPins = this.COLONY_STATUS.map((st,i)=>({ id:'A-'+String(i+1).padStart(2,'0'), x:mapXY[i][0], y:mapXY[i][1], color:stColor[st], open:()=>this.nav('sensor') }));
 
     // inspection frames
-    const frameChips = []; for(let i=1;i<=10;i++){ const on=!!s.frames[i]; frameChips.push({ n:i, toggle:()=>this.toggleFrame(i), bg:on?t.primary:t.surface, fg:on?t.primaryText:t.textMuted, border:on?t.primary:t.border }); }
-    const selectedCount = Object.keys(s.frames).length;
+    const _frames = s.frames || {};
+    const frameChips = []; for(let i=1;i<=10;i++){ const on=!!_frames[i]; frameChips.push({ n:i, toggle:()=>this.toggleFrame(i), bg:on?t.primary:t.surface, fg:on?t.primaryText:t.textMuted, border:on?t.primary:t.border }); }
+    const selectedCount = Object.keys(_frames).length;
     const aiResults = this.AI_RESULTS.map(r=>({ ...r, confColor:confColor(r.conf), confBg:confBg(r.conf) }));
 
     // summary score cells
@@ -3976,10 +3977,10 @@ class Component extends DCLogic {
       saveInspection: () => this.saveInspection(),
       // ===== frame/space detail screen =====
       selectedFrameNum: s.selectedFrameNum,
-      selectedFrameCount: Object.keys(s.frames).length,
-      prevFrame: () => { const nums=Object.keys(s.frames).map(Number).sort((a,b)=>a-b); const i=nums.indexOf(s.selectedFrameNum); if(i>0) this.selectFrameNum(nums[i-1]); },
-      nextFrame: () => { const nums=Object.keys(s.frames).map(Number).sort((a,b)=>a-b); const i=nums.indexOf(s.selectedFrameNum); if(i<nums.length-1) this.selectFrameNum(nums[i+1]); },
-      currentFrameMemo: (s.frameDetails[s.selectedFrameNum]||{}).memo || '',
+      selectedFrameCount: Object.keys(s.frames||{}).length,
+      prevFrame: () => { const nums=Object.keys(s.frames||{}).map(Number).sort((a,b)=>a-b); const i=nums.indexOf(s.selectedFrameNum); if(i>0) this.selectFrameNum(nums[i-1]); },
+      nextFrame: () => { const nums=Object.keys(s.frames||{}).map(Number).sort((a,b)=>a-b); const i=nums.indexOf(s.selectedFrameNum); if(i<nums.length-1) this.selectFrameNum(nums[i+1]); },
+      currentFrameMemo: ((s.frameDetails||{})[s.selectedFrameNum]||{}).memo || '',
       hFdMemo: this.field('fdmemo_' + s.selectedFrameNum),
       // Zone colors helper (used in multiple places)
       ...(() => {
@@ -3999,13 +4000,13 @@ class Component extends DCLogic {
         const FRAME_KANJI = { 'honey':'蜜', 'pollen':'花', 'capped':'蛹', 'larva':'幼', 'egg':'卵', '':'空' };
         const frameNum = s.selectedFrameNum;
         const fc = s.frameCount || 8;
-        const fd = s.frameDetails[frameNum] || {};
+        const fd = (s.frameDetails||{})[frameNum] || {};
         const zones = fd.zones || {};
         const ZONE_CYCLE = ['', 'egg', 'larva', 'capped', 'honey', 'pollen'];
         // ===== 新枠式: 1枠=1タイプ ブロック =====
         const frameBlocks = Array.from({length: fc}, (_, i) => {
           const num = i + 1;
-          const ifd = s.frameDetails[num] || {};
+          const ifd = (s.frameDetails||{})[num] || {};
           const type = ifd.type || '';
           const zc = ZONE_COLORS[type] || ZONE_COLORS[''];
           const isSel = num === frameNum;
@@ -4082,7 +4083,7 @@ class Component extends DCLogic {
         // All-frames barcode (input screen) — reads .type (new) or .zones (legacy)
         const allFrameNums = Array.from({length: fc}, (_, i) => i + 1);
         const allFrameBars = allFrameNums.map(num => {
-          const ifd = s.frameDetails[num] || {};
+          const ifd = (s.frameDetails||{})[num] || {};
           let segs;
           if (ifd.type !== undefined) {
             const tp = ifd.type || '';
@@ -5080,14 +5081,14 @@ class Component extends DCLogic {
       })(),
       inspSummaryWeather: ({sun:'☀️ 晴れ', cloud:'⛅ 曇り', rain:'🌧️ 雨'})[s.weather] || '晴れ',
       inspSummaryDate: new Date().toLocaleDateString('ja-JP', { year:'numeric', month:'2-digit', day:'2-digit' }),
-      inspSummaryFrames: Object.keys(s.frames).map(Number).sort((a,b)=>a-b).join('・') + ' 枠',
+      inspSummaryFrames: Object.keys(s.frames||{}).map(Number).sort((a,b)=>a-b).join('・') + ' 枠',
       inspSummaryMode: s.countMode === 'frame' ? '枠式' : '空間式',
       inspSummaryFrameMemo: (() => {
-        if (s.countMode === 'space') { const cv=Object.values(s.spaceLevels||{}).filter(v=>v>0).length; return '空間式・'+s.spaceCount+'スペース中'+cv+'スペースに蜂あり（'+Math.round(cv/s.spaceCount*100)+'%）'; }
-        const nums = Object.keys(s.frames).map(Number).sort((a,b)=>a-b);
+        if (s.countMode === 'space') { const cv=Object.values(s.spaceLevels||{}).filter(v=>v>0).length; return '空間式・'+(s.spaceCount||10)+'スペース中'+cv+'スペースに蜂あり（'+Math.round(cv/(s.spaceCount||10)*100)+'%）'; }
+        const nums = Object.keys(s.frames||{}).map(Number).sort((a,b)=>a-b);
         const beeL=['空','少','並','多']; const broodL=['なし','卵','幼虫','有蓋','混在']; const queenL=['未確認','確認済','王台あり'];
         const lines = nums.map(n => {
-          const d = s.frameDetails[n] || {};
+          const d = (s.frameDetails||{})[n] || {};
           const parts = [];
           if (d.bees !== undefined) parts.push('蜂量:'+beeL[d.bees]);
           if (d.brood !== undefined) parts.push('育児:'+broodL[d.brood]);
@@ -5099,7 +5100,7 @@ class Component extends DCLogic {
         return lines.length ? lines.join('\n') : (s.f.frameMemo || '（記録なし）');
       })(),
       inspSummaryAiMemo: s.f.aiMemo || s.f.frameMemo || '（なし）',
-      inspSummaryCount: Object.keys(s.frames).length,
+      inspSummaryCount: Object.keys(s.frames||{}).length,
       inspSearch: s.inspSearch,
       hInspSearch: (e) => { this.setState({ inspSearch: e.target.value }); },
       inspHistoryItems: s.inspHistory.filter(r => {
