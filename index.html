@@ -282,15 +282,23 @@ if('serviceWorker' in navigator){
 
         <!-- ===== AUTH / ONBOARDING ===== -->
         <sc-if value="{{ scLogin }}" hint-placeholder-val="{{ true }}">
-          <div data-screen-label="SCR-001 ログイン" style="position:absolute; inset:0; overflow-y:auto; background:{{ t.bg }}; font-family:{{ t.font }}; padding:78px 28px 40px; display:flex; flex-direction:column; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
-            <div style="display:flex; align-items:center; gap:8px; margin-bottom:40px;"><span style="font-size:30px;">🐝</span><span style="font-size:22px; font-weight:800; color:{{ t.text }};">HoneyOS</span></div>
-            <div style="font-size:26px; font-weight:800; color:{{ t.text }}; margin-bottom:30px;">ログイン</div>
-            <div style="margin-bottom:18px;"><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">メールアドレス</label><input type="email" value="{{ f.loginEmail }}" onInput="{{ h.loginEmail }}" placeholder="you@example.com" style="width:100%; padding:14px 16px; font-size:16px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:14px; outline:none;" style-focus="border-color:{{ t.primary }};"></div>
-            <div style="margin-bottom:10px;"><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">パスワード</label><input type="password" value="{{ f.loginPw }}" onInput="{{ h.loginPw }}" placeholder="••••••••" style="width:100%; padding:14px 16px; font-size:16px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:14px; outline:none;" style-focus="border-color:{{ t.primary }};"></div>
-            <div style="text-align:right; margin-bottom:18px;"><span onClick="{{ openPwReset }}" style="font-size:13px; color:{{ t.primary }}; font-weight:600; cursor:pointer;">パスワードをお忘れですか？</span></div>
-            <sc-if value="{{ loginError }}"><div style="margin-bottom:14px; padding:12px 14px; background:{{ t.dangerBg }}; border-radius:10px; font-size:13px; color:{{ t.danger }}; font-weight:600;">{{ loginError }}</div></sc-if>
-            <button onClick="{{ submitLogin }}" style="width:100%; padding:16px; font-size:16px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};" style-active="transform:translateY(1px);">ログイン</button>
-            <div style="margin-top:auto; padding-top:30px; text-align:center; font-size:14px; color:{{ t.textMuted }};">アカウントをお持ちでない方は <span onClick="{{ goRegister }}" style="color:{{ t.primary }}; font-weight:700; cursor:pointer;">新規登録</span></div>
+          <div data-screen-label="SCR-001 ログイン" style="position:absolute; inset:0; overflow-y:auto; background:{{ t.bg }}; font-family:{{ t.font }}; display:flex; flex-direction:column; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
+            <!-- ロゴヘッダー -->
+            <div style="padding:60px 28px 32px; text-align:center;">
+              <div style="width:72px; height:72px; border-radius:22px; background:{{ t.primary }}; display:flex; align-items:center; justify-content:center; font-size:38px; margin:0 auto 16px; box-shadow:0 8px 24px {{ t.primaryShadow }};">🐝</div>
+              <div style="font-size:24px; font-weight:800; color:{{ t.text }}; letter-spacing:-.3px;">HoneyOS</div>
+              <div style="font-size:13px; color:{{ t.textMuted }}; margin-top:4px;">養蜂家のための統合管理アプリ</div>
+            </div>
+            <!-- フォームカード -->
+            <div style="flex:1; padding:0 24px 40px; display:flex; flex-direction:column;">
+              <div style="font-size:20px; font-weight:800; color:{{ t.text }}; margin-bottom:24px;">ログイン</div>
+              <div style="margin-bottom:16px;"><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:6px;">メールアドレス</label><input type="email" value="{{ f.loginEmail }}" onInput="{{ h.loginEmail }}" placeholder="you@example.com" style="width:100%; padding:13px 16px; font-size:15px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:10px; outline:none;" style-focus="border-color:{{ t.primary }};"></div>
+              <div style="margin-bottom:8px;"><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:6px;">パスワード</label><input type="password" value="{{ f.loginPw }}" onInput="{{ h.loginPw }}" placeholder="••••••••" style="width:100%; padding:13px 16px; font-size:15px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:10px; outline:none;" style-focus="border-color:{{ t.primary }};"></div>
+              <div style="text-align:right; margin-bottom:20px;"><span onClick="{{ openPwReset }}" style="font-size:13px; color:{{ t.primary }}; font-weight:600; cursor:pointer;">パスワードをお忘れですか？</span></div>
+              <sc-if value="{{ loginError }}"><div style="margin-bottom:14px; padding:12px 14px; background:{{ t.dangerBg }}; border-radius:10px; font-size:13px; color:{{ t.danger }}; font-weight:600;">{{ loginError }}</div></sc-if>
+              <button onClick="{{ submitLogin }}" style="width:100%; padding:15px; font-size:16px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:999px; cursor:pointer; box-shadow:0 6px 18px {{ t.primaryShadow }};" style-active="transform:translateY(1px);">ログインする</button>
+              <div style="margin-top:auto; padding-top:28px; text-align:center; font-size:14px; color:{{ t.textMuted }};">アカウントをお持ちでない方は <span onClick="{{ goRegister }}" style="color:{{ t.primary }}; font-weight:700; cursor:pointer;">新規登録</span></div>
+            </div>
           </div>
         </sc-if>
 
@@ -2541,12 +2549,27 @@ if('serviceWorker' in navigator){
             <!-- INSTALL PROMPT BANNER (一時非表示) -->
 
             <!-- BOTTOM NAV -->
-            <div id="bottom-tabbar" style="display:flex; background:{{ t.navBarBg }}; border-top:1px solid {{ t.border }}; padding:8px 6px 26px;">
-              <button onClick="{{ tabHome }}" style="flex:1; background:none; border:none; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; color:{{ nc.home }};"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"></path><path d="M5 9.5V20h5v-6h4v6h5V9.5"></path></svg><span style="font-size:10px; font-weight:700;">{{ TR.home }}</span></button>
-              <button onClick="{{ tabFarms }}" style="flex:1; background:none; border:none; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; color:{{ nc.farms }};"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="7" height="7" rx="1.6"></rect><rect x="14" y="4" width="7" height="7" rx="1.6"></rect><rect x="3" y="14" width="7" height="7" rx="1.6"></rect><rect x="14" y="14" width="7" height="7" rx="1.6"></rect></svg><span style="font-size:10px; font-weight:700;">{{ TR.farms }}</span></button>
-              <button onClick="{{ tabTasks }}" style="flex:1; background:none; border:none; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; color:{{ nc.tasks }};"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2.4"></rect><path d="M9 4V3h6v1"></path><path d="M8.5 13l2 2 4-4.5"></path></svg><span style="font-size:10px; font-weight:700;">{{ TR.tasks }}</span></button>
-              <button onClick="{{ tabReport }}" style="flex:1; background:none; border:none; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; color:{{ nc.analytics }};"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20V12"></path><path d="M12 20V5"></path><path d="M19 20v-5"></path></svg><span style="font-size:10px; font-weight:700;">{{ TR.analytics }}</span></button>
-              <button onClick="{{ tabSettings }}" style="flex:1; background:none; border:none; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; color:{{ nc.settings }};"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h9"></path><circle cx="16" cy="7" r="2.4"></circle><path d="M18.5 7H20"></path><path d="M4 17h5"></path><circle cx="11" cy="17" r="2.4"></circle><path d="M13.5 17H20"></path></svg><span style="font-size:10px; font-weight:700;">{{ TR.settings }}</span></button>
+            <div id="bottom-tabbar" style="display:flex; background:{{ t.navBarBg }}; border-top:1px solid {{ t.border }}; padding:6px 0 24px; box-shadow:0 -1px 0 {{ t.border }};">
+              <button onClick="{{ tabHome }}" style="flex:1; background:none; border:none; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:2px; padding:4px 0;">
+                <div style="width:36px; height:28px; border-radius:14px; display:flex; align-items:center; justify-content:center; background:{{ nc.home === t.primary ? t.chipBg : 'transparent' }};"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="{{ nc.home }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"></path><path d="M5 9.5V20h5v-6h4v6h5V9.5"></path></svg></div>
+                <span style="font-size:10px; font-weight:700; color:{{ nc.home }};">{{ TR.home }}</span>
+              </button>
+              <button onClick="{{ tabFarms }}" style="flex:1; background:none; border:none; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:2px; padding:4px 0;">
+                <div style="width:36px; height:28px; border-radius:14px; display:flex; align-items:center; justify-content:center; background:{{ nc.farms === t.primary ? t.chipBg : 'transparent' }};"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="{{ nc.farms }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="7" height="7" rx="1.6"></rect><rect x="14" y="4" width="7" height="7" rx="1.6"></rect><rect x="3" y="14" width="7" height="7" rx="1.6"></rect><rect x="14" y="14" width="7" height="7" rx="1.6"></rect></svg></div>
+                <span style="font-size:10px; font-weight:700; color:{{ nc.farms }};">{{ TR.farms }}</span>
+              </button>
+              <button onClick="{{ tabTasks }}" style="flex:1; background:none; border:none; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:2px; padding:4px 0;">
+                <div style="width:36px; height:28px; border-radius:14px; display:flex; align-items:center; justify-content:center; background:{{ nc.tasks === t.primary ? t.chipBg : 'transparent' }};"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="{{ nc.tasks }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2.4"></rect><path d="M9 4V3h6v1"></path><path d="M8.5 13l2 2 4-4.5"></path></svg></div>
+                <span style="font-size:10px; font-weight:700; color:{{ nc.tasks }};">{{ TR.tasks }}</span>
+              </button>
+              <button onClick="{{ tabReport }}" style="flex:1; background:none; border:none; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:2px; padding:4px 0;">
+                <div style="width:36px; height:28px; border-radius:14px; display:flex; align-items:center; justify-content:center; background:{{ nc.analytics === t.primary ? t.chipBg : 'transparent' }};"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="{{ nc.analytics }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20V12"></path><path d="M12 20V5"></path><path d="M19 20v-5"></path></svg></div>
+                <span style="font-size:10px; font-weight:700; color:{{ nc.analytics }};">{{ TR.analytics }}</span>
+              </button>
+              <button onClick="{{ tabSettings }}" style="flex:1; background:none; border:none; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:2px; padding:4px 0;">
+                <div style="width:36px; height:28px; border-radius:14px; display:flex; align-items:center; justify-content:center; background:{{ nc.settings === t.primary ? t.chipBg : 'transparent' }};"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="{{ nc.settings }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h9"></path><circle cx="16" cy="7" r="2.4"></circle><path d="M18.5 7H20"></path><path d="M4 17h5"></path><circle cx="11" cy="17" r="2.4"></circle><path d="M13.5 17H20"></path></svg></div>
+                <span style="font-size:10px; font-weight:700; color:{{ nc.settings }};">{{ TR.settings }}</span>
+              </button>
             </div>
           </div>
         </sc-if>
@@ -2561,7 +2584,7 @@ if('serviceWorker' in navigator){
 <script type="text/x-dc" data-dc-script>
 class Component extends DCLogic {
   state = {
-    theme: 'honey', screen: 'login', view: 'home', hist: [], anim: 'scrIn',
+    theme: 'clean', screen: 'login', view: 'home', hist: [], anim: 'scrIn',
     fdTab: 'overview', weather: 'sun', face: 'A',
     frames: { 1:true, 2:true, 3:true }, graphKind: 'weight', period: 'week',
     taskFilter: 'today', reportPeriod: 'month', reads: {},
@@ -3151,6 +3174,7 @@ class Component extends DCLogic {
   }
 
   THEMES = {
+    clean: { bg:'#F8F8F8', surface:'#FFFFFF', surfaceAlt:'#F3F4F6', primary:'#F59E0B', primaryText:'#FFFFFF', primaryShadow:'rgba(245,158,11,.30)', accent:'#F59E0B', text:'#111827', textMuted:'#6B7280', border:'#E5E7EB', ok:'#22C55E', warn:'#F59E0B', warnBg:'#FFFBEB', danger:'#EF4444', dangerBg:'#FEF2F2', font:"'Noto Sans JP', system-ui, sans-serif", radius:12, statusBarDark:false, chipBg:'#FEF3C7', chipText:'#92400E', navBarBg:'#FFFFFF', homeBar:'rgba(0,0,0,.18)' },
     honey: { bg:'#FBF4E6', surface:'#FFFFFF', surfaceAlt:'#FFFBF1', primary:'#E8961B', primaryText:'#FFFFFF', primaryShadow:'rgba(232,150,27,.32)', accent:'#E8961B', text:'#3D2F17', textMuted:'#A38F6E', border:'#F0E4CA', ok:'#3E9D6B', warn:'#C98A00', warnBg:'#FCF1D6', danger:'#D9534F', dangerBg:'#FBE8E7', font:"'M PLUS Rounded 1c', system-ui, sans-serif", radius:20, statusBarDark:false, chipBg:'#FFF1D6', chipText:'#9A6B00', navBarBg:'#FFFFFF', homeBar:'rgba(0,0,0,.25)' },
     charcoal: { bg:'#15120C', surface:'#211C13', surfaceAlt:'#2A2417', primary:'#F5B72E', primaryText:'#1A1505', primaryShadow:'rgba(245,183,46,.3)', accent:'#F5B72E', text:'#F6F0E2', textMuted:'#A99D86', border:'#322B1E', ok:'#5CC98C', warn:'#F5B72E', warnBg:'rgba(245,183,46,.14)', danger:'#FF7A6E', dangerBg:'rgba(255,122,110,.14)', font:"'Noto Sans JP', system-ui, sans-serif", radius:18, statusBarDark:true, chipBg:'rgba(245,183,46,.16)', chipText:'#F5B72E', navBarBg:'#1B1710', homeBar:'rgba(255,255,255,.6)' },
     sage: { bg:'#EEF0E8', surface:'#FFFFFF', surfaceAlt:'#F5F7EF', primary:'#5E7C4E', primaryText:'#FFFFFF', primaryShadow:'rgba(94,124,78,.28)', accent:'#C58A1A', text:'#2B3024', textMuted:'#7C8470', border:'#DCE1D1', ok:'#5E7C4E', warn:'#C58A1A', warnBg:'#F6EBD4', danger:'#C2645B', dangerBg:'#F2E2DF', font:"'Zen Kaku Gothic New', system-ui, sans-serif", radius:14, statusBarDark:false, chipBg:'#E8EEE0', chipText:'#4A6440', navBarBg:'#FFFFFF', homeBar:'rgba(0,0,0,.22)' },
