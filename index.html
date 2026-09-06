@@ -549,23 +549,34 @@ if('serviceWorker' in navigator){
                     </div>
                     <button onClick="{{ goFarmMap }}" style="padding:7px 13px; font-size:12px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primary }}; background:{{ t.chipBg }}; border:none; border-radius:999px; cursor:pointer;">🗺️ マップ</button>
                   </div>
-                  <!-- Stats bar -->
-                  <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:8px; padding:0 16px; margin-bottom:14px;">
-                    <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:12px; padding:10px 6px; text-align:center;">
-                      <div style="font-size:18px; font-weight:800; color:{{ t.text }};">{{ summaryStats.total }}</div>
-                      <div style="font-size:9px; color:{{ t.textMuted }}; margin-top:1px;">総蜂群</div>
+                  <!-- Stats bar (dc.html style: 2×2 grid) -->
+                  <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:0 16px; margin-bottom:14px;">
+                    <div style="background:{{ t.surface }}; border-radius:14px; padding:12px 14px; border:1px solid {{ t.border }};">
+                      <div style="font-size:11px; font-weight:500; color:{{ t.textMuted }}; margin-bottom:6px;">総巣箱数</div>
+                      <div style="display:flex; align-items:baseline; gap:4px;">
+                        <span style="font-size:22px; font-weight:900; color:{{ t.text }};">{{ summaryStats.total }}</span>
+                        <span style="font-size:12px; font-weight:500; color:{{ t.textMuted }};">群</span>
+                      </div>
                     </div>
-                    <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:12px; padding:10px 6px; text-align:center;">
-                      <div style="font-size:18px; font-weight:800; color:#16A34A;">{{ summaryStats.good }}</div>
-                      <div style="font-size:9px; color:{{ t.textMuted }}; margin-top:1px;">良好</div>
+                    <div style="background:{{ t.surface }}; border-radius:14px; padding:12px 14px; border:1px solid {{ t.border }};">
+                      <div style="font-size:11px; font-weight:500; color:{{ t.textMuted }}; margin-bottom:6px;">要注意</div>
+                      <div style="display:flex; align-items:baseline; gap:4px;">
+                        <span style="font-size:22px; font-weight:900; color:{{ t.warn }};">{{ summaryStats.warn }}</span>
+                        <span style="font-size:12px; font-weight:500; color:{{ t.textMuted }};">群</span>
+                      </div>
                     </div>
-                    <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:12px; padding:10px 6px; text-align:center;">
-                      <div style="font-size:18px; font-weight:800; color:{{ t.warn }};">{{ summaryStats.warn }}</div>
-                      <div style="font-size:9px; color:{{ t.textMuted }}; margin-top:1px;">要注意</div>
+                    <div style="background:{{ t.surface }}; border-radius:14px; padding:12px 14px; border:1px solid {{ t.border }};">
+                      <div style="font-size:11px; font-weight:500; color:{{ t.textMuted }}; margin-bottom:6px;">平均貯蜜率</div>
+                      <div style="display:flex; align-items:baseline; gap:4px;">
+                        <span style="font-size:22px; font-weight:900; color:{{ t.primary }};">{{ summaryStats.avgDensity }}</span>
+                      </div>
                     </div>
-                    <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:12px; padding:10px 6px; text-align:center;">
-                      <div style="font-size:18px; font-weight:800; color:{{ t.primary }};">{{ summaryStats.avgDensity }}</div>
-                      <div style="font-size:9px; color:{{ t.textMuted }}; margin-top:1px;">平均蜜率</div>
+                    <div style="background:{{ t.surface }}; border-radius:14px; padding:12px 14px; border:1px solid {{ t.border }};">
+                      <div style="font-size:11px; font-weight:500; color:{{ t.textMuted }}; margin-bottom:6px;">良好</div>
+                      <div style="display:flex; align-items:baseline; gap:4px;">
+                        <span style="font-size:22px; font-weight:900; color:#16A34A;">{{ summaryStats.good }}</span>
+                        <span style="font-size:12px; font-weight:500; color:{{ t.textMuted }};">群</span>
+                      </div>
                     </div>
                   </div>
                   <!-- View mode toggle -->
@@ -575,48 +586,42 @@ if('serviceWorker' in navigator){
                     <button onClick="{{ setSummaryModeList }}" style="flex:1; padding:7px 0; font-size:12px; font-weight:700; font-family:{{ t.font }}; border:none; border-radius:9px; cursor:pointer; background:{{ isSummaryList ? t.surface : 'transparent' }}; color:{{ isSummaryList ? t.primary : t.textMuted }}; box-shadow:{{ isSummaryList ? '0 1px 4px rgba(0,0,0,.08)' : 'none' }};">☰ 一覧</button>
                   </div>
 
-                  <!-- ===== CARD VIEW ===== -->
+                  <!-- ===== CARD VIEW (dc.html style) ===== -->
                   <sc-if value="{{ isSummaryCard }}">
                     <div style="padding:0 16px;">
-                      <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:10px;">
+                      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:4px;">
                         <sc-for list="{{ colonyCards }}" as="cc">
-                          <div onClick="{{ cc.open }}" style="background:{{ t.surface }}; border:1.5px solid {{ cc.borderColor }}; border-radius:16px; overflow:hidden; cursor:pointer; box-shadow:0 2px 8px {{ cc.borderColor }}22;">
-                            <!-- Hive illustration header -->
-                            <div style="background:linear-gradient(180deg, {{ cc.roofColor }}18 0%, {{ cc.bodyColor }} 100%); padding:14px 10px 10px; display:flex; flex-direction:column; align-items:center; position:relative;">
-                              <!-- Status badge top-right -->
-                              <div style="position:absolute; top:8px; right:8px; font-size:14px; line-height:1;">{{ cc.statusIcon }}</div>
-                              <!-- Detailed wooden beehive SVG -->
-                              <img src="{{ cc.hiveImgSrc }}" width="68" style="height:auto; display:block; filter:{{ cc.hiveImgFilter }}; image-rendering:auto;">
+                          <div onClick="{{ cc.open }}" style="background:{{ t.surface }}; border-radius:14px; padding:12px; border:1px solid {{ t.border }}; cursor:pointer; transition:box-shadow .15s;" style-hover="box-shadow:0 4px 16px rgba(0,0,0,.1);">
+                            <!-- Name + status SVG icon -->
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                              <span style="font-size:13px; font-weight:700; color:{{ t.text }}; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:80px;">{{ cc.id }}</span>
+                              <svg width="16" height="16" viewBox="0 0 24 24" style="flex-shrink:0;">
+                                <sc-if value="{{ cc.isCrown }}">
+                                  <path d="M3 18h18l-1.5-8-4 3-2.5-6-2.5 6-4-3z" fill="{{ cc.statusColor }}"/>
+                                </sc-if>
+                                <sc-if value="{{ cc.isDot }}">
+                                  <circle cx="12" cy="12" r="7" fill="{{ cc.statusColor }}"/>
+                                </sc-if>
+                                <sc-if value="{{ cc.isWarn }}">
+                                  <path d="M12 3l10 18H2z" fill="{{ cc.statusColor }}"/>
+                                </sc-if>
+                              </svg>
                             </div>
-                            <!-- Colony info -->
-                            <div style="padding:8px 10px 10px;">
-                              <div style="margin-bottom:2px;">
-                                <span style="font-size:13px; font-weight:800; color:{{ t.text }};">{{ cc.id }}</span>
-                              </div>
-                              <!-- Honey density + trend -->
-                              <div style="display:flex; align-items:baseline; gap:4px; margin-bottom:1px;">
-                                <span style="font-size:24px; font-weight:900; color:{{ cc.roofColor }}; line-height:1; font-variant-numeric:tabular-nums;">{{ cc.density }}</span>
-                              </div>
-                              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:5px;">
-                                <span style="font-size:9px; color:{{ t.textMuted }};">貯蜜率</span>
-                                <span style="font-size:10px; font-weight:700; color:{{ cc.changeColor }};">{{ cc.changeLabel }}</span>
-                              </div>
-                              <!-- Sparkline with area fill -->
-                              <sc-if value="{{ cc.hasData && cc.sparkAreaPath }}">
-                                <svg width="100%" height="24" viewBox="0 0 96 24" preserveAspectRatio="none" style="display:block; overflow:visible;">
-                                  <path d="{{ cc.sparkAreaPath }}" fill="{{ cc.sparkLineColor }}22"/>
-                                  <polyline points="{{ cc.sparkPoints }}" fill="none" stroke="{{ cc.sparkLineColor }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                </svg>
-                              </sc-if>
-                              <sc-if value="{{ !cc.hasData }}">
-                                <div style="height:24px; display:flex; align-items:center; font-size:9px; color:{{ t.textMuted }};">内検記録なし</div>
-                              </sc-if>
-                              <!-- Strength -->
-                              <div style="display:flex; align-items:center; justify-content:space-between; margin-top:5px; border-top:1px solid {{ t.border }}; padding-top:5px;">
-                                <span style="font-size:9px; color:{{ t.textMuted }};">群勢</span>
-                                <span style="font-size:11px; font-weight:700; color:{{ t.text }};">{{ cc.strengthLabel }}</span>
-                              </div>
+                            <!-- Rate + delta -->
+                            <div style="display:flex; align-items:baseline; gap:6px; margin-bottom:4px;">
+                              <span style="font-size:20px; font-weight:900; color:{{ t.text }}; font-variant-numeric:tabular-nums;">{{ cc.density }}</span>
+                              <span style="font-size:12px; font-weight:700; color:{{ cc.deltaColor }};">{{ cc.deltaText }}</span>
                             </div>
+                            <!-- Sparkline -->
+                            <sc-if value="{{ cc.hasData && cc.sparkPoints }}">
+                              <svg width="100%" height="20" viewBox="0 0 96 20" preserveAspectRatio="none" style="display:block;">
+                                <path d="{{ cc.sparkAreaPath }}" fill="{{ cc.sparkLineColor }}22"/>
+                                <polyline points="{{ cc.sparkPoints }}" fill="none" stroke="{{ cc.sparkLineColor }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                              </svg>
+                            </sc-if>
+                            <sc-if value="{{ !cc.hasData }}">
+                              <div style="height:20px; display:flex; align-items:center; font-size:9px; color:{{ t.textMuted }};">記録なし</div>
+                            </sc-if>
                           </div>
                         </sc-for>
                       </div>
@@ -818,8 +823,11 @@ if('serviceWorker' in navigator){
                   <!-- Header -->
                   <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;">
                     <button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button>
-                    <div style="flex:1;">
-                      <div style="font-size:19px; font-weight:800; color:{{ t.text }};">{{ hiveDetailColonyName }}</div>
+                    <div style="flex:1; min-width:0;">
+                      <div style="display:flex; align-items:baseline; gap:8px;">
+                        <div style="font-size:19px; font-weight:800; color:{{ t.text }};">{{ hiveDetailColonyName }}</div>
+                        <span style="font-size:14px; font-weight:700; color:{{ hiveDetailDensityColor }};">{{ hiveDetailDensityRate }}</span>
+                      </div>
                       <div style="font-size:12px; color:{{ t.textMuted }}; margin-top:1px;">最終内検: {{ hiveDetailLastDate }}</div>
                     </div>
                     <div style="font-size:12px; font-weight:700; background:{{ t.chipBg }}; color:{{ t.chipText }}; border:1px solid {{ t.primary }}; border-radius:99px; padding:5px 12px;">{{ hiveDetailNumBoxes }}段積み</div>
@@ -1074,6 +1082,16 @@ if('serviceWorker' in navigator){
                     </sc-for>
                   </div>
                   </sc-if><!-- /hiveDetailTabOverview -->
+
+                  <!-- Hive chip selector (always visible) -->
+                  <div style="margin-top:16px;">
+                    <div style="font-size:11px; font-weight:700; color:{{ t.textMuted }}; margin-bottom:8px;">他の巣箱に切り替え</div>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                      <sc-for list="{{ hiveChips }}" as="hch">
+                        <div onClick="{{ hch.onClick }}" style="padding:6px 12px; border-radius:999px; font-size:11.5px; font-weight:700; background:{{ hch.chipBg }}; color:{{ hch.chipColor }}; border:1px solid {{ t.border }}; cursor:pointer;">{{ hch.name }}</div>
+                      </sc-for>
+                    </div>
+                  </div>
                 </div>
               </sc-if>
 
@@ -4617,6 +4635,21 @@ class Component extends DCLogic {
               hiveHeatmapLegend,
               hiveHeatmapFrameCount: hiveHeatmapCols.length,
               hiveMetrics,
+              hiveDetailDensityRate: (() => {
+                if (!hHasInsp) return '';
+                const lvls = latestInsp2.spaceLevels || {};
+                const cnt = latestInsp2.spaceCount || 10;
+                const h2 = Object.values(lvls).filter(v => v === 'honey').length;
+                return Math.round((h2 / cnt) * 100) + '%';
+              })(),
+              hiveDetailDensityColor: hiveQueenFound ? '#16A34A' : (daysSinceLastInsp != null && daysSinceLastInsp > 21 ? t.warn : t.primary),
+              hiveChips: this.COLONIES.map(cid2 => ({
+                name: cid2,
+                isActive: cid2 === hcid,
+                onClick: () => this.setState({ hiveDetailColony: cid2 }),
+                chipBg: cid2 === hcid ? t.primary : t.chipBg,
+                chipColor: cid2 === hcid ? t.primaryText : t.text,
+              })),
             };
           })(),
           frameBarLight: t.primary+'66', frameBarMid: t.primary+'aa',
@@ -5101,6 +5134,8 @@ class Component extends DCLogic {
             densityNum: density != null ? density : 0,
             changeLabel,
             changeColor,
+            deltaText: changeLabel,
+            deltaColor: changeColor,
             strengthLabel,
             strengthPct: strengthPct != null ? strengthPct : 0,
             sparkPoints,
@@ -5110,6 +5145,10 @@ class Component extends DCLogic {
             hiveImgSrc: { good:'/HoneyOS/hive_good.png', warn:'/HoneyOS/hive_warn.png', danger:'/HoneyOS/hive_warn.png', unknown:'/HoneyOS/hive_unknown.png' }[status],
             hiveImgFilter: { good:'', warn:'', danger:'hue-rotate(-25deg) saturate(2)', unknown:'' }[status],
             status, statusIcon, roofColor, boxColor, bodyColor, borderColor, sparkLineColor,
+            isCrown: status === 'good',
+            isDot: status === 'unknown',
+            isWarn: status === 'warn' || status === 'danger',
+            statusColor: { good:'#22C55E', warn:'#F59E0B', danger:'#EF4444', unknown:'#9CA3AF' }[status],
             lastDate: latest ? latest.date : '未記録',
             healthScore: this._calcHealthScore(cid, s.inspHistory).score,
             open: () => this.openHiveDetail(cid),
