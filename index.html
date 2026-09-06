@@ -1024,22 +1024,22 @@ if('serviceWorker' in navigator){
                               <span style="font-size:10px; font-weight:700; background:{{ hi.typeBg }}; color:{{ hi.typeClr }}; border:1px solid {{ hi.typeBorder }}; padding:2px 8px; border-radius:99px;">{{ hi.typeLabel }}</span>
                             </div>
                             <!-- Frame bars - Beewise style -->
-                            <div style="padding:10px 8px 4px;">
-                              <div style="display:flex; gap:3px; height:96px; align-items:flex-end;">
+                            <div style="overflow-x:auto; padding:10px 8px 4px;">
+                              <div style="display:flex; gap:4px; height:100px; align-items:stretch; min-width:max-content;">
                                 <sc-for list="{{ hi.frameBars }}" as="hfb">
-                                  <div style="flex:1; min-width:0; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; height:100%; position:relative;">
+                                  <div style="width:18px; flex-shrink:0; display:flex; flex-direction:column; align-items:center; height:100%; position:relative;">
                                     <!-- Queen crown -->
                                     <sc-if value="{{ hfb.hasQueen }}">
-                                      <div style="position:absolute; top:0; left:0; right:0; text-align:center; font-size:9px; line-height:1; z-index:2;">👑</div>
+                                      <div style="font-size:9px; line-height:1; margin-bottom:2px;">👑</div>
                                     </sc-if>
-                                    <!-- Bar - height % = bee density -->
-                                    <div style="width:100%; height:{{ hfb.barPct }}%; display:flex; flex-direction:column; border-radius:4px 4px 2px 2px; overflow:hidden; min-height:12px;">
+                                    <!-- Bar - full height, thin and tall -->
+                                    <div style="width:100%; flex:1; display:flex; flex-direction:column; border-radius:4px 4px 2px 2px; overflow:hidden;">
                                       <sc-for list="{{ hfb.segs }}" as="hs">
                                         <div style="background:{{ hs.bg }}; flex:{{ hs.flex }};"></div>
                                       </sc-for>
                                     </div>
                                     <!-- Frame number -->
-                                    <div style="font-size:7px; font-weight:700; color:{{ t.textMuted }}; margin-top:3px; text-align:center;">{{ hfb.fnum }}</div>
+                                    <div style="font-size:7px; font-weight:700; color:{{ t.textMuted }}; margin-top:3px; text-align:center; line-height:1;">{{ hfb.fnum }}</div>
                                   </div>
                                 </sc-for>
                               </div>
