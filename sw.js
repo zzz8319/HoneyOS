@@ -1,4 +1,4 @@
-const CACHE = 'honeyos-staging-20260904-112028';
+const CACHE = 'honeyos-staging-20260906-052104';
 const PRECACHE = [
   '/HoneyOS/',
   '/HoneyOS/index.html',
