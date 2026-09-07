@@ -751,9 +751,9 @@ if('serviceWorker' in navigator){
                 </div>
               </sc-if>
 
-              <!-- SCR-009b 巣箱サマリー (Hive Detail) -->
+              <!-- SCR-009 蜂群詳細 -->
               <sc-if value="{{ vHiveDetail }}" hint-placeholder-val="{{ false }}">
-                <div data-screen-label="SCR-009b 巣箱サマリー" style="padding:60px 16px 32px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1); overflow-y:auto; height:100%;">
+                <div data-screen-label="SCR-009 蜂群詳細" style="padding:60px 16px 32px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1); overflow-y:auto; height:100%;">
                   <!-- Header -->
                   <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;">
                     <button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button>
@@ -788,13 +788,53 @@ if('serviceWorker' in navigator){
                   </div>
 
                   <!-- Detail tabs -->
-                  <div style="display:flex; gap:0; background:{{ t.surfaceAlt }}; border:1px solid {{ t.border }}; border-radius:12px; padding:4px; margin-bottom:14px;">
-                    <button onClick="{{ setHiveDetailTabOverview }}" style="flex:1; padding:7px 0; font-size:12px; font-weight:700; font-family:{{ t.font }}; border:none; border-radius:9px; cursor:pointer; background:{{ hiveDetailTabOverview ? t.surface : 'transparent' }}; color:{{ hiveDetailTabOverview ? t.primary : t.textMuted }}; box-shadow:{{ hiveDetailTabOverview ? '0 1px 4px rgba(0,0,0,.08)' : 'none' }};">概要</button>
-                    <button onClick="{{ setHiveDetailTabHeatmap }}" style="flex:1; padding:7px 0; font-size:12px; font-weight:700; font-family:{{ t.font }}; border:none; border-radius:9px; cursor:pointer; background:{{ hiveDetailTabHeatmap ? t.surface : 'transparent' }}; color:{{ hiveDetailTabHeatmap ? t.primary : t.textMuted }}; box-shadow:{{ hiveDetailTabHeatmap ? '0 1px 4px rgba(0,0,0,.08)' : 'none' }};">ヒートマップ</button>
-                    <button onClick="{{ setHiveDetailTabMetrics }}" style="flex:1; padding:7px 0; font-size:12px; font-weight:700; font-family:{{ t.font }}; border:none; border-radius:9px; cursor:pointer; background:{{ hiveDetailTabMetrics ? t.surface : 'transparent' }}; color:{{ hiveDetailTabMetrics ? t.primary : t.textMuted }}; box-shadow:{{ hiveDetailTabMetrics ? '0 1px 4px rgba(0,0,0,.08)' : 'none' }};">指標</button>
+                  <div style="display:flex; gap:0; background:{{ t.surfaceAlt }}; border:0.5px solid {{ t.border }}; border-radius:12px; padding:4px; margin-bottom:14px; overflow-x:auto; scrollbar-width:none;">
+                    <button onClick="{{ setHiveDetailTabTrend }}" style="flex:1; white-space:nowrap; padding:7px 8px; font-size:12px; font-weight:700; font-family:{{ t.font }}; border:none; border-radius:9px; cursor:pointer; background:{{ hiveDetailTabTrend ? t.surface : 'transparent' }}; color:{{ hiveDetailTabTrend ? t.primary : t.textMuted }}; box-shadow:{{ hiveDetailTabTrend ? '0 1px 4px rgba(0,0,0,.08)' : 'none' }};">📈 推移</button>
+                    <button onClick="{{ setHiveDetailTabOverview }}" style="flex:1; white-space:nowrap; padding:7px 8px; font-size:12px; font-weight:700; font-family:{{ t.font }}; border:none; border-radius:9px; cursor:pointer; background:{{ hiveDetailTabOverview ? t.surface : 'transparent' }}; color:{{ hiveDetailTabOverview ? t.primary : t.textMuted }}; box-shadow:{{ hiveDetailTabOverview ? '0 1px 4px rgba(0,0,0,.08)' : 'none' }};">概要</button>
+                    <button onClick="{{ setHiveDetailTabHeatmap }}" style="flex:1; white-space:nowrap; padding:7px 8px; font-size:12px; font-weight:700; font-family:{{ t.font }}; border:none; border-radius:9px; cursor:pointer; background:{{ hiveDetailTabHeatmap ? t.surface : 'transparent' }}; color:{{ hiveDetailTabHeatmap ? t.primary : t.textMuted }}; box-shadow:{{ hiveDetailTabHeatmap ? '0 1px 4px rgba(0,0,0,.08)' : 'none' }};">枠</button>
+                    <button onClick="{{ setHiveDetailTabMetrics }}" style="flex:1; white-space:nowrap; padding:7px 8px; font-size:12px; font-weight:700; font-family:{{ t.font }}; border:none; border-radius:9px; cursor:pointer; background:{{ hiveDetailTabMetrics ? t.surface : 'transparent' }}; color:{{ hiveDetailTabMetrics ? t.primary : t.textMuted }}; box-shadow:{{ hiveDetailTabMetrics ? '0 1px 4px rgba(0,0,0,.08)' : 'none' }};">指標</button>
                   </div>
 
-                  <!-- Heatmap tab -->
+                  <!-- 推移グラフ tab -->
+                  <sc-if value="{{ hiveDetailTabTrend }}">
+                    <div style="background:{{ t.surface }}; border:0.5px solid {{ t.border }}; border-radius:14px; padding:16px; margin-bottom:14px;">
+                      <div style="font-size:12px; font-weight:700; color:{{ t.textMuted }}; margin-bottom:12px;">内訳推移（直近10回）</div>
+                      <!-- 凡例 -->
+                      <div style="display:flex; gap:12px; margin-bottom:12px; flex-wrap:wrap;">
+                        <span style="display:flex; align-items:center; gap:4px; font-size:11px; color:{{ t.textMuted }};"><span style="display:inline-block; width:16px; height:3px; background:#F59E0B; border-radius:2px;"></span>貯蜜</span>
+                        <span style="display:flex; align-items:center; gap:4px; font-size:11px; color:{{ t.textMuted }};"><span style="display:inline-block; width:16px; height:3px; background:#EF4444; border-radius:2px;"></span>育児</span>
+                        <span style="display:flex; align-items:center; gap:4px; font-size:11px; color:{{ t.textMuted }};"><span style="display:inline-block; width:16px; height:3px; background:#374151; border-radius:2px;"></span>蜂</span>
+                      </div>
+                      <sc-if value="{{ !hiveTrendEmpty }}">
+                        <div style="overflow-x:auto;">
+                          <svg width="280" height="80" viewBox="0 0 280 80" style="display:block; overflow:visible;">
+                            <!-- Y軸グリッド -->
+                            <line x1="0" y1="0" x2="280" y2="0" stroke="{{ t.border }}" stroke-width="0.5"/>
+                            <line x1="0" y1="40" x2="280" y2="40" stroke="{{ t.border }}" stroke-width="0.5" stroke-dasharray="3,3"/>
+                            <line x1="0" y1="80" x2="280" y2="80" stroke="{{ t.border }}" stroke-width="0.5"/>
+                            <text x="-2" y="4" font-size="8" fill="{{ t.textMuted }}" text-anchor="end">100</text>
+                            <text x="-2" y="44" font-size="8" fill="{{ t.textMuted }}" text-anchor="end">50</text>
+                            <text x="-2" y="84" font-size="8" fill="{{ t.textMuted }}" text-anchor="end">0</text>
+                            {{ hiveTrendSvg }}
+                          </svg>
+                        </div>
+                        <!-- 日付ラベル -->
+                        <div style="display:flex; justify-content:space-between; font-size:9px; color:{{ t.textMuted }}; margin-top:4px; padding:0 2px;">
+                          <span>{{ hiveTrendPoints[0].date }}</span>
+                          <span>{{ hiveTrendPoints[hiveTrendPoints.length - 1].date }}</span>
+                        </div>
+                      </sc-if>
+                      <sc-if value="{{ hiveTrendEmpty }}">
+                        <div style="text-align:center; padding:24px 0; font-size:13px; color:{{ t.textMuted }};">内検データが2回以上あるとグラフが表示されます</div>
+                      </sc-if>
+                    </div>
+                    <!-- 内検履歴へ -->
+                    <button onClick="{{ goFrameViewerHistory }}" style="width:100%; padding:13px; font-size:13px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primary }}; background:{{ t.surface }}; border:0.5px solid {{ t.primary }}; border-radius:12px; cursor:pointer; margin-bottom:14px; display:flex; align-items:center; justify-content:center; gap:6px;">
+                      📋 内検履歴を見る（枠ビューア）
+                    </button>
+                  </sc-if>
+
+                  <!-- Heatmap tab (枠ビュー) -->
                   <sc-if value="{{ hiveDetailTabHeatmap }}">
                     <div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:14px; padding:14px; margin-bottom:14px;">
                       <div style="font-size:12px; font-weight:700; color:{{ t.textMuted }}; margin-bottom:10px;">巣枠カテゴリーマップ（最終内検）</div>
@@ -1325,18 +1365,78 @@ if('serviceWorker' in navigator){
 
               <!-- SCR-013 FRAME VIEWER -->
               <sc-if value="{{ vInspFrame }}" hint-placeholder-val="{{ false }}">
-                <div data-screen-label="SCR-013 枠ビューア" style="padding:60px 16px 16px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
-                  <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;"><button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button><span style="font-size:18px; font-weight:800; color:{{ t.text }};">枠ビューア</span><span style="margin-left:auto; font-size:13px; color:{{ t.textMuted }};">3 / 10 枠目</span></div>
-                  <div style="position:relative; aspect-ratio:4/3; border-radius:{{ t.radius }}px; overflow:hidden; background:radial-gradient(circle at 50% 40%, #c79a4e, #6e4f23); margin-bottom:12px; border:1px solid {{ t.border }};">
-                    <svg viewBox="0 0 260 200" width="100%" height="100%" style="position:absolute; inset:0; opacity:.55;"><defs><pattern id="hex2" width="22" height="19" patternUnits="userSpaceOnUse"><path d="M11 0 L22 5.5 L22 13.5 L11 19 L0 13.5 L0 5.5 Z" fill="none" stroke="#3d2a10" stroke-width="1.2"></path></pattern></defs><rect width="260" height="200" fill="url(#hex2)"></rect></svg>
-                    <div style="position:absolute; top:12px; right:12px; display:flex; flex-direction:column; gap:6px;"><span style="width:34px; height:34px; border-radius:9px; background:rgba(0,0,0,.5); color:#fff; display:flex; align-items:center; justify-content:center; font-size:18px;">＋</span><span style="width:34px; height:34px; border-radius:9px; background:rgba(0,0,0,.5); color:#fff; display:flex; align-items:center; justify-content:center; font-size:18px;">−</span></div>
-                    <span style="position:absolute; bottom:12px; left:12px; background:rgba(0,0,0,.5); color:#fff; font-size:11px; font-weight:700; padding:4px 9px; border-radius:999px;">100%</span>
-                  </div>
-                  <div style="display:flex; gap:8px; margin-bottom:14px;"><button onClick="{{ faceA }}" style="{{ segFaceA }}">表面</button><button onClick="{{ faceB }}" style="{{ segFaceB }}">裏面</button></div>
-                  <label style="display:block; font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">メモ入力（任意）</label>
-                  <textarea value="{{ f.frameMemo }}" onInput="{{ h.frameMemo }}" placeholder="左側に花粉が多い印象..." rows="2" style="width:100%; padding:13px 14px; font-size:14px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px; outline:none; resize:none; margin-bottom:16px;" style-focus="border-color:{{ t.primary }};"></textarea>
-                  <button onClick="{{ goInspAI }}" style="width:100%; padding:16px; font-size:16px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }}; display:flex; align-items:center; justify-content:center; gap:8px;" style-active="transform:translateY(1px);">✨ AIで解析する</button>
-                  <button onClick="{{ goInspSummary }}" style="width:100%; margin-top:10px; padding:13px; font-size:14px; font-weight:700; font-family:{{ t.font }}; color:{{ t.textMuted }}; background:transparent; border:none; cursor:pointer;">記録なしで次へ</button>
+                <div data-screen-label="SCR-013 枠ビューア" style="padding:56px 0 24px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1); height:100%; overflow-y:auto; box-sizing:border-box;">
+
+                  <!-- ===== 履歴閲覧モード ===== -->
+                  <sc-if value="{{ fvHistMode }}">
+                    <!-- ヘッダー -->
+                    <div style="display:flex; align-items:center; gap:10px; padding:0 20px; margin-bottom:16px;">
+                      <button onClick="{{ fvExitHistMode }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button>
+                      <div style="flex:1;">
+                        <div style="font-size:18px; font-weight:700; color:{{ t.text }};">枠ビューア</div>
+                        <div style="font-size:11px; color:{{ t.textMuted }};">{{ fvColony }} ・ {{ fvDateLabel }}</div>
+                      </div>
+                      <!-- 女王ステータス -->
+                      <div style="display:flex; align-items:center; gap:4px; padding:5px 10px; border-radius:999px; background:{{ t.surface }}; border:0.5px solid {{ t.border }};">
+                        <span style="font-size:13px;">👑</span>
+                        <span style="font-size:11px; font-weight:700; color:{{ fvQueenColor }};">{{ fvQueenLabel }}</span>
+                      </div>
+                    </div>
+
+                    <!-- 凡例 -->
+                    <div style="display:flex; gap:12px; padding:0 20px; margin-bottom:16px; flex-wrap:wrap;">
+                      <span style="display:flex; align-items:center; gap:4px; font-size:11px; color:{{ t.textMuted }};"><span style="display:inline-block; width:10px; height:10px; border-radius:2px; background:#F59E0B;"></span>貯蜜</span>
+                      <span style="display:flex; align-items:center; gap:4px; font-size:11px; color:{{ t.textMuted }};"><span style="display:inline-block; width:10px; height:10px; border-radius:2px; background:#EF4444;"></span>育児</span>
+                      <span style="display:flex; align-items:center; gap:4px; font-size:11px; color:{{ t.textMuted }};"><span style="display:inline-block; width:10px; height:10px; border-radius:2px; background:#374151;"></span>蜂</span>
+                      <span style="display:flex; align-items:center; gap:4px; font-size:11px; color:{{ t.textMuted }};"><span style="display:inline-block; width:10px; height:10px; border-radius:2px; background:#E5E7EB; border:1px solid {{ t.border }};"></span>空き</span>
+                    </div>
+
+                    <!-- 枠バー（横スクロール） -->
+                    <sc-if value="{{ fvHasBars }}">
+                      <div style="overflow-x:auto; padding:0 20px 8px; scrollbar-width:none;">
+                        <div style="display:flex; gap:3px; align-items:flex-end; min-width:max-content; height:140px;">
+                          <sc-for list="{{ fvBars }}" as="bar">
+                            <div style="display:flex; flex-direction:column; width:22px; height:100%; border-radius:4px; overflow:hidden; cursor:pointer;">
+                              <sc-for list="{{ bar.segs }}" as="seg">
+                                <div style="background:{{ seg.color }}; flex:{{ seg.pct }};"></div>
+                              </sc-for>
+                            </div>
+                          </sc-for>
+                        </div>
+                        <!-- 枠番号 -->
+                        <div style="display:flex; gap:3px; margin-top:4px; min-width:max-content;">
+                          <sc-for list="{{ fvBars }}" as="bar">
+                            <div style="width:22px; text-align:center; font-size:8px; color:{{ t.textMuted }};">{{ bar.num }}</div>
+                          </sc-for>
+                        </div>
+                      </div>
+                    </sc-if>
+                    <sc-if value="{{ !fvHasBars }}">
+                      <div style="text-align:center; padding:40px 20px; color:{{ t.textMuted }};">
+                        <div style="font-size:32px; margin-bottom:8px;">🪣</div>
+                        <div style="font-size:13px;">この内検には枠データがありません</div>
+                      </div>
+                    </sc-if>
+
+                    <!-- 日付ナビゲーション -->
+                    <div style="display:flex; align-items:center; justify-content:space-between; padding:16px 20px 0;">
+                      <button onClick="{{ fvPrev }}" style="padding:9px 16px; font-size:12px; font-weight:700; font-family:{{ t.font }}; color:{{ fvHasPrev ? t.text : t.textMuted }}; background:{{ t.surface }}; border:0.5px solid {{ t.border }}; border-radius:10px; cursor:pointer; opacity:{{ fvHasPrev ? 1 : 0.4 }};">← 前回</button>
+                      <span style="font-size:12px; color:{{ t.textMuted }};">{{ fvRecIndex }} / {{ fvRecCount }}</span>
+                      <button onClick="{{ fvNext }}" style="padding:9px 16px; font-size:12px; font-weight:700; font-family:{{ t.font }}; color:{{ fvHasNext ? t.text : t.textMuted }}; background:{{ t.surface }}; border:0.5px solid {{ t.border }}; border-radius:10px; cursor:pointer; opacity:{{ fvHasNext ? 1 : 0.4 }};">次回 →</button>
+                    </div>
+                  </sc-if>
+
+                  <!-- ===== 内検入力モード ===== -->
+                  <sc-if value="{{ fvInspMode }}">
+                    <div style="padding:0 16px;">
+                      <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;"><button onClick="{{ back }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button><span style="font-size:18px; font-weight:800; color:{{ t.text }};">枠ビューア</span></div>
+                      <label style="display:block; font-size:12px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">メモ入力（任意）</label>
+                      <textarea value="{{ f.frameMemo }}" onInput="{{ h.frameMemo }}" placeholder="左側に花粉が多い印象..." rows="2" style="width:100%; padding:13px 14px; font-size:14px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px; outline:none; resize:none; margin-bottom:16px;" style-focus="border-color:{{ t.primary }};"></textarea>
+                      <button onClick="{{ goInspAI }}" style="width:100%; padding:16px; font-size:16px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }}; display:flex; align-items:center; justify-content:center; gap:8px;" style-active="transform:translateY(1px);">✨ AIで解析する</button>
+                      <button onClick="{{ goInspSummary }}" style="width:100%; margin-top:10px; padding:13px; font-size:14px; font-weight:700; font-family:{{ t.font }}; color:{{ t.textMuted }}; background:transparent; border:none; cursor:pointer;">記録なしで次へ</button>
+                    </div>
+                  </sc-if>
+
                 </div>
               </sc-if>
 
@@ -4575,8 +4675,40 @@ class Component extends DCLogic {
             const hiveDetailMemo = (s.colonyMemos || {})[hcid] || '';
             const hiveDetailMemoEditing = s.colonyMemoEditId === hcid;
             const hiveDetailMemoVal = this._fieldBuf['colonyMemo_' + hcid] !== undefined ? this._fieldBuf['colonyMemo_' + hcid] : hiveDetailMemo;
+            // ===== 内訳推移グラフ =====
+            const hiveInspHistory = (s.inspHistory || []).filter(r => r.colony === hcid)
+              .slice().sort((a,b) => (a.date||'') > (b.date||'') ? 1 : -1).slice(-10);
+            const hiveTrendPoints = hiveInspHistory.map(r => {
+              const fd = r.frameDetails || {};
+              const frames = Object.values(fd);
+              const sl = r.spaceLevels || {};
+              const slots = Object.values(sl);
+              let bees, brood, honey;
+              if (frames.length > 0) {
+                const avg = (key) => frames.reduce((s, f) => s + (f[key]||0), 0) / frames.length;
+                bees = Math.round(avg('bees')); brood = Math.round(avg('brood')); honey = Math.round(avg('honey'));
+              } else if (slots.length > 0) {
+                const cnt = (v) => slots.filter(x => x === v).length / slots.length * 100;
+                bees = Math.round(cnt('bees')); brood = Math.round(cnt('brood')); honey = Math.round(cnt('honey'));
+              } else { bees = brood = honey = 0; }
+              return { date: r.date, bees, brood, honey, queenOk: r.queenPresent !== false };
+            });
+            const hiveTrendSvg = (() => {
+              if (hiveTrendPoints.length < 2) return '';
+              const W = 280, H = 80;
+              const n = hiveTrendPoints.length;
+              const mkLine = (key, color) => {
+                const pts = hiveTrendPoints.map((p, i) => {
+                  const x = (i / (n - 1)) * W;
+                  const y = H - (p[key] / 100) * H;
+                  return x.toFixed(1) + ',' + y.toFixed(1);
+                }).join(' ');
+                return `<polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`;
+              };
+              return mkLine('honey','#F59E0B') + mkLine('brood','#EF4444') + mkLine('bees','#374151');
+            })();
             // ===== DETAIL TABS =====
-            const hdTab = s.hiveDetailTab || 'overview';
+            const hdTab = s.hiveDetailTab || 'trend';
             const catColors = { honey:'#F59E0B', brood:'#EF4444', larva:'#F97316', capped:'#DC2626', egg:'#FCA5A5', pollen:'#8B5CF6', empty:'#E5E7EB', foundation:'#D1FAE5', unknown:'#D1D5DB' };
             const hiveHeatmapCols = (() => {
               if (!hHasInsp) return [];
@@ -4624,12 +4756,17 @@ class Component extends DCLogic {
               saveHiveDetailMemo: () => this.saveColonyMemo(hcid),
               cancelHiveDetailMemoEdit: () => this.setState({ colonyMemoEditId: null }),
               hHiveDetailMemo: this.field('colonyMemo_' + hcid),
+              hiveTrendPoints, hiveTrendSvg,
+              hiveTrendEmpty: hiveTrendPoints.length < 2,
+              hiveDetailTabTrend: hdTab === 'trend',
               hiveDetailTabOverview: hdTab === 'overview',
               hiveDetailTabHeatmap: hdTab === 'heatmap',
               hiveDetailTabMetrics: hdTab === 'metrics',
+              setHiveDetailTabTrend: () => this.setState({ hiveDetailTab: 'trend' }),
               setHiveDetailTabOverview: () => this.setState({ hiveDetailTab: 'overview' }),
               setHiveDetailTabHeatmap: () => this.setState({ hiveDetailTab: 'heatmap' }),
               setHiveDetailTabMetrics: () => this.setState({ hiveDetailTab: 'metrics' }),
+              goFrameViewerHistory: () => { this.setState({ frameViewerColony: hcid, frameViewerHistMode: true }); this.nav('inspFrame'); },
               hiveHeatmapCols,
               hiveHeatmapLegend,
               hiveHeatmapFrameCount: hiveHeatmapCols.length,
@@ -5392,6 +5529,68 @@ class Component extends DCLogic {
       goFarmDetail:()=>this.nav('farmDetail'), goFarmMap:()=>this.nav('farmMap'),
       goAddColony: () => { this.tab('settings'); this.setState({ settingKey:'farm' }); },
       goInspStart:()=>this.nav('inspStart'), goInspCapture:()=>this.nav('inspCapture'), goInspFrame:()=>this.nav('inspFrame'), goInspAI:()=>this.nav('inspAI'), goInspSummary:()=>this.nav('inspSummary'),
+      // ===== 枠ビューア 履歴モード =====
+      ...(() => {
+        const histMode = !!s.frameViewerHistMode;
+        const fvColony = s.frameViewerColony || s.inspColony || '';
+        const fvRecs = (s.inspHistory || []).filter(r => r.colony === fvColony)
+          .slice().sort((a,b) => (b.date||'') > (a.date||'') ? 1 : -1);
+        const fvIdx = Math.min(s.fvHistIdx || 0, Math.max(0, fvRecs.length - 1));
+        const fvRec = fvRecs[fvIdx] || null;
+        const fvDateLabel = fvRec ? fvRec.date : '記録なし';
+
+        // 積み上げバー（縦、1枠=1本）
+        const fvBars = (() => {
+          if (!fvRec) return [];
+          const fd = fvRec.frameDetails || {};
+          const frameNums = Object.keys(fd).map(Number).sort((a,b)=>a-b);
+          if (frameNums.length > 0) {
+            return frameNums.map(n => {
+              const f = fd[n] || {};
+              const bees = f.bees || 0, brood = f.brood || 0, honey = f.honey || 0;
+              const space = Math.max(0, 100 - bees - brood - honey);
+              return {
+                num: n,
+                segs: [
+                  { pct: honey, color: '#F59E0B' },
+                  { pct: brood, color: '#EF4444' },
+                  { pct: bees,  color: '#374151' },
+                  { pct: space, color: '#E5E7EB' },
+                ].filter(s => s.pct > 0),
+              };
+            });
+          }
+          // 割合式
+          const sl = fvRec.spaceLevels || {};
+          const cnt = fvRec.spaceCount || 10;
+          return Array.from({length: cnt}, (_, i) => {
+            const v = sl[i+1] || 'empty';
+            const color = { honey:'#F59E0B', brood:'#EF4444', bees:'#374151', empty:'#E5E7EB' }[v] || '#E5E7EB';
+            return { num: i+1, segs: [{ pct: 100, color }] };
+          });
+        })();
+
+        const fvQueenLabel = fvRec
+          ? (fvRec.queenPresent === true ? '産卵中' : fvRec.queenPresent === false ? '確認なし' : '未確認')
+          : '—';
+        const fvQueenColor = fvRec
+          ? (fvRec.queenPresent === true ? '#16A34A' : fvRec.queenPresent === false ? '#EF4444' : '#9CA3AF')
+          : '#9CA3AF';
+
+        return {
+          fvHistMode: histMode,
+          fvInspMode: !histMode,
+          fvColony, fvDateLabel, fvBars, fvQueenLabel, fvQueenColor,
+          fvHasBars: fvBars.length > 0,
+          fvHasPrev: fvIdx < fvRecs.length - 1,
+          fvHasNext: fvIdx > 0,
+          fvPrev: () => this.setState({ fvHistIdx: fvIdx + 1 }),
+          fvNext: () => this.setState({ fvHistIdx: Math.max(0, fvIdx - 1) }),
+          fvRecCount: fvRecs.length,
+          fvRecIndex: fvIdx + 1,
+          fvExitHistMode: () => { this.setState({ frameViewerHistMode: false, fvHistIdx: 0 }); this.back(); },
+        };
+      })(),
       goWeight:()=>this.navGraph('weight'), goTemp:()=>this.navGraph('temp'), goHumid:()=>this.navGraph('humid'),
       goAiDiagnosis:()=>this.nav('aiDiagnosis'), goAiRecommend:()=>this.nav('aiRecommend'),
       goReport:()=>this.tab('report'), goTasks:()=>this.tab('tasks'), goTaskCreate:()=>this.nav('taskCreate'), goWorkRecord:()=>this.nav('workRecord'), goWorkHistory:()=>this.nav('workHistory'),
