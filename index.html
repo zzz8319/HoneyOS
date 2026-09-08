@@ -3398,11 +3398,12 @@ class Component extends DCLogic {
       const session = await db.getSession();
       if (!session) { this.setState({ isLoading: false }); return; }
       const profile = await db.getUserProfile();
-      const [inspHistory, workHistory, coloniesData, farmsData] = await Promise.all([
+      const [inspHistory, workHistory, coloniesData, farmsData, dbTasks] = await Promise.all([
         db.loadInspRecords(),
         db.loadWorkRecords(),
         db.loadColonies().catch(() => []),
         db.loadFarms().catch(() => []),
+        db.getTasks ? db.getTasks().catch(() => []) : Promise.resolve([]),
       ]);
       const lastInspByColony = this._buildLastInspByColony(inspHistory);
       const defaultColonies = Array.from({length:12},(_,i)=>'A-'+String(i+1).padStart(2,'0'));
@@ -3419,6 +3420,7 @@ class Component extends DCLogic {
         colonies,
         coloniesLoaded: true,
         farms: farmsData,
+        userTasks: dbTasks.length > 0 ? dbTasks : (this.state.userTasks || []),
         isLoading: false,
       });
       this._setupRealtime();
@@ -3893,13 +3895,16 @@ class Component extends DCLogic {
       return { taskDoneMap: m };
     });
   }
-  addUserTask(type, colony, memo, dueDate) {
+  addUserTask(type, colony, memo, dueDate, title, priority) {
     const now = new Date();
     const dateStr = dueDate || now.toLocaleDateString('ja-JP', { month:'2-digit', day:'2-digit' });
-    this.setState(s => ({
-      userTasks: [{ id: 't_' + now.getTime(), type, colony, memo, date: dateStr, dueDate: dueDate || '', status:'todo' }, ...s.userTasks],
-      taskDueDate: '',
-    }));
+    const localId = 't_' + now.getTime();
+    const task = { id: localId, type, colony, memo, date: dateStr, dueDate: dueDate || '', status:'todo', title: title || '', priority: priority || 'medium' };
+    this.setState(s => ({ userTasks: [task, ...s.userTasks], taskDueDate: '' }));
+    // persist to Supabase
+    if (window.HoneyDB && typeof window.HoneyDB.saveTask === 'function') {
+      window.HoneyDB.saveTask({ type, colony, memo, dueDate: dueDate || '', title: title || '', priority: priority || 'medium' }).catch(e => this._err(e, 'タスクの保存に失敗しました'));
+    }
   }
 
   // ===== 前回記録プリロード =====

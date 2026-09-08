@@ -373,6 +373,18 @@
     }));
   }
 
+  async function getTasks() {
+    const session = await getSession();
+    if (!session) return [];
+    const { data, error } = await sb.from('tasks').select('*').eq('user_id', session.user.id).order('created_at', { ascending: false });
+    if (error) throw error;
+    return (data || []).map(r => ({
+      id: r.id, title: r.title || '', type: r.title || '', colony: (r.colony_ids||[])[0] || '',
+      dueDate: r.due_date || '', priority: r.priority || 'medium', memo: r.memo || '',
+      status: r.is_completed ? 'done' : 'todo', date: r.due_date || '',
+    }));
+  }
+
   async function saveTask(task) {
     const session = await getSession();
     if (!session) throw new Error('ログインが必要です');
@@ -551,6 +563,7 @@
     deleteWorkRecord,
     // Tasks
     loadTasks,
+    getTasks,
     saveTask,
     updateTask,
     completeTask,
