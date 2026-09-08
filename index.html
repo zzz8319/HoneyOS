@@ -661,10 +661,16 @@ if('serviceWorker' in navigator){
                     <div style="font-size:22px; font-weight:700; color:{{ t.text }}; letter-spacing:-0.3px;">蜂群一覧</div>
                     <div style="display:flex; gap:8px; align-items:center;">
                       <button onClick="{{ goAddColony }}" style="width:34px; height:34px; border-radius:50%; background:{{ t.primary }}; color:#fff; border:none; font-size:20px; cursor:pointer; display:flex; align-items:center; justify-content:center; line-height:1;">+</button>
-                      <button onClick="{{ goFarmMap }}" style="width:34px; height:34px; border-radius:50%; background:{{ t.surface }}; color:{{ t.textMuted }}; border:0.5px solid {{ t.border }}; font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center;">🗺</button>
+                      <!-- 一覧/マップ セグメントコントロール -->
+                      <div style="display:flex; background:{{ t.surfaceAlt }}; border:0.5px solid {{ t.border }}; border-radius:10px; padding:2px; gap:2px;">
+                        <button onClick="{{ setScr008ViewList }}" style="padding:5px 11px; font-size:11px; font-weight:700; font-family:{{ t.font }}; border:none; border-radius:8px; cursor:pointer; background:{{ scr008ViewList ? t.surface : 'transparent' }}; color:{{ scr008ViewList ? t.primary : t.textMuted }}; box-shadow:{{ scr008ViewList ? '0 1px 3px rgba(0,0,0,.1)' : 'none' }}; transition:all .15s;">一覧</button>
+                        <button onClick="{{ setScr008ViewMap }}" style="padding:5px 11px; font-size:11px; font-weight:700; font-family:{{ t.font }}; border:none; border-radius:8px; cursor:pointer; background:{{ scr008ViewMap ? t.surface : 'transparent' }}; color:{{ scr008ViewMap ? t.primary : t.textMuted }}; box-shadow:{{ scr008ViewMap ? '0 1px 3px rgba(0,0,0,.1)' : 'none' }}; transition:all .15s;">🗺 マップ</button>
+                      </div>
                     </div>
                   </div>
 
+                  <!-- 一覧ビュー -->
+                  <sc-if value="{{ scr008ViewList }}">
                   <!-- 養蜂場タブ -->
                   <div style="display:flex; gap:6px; padding:0 20px; margin-bottom:12px; overflow-x:auto; scrollbar-width:none;">
                     <sc-for list="{{ farmTabs }}" as="ft">
@@ -753,6 +759,36 @@ if('serviceWorker' in navigator){
                       </div>
                     </sc-if>
                   </div>
+                  </sc-if>
+
+                  <!-- マップビュー (2.6) -->
+                  <sc-if value="{{ scr008ViewMap }}">
+                    <sc-if value="{{ farmHasLocation }}">
+                      <div style="position:relative; background:{{ t.surfaceAlt }}; overflow:hidden; border-radius:14px; margin:0 16px 12px; height:300px;">
+                        <iframe src="{{ farmColonyMapUrl }}" width="100%" height="100%" style="display:block; border:none;" scrolling="no" frameborder="0"></iframe>
+                      </div>
+                      <div style="padding:0 16px 12px;">
+                        <div style="font-size:12px; color:{{ t.textMuted }}; margin-bottom:10px;">📍 {{ farmLocationName || (farmLat + ', ' + farmLng) }}</div>
+                        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;">
+                          <sc-for list="{{ colonyGpsList }}" as="cg">
+                            <div style="display:flex; align-items:center; gap:8px; padding:7px 12px; background:{{ t.surface }}; border:0.5px solid {{ t.border }}; border-radius:10px; flex-shrink:0;">
+                              <span style="font-size:12px; font-weight:800; color:{{ t.primary }};">{{ cg.id }}</span>
+                              <a href="{{ cg.mapsUrl }}" target="_blank" rel="noopener" style="font-size:11px; font-weight:700; color:{{ t.textMuted }}; text-decoration:none;">地図で開く</a>
+                            </div>
+                          </sc-for>
+                        </div>
+                        <a href="{{ farmMapsUrl }}" target="_blank" rel="noopener" style="display:block; width:100%; padding:11px; font-size:13px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:10px; cursor:pointer; text-align:center; text-decoration:none; box-sizing:border-box;">Googleマップで全体を見る</a>
+                      </div>
+                    </sc-if>
+                    <sc-if value="{{ !farmHasLocation }}">
+                      <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; padding:48px 24px; text-align:center;">
+                        <div style="font-size:52px;">🗺️</div>
+                        <div style="font-size:16px; font-weight:800; color:{{ t.text }};">養蜂場の位置が未設定です</div>
+                        <div style="font-size:13px; color:{{ t.textMuted }}; line-height:1.6;">設定 → 養蜂場の位置 から<br>住所検索または現在地で設定できます。</div>
+                        <button onClick="{{ goSettings }}" style="padding:12px 24px; font-size:13px; font-weight:800; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:12px; cursor:pointer;">設定画面へ</button>
+                      </div>
+                    </sc-if>
+                  </sc-if>
 
                 </div>
               </sc-if>
@@ -6024,6 +6060,12 @@ class Component extends DCLogic {
             good: goodCount,
             warn: warnCount,
           },
+          // 2.6 list/map segment control
+          scr008ViewMode: s.scr008ViewMode || 'list',
+          scr008ViewList: (s.scr008ViewMode || 'list') === 'list',
+          scr008ViewMap: (s.scr008ViewMode || 'list') === 'map',
+          setScr008ViewList: () => this.setState({ scr008ViewMode: 'list' }),
+          setScr008ViewMap: () => this.setState({ scr008ViewMode: 'map' }),
           // compat
           isSummaryCard: true,
           isSummaryTimeline: false,
@@ -6730,6 +6772,8 @@ class Component extends DCLogic {
   // ===== プッシュ通知（21日未内検チェック） =====
   _checkAndNotify(inspHistory) {
     if (!('Notification' in window) || Notification.permission !== 'granted') return;
+    const ns = this.state.notifSettings || {};
+    if (ns.inspection === false) return;
     const lastMap = this._buildLastInspByColony(inspHistory);
     const rdMap = this.state.inspReminderDays || {};
     const overdue = this.COLONIES.filter(c => {
@@ -6740,9 +6784,24 @@ class Component extends DCLogic {
       return days >= threshold;
     });
     if (overdue.length === 0) return;
-    const body = overdue.slice(0, 3).join('、') + (overdue.length > 3 ? ` ほか${overdue.length - 3}群` : '') + ' が期限を超えた未内検です';
+    const body = overdue.slice(0, 3).join('、') + (overdue.length > 3 ? ` ほか${overdue.length - 3}群` : '') + ' が内検期限を超えています';
+    const title = 'HoneyOS 🐝 内検リマインダー';
     try {
-      new Notification('HoneyOS 🐝 内検リマインダー', { body, icon: './icon-192.png', tag: 'insp-reminder' });
+      if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+        navigator.serviceWorker.ready.then(reg => {
+          reg.showNotification(title, {
+            body,
+            icon: './icon-192.png',
+            badge: './icon-192.png',
+            tag: 'insp-reminder',
+            data: { url: '/HoneyOS/' },
+          }).catch(() => {
+            new Notification(title, { body, icon: './icon-192.png', tag: 'insp-reminder' });
+          });
+        }).catch(() => {});
+      } else {
+        new Notification(title, { body, icon: './icon-192.png', tag: 'insp-reminder' });
+      }
     } catch(e) {}
   }
 
