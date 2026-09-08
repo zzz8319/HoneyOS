@@ -1450,13 +1450,12 @@ if('serviceWorker' in navigator){
                   <!-- ===== 履歴閲覧モード ===== -->
                   <sc-if value="{{ fvHistMode }}">
                     <!-- ヘッダー -->
-                    <div style="display:flex; align-items:center; gap:10px; padding:0 20px; margin-bottom:16px;">
+                    <div style="display:flex; align-items:center; gap:10px; padding:0 20px; margin-bottom:12px;">
                       <button onClick="{{ fvExitHistMode }}" style="{{ backBtn }}"><svg width="9" height="16" viewBox="0 0 9 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1 1.5 8l6 7"></path></svg></button>
                       <div style="flex:1;">
                         <div style="font-size:18px; font-weight:700; color:{{ t.text }};">枠ビューア</div>
                         <div style="font-size:11px; color:{{ t.textMuted }};">{{ fvColony }} ・ {{ fvDateLabel }}</div>
                       </div>
-                      <!-- 女王ステータス -->
                       <div style="display:flex; align-items:center; gap:4px; padding:5px 10px; border-radius:999px; background:{{ t.surface }}; border:0.5px solid {{ t.border }};">
                         <span style="font-size:13px;">👑</span>
                         <span style="font-size:11px; font-weight:700; color:{{ fvQueenColor }};">{{ fvQueenLabel }}</span>
@@ -1464,42 +1463,84 @@ if('serviceWorker' in navigator){
                     </div>
 
                     <!-- 凡例 -->
-                    <div style="display:flex; gap:12px; padding:0 20px; margin-bottom:16px; flex-wrap:wrap;">
+                    <div style="display:flex; gap:12px; padding:0 20px; margin-bottom:14px; flex-wrap:wrap;">
                       <span style="display:flex; align-items:center; gap:4px; font-size:11px; color:{{ t.textMuted }};"><span style="display:inline-block; width:10px; height:10px; border-radius:2px; background:#F59E0B;"></span>貯蜜</span>
                       <span style="display:flex; align-items:center; gap:4px; font-size:11px; color:{{ t.textMuted }};"><span style="display:inline-block; width:10px; height:10px; border-radius:2px; background:#EF4444;"></span>育児</span>
                       <span style="display:flex; align-items:center; gap:4px; font-size:11px; color:{{ t.textMuted }};"><span style="display:inline-block; width:10px; height:10px; border-radius:2px; background:#374151;"></span>蜂</span>
                       <span style="display:flex; align-items:center; gap:4px; font-size:11px; color:{{ t.textMuted }};"><span style="display:inline-block; width:10px; height:10px; border-radius:2px; background:#E5E7EB; border:1px solid {{ t.border }};"></span>空き</span>
                     </div>
 
-                    <!-- 枠バー（横スクロール） -->
-                    <sc-if value="{{ fvHasBars }}">
-                      <div style="overflow-x:auto; padding:0 20px 8px; scrollbar-width:none;">
-                        <div style="display:flex; gap:3px; align-items:flex-end; min-width:max-content; height:140px;">
-                          <sc-for list="{{ fvBars }}" as="bar">
-                            <div style="display:flex; flex-direction:column; width:22px; height:100%; border-radius:4px; overflow:hidden; cursor:pointer;">
-                              <sc-for list="{{ bar.segs }}" as="seg">
-                                <div style="background:{{ seg.color }}; flex:{{ seg.pct }};"></div>
-                              </sc-for>
-                            </div>
-                          </sc-for>
+                    <!-- 段ごとの枠バー表示 -->
+                    <sc-if value="{{ fvHasStages }}">
+                      <sc-for list="{{ fvStages }}" as="fvSg">
+                        <!-- 段ヘッダー（隔王板ライン） -->
+                        <div style="display:flex; align-items:center; gap:8px; padding:0 20px; margin-bottom:8px;">
+                          <div style="width:6px; height:6px; border-radius:50%; background:{{ t.primary }};"></div>
+                          <span style="font-size:11px; font-weight:700; color:{{ t.primary }}; letter-spacing:.05em;">{{ fvSg.label }}</span>
+                          <div style="flex:1; height:1px; background:{{ t.border }};"></div>
                         </div>
-                        <!-- 枠番号 -->
-                        <div style="display:flex; gap:3px; margin-top:4px; min-width:max-content;">
-                          <sc-for list="{{ fvBars }}" as="bar">
-                            <div style="width:22px; text-align:center; font-size:8px; color:{{ t.textMuted }};">{{ bar.num }}</div>
-                          </sc-for>
+                        <!-- 枠バー横スクロール -->
+                        <div style="overflow-x:auto; padding:0 20px 4px; scrollbar-width:none; margin-bottom:16px;">
+                          <div style="display:flex; gap:4px; align-items:flex-end; min-width:max-content; height:130px;">
+                            <sc-for list="{{ fvSg.bars }}" as="fvBar">
+                              <div onClick="{{ fvBar.tap }}" style="display:flex; flex-direction:column; width:24px; height:100%; border-radius:5px; overflow:hidden; cursor:pointer; outline:{{ fvBar.isPopup ? '2px solid '+t.primary : 'none' }}; outline-offset:2px; transition:outline .15s;">
+                                <sc-for list="{{ fvBar.segs }}" as="seg">
+                                  <div style="background:{{ seg.color }}; flex:{{ seg.pct }};"></div>
+                                </sc-for>
+                              </div>
+                            </sc-for>
+                          </div>
+                          <div style="display:flex; gap:4px; margin-top:4px; min-width:max-content;">
+                            <sc-for list="{{ fvSg.bars }}" as="fvBar">
+                              <div style="width:24px; text-align:center; font-size:8px; color:{{ t.textMuted }};">{{ fvBar.num }}</div>
+                            </sc-for>
+                          </div>
                         </div>
-                      </div>
+                        <!-- 段の区切り線（隔王板ライン） -->
+                        <div style="margin:0 20px 16px; border-top:2px dashed {{ t.border }};"></div>
+                      </sc-for>
                     </sc-if>
-                    <sc-if value="{{ !fvHasBars }}">
+                    <sc-if value="{{ !fvHasStages }}">
                       <div style="text-align:center; padding:40px 20px; color:{{ t.textMuted }};">
                         <div style="font-size:32px; margin-bottom:8px;">🪣</div>
                         <div style="font-size:13px;">この内検には枠データがありません</div>
                       </div>
                     </sc-if>
 
+                    <!-- 枠タップ詳細ポップアップ -->
+                    <sc-if value="{{ fvHasPopup }}">
+                      <div style="margin:0 20px 16px; background:{{ t.surface }}; border:1.5px solid {{ t.primary }}; border-radius:14px; padding:14px 16px; animation:scrIn .2s ease;">
+                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+                          <span style="font-size:13px; font-weight:800; color:{{ t.text }};">枠 {{ fvPopupBar.num }} の詳細</span>
+                          <button onClick="{{ fvClosePopup }}" style="width:24px; height:24px; border-radius:50%; border:none; background:{{ t.surfaceAlt }}; color:{{ t.textMuted }}; cursor:pointer; font-size:12px; display:flex; align-items:center; justify-content:center;">✕</button>
+                        </div>
+                        <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:8px; text-align:center;">
+                          <div style="background:{{ t.bg }}; border-radius:8px; padding:8px 4px;">
+                            <div style="width:12px; height:12px; border-radius:3px; background:#F59E0B; margin:0 auto 4px;"></div>
+                            <div style="font-size:16px; font-weight:800; color:{{ t.text }};">{{ fvPopupBar.honey }}</div>
+                            <div style="font-size:9px; color:{{ t.textMuted }};">貯蜜%</div>
+                          </div>
+                          <div style="background:{{ t.bg }}; border-radius:8px; padding:8px 4px;">
+                            <div style="width:12px; height:12px; border-radius:3px; background:#EF4444; margin:0 auto 4px;"></div>
+                            <div style="font-size:16px; font-weight:800; color:{{ t.text }};">{{ fvPopupBar.brood }}</div>
+                            <div style="font-size:9px; color:{{ t.textMuted }};">育児%</div>
+                          </div>
+                          <div style="background:{{ t.bg }}; border-radius:8px; padding:8px 4px;">
+                            <div style="width:12px; height:12px; border-radius:3px; background:#374151; margin:0 auto 4px;"></div>
+                            <div style="font-size:16px; font-weight:800; color:{{ t.text }};">{{ fvPopupBar.bees }}</div>
+                            <div style="font-size:9px; color:{{ t.textMuted }};">蜂%</div>
+                          </div>
+                          <div style="background:{{ t.bg }}; border-radius:8px; padding:8px 4px;">
+                            <div style="width:12px; height:12px; border-radius:3px; background:#E5E7EB; border:1px solid {{ t.border }}; margin:0 auto 4px;"></div>
+                            <div style="font-size:16px; font-weight:800; color:{{ t.text }};">{{ fvPopupBar.space }}</div>
+                            <div style="font-size:9px; color:{{ t.textMuted }};">空き%</div>
+                          </div>
+                        </div>
+                      </div>
+                    </sc-if>
+
                     <!-- 日付ナビゲーション -->
-                    <div style="display:flex; align-items:center; justify-content:space-between; padding:16px 20px 0;">
+                    <div style="display:flex; align-items:center; justify-content:space-between; padding:4px 20px 16px;">
                       <button onClick="{{ fvPrev }}" style="padding:9px 16px; font-size:12px; font-weight:700; font-family:{{ t.font }}; color:{{ fvHasPrev ? t.text : t.textMuted }}; background:{{ t.surface }}; border:0.5px solid {{ t.border }}; border-radius:10px; cursor:pointer; opacity:{{ fvHasPrev ? 1 : 0.4 }};">← 前回</button>
                       <span style="font-size:12px; color:{{ t.textMuted }};">{{ fvRecIndex }} / {{ fvRecCount }}</span>
                       <button onClick="{{ fvNext }}" style="padding:9px 16px; font-size:12px; font-weight:700; font-family:{{ t.font }}; color:{{ fvHasNext ? t.text : t.textMuted }}; background:{{ t.surface }}; border:0.5px solid {{ t.border }}; border-radius:10px; cursor:pointer; opacity:{{ fvHasNext ? 1 : 0.4 }};">次回 →</button>
@@ -2160,6 +2201,24 @@ if('serviceWorker' in navigator){
                       </div>
                     </sc-if>
                     <div><label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:7px;">メモ</label><textarea value="{{ f.recMemo }}" onInput="{{ h.recMemo }}" placeholder="砂糖水 2L 給餌" rows="2" style="width:100%; padding:14px 16px; font-size:15px; font-family:{{ t.font }}; color:{{ t.text }}; background:{{ t.surface }}; border:1.5px solid {{ t.border }}; border-radius:12px; outline:none; resize:none;" style-focus="border-color:{{ t.primary }};"></textarea></div>
+                    <!-- 写真添付 -->
+                    <div>
+                      <label style="display:block; font-size:13px; font-weight:600; color:{{ t.textMuted }}; margin-bottom:8px;">📷 写真添付（任意）</label>
+                      <sc-if value="{{ workPhotoPreviews.length > 0 }}">
+                        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px;">
+                          <sc-for list="{{ workPhotoPreviews }}" as="wp">
+                            <div style="position:relative; width:72px; height:72px;">
+                              <img src="{{ wp.url }}" alt="写真" style="width:72px; height:72px; object-fit:cover; border-radius:10px; border:1.5px solid {{ t.border }};">
+                              <button onClick="{{ wp.remove }}" aria-label="削除" style="position:absolute; top:-6px; right:-6px; width:20px; height:20px; border-radius:50%; background:{{ t.danger }}; color:#fff; border:none; cursor:pointer; font-size:11px; display:flex; align-items:center; justify-content:center; line-height:1;">✕</button>
+                            </div>
+                          </sc-for>
+                        </div>
+                      </sc-if>
+                      <label style="display:flex; align-items:center; justify-content:center; gap:8px; padding:13px; background:{{ t.surface }}; border:1.5px dashed {{ t.border }}; border-radius:12px; cursor:pointer; font-size:13px; font-weight:600; color:{{ t.textMuted }};">
+                        <span>📷 写真を追加</span>
+                        <input type="file" accept="image/*" multiple onChange="{{ addWorkPhoto }}" style="display:none;">
+                      </label>
+                    </div>
                   </div>
                   <button onClick="{{ saveWorkRecord }}" style="width:100%; padding:16px; font-size:16px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primaryText }}; background:{{ t.primary }}; border:none; border-radius:14px; cursor:pointer; box-shadow:0 8px 20px {{ t.primaryShadow }};" style-active="transform:translateY(1px);">保存する</button>
                 </div>
@@ -2196,7 +2255,7 @@ if('serviceWorker' in navigator){
                         <div style="position:absolute; left:5px; top:6px; bottom:6px; width:2px; background:{{ t.border }};"></div>
                         <div style="display:flex; flex-direction:column; gap:10px;">
                           <sc-for list="{{ mg.items }}" as="w">
-                            <div style="position:relative;"><span style="position:absolute; left:-22px; top:4px; width:12px; height:12px; border-radius:50%; background:{{ t.primary }}; border:2px solid {{ t.bg }};"></span><div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:14px; padding:12px 14px;"><div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;"><span style="font-size:14px; font-weight:700; color:{{ t.text }};">{{ w.icon }} {{ w.type }}</span><div style="display:flex; align-items:center; gap:8px;"><span style="font-size:11px; color:{{ t.textMuted }};">{{ w.date }}</span><button onClick="{{ w.confirmDelete }}" style="padding:3px 8px; font-size:10px; font-weight:700; font-family:{{ t.font }}; color:{{ t.danger }}; background:{{ t.dangerBg }}; border:none; border-radius:999px; cursor:pointer;">削除</button></div></div><div style="font-size:13px; color:{{ t.textMuted }};">{{ w.detail }}</div></div></div>
+                            <div style="position:relative;"><span style="position:absolute; left:-22px; top:4px; width:12px; height:12px; border-radius:50%; background:{{ t.primary }}; border:2px solid {{ t.bg }};"></span><div style="background:{{ t.surface }}; border:1px solid {{ t.border }}; border-radius:14px; padding:12px 14px;"><div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;"><span style="font-size:14px; font-weight:700; color:{{ t.text }};">{{ w.icon }} {{ w.type }}</span><div style="display:flex; align-items:center; gap:8px;"><span style="font-size:11px; color:{{ t.textMuted }};">{{ w.date }}</span><button onClick="{{ w.confirmDelete }}" style="padding:3px 8px; font-size:10px; font-weight:700; font-family:{{ t.font }}; color:{{ t.danger }}; background:{{ t.dangerBg }}; border:none; border-radius:999px; cursor:pointer;">削除</button></div></div><div style="font-size:13px; color:{{ t.textMuted }}; margin-bottom:{{ w.hasPhotos ? '8px' : '0' }};">{{ w.detail }}</div><sc-if value="{{ w.hasPhotos }}"><div style="display:flex; gap:6px; flex-wrap:wrap;"><sc-for list="{{ w.photoList }}" as="ph"><img src="{{ ph }}" alt="写真" style="width:56px; height:56px; object-fit:cover; border-radius:8px; border:1px solid {{ t.border }};"></sc-for></div></sc-if></div></div>
                           </sc-for>
                         </div>
                       </div>
@@ -4046,6 +4105,18 @@ class Component extends DCLogic {
     this.tab('tasks');
   }
 
+  addWorkPhotos(e) {
+    const files = Array.from((e.target || e).files || []);
+    if (!files.length) return;
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        this.setState(st => ({ workPhotoDataUrls: [...(st.workPhotoDataUrls || []), ev.target.result].slice(0, 5) }));
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
   async saveWorkRecord() {
     const now = new Date();
     const dateStr = now.toLocaleDateString('ja-JP', { year:'numeric', month:'2-digit', day:'2-digit' });
@@ -4057,6 +4128,7 @@ class Component extends DCLogic {
     const amount = this.f('recAmount').trim();
     const nextDose = this.f('recNextDose').trim();
     const swarmType = this.state.f.recSwarmType || '自然分蜂';
+    const photoUrls = this.state.workPhotoDataUrls || [];
     const record = {
       type,
       colony: this.f('recColony'),
@@ -4064,6 +4136,7 @@ class Component extends DCLogic {
       time: timeStr,
       memo: this.f('recMemo').trim(),
       yieldKg,
+      photo_urls: photoUrls,
       ...(type === '給餌' && { feedingType: drug, feedingAmount: amount }),
       ...(type === '治療' && { drug, treatmentDetail: amount, nextDoseDate: nextDose }),
       ...(type === '分蜂捕獲' && { swarmType, captureDetail: amount }),
@@ -4079,6 +4152,7 @@ class Component extends DCLogic {
     const entry = { id: now.getTime(), ...record, detail: (record.colony ? record.colony + ' ' : '') + (record.memo || record.type) };
     this.setState(prev => ({
       workHistory: [entry, ...prev.workHistory],
+      workPhotoDataUrls: [],
       f: Object.assign({}, prev.f, { recType:'給餌', recColony:this.COLONIES[0], recMemo:'', recDrug:'', recAmount:'', recNextDose:'', recSwarmType:'自然分蜂' }),
     }));
     delete this._fieldBuf['recYieldKg'];
@@ -4315,8 +4389,9 @@ class Component extends DCLogic {
         filtered.forEach(w => {
           const m = (w.date||'').slice(0, 7) || '不明';
           const last = monthGroups[monthGroups.length - 1];
-          if (!last || last.month !== m) monthGroups.push({ month: m, items: [{ ...w, icon: WORK_TYPE_ICONS[w.type]||'📋' }] });
-          else last.items.push({ ...w, icon: WORK_TYPE_ICONS[w.type]||'📋' });
+          const wItem = { ...w, icon: WORK_TYPE_ICONS[w.type]||'📋', hasPhotos: !!(w.photo_urls&&w.photo_urls.length), photoList: w.photo_urls||[], confirmDelete: () => this.setState({ confirmDeleteId: w.id, confirmDeleteKind: 'work' }) };
+          if (!last || last.month !== m) monthGroups.push({ month: m, items: [wItem] });
+          else last.items.push(wItem);
         });
         const whFilterAll = pill(wFilter === 'all');
         const whFilterFeed = pill(wFilter === '給餌');
@@ -5936,6 +6011,10 @@ class Component extends DCLogic {
       recTypeIsFeeding: s.f.recType === '給餌',
       recTypeIsTreatment: s.f.recType === '治療',
       recTypeIsSwarm: s.f.recType === '分蜂捕獲',
+      workPhotoPreviews: (s.workPhotoDataUrls || []).map((url, i) => ({
+        url, remove: () => this.setState(st => ({ workPhotoDataUrls: (st.workPhotoDataUrls||[]).filter((_,j)=>j!==i) }))
+      })),
+      addWorkPhoto: (e) => this.addWorkPhotos(e),
       recSwarmIsNatural: (s.f.recSwarmType || '自然分蜂') === '自然分蜂',
       recSwarmIsArtificial: (s.f.recSwarmType || '自然分蜂') === '人工分蜂',
       setRecSwarmNatural: () => this.setState(st => ({ f: { ...st.f, recSwarmType:'自然分蜂' } })),
@@ -6023,6 +6102,8 @@ class Component extends DCLogic {
       inspHistoryEmpty: s.inspHistory.length === 0,
       workHistoryItems: s.workHistory.map(w => ({
         ...w,
+        hasPhotos: !!(w.photo_urls && w.photo_urls.length > 0),
+        photoList: w.photo_urls || [],
         confirmDelete: () => this.setState({ confirmDeleteId: w.id, confirmDeleteKind: 'work' }),
       })),
       workHistoryEmpty: s.workHistory.length === 0,
@@ -6069,36 +6150,78 @@ class Component extends DCLogic {
         const fvIdx = Math.min(s.fvHistIdx || 0, Math.max(0, fvRecs.length - 1));
         const fvRec = fvRecs[fvIdx] || null;
         const fvDateLabel = fvRec ? fvRec.date : '記録なし';
+        const fvPopupKey = s.fvPopupKey || null; // "si_fi" key
 
-        // 積み上げバー（縦、1枠=1本）
-        const fvBars = (() => {
+        // Build stage-grouped view from record
+        const fvStages = (() => {
           if (!fvRec) return [];
           const fd = fvRec.frameDetails || {};
           const frameNums = Object.keys(fd).map(Number).sort((a,b)=>a-b);
-          if (frameNums.length > 0) {
-            return frameNums.map(n => {
+          if (frameNums.length === 0) {
+            // 割合式: single stage
+            const sl = fvRec.spaceLevels || {};
+            const cnt = fvRec.spaceCount || 10;
+            const bars = Array.from({length: cnt}, (_, i) => {
+              const v = sl[i+1] || 'empty';
+              const color = { honey:'#F59E0B', brood:'#EF4444', bees:'#374151', empty:'#E5E7EB' }[v] || '#E5E7EB';
+              const key = '0_'+i;
+              return { num: i+1, key, segs: [{ pct: 100, color }], bees:0, brood:0, honey:0,
+                isPopup: fvPopupKey === key, tap: () => this.setState({ fvPopupKey: fvPopupKey === key ? null : key }) };
+            });
+            return [{ si:0, label:'1段', bars, hasFrames: false }];
+          }
+          // 枠式: reconstruct stages from saved stages or frameDetails
+          const savedStages = fvRec.stages || [];
+          let stages = [];
+          if (savedStages.length > 0) {
+            let gfn = 1;
+            stages = savedStages.map((sg, si) => {
+              const bars = (sg.frames || []).map((fr, fi) => {
+                const bees = fr.bees || 0, brood = fr.brood || 0, honey = fr.honey || 0;
+                const space = Math.max(0, 100 - bees - brood - honey);
+                const key = si+'_'+fi;
+                return { num: gfn++, key, bees, brood, honey, space,
+                  isPopup: fvPopupKey === key,
+                  tap: () => this.setState({ fvPopupKey: fvPopupKey === key ? null : key }),
+                  segs: [
+                    { pct: honey, color: '#F59E0B', label:'貯蜜' },
+                    { pct: brood, color: '#EF4444', label:'育児' },
+                    { pct: bees,  color: '#374151', label:'蜂' },
+                    { pct: space, color: '#E5E7EB', label:'空き' },
+                  ].filter(x => x.pct > 0),
+                };
+              });
+              return { si, label: (si+1)+'段', bars, hasFrames: true };
+            });
+          } else {
+            // Fallback: all frames in one stage
+            const bars = frameNums.map((n, fi) => {
               const f = fd[n] || {};
-              const bees = f.bees || 0, brood = f.brood || 0, honey = f.honey || 0;
+              const bees = f.bees||0, brood = f.brood||0, honey = f.honey||0;
               const space = Math.max(0, 100 - bees - brood - honey);
-              return {
-                num: n,
+              const key = '0_'+fi;
+              return { num: n, key, bees, brood, honey, space,
+                isPopup: fvPopupKey === key,
+                tap: () => this.setState({ fvPopupKey: fvPopupKey === key ? null : key }),
                 segs: [
-                  { pct: honey, color: '#F59E0B' },
-                  { pct: brood, color: '#EF4444' },
-                  { pct: bees,  color: '#374151' },
-                  { pct: space, color: '#E5E7EB' },
-                ].filter(s => s.pct > 0),
+                  { pct: honey, color: '#F59E0B', label:'貯蜜' },
+                  { pct: brood, color: '#EF4444', label:'育児' },
+                  { pct: bees,  color: '#374151', label:'蜂' },
+                  { pct: space, color: '#E5E7EB', label:'空き' },
+                ].filter(x => x.pct > 0),
               };
             });
+            stages = [{ si:0, label:'1段', bars, hasFrames: true }];
           }
-          // 割合式
-          const sl = fvRec.spaceLevels || {};
-          const cnt = fvRec.spaceCount || 10;
-          return Array.from({length: cnt}, (_, i) => {
-            const v = sl[i+1] || 'empty';
-            const color = { honey:'#F59E0B', brood:'#EF4444', bees:'#374151', empty:'#E5E7EB' }[v] || '#E5E7EB';
-            return { num: i+1, segs: [{ pct: 100, color }] };
-          });
+          return stages;
+        })();
+
+        const fvHasStages = fvStages.length > 0 && fvStages.some(sg => sg.bars.length > 0);
+        const fvPopupBar = (() => {
+          if (!fvPopupKey) return null;
+          const [si, fi] = fvPopupKey.split('_').map(Number);
+          const sg = fvStages[si];
+          return sg ? (sg.bars[fi] || null) : null;
         })();
 
         const fvQueenLabel = fvRec
@@ -6111,15 +6234,17 @@ class Component extends DCLogic {
         return {
           fvHistMode: histMode,
           fvInspMode: !histMode,
-          fvColony, fvDateLabel, fvBars, fvQueenLabel, fvQueenColor,
-          fvHasBars: fvBars.length > 0,
+          fvColony, fvDateLabel, fvStages, fvQueenLabel, fvQueenColor,
+          fvHasStages, fvPopupBar,
+          fvHasPopup: !!fvPopupBar,
+          fvClosePopup: () => this.setState({ fvPopupKey: null }),
           fvHasPrev: fvIdx < fvRecs.length - 1,
           fvHasNext: fvIdx > 0,
-          fvPrev: () => this.setState({ fvHistIdx: fvIdx + 1 }),
-          fvNext: () => this.setState({ fvHistIdx: Math.max(0, fvIdx - 1) }),
+          fvPrev: () => this.setState({ fvHistIdx: fvIdx + 1, fvPopupKey: null }),
+          fvNext: () => this.setState({ fvHistIdx: Math.max(0, fvIdx - 1), fvPopupKey: null }),
           fvRecCount: fvRecs.length,
           fvRecIndex: fvIdx + 1,
-          fvExitHistMode: () => { this.setState({ frameViewerHistMode: false, fvHistIdx: 0 }); this.back(); },
+          fvExitHistMode: () => { this.setState({ frameViewerHistMode: false, fvHistIdx: 0, fvPopupKey: null }); this.back(); },
         };
       })(),
       goWeight:()=>this.navGraph('weight'), goTemp:()=>this.navGraph('temp'), goHumid:()=>this.navGraph('humid'),
