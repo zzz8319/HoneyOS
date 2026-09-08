@@ -278,6 +278,20 @@ if('serviceWorker' in navigator){
         </div>
       </sc-if>
 
+      <!-- GLOBAL ERROR BANNER — persistent, manual close -->
+      <sc-if value="{{ errorBanner }}">
+        <div role="alert" aria-live="polite" style="position:absolute; top:0; left:0; right:0; z-index:9998; animation:scrIn .25s ease;">
+          <div style="background:{{ errorBanner.critical ? t.danger : t.warn }}; color:#fff; padding:10px 16px; display:flex; align-items:center; gap:10px; box-shadow:0 2px 8px rgba(0,0,0,.15);">
+            <span style="font-size:16px; flex-shrink:0;">{{ errorBanner.critical ? '🚨' : '⚠️' }}</span>
+            <div style="flex:1; min-width:0;">
+              <div style="font-size:13px; font-weight:800; font-family:{{ t.font }};">{{ errorBanner.title }}</div>
+              <sc-if value="{{ errorBanner.msg }}"><div style="font-size:11px; opacity:.9; margin-top:1px; font-family:{{ t.font }};">{{ errorBanner.msg }}</div></sc-if>
+            </div>
+            <button onClick="{{ dismissErrorBanner }}" aria-label="閉じる" style="background:transparent; border:none; color:#fff; font-size:18px; cursor:pointer; padding:4px 8px; flex-shrink:0; opacity:.85; font-family:{{ t.font }};">✕</button>
+          </div>
+        </div>
+      </sc-if>
+
       <div id="app-mobile" style="position:absolute; inset:0;">
 
         <!-- ===== AUTH / ONBOARDING ===== -->
@@ -1849,9 +1863,16 @@ if('serviceWorker' in navigator){
               <sc-if value="{{ vTasks }}" hint-placeholder-val="{{ false }}">
                 <div data-screen-label="SCR-024 作業" style="padding-bottom:24px; animation:{{ anim }} .34s cubic-bezier(.2,.7,.2,1);">
                   <!-- ヘッダー -->
-                  <div style="padding:64px 20px 16px; display:flex; align-items:center; justify-content:space-between;">
+                  <div style="padding:64px 20px 10px; display:flex; align-items:center; justify-content:space-between;">
                     <span style="font-size:22px; font-weight:800; color:{{ t.text }};">作業</span>
                     <span style="font-size:12px; color:{{ t.textMuted }};">{{ todayLabel }}</span>
+                  </div>
+                  <!-- タブ切替: カレンダー / リスト -->
+                  <div style="padding:0 16px 16px; display:flex; gap:0;">
+                    <div style="display:flex; gap:0; background:{{ t.surfaceAlt }}; border:0.5px solid {{ t.border }}; border-radius:12px; padding:3px; width:100%;">
+                      <button onClick="{{ setScr024TabCalendar }}" style="flex:1; padding:7px 0; font-size:13px; font-weight:700; font-family:{{ t.font }}; border:none; border-radius:9px; cursor:pointer; background:{{ scr024TabCalendar ? t.surface : 'transparent' }}; color:{{ scr024TabCalendar ? t.primary : t.textMuted }}; box-shadow:{{ scr024TabCalendar ? '0 1px 4px rgba(0,0,0,.08)' : 'none' }};">📅 カレンダー</button>
+                      <button onClick="{{ setScr024TabList }}" style="flex:1; padding:7px 0; font-size:13px; font-weight:700; font-family:{{ t.font }}; border:none; border-radius:9px; cursor:pointer; background:{{ scr024TabList ? t.surface : 'transparent' }}; color:{{ scr024TabList ? t.primary : t.textMuted }}; box-shadow:{{ scr024TabList ? '0 1px 4px rgba(0,0,0,.08)' : 'none' }};">📋 リスト</button>
+                    </div>
                   </div>
                   <!-- 内検バナー (メインCTA) -->
                   <div onClick="{{ goInspStart }}" style="margin:0 16px 20px; background:{{ t.primary }}; border-radius:18px; padding:20px; cursor:pointer; overflow:hidden; position:relative;" style-active="opacity:.9;">
@@ -1881,6 +1902,8 @@ if('serviceWorker' in navigator){
                       </div>
                     </div>
                   </div>
+                  <!-- リストタブコンテンツ -->
+                  <sc-if value="{{ scr024TabList }}">
                   <!-- その他の作業 -->
                   <div style="padding:0 16px; margin-bottom:20px;">
                     <div style="font-size:12px; font-weight:700; letter-spacing:.08em; color:{{ t.textMuted }}; margin-bottom:10px;">その他の作業を記録</div>
@@ -1914,8 +1937,13 @@ if('serviceWorker' in navigator){
                         <div style="background:{{ t.surface }}; border:1px solid {{ tk.done || tk.sk === 'done' ? t.ok+'44' : t.border }}; border-radius:12px; padding:12px 14px; display:flex; align-items:center; gap:12px; opacity:{{ tk.done || tk.sk === 'done' ? '0.6' : '1' }};">
                           <div onClick="{{ tk.toggle }}" style="width:24px; height:24px; border-radius:50%; border:2px solid {{ tk.done || tk.sk === 'done' ? t.ok : t.border }}; background:{{ tk.done || tk.sk === 'done' ? t.ok : 'transparent' }}; cursor:pointer; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:12px; color:#fff;">{{ tk.done || tk.sk === 'done' ? '✓' : '' }}</div>
                           <div style="flex:1; min-width:0;">
-                            <div style="font-size:13px; font-weight:700; color:{{ t.text }};">{{ tk.icon }} {{ tk.type }} — {{ tk.colony }}</div>
-                            <div style="font-size:11px; color:{{ tk.overdue ? t.danger : t.textMuted }}; margin-top:2px;">{{ tk.overdue ? '⏰ 期限超過: ' : '' }}{{ tk.dueDate || tk.when }}</div>
+                            <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                              <div style="font-size:13px; font-weight:700; color:{{ t.text }};">{{ tk.icon }} {{ tk.title || tk.type }}</div>
+                              <sc-if value="{{ tk.priority === 'high' }}"><span style="font-size:9px; font-weight:800; background:#FEE2E2; color:#DC2626; border-radius:4px; padding:1px 5px;">高</span></sc-if>
+                              <sc-if value="{{ tk.priority === 'low' }}"><span style="font-size:9px; font-weight:800; background:#DCFCE7; color:#16A34A; border-radius:4px; padding:1px 5px;">低</span></sc-if>
+                            </div>
+                            <div style="font-size:11px; color:{{ t.textMuted }}; margin-top:1px;">{{ tk.colony }}</div>
+                            <div style="font-size:11px; color:{{ tk.overdue ? t.danger : t.textMuted }}; margin-top:1px;">{{ tk.overdue ? '⏰ 期限超過: ' : '📅 ' }}{{ tk.dueDate || tk.when }}</div>
                           </div>
                           <sc-if value="{{ tk.done || tk.sk === 'done' }}">
                             <div onClick="{{ tk.archive }}" style="padding:4px 8px; font-size:10px; font-weight:700; font-family:{{ t.font }}; color:{{ t.textMuted }}; background:{{ t.surfaceAlt }}; border:1px solid {{ t.border }}; border-radius:999px; cursor:pointer; flex-shrink:0;">完了</div>
@@ -1923,12 +1951,23 @@ if('serviceWorker' in navigator){
                         </div>
                       </sc-for>
                     </div>
+                    <sc-if value="{{ tasksTotalCount === 0 }}">
+                      <div style="display:flex; flex-direction:column; align-items:center; gap:10px; padding:32px 16px; background:{{ t.surface }}; border:1.5px dashed {{ t.border }}; border-radius:14px; text-align:center; margin-top:4px;">
+                        <div style="font-size:40px; line-height:1;">✅</div>
+                        <div style="font-size:14px; font-weight:800; color:{{ t.text }};">タスクはありません</div>
+                        <div style="font-size:12px; color:{{ t.textMuted }};">作業予定を追加して管理しましょう</div>
+                        <button onClick="{{ goTaskCreate }}" style="padding:10px 24px; font-size:13px; font-weight:700; font-family:{{ t.font }}; background:{{ t.primary }}; color:{{ t.primaryText }}; border:none; border-radius:999px; cursor:pointer;">＋ タスクを作成</button>
+                      </div>
+                    </sc-if>
                     <sc-if value="{{ archivedCount }}">
                       <div onClick="{{ toggleShowArchived }}" style="margin-top:8px; text-align:center; font-size:12px; color:{{ t.textMuted }}; cursor:pointer; padding:6px;">
                         {{ showArchived ? '▲ アーカイブを隠す' : '▼ アーカイブ済み ' + archivedCount + '件を表示' }}
                       </div>
                     </sc-if>
                   </div>
+                  </sc-if><!-- end scr024TabList -->
+                  <!-- カレンダータブコンテンツ -->
+                  <sc-if value="{{ scr024TabCalendar }}">
                   <!-- カレンダービュー -->
                   <div style="padding:0 16px; margin-bottom:8px;">
                     <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
@@ -2013,6 +2052,7 @@ if('serviceWorker' in navigator){
                       </div>
                     </sc-if>
                   </div>
+                  </sc-if><!-- end scr024TabCalendar -->
                 </div>
               </sc-if>
 
@@ -2121,7 +2161,12 @@ if('serviceWorker' in navigator){
                     <button onClick="{{ setWhWinter }}" style="{{ whFilterWinter }}">❄️ 越冬</button>
                   </div>
                   <sc-if value="{{ workHistEmpty }}">
-                    <div style="text-align:center; padding:48px 16px; color:{{ t.textMuted }}; font-size:15px;">記録がありません</div>
+                    <div style="display:flex; flex-direction:column; align-items:center; gap:12px; padding:40px 24px; background:{{ t.surface }}; border:1.5px dashed {{ t.border }}; border-radius:16px; text-align:center; margin-bottom:16px;">
+                      <div style="font-size:48px; line-height:1;">📋</div>
+                      <div style="font-size:15px; font-weight:800; color:{{ t.text }};">作業記録がまだありません</div>
+                      <div style="font-size:13px; color:{{ t.textMuted }}; line-height:1.5;">給餌・採蜜・治療などの作業を記録して<br>履歴を蓄積しましょう</div>
+                      <button onClick="{{ goWorkRecord }}" style="margin-top:4px; padding:12px 28px; font-size:14px; font-weight:700; font-family:{{ t.font }}; background:{{ t.primary }}; color:{{ t.primaryText }}; border:none; border-radius:999px; cursor:pointer;">＋ 作業を記録する</button>
+                    </div>
                   </sc-if>
                   <sc-if value="{{ !workHistEmpty }}">
                     <sc-for list="{{ workMonthGroups }}" as="mg">
@@ -2872,6 +2917,8 @@ class Component extends DCLogic {
     notifSettings: (() => { try { return JSON.parse(localStorage.getItem('honeyos_notifSettings') || '{}'); } catch(e) { return {}; } })(),
     scr012ActiveBar: null,
     notifFilter: 'all',
+    scr024Tab: 'calendar',
+    errorBanner: null,
   };
 
   get COLONIES() { return this.state.colonies || ['A-01','A-02','A-03','A-04','A-05','A-06','A-07','A-08','A-09','A-10','A-11','A-12']; }
@@ -4483,6 +4530,10 @@ class Component extends DCLogic {
       segDay:pill(s.period==='day'), segWeek:pill(s.period==='week'), segMonth:pill(s.period==='month'), segYear:pill(s.period==='year'),
       pDay:()=>this.setState({period:'day'}), pWeek:()=>this.setState({period:'week'}), pMonth:()=>this.setState({period:'month'}), pYear:()=>this.setState({period:'year'}),
       // task filter
+      scr024TabCalendar: (s.scr024Tab||'calendar')==='calendar',
+      scr024TabList: s.scr024Tab==='list',
+      setScr024TabCalendar: ()=>this.setState({scr024Tab:'calendar'}),
+      setScr024TabList: ()=>this.setState({scr024Tab:'list'}),
       taskSegToday:pill(s.taskFilter==='today'), taskSegWeek:pill(s.taskFilter==='week'), taskSegAll:pill(s.taskFilter==='all'),
       tfToday:()=>this.setState({taskFilter:'today'}), tfWeek:()=>this.setState({taskFilter:'week'}), tfAll:()=>this.setState({taskFilter:'all'}),
       // report period
@@ -5321,6 +5372,8 @@ class Component extends DCLogic {
       jsonImportError: s.jsonImportError || '',
       // ===== トースト =====
       toast: s.toast,
+      errorBanner: s.errorBanner || null,
+      dismissErrorBanner: () => this.dismissErrorBanner(),
       // ===== ローディング =====
       isLoading: s.isLoading,
       // ===== セッション期限切れ =====
@@ -6438,6 +6491,11 @@ class Component extends DCLogic {
   }
 
   // ===== トースト通知 =====
+  showErrorBanner(title, msg = '', critical = false) {
+    this.setState({ errorBanner: { title, msg, critical } });
+  }
+  dismissErrorBanner() { this.setState({ errorBanner: null }); }
+
   showToast(msg, type = 'info') {
     this.setState({ toast: { msg, type, id: Date.now() } });
     clearTimeout(this._toastTimer);
@@ -6445,11 +6503,15 @@ class Component extends DCLogic {
   }
 
   // エラーをコンソール・Sentry・トーストに記録する共通ヘルパー
-  _err(e, userMsg = 'エラーが発生しました') {
+  _err(e, userMsg = 'エラーが発生しました', critical = false) {
     const detail = e?.message ? '：' + e.message : '';
     console.error('[HoneyOS]', userMsg, e);
     if (window.Sentry) Sentry.captureException(e instanceof Error ? e : new Error(userMsg));
-    this.showToast(userMsg + detail, 'error');
+    if (critical) {
+      this.showErrorBanner(userMsg, detail, true);
+    } else {
+      this.showToast(userMsg + detail, 'error');
+    }
   }
 
   // ===== プッシュ通知（21日未内検チェック） =====
