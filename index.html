@@ -292,6 +292,20 @@ if('serviceWorker' in navigator){
         </div>
       </sc-if>
 
+      <!-- GLOBAL CONFIRM DELETE MODAL -->
+      <sc-if value="{{ confirmDeleteId }}">
+        <div role="dialog" aria-modal="true" style="position:absolute; inset:0; background:rgba(0,0,0,.55); z-index:9996; display:flex; align-items:center; justify-content:center; padding:24px;">
+          <div style="background:{{ t.surface }}; border-radius:20px; padding:24px; width:100%; max-width:320px; box-shadow:0 20px 60px rgba(0,0,0,.3);">
+            <div style="font-size:17px; font-weight:800; color:{{ t.danger }}; margin-bottom:8px;">本当に削除しますか？</div>
+            <div style="font-size:13px; color:{{ t.textMuted }}; margin-bottom:20px; line-height:1.6;">{{ confirmDeleteMsg }}</div>
+            <div style="display:flex; gap:8px;">
+              <button onClick="{{ cancelDelete }}" style="flex:1; padding:13px; font-size:14px; font-weight:700; font-family:{{ t.font }}; color:{{ t.textMuted }}; background:{{ t.surfaceAlt }}; border:none; border-radius:10px; cursor:pointer;">キャンセル</button>
+              <button onClick="{{ execDelete }}" style="flex:1; padding:13px; font-size:14px; font-weight:700; font-family:{{ t.font }}; color:#fff; background:{{ t.danger }}; border:none; border-radius:10px; cursor:pointer;">削除する</button>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
       <div id="app-mobile" style="position:absolute; inset:0;">
 
         <!-- ===== AUTH / ONBOARDING ===== -->
@@ -997,7 +1011,7 @@ if('serviceWorker' in navigator){
                     <div style="position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:9999; display:flex; align-items:center; justify-content:center; padding:24px;">
                       <div style="background:{{ t.surface }}; border-radius:20px; padding:24px; width:100%; max-width:320px; box-shadow:0 20px 60px rgba(0,0,0,.3);">
                         <div style="font-size:17px; font-weight:800; color:{{ t.danger }}; margin-bottom:8px;">本当に削除しますか？</div>
-                        <div style="font-size:13px; color:{{ t.textMuted }}; margin-bottom:20px; line-height:1.6;">この操作は取り消せません。</div>
+                        <div style="font-size:13px; color:{{ t.textMuted }}; margin-bottom:20px; line-height:1.6;">{{ confirmDeleteMsg }}</div>
                         <div style="display:flex; gap:8px;">
                           <button onClick="{{ cancelDelete }}" style="flex:1; padding:13px; font-size:14px; font-weight:700; font-family:{{ t.font }}; color:{{ t.textMuted }}; background:{{ t.surfaceAlt }}; border:none; border-radius:10px; cursor:pointer;">キャンセル</button>
                           <button onClick="{{ execDelete }}" style="flex:1; padding:13px; font-size:14px; font-weight:700; font-family:{{ t.font }}; color:#fff; background:{{ t.danger }}; border:none; border-radius:10px; cursor:pointer;">削除する</button>
@@ -2206,7 +2220,12 @@ if('serviceWorker' in navigator){
                     <button onClick="{{ setTrendWeather }}" style="{{ trendTabWeather }}">🌡 気温相関</button>
                   </div>
                   <sc-if value="{{ !trendHasData }}">
-                    <div style="text-align:center; padding:48px 16px; color:{{ t.textMuted }};">{{ trendColony }}の内検記録がありません</div>
+                    <div style="display:flex; flex-direction:column; align-items:center; gap:12px; padding:40px 24px; background:{{ t.surface }}; border:1.5px dashed {{ t.border }}; border-radius:16px; text-align:center;">
+                      <div style="font-size:48px; line-height:1;">📈</div>
+                      <div style="font-size:15px; font-weight:800; color:{{ t.text }};">内検データが不足しています</div>
+                      <div style="font-size:13px; color:{{ t.textMuted }}; line-height:1.5;">内検データが2回分たまると<br>トレンドグラフが表示されます</div>
+                      <button onClick="{{ goInspStart }}" style="margin-top:4px; padding:11px 24px; font-size:13px; font-weight:700; font-family:{{ t.font }}; background:{{ t.primary }}; color:{{ t.primaryText }}; border:none; border-radius:999px; cursor:pointer;">🔍 内検を記録する</button>
+                    </div>
                   </sc-if>
                   <sc-if value="{{ trendHasData }}">
                     <!-- スパークライングラフ -->
@@ -3275,6 +3294,8 @@ class Component extends DCLogic {
     if (id == null) return;
     if (kind === 'insp') { await this.deleteInspRecord(id); }
     else if (kind === 'work') { await this.deleteWorkRecord(id); }
+    else if (kind === 'colony') { await this.deleteColony(id); this.back(); }
+    else if (kind === 'farm') { await this.deleteFarm(id); this.back(); }
   }
 
   // ===== パスワードリセット =====
@@ -6117,13 +6138,13 @@ class Component extends DCLogic {
       addColony: () => this.addColony(),
       coloniesManage: this.COLONIES.map(id => ({
         id,
-        del: () => this.deleteColony(id),
+        del: () => this.setState({ confirmDeleteId: id, confirmDeleteKind: 'colony' }),
       })),
       // ===== 養蜂場DB管理 =====
       farmsManage: (s.farms || []).map(f => ({
         id: f.id,
         name: f.name,
-        del: () => this.deleteFarm(f.id),
+        del: () => this.setState({ confirmDeleteId: f.id, confirmDeleteKind: 'farm' }),
       })),
       farmsEmpty: !(s.farms && s.farms.length),
       showFarmForm: s.showFarmForm || false,
@@ -6147,6 +6168,14 @@ class Component extends DCLogic {
       confirmDeleteInsp: () => { const id = (s.inspDetailRecord || {}).id; if (id != null) this.setState({ confirmDeleteId: id, confirmDeleteKind: 'insp' }); },
       cancelDelete: () => this.setState({ confirmDeleteId: null, confirmDeleteKind: null }),
       execDelete: () => this.execDelete(),
+      confirmDeleteMsg: (() => {
+        const k = s.confirmDeleteKind;
+        if (k === 'colony') return '蜂群を削除すると、関連する内検・作業記録も全て失われます。';
+        if (k === 'farm') return '養蜂場を削除すると、所属する蜂群と全記録も失われます。';
+        if (k === 'insp') return '内検記録を削除します。';
+        if (k === 'work') return '作業記録を削除します。';
+        return 'この操作は取り消せません。';
+      })(),
       // ===== Push通知 =====
       registerPushSubscription: () => this.registerPushSubscription(),
       // ===== 内検記録 編集 =====
