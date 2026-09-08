@@ -900,8 +900,29 @@ if('serviceWorker' in navigator){
                         <div style="text-align:center; padding:24px 0; font-size:13px; color:{{ t.textMuted }};">内検データが2回以上あるとグラフが表示されます</div>
                       </sc-if>
                     </div>
+                    <!-- 点タップ → 内検詳細ポップアップ -->
+                    <sc-if value="{{ hiveTrendHasPopup }}">
+                      <div style="background:{{ t.surfaceAlt }}; border:1px solid {{ t.border }}; border-radius:12px; padding:14px; margin-top:12px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                          <div style="font-size:13px; font-weight:700; color:{{ t.text }};">{{ hiveTrendPopupDate }} {{ hiveTrendPopupTime }}</div>
+                          <button onClick="{{ hiveTrendClosePopup }}" style="background:none; border:none; font-size:18px; color:{{ t.textMuted }}; cursor:pointer; padding:0 4px; line-height:1;">×</button>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:6px; font-size:12px; color:{{ t.textMuted }}; margin-bottom:8px;">
+                          <span>{{ hiveTrendPopupWeather }}</span>
+                        </div>
+                        <sc-if value="{{ hiveTrendPopupMemo }}">
+                          <div style="font-size:12px; color:{{ t.text }}; background:{{ t.surface }}; border-radius:8px; padding:8px 10px; margin-bottom:8px; line-height:1.5;">{{ hiveTrendPopupMemo }}</div>
+                        </sc-if>
+                        <sc-if value="{{ hiveTrendPopupAiMemo }}">
+                          <div style="font-size:11px; color:{{ t.textMuted }}; background:{{ t.surface }}; border-radius:8px; padding:8px 10px; margin-bottom:8px; line-height:1.5; border-left:3px solid {{ t.primary }};">🤖 {{ hiveTrendPopupAiMemo }}</div>
+                        </sc-if>
+                        <button onClick="{{ hiveTrendOpenViewer }}" style="width:100%; padding:10px; font-size:12px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primary }}; background:{{ t.surface }}; border:0.5px solid {{ t.primary }}; border-radius:9px; cursor:pointer;">
+                          🔍 枠ビューアで見る
+                        </button>
+                      </div>
+                    </sc-if>
                     <!-- 内検履歴へ -->
-                    <button onClick="{{ goFrameViewerHistory }}" style="width:100%; padding:13px; font-size:13px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primary }}; background:{{ t.surface }}; border:0.5px solid {{ t.primary }}; border-radius:12px; cursor:pointer; margin-bottom:14px; display:flex; align-items:center; justify-content:center; gap:6px;">
+                    <button onClick="{{ goFrameViewerHistory }}" style="width:100%; padding:13px; font-size:13px; font-weight:700; font-family:{{ t.font }}; color:{{ t.primary }}; background:{{ t.surface }}; border:0.5px solid {{ t.primary }}; border-radius:12px; cursor:pointer; margin-top:12px; margin-bottom:14px; display:flex; align-items:center; justify-content:center; gap:6px;">
                       📋 内検履歴を見る（枠ビューア）
                     </button>
                   </sc-if>
@@ -4536,10 +4557,9 @@ class Component extends DCLogic {
         const ns = s.notifSettings || {};
         const defs = [
           { key:'inspection', icon:'🔍', label:'内検リマインダー', desc:'次回内検の期限アラート' },
-          { key:'swarm', icon:'🐝', label:'分蜂予兆アラート', desc:'分蜂リスクが高い場合に通知' },
-          { key:'task', icon:'📋', label:'タスク期限', desc:'タスクの締め切り前に通知' },
-          { key:'harvest', icon:'🍯', label:'採蜜シーズン', desc:'採蜜に適したタイミングを通知' },
-          { key:'treatment', icon:'💊', label:'治療・投薬リマインダー', desc:'次回投薬予定日の前日に通知' },
+          { key:'ai_complete', icon:'🤖', label:'AI診断完了', desc:'AI診断が完了したときに通知' },
+          { key:'sensor_alert', icon:'⚠️', label:'センサー異常アラート', desc:'センサーが異常値を検出した場合に通知' },
+          { key:'system_notice', icon:'📢', label:'システムお知らせ', desc:'アプリのアップデートや重要なお知らせ' },
         ];
         return defs.map(d => ({
           ...d,
@@ -5263,10 +5283,14 @@ class Component extends DCLogic {
               } else { bees = brood = honey = 0; }
               return { date: r.date, bees, brood, honey, queenOk: r.queenPresent !== false };
             });
+            window.__hvTrendTap = (i) => this.setState(st => ({ hiveTrendPopupIdx: st.hiveTrendPopupIdx === i ? null : i }));
+            const hiveTrendPopupIdx = (s.hiveTrendPopupIdx != null && s.hiveTrendPopupIdx < hiveInspHistory.length) ? s.hiveTrendPopupIdx : null;
+            const hiveTrendPopupRec = hiveTrendPopupIdx != null ? hiveInspHistory[hiveTrendPopupIdx] : null;
             const hiveTrendSvg = (() => {
               if (hiveTrendPoints.length < 2) return '';
               const W = 280, H = 80;
               const n = hiveTrendPoints.length;
+              const selIdx = hiveTrendPopupIdx;
               const mkLine = (key, color) => {
                 const pts = hiveTrendPoints.map((p, i) => {
                   const x = (i / (n - 1)) * W;
@@ -5275,7 +5299,15 @@ class Component extends DCLogic {
                 }).join(' ');
                 return `<polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`;
               };
-              return mkLine('honey','#F59E0B') + mkLine('brood','#EF4444') + mkLine('bees','#374151');
+              const mkDots = (key, color) => hiveTrendPoints.map((p, i) => {
+                const x = (i / (n - 1)) * W;
+                const y = H - (p[key] / 100) * H;
+                const r = selIdx === i ? 5 : 3;
+                const stroke = selIdx === i ? '#fff' : color;
+                return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r}" fill="${color}" stroke="${stroke}" stroke-width="${selIdx===i?2:1}" style="cursor:pointer;" onclick="window.__hvTrendTap(${i})"/>`;
+              }).join('');
+              return mkLine('honey','#F59E0B') + mkLine('brood','#EF4444') + mkLine('bees','#374151')
+                + mkDots('honey','#F59E0B') + mkDots('brood','#EF4444') + mkDots('bees','#374151');
             })();
             // ===== DETAIL TABS =====
             const hdTab = s.hiveDetailTab || 'trend';
@@ -5328,6 +5360,21 @@ class Component extends DCLogic {
               hHiveDetailMemo: this.field('colonyMemo_' + hcid),
               hiveTrendPoints, hiveTrendSvg,
               hiveTrendEmpty: hiveTrendPoints.length < 2,
+              hiveTrendPopupIdx, hiveTrendPopupRec,
+              hiveTrendHasPopup: hiveTrendPopupRec != null,
+              hiveTrendPopupDate: hiveTrendPopupRec ? hiveTrendPopupRec.date : '',
+              hiveTrendPopupTime: hiveTrendPopupRec ? hiveTrendPopupRec.time : '',
+              hiveTrendPopupWeather: hiveTrendPopupRec ? hiveTrendPopupRec.weather : '',
+              hiveTrendPopupMemo: hiveTrendPopupRec ? (hiveTrendPopupRec.frameMemo || '') : '',
+              hiveTrendPopupAiMemo: hiveTrendPopupRec ? (hiveTrendPopupRec.aiMemo || '') : '',
+              hiveTrendClosePopup: () => this.setState({ hiveTrendPopupIdx: null }),
+              hiveTrendOpenViewer: () => {
+                const idx = hiveTrendPopupRec ? hiveInspHistory.indexOf(hiveTrendPopupRec) : -1;
+                const sortedRecs = (s.inspHistory||[]).filter(r=>r.colony===hcid).slice().sort((a,b)=>(b.date||'')>(a.date||'')?1:-1);
+                const histIdx = idx >= 0 ? sortedRecs.findIndex(r => r.date === hiveTrendPopupRec.date && r.time === hiveTrendPopupRec.time) : 0;
+                this.setState({ frameViewerColony: hcid, frameViewerHistMode: true, fvHistIdx: Math.max(0, histIdx), hiveTrendPopupIdx: null });
+                this.nav('inspFrame');
+              },
               hiveDetailTabTrend: hdTab === 'trend',
               hiveDetailTabOverview: hdTab === 'overview',
               hiveDetailTabHeatmap: hdTab === 'heatmap',

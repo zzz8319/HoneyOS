@@ -103,6 +103,7 @@ create policy "users delete own colonies"  on public.colonies for delete using (
 alter table public.colonies add column if not exists farm_id     bigint references public.farms(id) on delete set null;
 alter table public.colonies add column if not exists colony_type text;
 alter table public.colonies add column if not exists archived_at timestamptz;
+alter table public.colonies add column if not exists hive_type   text;
 
 -- =====================
 -- insp_records: 内検記録
@@ -145,14 +146,21 @@ create policy "users delete own insp_records"
   on public.insp_records for delete using (auth.uid() = user_id);
 
 -- Add columns (run if upgrading existing DB)
-alter table public.insp_records add column if not exists count_mode    text not null default 'frame';
-alter table public.insp_records add column if not exists frame_details jsonb not null default '{}';
-alter table public.insp_records add column if not exists space_count   integer;
-alter table public.insp_records add column if not exists space_levels  jsonb not null default '{}';
-alter table public.insp_records add column if not exists structure     jsonb not null default '{}';
-alter table public.insp_records add column if not exists queen_present boolean;
-alter table public.insp_records add column if not exists queen_status  text;
-alter table public.insp_records add column if not exists bees_total    integer;
+alter table public.insp_records add column if not exists count_mode       text not null default 'frame';
+alter table public.insp_records add column if not exists frame_details    jsonb not null default '{}';
+alter table public.insp_records add column if not exists space_count      integer;
+alter table public.insp_records add column if not exists space_levels     jsonb not null default '{}';
+alter table public.insp_records add column if not exists structure        jsonb not null default '{}';
+alter table public.insp_records add column if not exists queen_present    boolean;
+alter table public.insp_records add column if not exists queen_status     text;
+alter table public.insp_records add column if not exists bees_total       integer;
+alter table public.insp_records add column if not exists hive_type        text;
+alter table public.insp_records add column if not exists stages           jsonb not null default '[]';
+alter table public.insp_records add column if not exists stage_count      integer;
+alter table public.insp_records add column if not exists stage_counts     jsonb not null default '[]';
+alter table public.insp_records add column if not exists swarm_risk_score integer;
+alter table public.insp_records add column if not exists bee_density      integer;
+alter table public.insp_records add column if not exists queen_cells      jsonb not null default '[]';
 
 -- =====================
 -- work_records: 作業記録
@@ -278,3 +286,21 @@ create policy "users manage own benchmark"
 drop policy if exists "all users read benchmarks" on public.benchmarks;
 create policy "all users read benchmarks"
   on public.benchmarks for select using (true);
+
+-- =====================
+-- notification_settings: 通知種別設定
+-- =====================
+create table if not exists public.notification_settings (
+  user_id       uuid primary key references auth.users(id) on delete cascade,
+  inspection    boolean not null default true,
+  ai_complete   boolean not null default true,
+  sensor_alert  boolean not null default true,
+  system_notice boolean not null default true,
+  updated_at    timestamptz not null default now()
+);
+
+alter table public.notification_settings enable row level security;
+
+drop policy if exists "users manage own notification_settings" on public.notification_settings;
+create policy "users manage own notification_settings"
+  on public.notification_settings for all using (auth.uid() = user_id);
