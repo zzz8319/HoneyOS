@@ -1,0 +1,22 @@
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: #e9eaec;
+  color: var(--color-text);
+  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic UI", "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+button { font: inherit; cursor: pointer; }
+
+a { color: inherit; }
+
+.app-shell {
+  min-height: 100dvh;
+  max-width: 430px;
+  margin: auto;
+  padding-bottom: 72px;
+  background: var(--color-bg);
+  position: relative;
+}
