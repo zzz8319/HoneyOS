@@ -6,17 +6,19 @@
   box-shadow: var(--shadow-sm);
 }
 
+/* ── ヘッダー ─────────────────────── */
 .header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: var(--space-3);
+  margin-bottom: 10px;
 }
 
-.title {
-  font-size: 13px;
+.cardTitle {
+  font-size: 14px;
   font-weight: 700;
   color: var(--color-text);
+  letter-spacing: 0.01em;
 }
 
 .fetchTime {
@@ -24,122 +26,158 @@
   color: var(--color-text-secondary);
 }
 
-.row {
+/* ── 気温行 ───────────────────────── */
+.tempRow {
   display: flex;
   align-items: center;
-  gap: var(--space-4);
-  margin-bottom: var(--space-3);
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
+  flex-wrap: wrap;
 }
 
 .tempBlock {
   display: flex;
   align-items: baseline;
-  gap: 3px;
+  gap: 2px;
   flex-shrink: 0;
 }
 
-.weatherIcon {
-  font-size: 22px;
-  margin-right: 4px;
+.weatherEmoji {
+  font-size: 26px;
   line-height: 1;
+  margin-right: 2px;
 }
 
-.tempValue {
-  font-size: 32px;
+.tempVal {
+  font-size: 34px;
   font-weight: 700;
   color: var(--color-text);
   line-height: 1;
   font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
 }
 
 .tempUnit {
-  font-size: 15px;
-  color: var(--color-text-secondary);
+  font-size: 16px;
   font-weight: 500;
+  color: var(--color-text-secondary);
+  align-self: flex-end;
+  padding-bottom: 2px;
 }
 
 .metaBlock {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
+  flex: 1;
+  min-width: 90px;
 }
 
 .metaItem {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
 }
 
-.metaIcon {
+.metaEmoji {
   font-size: 12px;
   width: 16px;
   text-align: center;
+  flex-shrink: 0;
 }
 
-.metaLabel {
+.metaKey {
   font-size: 11px;
   color: var(--color-text-secondary);
   width: 26px;
+  flex-shrink: 0;
 }
 
-.metaValue {
+.metaVal {
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--color-text);
   font-variant-numeric: tabular-nums;
 }
 
-/* スパークライン */
-.sparkWrap {
-  position: relative;
-  margin-bottom: var(--space-2);
-}
-
-.sparkSvg {
-  display: block;
-  width: 100%;
-  height: 48px;
-}
-
-.sparkLabels {
-  position: relative;
-  height: 14px;
-  margin-top: 2px;
-}
-
-.sparkLabel {
-  position: absolute;
-  transform: translateX(-50%);
-  font-size: 9px;
-  color: var(--color-text-secondary);
-  white-space: nowrap;
-}
-
 /* 内検可否バッジ */
-.inspBadgeWrap {
-  margin-top: var(--space-1);
-}
-
-.inspOk {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--color-ok);
-  background: var(--color-ok-soft);
-  border-radius: var(--radius-full);
-  padding: 4px 12px;
-}
-
+.inspOk,
 .inspNg {
   display: inline-flex;
   align-items: center;
   gap: 4px;
   font-size: 12px;
   font-weight: 700;
+  border-radius: var(--radius-full);
+  padding: 5px 10px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.inspOk {
+  color: var(--color-ok);
+  background: var(--color-ok-soft);
+}
+
+.inspNg {
   color: var(--color-danger);
   background: var(--color-danger-soft);
-  border-radius: var(--radius-full);
-  padding: 4px 12px;
+}
+
+/* ── スパークライン ────────────────── */
+.sparkRoot {
+  display: flex;
+  gap: 4px;
+  align-items: stretch;
+}
+
+.yAxis {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding-bottom: 16px; /* X軸ラベル分 */
+  padding-top: 16px;    /* title分 */
+  flex-shrink: 0;
+  width: 20px;
+}
+
+.yLabel {
+  font-size: 9px;
+  color: var(--color-text-secondary);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.sparkBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.sparkTitle {
+  margin: 0 0 2px;
+  font-size: 10px;
+  color: var(--color-text-secondary);
+}
+
+.sparkSvg {
+  display: block;
+  width: 100%;
+  height: 52px;
+}
+
+/* X軸ラベル */
+.xAxis {
+  position: relative;
+  height: 16px;
+}
+
+.xLabel {
+  position: absolute;
+  transform: translateX(-50%);
+  font-size: 9px;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  line-height: 1;
+  top: 2px;
 }

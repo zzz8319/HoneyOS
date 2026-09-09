@@ -15,17 +15,52 @@
   gap: var(--space-3);
 }
 
-.skeleton {
-  background: linear-gradient(90deg, var(--color-border) 25%, #e9eaec 50%, var(--color-border) 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.4s infinite;
-  border-radius: var(--radius-md);
-}
-
 @keyframes shimmer {
   0%   { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
+
+.skelCard {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+/* shimmer ベース */
+.skelHeader,
+.skelTempVal,
+.skelMeta,
+.skelBadge,
+.skelSparkline,
+.skelAvg,
+.skelCount,
+.skelChart,
+.skelStatBlock,
+.skelBar {
+  background: linear-gradient(90deg, var(--color-border) 25%, color-mix(in srgb, var(--color-border) 50%, var(--color-surface)) 50%, var(--color-border) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: 4px;
+}
+
+.skelHeader     { height: 14px; width: 40%; }
+.skelTempRow    { display: flex; align-items: center; gap: 10px; }
+.skelTempVal    { width: 80px; height: 40px; border-radius: 6px; }
+.skelMeta       { flex: 1; height: 36px; }
+.skelBadge      { width: 100px; height: 28px; border-radius: var(--radius-full); }
+.skelSparkline  { height: 68px; }
+.skelSummaryRow { display: flex; gap: 16px; }
+.skelAvg        { width: 60px; height: 36px; border-radius: 6px; }
+.skelCount      { flex: 1; height: 36px; }
+.skelChart      { height: 120px; }
+.skelStatsRow   { display: flex; gap: 10px; }
+.skelStatBlock  { flex: 1; height: 50px; border-radius: 6px; }
+.skelBar        { height: 60px; }
 
 /* FAB */
 .fab {

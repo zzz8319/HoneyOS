@@ -62,9 +62,34 @@ export function DashboardScreen({
       <main className={styles.content} aria-label="ダッシュボード">
         {viewState === 'loading' && (
           <div className={styles.loadingWrap} aria-busy aria-label="読み込み中">
-            <div className={styles.skeleton} style={{ height: 160 }} />
-            <div className={styles.skeleton} style={{ height: 200 }} />
-            <div className={styles.skeleton} style={{ height: 130 }} />
+            {/* WeatherCard スケルトン */}
+            <div className={styles.skelCard}>
+              <div className={styles.skelHeader} />
+              <div className={styles.skelTempRow}>
+                <div className={styles.skelTempVal} />
+                <div className={styles.skelMeta} />
+                <div className={styles.skelBadge} />
+              </div>
+              <div className={styles.skelSparkline} />
+            </div>
+            {/* ColonySummaryCard スケルトン */}
+            <div className={styles.skelCard}>
+              <div className={styles.skelHeader} />
+              <div className={styles.skelSummaryRow}>
+                <div className={styles.skelAvg} />
+                <div className={styles.skelCount} />
+              </div>
+              <div className={styles.skelChart} />
+            </div>
+            {/* WeeklyStatsCard スケルトン */}
+            <div className={styles.skelCard}>
+              <div className={styles.skelHeader} />
+              <div className={styles.skelStatsRow}>
+                <div className={styles.skelStatBlock} />
+                <div className={styles.skelStatBlock} />
+              </div>
+              <div className={styles.skelBar} />
+            </div>
           </div>
         )}
 
