@@ -5,25 +5,30 @@ export interface WeatherData {
   tempC: number
   humidity: number
   windMs: number
-  /** 過去24時間の気温（1時間刻み、24点） */
+  /** 過去24時間の気温（1時間刻み、25点 = 0h〜24h） */
   tempHistory: number[]
-  /** 内検可否 */
   inspectable: boolean
   inspectReason?: string
+  /** 取得時刻 "HH:MM" */
+  fetchedAt: string
 }
 
 export type ColonyStatus = 'good' | 'warn' | 'danger'
 
 export interface ColonySummaryItem {
   id: string
+  /** 表示名 "A-01" 形式 */
   name: string
   status: ColonyStatus
   /** 合成スコア（0–100、β版） */
   score: number
+  /** 前回比（正=改善、負=悪化） */
+  delta: number
 }
 
 export interface ColonySummary {
   total: number
+  average: number
   good: number
   warn: number
   danger: number
@@ -31,12 +36,14 @@ export interface ColonySummary {
 }
 
 export interface WeeklyStats {
+  /** "MM/DD - MM/DD" */
+  period: string
   honeyKg: number
-  honeyPrevDiffKg: number
+  honeyPrevPct: number   // 前週比 % (正=増加)
   workCount: number
   workPrevDiff: number
-  /** 直近7日の採蜜量（日ごと） */
-  honeyHistory: number[]
+  /** 直近4週の採蜜量（週ごと、古い順） */
+  honeyHistory: { label: string; kg: number }[]
 }
 
 export interface DashboardData {
@@ -50,52 +57,49 @@ export interface DashboardData {
 
 export const mockDashboard: DashboardData = {
   farmName: '宮田養蜂場',
-  notifCount: 3,
+  notifCount: 0,
   alertColonyCount: 2,
   weather: {
-    tempC: 24.3,
-    humidity: 58,
+    tempC: 28.4,
+    humidity: 64,
     windMs: 2.1,
     tempHistory: [
-      19, 18, 18, 17, 17, 18, 20, 22, 23, 24, 25, 25,
-      26, 26, 25, 25, 24, 24, 23, 22, 22, 21, 20, 20,
+      17, 16, 16, 15, 15, 16, 18, 21, 23, 25, 27, 28,
+      28, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18,
     ],
     inspectable: true,
+    fetchedAt: '9:41',
   },
   colonies: {
-    total: 12, good: 8, warn: 2, danger: 2, colonies: [],
+    total: 10,
+    average: 74,
+    good: 7,
+    warn: 2,
+    danger: 1,
+    colonies: [
+      { id: 'a1', name: 'A-01', status: 'good',   score: 82, delta:  5 },
+      { id: 'a2', name: 'A-02', status: 'good',   score: 76, delta:  2 },
+      { id: 'a3', name: 'A-03', status: 'danger', score: 42, delta: -12 },
+      { id: 'a4', name: 'A-04', status: 'good',   score: 88, delta:  8 },
+      { id: 'a5', name: 'A-05', status: 'warn',   score: 79, delta:  1 },
+      { id: 'a6', name: 'A-06', status: 'good',   score: 73, delta: -3 },
+      { id: 'b1', name: 'B-01', status: 'good',   score: 69, delta:  6 },
+      { id: 'b2', name: 'B-02', status: 'warn',   score: 58, delta: -5 },
+      { id: 'b3', name: 'B-03', status: 'good',   score: 91, delta:  3 },
+      { id: 'b4', name: 'B-04', status: 'good',   score: 80, delta:  3 },
+    ],
   },
   weekly: {
-    honeyKg: 4.2, honeyPrevDiffKg: 0.8, workCount: 7, workPrevDiff: 2,
-    honeyHistory: [0.3, 0.6, 0.5, 0.8, 0.7, 0.9, 0.4],
+    period: '9/1 - 9/7',
+    honeyKg: 12.4,
+    honeyPrevPct: 12,
+    workCount: 6,
+    workPrevDiff: 2,
+    honeyHistory: [
+      { label: '8/11', kg: 7.2 },
+      { label: '8/18', kg: 9.1 },
+      { label: '8/25', kg: 11.0 },
+      { label: '9/1',  kg: 12.4 },
+    ],
   },
-}
-
-export const mockColonySummary: ColonySummary = {
-  total: 12,
-  good: 8,
-  warn: 2,
-  danger: 2,
-  colonies: [
-    { id: 'c1', name: '1号群',  status: 'good',   score: 82 },
-    { id: 'c2', name: '2号群',  status: 'warn',   score: 54 },
-    { id: 'c3', name: '3号群',  status: 'danger', score: 31 },
-    { id: 'c4', name: '4号群',  status: 'good',   score: 78 },
-    { id: 'c5', name: '5号群',  status: 'warn',   score: 62 },
-    { id: 'c6', name: '6号群',  status: 'good',   score: 91 },
-    { id: 'c7', name: '7号群',  status: 'good',   score: 75 },
-    { id: 'c8', name: '8号群',  status: 'danger', score: 28 },
-    { id: 'c9', name: '9号群',  status: 'good',   score: 88 },
-    { id: 'c10', name: '10号群', status: 'good',   score: 70 },
-    { id: 'c11', name: '11号群', status: 'good',   score: 83 },
-    { id: 'c12', name: '12号群', status: 'good',   score: 77 },
-  ],
-}
-
-export const mockWeekly: WeeklyStats = {
-  honeyKg: 4.2,
-  honeyPrevDiffKg: +0.8,
-  workCount: 7,
-  workPrevDiff: +2,
-  honeyHistory: [0.3, 0.6, 0.5, 0.8, 0.7, 0.9, 0.4],
 }

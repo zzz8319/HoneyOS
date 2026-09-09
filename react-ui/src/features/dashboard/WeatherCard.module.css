@@ -6,53 +6,80 @@
   box-shadow: var(--shadow-sm);
 }
 
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+
+.title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.fetchTime {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+}
+
 .row {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--space-4);
+  margin-bottom: var(--space-3);
 }
 
 .tempBlock {
   display: flex;
   align-items: baseline;
-  gap: 2px;
+  gap: 3px;
   flex-shrink: 0;
 }
 
-.tempValue {
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--color-text);
+.weatherIcon {
+  font-size: 22px;
+  margin-right: 4px;
   line-height: 1;
 }
 
-.tempUnit {
-  font-size: 14px;
-  color: var(--color-text-secondary);
-  margin-right: var(--space-2);
+.tempValue {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--color-text);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
 }
 
-.sparkline {
-  display: block;
+.tempUnit {
+  font-size: 15px;
+  color: var(--color-text-secondary);
+  font-weight: 500;
 }
 
 .metaBlock {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  flex: 1;
+  gap: 4px;
 }
 
 .metaItem {
   display: flex;
   align-items: center;
-  gap: var(--space-1);
+  gap: 4px;
+}
+
+.metaIcon {
+  font-size: 12px;
+  width: 16px;
+  text-align: center;
 }
 
 .metaLabel {
   font-size: 11px;
   color: var(--color-text-secondary);
-  width: 28px;
+  width: 26px;
 }
 
 .metaValue {
@@ -62,40 +89,57 @@
   font-variant-numeric: tabular-nums;
 }
 
-.inspBlock {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 2px;
-  flex-shrink: 0;
+/* スパークライン */
+.sparkWrap {
+  position: relative;
+  margin-bottom: var(--space-2);
+}
+
+.sparkSvg {
+  display: block;
+  width: 100%;
+  height: 48px;
+}
+
+.sparkLabels {
+  position: relative;
+  height: 14px;
+  margin-top: 2px;
+}
+
+.sparkLabel {
+  position: absolute;
+  transform: translateX(-50%);
+  font-size: 9px;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+/* 内検可否バッジ */
+.inspBadgeWrap {
+  margin-top: var(--space-1);
 }
 
 .inspOk {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-size: 12px;
   font-weight: 700;
   color: var(--color-ok);
   background: var(--color-ok-soft);
   border-radius: var(--radius-full);
-  padding: 2px 8px;
+  padding: 4px 12px;
 }
 
 .inspNg {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-size: 12px;
   font-weight: 700;
   color: var(--color-danger);
   background: var(--color-danger-soft);
   border-radius: var(--radius-full);
-  padding: 2px 8px;
-}
-
-.inspReason {
-  font-size: 10px;
-  color: var(--color-danger);
-  text-align: right;
-}
-
-.caption {
-  margin: var(--space-2) 0 0;
-  font-size: 10px;
-  color: var(--color-text-secondary);
+  padding: 4px 12px;
 }

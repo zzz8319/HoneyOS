@@ -10,121 +10,161 @@
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  margin-bottom: var(--space-3);
+  margin-bottom: var(--space-2);
 }
 
 .title {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--color-text);
 }
 
 .beta {
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 600;
+  color: var(--color-text-secondary);
   background: var(--color-primary-soft);
-  color: var(--color-primary);
   border-radius: var(--radius-full);
   padding: 1px 6px;
-  line-height: 1.4;
+  line-height: 1.5;
 }
 
-.total {
+.methodLink {
   margin-left: auto;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-primary);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.avgRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.avgLabel {
   font-size: 13px;
   color: var(--color-text-secondary);
 }
 
-.counts {
+.avgValue {
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--color-text);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.countPills {
   display: flex;
-  gap: var(--space-4);
-  margin-bottom: var(--space-3);
+  gap: var(--space-3);
+  margin-left: var(--space-1);
 }
 
 .countItem {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--color-text-secondary);
 }
 
-.countDot {
+.dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
   flex-shrink: 0;
 }
-.countDot[data-status="good"]   { background: var(--color-ok); }
-.countDot[data-status="warn"]   { background: var(--color-warn); }
-.countDot[data-status="danger"] { background: var(--color-danger); }
+.dot[data-status="good"]   { background: var(--color-ok); }
+.dot[data-status="warn"]   { background: var(--color-warn); }
+.dot[data-status="danger"] { background: var(--color-danger); }
 
-.countLabel {
-  font-size: 12px;
-  color: var(--color-text-secondary);
+/* 縦バーチャート */
+.barsWrap {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 100px;
+  padding-bottom: 32px;
+  position: relative;
 }
 
-.countNum {
-  font-size: 16px;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  line-height: 1;
-}
-
-.bars {
+.barCol {
   display: flex;
   flex-direction: column;
-  gap: 5px;
-}
-
-.barRow {
-  display: flex;
   align-items: center;
-  gap: var(--space-2);
+  flex: 1;
+  height: 100%;
+  position: relative;
 }
 
-.barName {
-  font-size: 11px;
-  color: var(--color-text-secondary);
-  width: 40px;
-  flex-shrink: 0;
+.barTrackWrap {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  position: relative;
 }
 
 .barTrack {
-  flex: 1;
-  position: relative;
-  height: 8px;
+  width: 100%;
+  height: 100%;
   background: var(--color-border);
-  border-radius: var(--radius-full);
+  border-radius: 3px 3px 0 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  position: relative;
   overflow: visible;
 }
 
 .barGood,
 .barWarn,
 .barDanger {
-  height: 100%;
-  border-radius: var(--radius-full);
-  transition: width 0.4s ease;
+  border-radius: 3px 3px 0 0;
+  transition: height 0.4s ease;
 }
 .barGood   { background: var(--color-ok); }
 .barWarn   { background: var(--color-warn); }
 .barDanger { background: var(--color-danger); }
 
+/* 注意ライン */
 .warnLine {
   position: absolute;
-  top: -3px;
-  bottom: -3px;
-  width: 1.5px;
+  left: -2px;
+  right: -2px;
+  height: 1.5px;
   background: var(--color-text-secondary);
-  opacity: 0.4;
+  opacity: 0.35;
 }
 
-.barScore {
-  font-size: 11px;
+.barName {
+  position: absolute;
+  bottom: 16px;
+  font-size: 8px;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  text-align: center;
+}
+
+.deltaUp,
+.deltaDown {
+  position: absolute;
+  bottom: 0;
+  font-size: 8px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
-  width: 24px;
-  text-align: right;
-  flex-shrink: 0;
+  white-space: nowrap;
 }
+.deltaUp   { color: var(--color-ok); }
+.deltaDown { color: var(--color-danger); }
 
 .note {
   margin: var(--space-2) 0 0;

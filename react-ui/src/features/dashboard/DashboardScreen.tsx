@@ -5,7 +5,7 @@ import { AlertBanner } from './AlertBanner'
 import { WeatherCard } from './WeatherCard'
 import { ColonySummaryCard } from './ColonySummaryCard'
 import { WeeklyStatsCard } from './WeeklyStatsCard'
-import { mockDashboard, mockColonySummary, mockWeekly } from './mockData'
+import { mockDashboard } from './mockData'
 import styles from './DashboardScreen.module.css'
 
 export type DashboardViewState = 'normal' | 'empty' | 'loading' | 'error' | 'offline'
@@ -17,6 +17,7 @@ interface DashboardScreenProps {
   onStartInspection?: () => void
   onNotifClick?: () => void
   onAlertColonies?: () => void
+  onMethodClick?: () => void
 }
 
 export function DashboardScreen({
@@ -26,14 +27,15 @@ export function DashboardScreen({
   onStartInspection,
   onNotifClick,
   onAlertColonies,
+  onMethodClick,
 }: DashboardScreenProps) {
-  const { farmName, notifCount, alertColonyCount, weather } = mockDashboard
+  const { farmName, alertColonyCount, weather, colonies, weekly } = mockDashboard
 
   return (
     <div className="app-shell">
       <AppHeader
         farmName={farmName}
-        notifCount={viewState === 'normal' ? notifCount : 0}
+        notifCount={0}
         onNotifClick={onNotifClick}
       />
 
@@ -50,7 +52,7 @@ export function DashboardScreen({
         />
       )}
 
-      {viewState === 'normal' && (
+      {(viewState === 'normal' || viewState === 'offline') && (
         <AlertBanner
           colonyCount={alertColonyCount}
           onTap={onAlertColonies}
@@ -60,10 +62,9 @@ export function DashboardScreen({
       <main className={styles.content} aria-label="ダッシュボード">
         {viewState === 'loading' && (
           <div className={styles.loadingWrap} aria-busy aria-label="読み込み中">
-            <div className={styles.skeleton} style={{ height: 72 }} />
-            <div className={styles.skeleton} style={{ height: 120 }} />
-            <div className={styles.skeleton} style={{ height: 220 }} />
-            <div className={styles.skeleton} style={{ height: 120 }} />
+            <div className={styles.skeleton} style={{ height: 160 }} />
+            <div className={styles.skeleton} style={{ height: 200 }} />
+            <div className={styles.skeleton} style={{ height: 130 }} />
           </div>
         )}
 
@@ -79,14 +80,14 @@ export function DashboardScreen({
 
         {(viewState === 'normal' || viewState === 'offline') && (
           <>
-            <section aria-label="天気・センサー">
+            <section aria-label="内検コンディション">
               <WeatherCard data={weather} />
             </section>
-            <section aria-label="蜂群サマリー">
-              <ColonySummaryCard data={mockColonySummary} />
+            <section aria-label="蜂群の強さ">
+              <ColonySummaryCard data={colonies} onMethodClick={onMethodClick} />
             </section>
             <section aria-label="今週の統計">
-              <WeeklyStatsCard data={mockWeekly} />
+              <WeeklyStatsCard data={weekly} />
             </section>
           </>
         )}

@@ -2,30 +2,24 @@ import type { WeeklyStats } from './mockData'
 import styles from './WeeklyStatsCard.module.css'
 
 interface MiniBarChartProps {
-  values: number[]
+  data: { label: string; kg: number }[]
 }
 
-function MiniBarChart({ values }: MiniBarChartProps) {
-  const max = Math.max(...values, 0.01)
-  const days = ['月', '火', '水', '木', '金', '土', '日']
+function MiniBarChart({ data }: MiniBarChartProps) {
+  const max = Math.max(...data.map(d => d.kg), 0.01)
   return (
     <div className={styles.chart} aria-hidden>
-      {values.map((v, i) => (
-        <div key={i} className={styles.chartCol}>
+      {data.map(({ label, kg }) => (
+        <div key={label} className={styles.chartCol}>
           <div
             className={styles.chartBar}
-            style={{ height: `${Math.round((v / max) * 100)}%` }}
+            style={{ height: `${Math.round((kg / max) * 100)}%` }}
           />
-          <span className={styles.chartLabel}>{days[i]}</span>
+          <span className={styles.chartLabel}>{label}</span>
         </div>
       ))}
     </div>
   )
-}
-
-function diffLabel(diff: number, unit: string) {
-  const sign = diff >= 0 ? '+' : ''
-  return `${sign}${diff}${unit}`
 }
 
 interface WeeklyStatsCardProps {
@@ -33,35 +27,46 @@ interface WeeklyStatsCardProps {
 }
 
 export function WeeklyStatsCard({ data }: WeeklyStatsCardProps) {
-  const { honeyKg, honeyPrevDiffKg, workCount, workPrevDiff, honeyHistory } = data
-  const honeyPositive = honeyPrevDiffKg >= 0
-  const workPositive = workPrevDiff >= 0
+  const { period, honeyKg, honeyPrevPct, workCount, workPrevDiff, honeyHistory } = data
+  const honeyUp = honeyPrevPct >= 0
+  const workUp = workPrevDiff >= 0
   return (
     <div className={styles.card}>
-      <p className={styles.heading}>今週の統計</p>
-      <div className={styles.statRow}>
-        <div className={styles.statItem}>
-          <span className={styles.statLabel}>採蜜量</span>
-          <span className={styles.statValue}>{honeyKg.toFixed(1)} kg</span>
-          <span
-            className={honeyPositive ? styles.diffUp : styles.diffDown}
-          >
-            {diffLabel(honeyPrevDiffKg, ' kg')}
-          </span>
+      <p className={styles.heading}>
+        今週{' '}
+        <span className={styles.period}>{period}</span>
+      </p>
+      <div className={styles.body}>
+        <div className={styles.statBlock}>
+          <div className={styles.statItem}>
+            <span className={styles.statLabel}>採蜜</span>
+            <div className={styles.statRow}>
+              <span className={styles.statValue}>{honeyKg.toFixed(1)}</span>
+              <span className={styles.statUnit}>kg</span>
+              <span className={honeyUp ? styles.diffUp : styles.diffDown}>
+                {honeyUp ? '↑' : '↓'} {Math.abs(honeyPrevPct)}%
+              </span>
+            </div>
+          </div>
+          <div className={styles.statItem}>
+            <span className={styles.statLabel}>作業</span>
+            <div className={styles.statRow}>
+              <span className={styles.statValue}>{workCount}</span>
+              <span className={styles.statUnit}>件</span>
+              {workPrevDiff !== 0 && (
+                <span className={workUp ? styles.diffUp : styles.diffDown}>
+                  {workUp ? '+' : ''}{workPrevDiff}
+                </span>
+              )}
+            </div>
+          </div>
         </div>
-        <div className={styles.statDivider} aria-hidden />
-        <div className={styles.statItem}>
-          <span className={styles.statLabel}>作業件数</span>
-          <span className={styles.statValue}>{workCount} 件</span>
-          <span
-            className={workPositive ? styles.diffUp : styles.diffDown}
-          >
-            {diffLabel(workPrevDiff, ' 件')}
-          </span>
+
+        <div className={styles.chartBlock}>
+          <p className={styles.chartTitle}>直近4週間の採蜜量（kg）</p>
+          <MiniBarChart data={honeyHistory} />
         </div>
       </div>
-      <MiniBarChart values={honeyHistory} />
-      <p className={styles.caption}>採蜜量 (直近7日、kg)</p>
     </div>
   )
 }

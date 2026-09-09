@@ -1,28 +1,36 @@
-import type { ColonySummary } from './mockData'
+import type { ColonySummary, ColonySummaryItem } from './mockData'
 import styles from './ColonySummaryCard.module.css'
 
 const WARN_LINE = 60
 
 interface BarProps {
-  score: number
-  status: 'good' | 'warn' | 'danger'
-  name: string
+  item: ColonySummaryItem
 }
 
-function ScoreBar({ score, status, name }: BarProps) {
-  const cls =
+function ScoreBar({ item }: BarProps) {
+  const { score, status, name, delta } = item
+  const barCls =
     status === 'good' ? styles.barGood
     : status === 'warn' ? styles.barWarn
     : styles.barDanger
+  const deltaPositive = delta >= 0
+  const sign = delta > 0 ? '+' : ''
+
   return (
-    <div className={styles.barRow} aria-label={`${name} スコア${score}`}>
-      <span className={styles.barName}>{name}</span>
-      <div className={styles.barTrack}>
-        <div className={cls} style={{ width: `${score}%` }} />
-        <div className={styles.warnLine} style={{ left: `${WARN_LINE}%` }} aria-hidden />
+    <div className={styles.barCol} aria-label={`${name} スコア${score} 前回比${sign}${delta}`}>
+      <div className={styles.barTrackWrap}>
+        <div className={styles.barTrack}>
+          <div className={barCls} style={{ height: `${score}%` }} />
+          <div
+            className={styles.warnLine}
+            style={{ bottom: `${WARN_LINE}%` }}
+            aria-hidden
+          />
+        </div>
       </div>
-      <span className={styles.barScore} style={{ color: `var(--color-${status === 'good' ? 'ok' : status})` }}>
-        {score}
+      <span className={styles.barName}>{name}</span>
+      <span className={deltaPositive ? styles.deltaUp : styles.deltaDown}>
+        {sign}{delta}
       </span>
     </div>
   )
@@ -30,43 +38,53 @@ function ScoreBar({ score, status, name }: BarProps) {
 
 interface ColonySummaryCardProps {
   data: ColonySummary
+  onMethodClick?: () => void
 }
 
-export function ColonySummaryCard({ data }: ColonySummaryCardProps) {
-  const { total, good, warn, danger, colonies } = data
+export function ColonySummaryCard({ data, onMethodClick }: ColonySummaryCardProps) {
+  const { total, average, good, warn, danger, colonies } = data
   return (
     <div className={styles.card}>
       <div className={styles.header}>
-        <span className={styles.title}>蜂群サマリー</span>
-        <span className={styles.beta}>β</span>
-        <span className={styles.total}>{total}群</span>
+        <span className={styles.title}>蜂群の強さ</span>
+        <span className={styles.beta}>簡易指標 β</span>
+        <button className={styles.methodLink} onClick={onMethodClick}>
+          算出方法 ›
+        </button>
       </div>
 
-      <div className={styles.counts}>
-        <div className={styles.countItem}>
-          <span className={styles.countDot} data-status="good" aria-hidden />
-          <span className={styles.countLabel}>良好</span>
-          <span className={styles.countNum} style={{ color: 'var(--color-ok)' }}>{good}</span>
-        </div>
-        <div className={styles.countItem}>
-          <span className={styles.countDot} data-status="warn" aria-hidden />
-          <span className={styles.countLabel}>注意</span>
-          <span className={styles.countNum} style={{ color: 'var(--color-warn)' }}>{warn}</span>
-        </div>
-        <div className={styles.countItem}>
-          <span className={styles.countDot} data-status="danger" aria-hidden />
-          <span className={styles.countLabel}>危険</span>
-          <span className={styles.countNum} style={{ color: 'var(--color-danger)' }}>{danger}</span>
+      <div className={styles.avgRow}>
+        <span className={styles.avgLabel}>平均</span>
+        <span className={styles.avgValue}>{average}</span>
+        <div className={styles.countPills}>
+          <span className={styles.countItem}>
+            <span className={styles.dot} data-status="good" aria-hidden />
+            良好 {good}
+          </span>
+          <span className={styles.countItem}>
+            <span className={styles.dot} data-status="warn" aria-hidden />
+            注意 {warn}
+          </span>
+          <span className={styles.countItem}>
+            <span className={styles.dot} data-status="danger" aria-hidden />
+            危険 {danger}
+          </span>
         </div>
       </div>
 
-      <div className={styles.bars} role="list" aria-label="蜂群スコア一覧">
+      {/* 縦バーチャート */}
+      <div
+        className={styles.barsWrap}
+        role="list"
+        aria-label={`蜂群スコア一覧（全${total}群）`}
+      >
         {colonies.map(c => (
-          <ScoreBar key={c.id} score={c.score} status={c.status} name={c.name} />
+          <ScoreBar key={c.id} item={c} />
         ))}
       </div>
+
       <p className={styles.note}>
-        スコアは合成指標です（β版）。注意ライン: {WARN_LINE}
+        注意ライン {WARN_LINE} ／ スコアは合成指標です（β版）
       </p>
     </div>
   )
