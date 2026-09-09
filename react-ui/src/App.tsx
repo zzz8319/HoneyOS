@@ -12,24 +12,27 @@ const VIEW_STATES: { id: DashboardViewState; label: string }[] = [
   { id: 'offline', label: 'オフライン' },
 ]
 
+const IS_DEV = import.meta.env.DEV
+
 export default function App() {
   const [viewState, setViewState] = useState<DashboardViewState>('normal')
   const [activeTab, setActiveTab] = useState<TabId>('home')
 
   return (
     <>
-      {/* 状態切り替えツールバー（開発用） */}
-      <div className={styles.devBar} role="toolbar" aria-label="表示状態切り替え（開発用）">
-        {VIEW_STATES.map(({ id, label }) => (
-          <button
-            key={id}
-            className={viewState === id ? styles.devBtnActive : styles.devBtn}
-            onClick={() => setViewState(id)}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
+      {IS_DEV && (
+        <div className={styles.devBar} role="toolbar" aria-label="表示状態切り替え（開発用）">
+          {VIEW_STATES.map(({ id, label }) => (
+            <button
+              key={id}
+              className={viewState === id ? styles.devBtnActive : styles.devBtn}
+              onClick={() => setViewState(id)}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
 
       <DashboardScreen
         viewState={viewState}
