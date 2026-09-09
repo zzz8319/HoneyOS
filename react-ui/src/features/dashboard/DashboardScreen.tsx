@@ -47,7 +47,7 @@ export function DashboardScreen({
       )}
       {viewState === 'offline' && (
         <ErrorBanner
-          message="オフラインです。最後に取得したデータを表示しています。"
+          message={`オフラインです。最終同期: ${weather.fetchedAt}`}
           severity="minor"
         />
       )}
@@ -128,13 +128,13 @@ export function DashboardScreen({
         )}
       </main>
 
-      {viewState !== 'empty' && (
+      {viewState !== 'empty' && viewState !== 'error' && (
         <button
           className={styles.fab}
           aria-label="内検を始める"
           onClick={onStartInspection}
         >
-          <ClipboardCheck size={20} aria-hidden />
+          <ClipboardCheck size={18} aria-hidden />
           内検を始める
         </button>
       )}

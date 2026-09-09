@@ -1,5 +1,4 @@
 import { test, expect } from '@playwright/test'
-import path from 'path'
 
 const SCRATCHPAD = '/tmp/claude-0/-home-user-HoneyOS/1aa7a80d-0932-5402-b2d6-ab2baf4ef61a/scratchpad'
 
@@ -33,7 +32,7 @@ for (const { id, label } of STATES) {
     expect(overflow.scrollWidth).toBe(overflow.innerWidth)
 
     await page.screenshot({
-      path: path.join(SCRATCHPAD, `scr006-${id}.png`),
+      path: `${SCRATCHPAD}/scr006-${id}.png`,
       clip: { x: 0, y: 0, width: 390, height: 844 },
     })
   })
@@ -44,7 +43,7 @@ test('SCR-006 通常状態スクロール後', async ({ page }) => {
   await page.evaluate(() => window.scrollTo(0, 800))
   await page.waitForTimeout(100)
   await page.screenshot({
-    path: path.join(SCRATCHPAD, 'scr006-normal-scrolled.png'),
+    path: `${SCRATCHPAD}/scr006-normal-scrolled.png`,
     clip: { x: 0, y: 0, width: 390, height: 844 },
   })
 })

@@ -14,8 +14,14 @@ const VIEW_STATES: { id: DashboardViewState; label: string }[] = [
 
 const IS_DEV = import.meta.env.DEV
 
+function readStateParam(): DashboardViewState {
+  const p = new URLSearchParams(window.location.search).get('state')
+  const valid: DashboardViewState[] = ['normal', 'empty', 'loading', 'error', 'offline']
+  return (valid.includes(p as DashboardViewState) ? p : 'normal') as DashboardViewState
+}
+
 export default function App() {
-  const [viewState, setViewState] = useState<DashboardViewState>('normal')
+  const [viewState, setViewState] = useState<DashboardViewState>(readStateParam)
   const [activeTab, setActiveTab] = useState<TabId>('home')
 
   return (
