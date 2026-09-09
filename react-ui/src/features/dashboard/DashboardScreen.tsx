@@ -130,9 +130,12 @@ export function DashboardScreen({
 
       {viewState !== 'empty' && viewState !== 'error' && (
         <button
-          className={styles.fab}
+          className={viewState === 'loading' ? styles.fabHidden : styles.fab}
           aria-label="内検を始める"
+          aria-hidden={viewState === 'loading'}
+          tabIndex={viewState === 'loading' ? -1 : 0}
           onClick={onStartInspection}
+          disabled={viewState === 'loading'}
         >
           <ClipboardCheck size={18} aria-hidden />
           内検を始める

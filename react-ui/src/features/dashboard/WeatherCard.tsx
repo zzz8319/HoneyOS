@@ -27,8 +27,6 @@ function Sparkline({ values }: SparklineProps) {
   const linePath = pts.map(([x, y], i) => `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`).join(' ')
   const fillPath = linePath + ` L${W},${H} L0,${H} Z`
 
-  // Y軸目盛り値（35, 25, 15 に近い整数を生成）
-  const yStep = Math.round((max - min) / 2 / 5) * 5 || 5
   const yLabels = [
     Math.round(max / 5) * 5,
     Math.round((max + min) / 2 / 5) * 5,

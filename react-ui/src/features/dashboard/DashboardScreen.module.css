@@ -63,15 +63,18 @@
 .skelBar        { height: 60px; }
 
 /* FAB */
-.fab {
+.fab,
+.fabHidden {
   position: fixed;
   z-index: 9;
   right: max(var(--space-4), calc((100vw - 430px) / 2 + var(--space-4)));
   bottom: calc(72px + var(--space-4));
+  width: 188px;
   min-height: 46px;
   padding: 0 var(--space-4);
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
   border: none;
   border-radius: var(--radius-full);
@@ -87,4 +90,9 @@
 
 .fab:hover {
   opacity: 0.88;
+}
+
+.fabHidden {
+  opacity: 0;
+  pointer-events: none;
 }

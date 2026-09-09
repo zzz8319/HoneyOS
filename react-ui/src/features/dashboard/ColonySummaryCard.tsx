@@ -70,7 +70,7 @@ interface ColonySummaryCardProps {
 }
 
 export function ColonySummaryCard({ data, onMethodClick }: ColonySummaryCardProps) {
-  const { total, average, good, warn, danger, colonies } = data
+  const { average, good, warn, danger, colonies } = data
   return (
     <div className={styles.card}>
       {/* ヘッダー */}
