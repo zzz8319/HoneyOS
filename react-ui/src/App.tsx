@@ -19,7 +19,8 @@ const STATES: { id: ViewState; label: string }[] = [
 const VALID_STATES: ViewState[] = ['normal', 'empty', 'loading', 'error', 'offline']
 const VALID_TABS: TabId[] = ['home', 'farms', 'work', 'analytics', 'settings']
 
-const IS_DEV = import.meta.env.DEV
+const IS_DEV = import.meta.env.DEV &&
+  new URLSearchParams(window.location.search).get('devbar') !== '0'
 
 function readParam<T extends string>(key: string, valid: T[], fallback: T): T {
   const p = new URLSearchParams(window.location.search).get(key)
