@@ -3,10 +3,12 @@ import { DashboardScreen } from './features/dashboard'
 import type { DashboardViewState } from './features/dashboard'
 import { ColonySummaryScreen } from './features/colonyList'
 import type { ColonyListViewState } from './features/colonyList'
+import { ColonyDetailScreen } from './features/colonyDetail'
+import type { ColonyDetailViewState } from './features/colonyDetail'
 import type { TabId } from './components'
 import styles from './App.module.css'
 
-type ViewState = DashboardViewState | ColonyListViewState
+type ViewState = DashboardViewState | ColonyListViewState | ColonyDetailViewState
 
 const STATES: { id: ViewState; label: string }[] = [
   { id: 'normal',  label: '通常' },
@@ -27,6 +29,9 @@ function readParam<T extends string>(key: string, valid: T[], fallback: T): T {
   return (valid.includes(p as T) ? p : fallback) as T
 }
 
+const VALID_SCREENS = ['home', 'farms', 'colony-detail'] as const
+type Screen = typeof VALID_SCREENS[number]
+
 export default function App() {
   const [viewState, setViewState] = useState<ViewState>(() =>
     readParam('state', VALID_STATES, 'normal'),
@@ -34,9 +39,16 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<TabId>(() =>
     readParam('tab', VALID_TABS, 'home'),
   )
+  const [screen, setScreen] = useState<Screen>(() =>
+    readParam('screen', [...VALID_SCREENS], 'home'),
+  )
+  const [selectedColonyId, setSelectedColonyId] = useState<string | null>(() =>
+    new URLSearchParams(window.location.search).get('colonyId'),
+  )
 
   const dashState = viewState as DashboardViewState
   const colonyState = viewState as ColonyListViewState
+  const detailState = viewState as ColonyDetailViewState
 
   return (
     <>
@@ -68,13 +80,22 @@ export default function App() {
         />
       )}
 
-      {activeTab === 'farms' && (
+      {activeTab === 'farms' && screen === 'home' && (
         <ColonySummaryScreen
           viewState={colonyState}
           activeTab={activeTab}
           onTabChange={setActiveTab}
           onNotifClick={() => alert('通知 → SCR-007（未実装）')}
-          onColonyClick={(id) => alert(`蜂群詳細 → SCR-009 colonyId: ${id}（未実装）`)}
+          onColonyClick={(id) => { setSelectedColonyId(id); setScreen('colony-detail') }}
+        />
+      )}
+
+      {screen === 'colony-detail' && (
+        <ColonyDetailScreen
+          colonyId={selectedColonyId ?? undefined}
+          viewState={detailState}
+          onBack={() => { setScreen('home'); setActiveTab('farms') }}
+          onStartInspection={(id) => alert(`内検を始める → SCR-011 colonyId: ${id}（未実装）`)}
         />
       )}
 
