@@ -21,7 +21,9 @@ function Kpi({ icon, label, value, delta, unit }: KpiProps) {
     <div className={styles.kpi}>
       <span className={styles.kpiIcon}>{icon}</span>
       <span className={styles.kpiLabel}>{label}</span>
-      <span className={styles.kpiValue}>{value}<span className={styles.kpiUnit}>{unit}</span></span>
+      <span className={styles.kpiValue}>
+        {value}<span className={styles.kpiUnit}>{unit}</span>
+      </span>
       <span className={isUp ? styles.deltaUp : styles.deltaDown}>
         {isUp ? '↑' : '↓'} {isUp ? '+' : ''}{delta}
       </span>
@@ -33,7 +35,7 @@ export function SensorSummary({ sensor, onDetailClick }: Props) {
   return (
     <div className={styles.card}>
       <div className={styles.header}>
-        <div>
+        <div className={styles.headerLeft}>
           <h2 className={styles.title}>センサー情報</h2>
           <span className={styles.timestamp}>{sensor.fetchedAt} 時点</span>
         </div>
@@ -49,6 +51,7 @@ export function SensorSummary({ sensor, onDetailClick }: Props) {
           delta={sensor.temperatureDelta}
           unit="℃"
         />
+        <div className={styles.divider} />
         <Kpi
           icon={<Droplets size={16} />}
           label="湿度"
@@ -56,6 +59,7 @@ export function SensorSummary({ sensor, onDetailClick }: Props) {
           delta={sensor.humidityDelta}
           unit="%"
         />
+        <div className={styles.divider} />
         <Kpi
           icon={<Scale size={16} />}
           label="重量"

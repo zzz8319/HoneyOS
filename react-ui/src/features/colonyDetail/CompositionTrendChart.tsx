@@ -8,21 +8,21 @@ interface Props {
 }
 
 const LINES = [
-  { key: 'bee'   as keyof InspectionPoint, label: '蜂',   color: '#16A34A' },
-  { key: 'brood' as keyof InspectionPoint, label: '育児', color: '#EAB308' },
-  { key: 'honey' as keyof InspectionPoint, label: '貯蜜', color: '#E39A16' },
+  { key: 'bee'   as keyof InspectionPoint, color: '#16A34A' },
+  { key: 'brood' as keyof InspectionPoint, color: '#EAB308' },
+  { key: 'honey' as keyof InspectionPoint, color: '#E39A16' },
 ]
 
 const W = 300
-const H = 140
-const PAD = { top: 10, right: 10, bottom: 32, left: 28 }
+const H = 150
+const PAD = { top: 14, right: 12, bottom: 28, left: 26 }
 const GW = W - PAD.left - PAD.right
 const GH = H - PAD.top - PAD.bottom
 
-function x(i: number, total: number) {
+function xPos(i: number, total: number) {
   return PAD.left + (total === 1 ? GW / 2 : (i / (total - 1)) * GW)
 }
-function y(v: number) {
+function yPos(v: number) {
   return PAD.top + GH - (v / 100) * GH
 }
 
@@ -38,38 +38,45 @@ export function CompositionTrendChart({ inspections, onPointClick, activeId }: P
   return (
     <div className={styles.wrap}>
       <svg viewBox={`0 0 ${W} ${H}`} className={styles.svg} aria-hidden>
-        {/* Y-axis grid lines */}
-        {[0, 25, 50, 75, 100].map(v => (
+        {/* Y-axis grid: 0 / 50 / 100 */}
+        {[0, 50, 100].map(v => (
           <g key={v}>
             <line
-              x1={PAD.left} y1={y(v)} x2={PAD.left + GW} y2={y(v)}
+              x1={PAD.left} y1={yPos(v)} x2={PAD.left + GW} y2={yPos(v)}
               stroke="var(--color-border)" strokeWidth={0.8}
             />
-            <text x={PAD.left - 4} y={y(v) + 4} textAnchor="end"
+            <text x={PAD.left - 4} y={yPos(v) + 4} textAnchor="end"
               fontSize={9} fill="var(--color-text-secondary)">{v}</text>
           </g>
         ))}
 
         {/* Lines */}
         {LINES.map(({ key, color }) => {
-          const pts = inspections.map((p, i) => `${x(i, n)},${y(p[key] as number)}`).join(' ')
-          return <polyline key={key} points={pts} fill="none" stroke={color} strokeWidth={1.8} strokeLinejoin="round" strokeLinecap="round" />
+          const pts = inspections.map((p, i) => `${xPos(i, n)},${yPos(p[key] as number)}`).join(' ')
+          return (
+            <polyline key={key} points={pts} fill="none" stroke={color}
+              strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
+          )
         })}
 
-        {/* Data points + X labels */}
+        {/* Data points + X-axis labels */}
         {inspections.map((insp, i) => (
           <g key={insp.id}>
-            <text x={x(i, n)} y={H - 4} textAnchor="middle"
+            <text x={xPos(i, n)} y={H - 4} textAnchor="middle"
               fontSize={9} fill="var(--color-text-secondary)">{shortDate(insp.date)}</text>
-            {LINES.map(({ key, color }) => (
-              <circle
-                key={key}
-                cx={x(i, n)} cy={y(insp[key] as number)} r={activeId === insp.id ? 5 : 3.5}
-                fill={color} stroke="white" strokeWidth={1.5}
-                style={{ cursor: 'pointer' }}
-                onClick={() => onPointClick?.(insp)}
-              />
-            ))}
+            {LINES.map(({ key, color }) => {
+              const isActive = activeId === insp.id
+              return (
+                <circle
+                  key={key}
+                  cx={xPos(i, n)} cy={yPos(insp[key] as number)}
+                  r={isActive ? 5.5 : 3.5}
+                  fill={color} stroke="white" strokeWidth={isActive ? 2 : 1.5}
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => onPointClick?.(insp)}
+                />
+              )
+            })}
           </g>
         ))}
       </svg>

@@ -107,6 +107,22 @@
   color: var(--color-text);
 }
 
+.cardTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.betaBadge {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  background: var(--color-border);
+  border-radius: var(--radius-full);
+  padding: 2px 6px;
+  line-height: 1.4;
+}
+
 .cardSubtitle {
   font-size: 10px;
   color: var(--color-text-secondary);
@@ -123,7 +139,7 @@
 }
 
 .scoreVal {
-  font-size: 28px;
+  font-size: 22px;
   font-weight: 800;
   color: var(--color-text);
   font-variant-numeric: tabular-nums;

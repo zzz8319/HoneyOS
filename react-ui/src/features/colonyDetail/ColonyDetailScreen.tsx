@@ -47,13 +47,18 @@ export function ColonyDetailScreen({
   onStartInspection,
 }: Props) {
   const colony = mockColonyDetail
-  const [activeInsp, setActiveInsp] = useState<InspectionPoint | null>(null)
+
+  // 8/28 内検を初期選択状態にしてポップアップを表示する
+  const defaultActive = colony.inspections.find(i => i.date === '2026-08-28') ?? null
+  const [activeInsp, setActiveInsp] = useState<InspectionPoint | null>(
+    viewState === 'normal' ? defaultActive : null,
+  )
 
   const isLoading = viewState === 'loading'
-  const isError = viewState === 'error'
-  const isEmpty = viewState === 'empty'
+  const isError   = viewState === 'error'
+  const isEmpty   = viewState === 'empty'
   const isOffline = viewState === 'offline'
-  const showData = !isLoading && !isError && !isEmpty
+  const showData  = !isLoading && !isError && !isEmpty
 
   const handlePointClick = (insp: InspectionPoint) => {
     setActiveInsp(prev => prev?.id === insp.id ? null : insp)
@@ -120,7 +125,7 @@ export function ColonyDetailScreen({
           </div>
 
           {isLoading ? (
-            <CardSkeleton height={160} />
+            <CardSkeleton height={170} />
           ) : (
             <CompositionTrendChart
               inspections={showData || isOffline ? colony.inspections : []}
@@ -130,20 +135,19 @@ export function ColonyDetailScreen({
           )}
 
           {/* データポイントポップアップ */}
-          {activeInsp && (
+          {activeInsp && !isLoading && (
             <div className={styles.popover} role="dialog" aria-label="内検詳細">
               <button className={styles.popoverClose} onClick={() => setActiveInsp(null)}
                 aria-label="閉じる"><X size={14} /></button>
               <p className={styles.popoverDate}>
-                {shortDateLabel(activeInsp.date)} {activeInsp.time}
+                {shortDateLabel(activeInsp.date)} {activeInsp.time} {activeInsp.weather}
               </p>
-              <p className={styles.popoverWeather}>{activeInsp.weather}</p>
               <p className={styles.popoverNote}>{activeInsp.note}</p>
               <button
                 className={styles.popoverBtn}
                 onClick={() => alert(`枠ビューア → SCR-013 colonyId: ${colony.id} inspectionId: ${activeInsp.id}（未実装）`)}
               >
-                枠ビューアで見る
+                ▣ 枠ビューアで見る
               </button>
             </div>
           )}
@@ -157,12 +161,14 @@ export function ColonyDetailScreen({
         {/* ===== 強さスコア推移カード ===== */}
         <section className={styles.card}>
           <div className={styles.cardHeader}>
-            <div>
+            <div className={styles.cardTitleRow}>
               <h2 className={styles.cardTitle}>強さスコア推移</h2>
-              <span className={styles.cardSubtitle}>簡易指標 β</span>
+              <span className={styles.betaBadge}>簡易指標 β</span>
             </div>
             <div className={styles.scoreWrap}>
-              <span className={styles.scoreVal}>{colony.strengthScore}</span>
+              <span className={styles.scoreVal}>
+                現在 {colony.strengthScore}
+              </span>
               <span className={colony.strengthScoreDelta >= 0 ? styles.deltaUp : styles.deltaDown}>
                 {colony.strengthScoreDelta >= 0 ? '↑' : '↓'} {Math.abs(colony.strengthScoreDelta)}（前回比）
               </span>
@@ -170,10 +176,10 @@ export function ColonyDetailScreen({
           </div>
 
           {isLoading ? (
-            <CardSkeleton height={130} />
+            <CardSkeleton height={148} />
           ) : (
             <StrengthTrendChart
-              inspections={showData || isOffline ? colony.inspections : []}
+              history={showData || isOffline ? colony.strengthHistory : []}
             />
           )}
 
@@ -202,9 +208,9 @@ export function ColonyDetailScreen({
         {/* ===== クイック導線 ===== */}
         {isLoading ? (
           <div className={styles.quickRow}>
-            <CardSkeleton height={90} />
-            <CardSkeleton height={90} />
-            <CardSkeleton height={90} />
+            <CardSkeleton height={100} />
+            <CardSkeleton height={100} />
+            <CardSkeleton height={100} />
           </div>
         ) : (
           <div className={styles.quickRow}>
