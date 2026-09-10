@@ -3,20 +3,12 @@ import { expect, test, type Page } from '@playwright/test'
 const STATES = ['normal', 'empty', 'loading', 'error', 'offline'] as const
 
 async function gotoColonyList(page: Page, state: typeof STATES[number]) {
-  await page.goto('/')
-  // 養蜂場タブをクリック（BottomNav の button）
-  await page.getByRole('button', { name: '養蜂場' }).click()
-  await page.waitForTimeout(100)
-
-  if (state !== 'normal') {
-    const label =
-      state === 'empty'   ? '空' :
-      state === 'loading' ? '読込' :
-      state === 'error'   ? 'エラー' :
-      'オフライン'
-    await page.getByRole('button', { name: label }).click()
-    await page.waitForTimeout(100)
-  }
+  // URLパラメータで状態を指定し、devbarを使わない
+  await page.goto(`/?tab=farms&state=${state}`, { waitUntil: 'networkidle' })
+  await page.evaluate(() => window.scrollTo(0, 0))
+  // scrollY === 0 を確認
+  const scrollY = await page.evaluate(() => window.scrollY)
+  if (scrollY !== 0) throw new Error(`Expected scrollY=0, got ${scrollY}`)
 }
 
 for (const state of STATES) {

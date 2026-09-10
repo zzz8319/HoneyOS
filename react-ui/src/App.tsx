@@ -16,18 +16,23 @@ const STATES: { id: ViewState; label: string }[] = [
   { id: 'offline', label: 'オフライン' },
 ]
 
+const VALID_STATES: ViewState[] = ['normal', 'empty', 'loading', 'error', 'offline']
+const VALID_TABS: TabId[] = ['home', 'farms', 'work', 'analytics', 'settings']
+
 const IS_DEV = import.meta.env.DEV
 
-function readStateParam<T extends string>(valid: T[]): T {
-  const p = new URLSearchParams(window.location.search).get('state')
-  return (valid.includes(p as T) ? p : valid[0]) as T
+function readParam<T extends string>(key: string, valid: T[], fallback: T): T {
+  const p = new URLSearchParams(window.location.search).get(key)
+  return (valid.includes(p as T) ? p : fallback) as T
 }
 
-const VALID_STATES: ViewState[] = ['normal', 'empty', 'loading', 'error', 'offline']
-
 export default function App() {
-  const [viewState, setViewState] = useState<ViewState>(() => readStateParam(VALID_STATES))
-  const [activeTab, setActiveTab] = useState<TabId>('home')
+  const [viewState, setViewState] = useState<ViewState>(() =>
+    readParam('state', VALID_STATES, 'normal'),
+  )
+  const [activeTab, setActiveTab] = useState<TabId>(() =>
+    readParam('tab', VALID_TABS, 'home'),
+  )
 
   const dashState = viewState as DashboardViewState
   const colonyState = viewState as ColonyListViewState
