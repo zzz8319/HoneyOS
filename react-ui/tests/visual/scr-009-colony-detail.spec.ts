@@ -7,8 +7,7 @@ async function gotoColonyDetail(page: Page, state: typeof STATES[number]) {
     waitUntil: 'networkidle',
   })
   await page.evaluate(() => window.scrollTo(0, 0))
-  const scrollY = await page.evaluate(() => window.scrollY)
-  if (scrollY !== 0) throw new Error(`Expected scrollY=0, got ${scrollY}`)
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0)
 }
 
 for (const state of STATES) {
@@ -24,7 +23,7 @@ for (const state of STATES) {
 test('SCR-009 colony detail — normal state scrolled', async ({ page }) => {
   await gotoColonyDetail(page, 'normal')
   await page.evaluate(() => window.scrollTo({ top: document.body.scrollHeight }))
-  await page.waitForTimeout(100)
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0)
   await expect(page).toHaveScreenshot('scr-009-normal-scrolled.png', {
     fullPage: false,
     animations: 'disabled',

@@ -66,45 +66,47 @@ export default function App() {
         </div>
       )}
 
-      {activeTab === 'home' && (
-        <DashboardScreen
-          viewState={dashState}
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          onStartInspection={() => alert('内検を始める → SCR-011（未実装）')}
-          onNotifClick={() => alert('通知 → SCR-007（未実装）')}
-          onAlertColonies={() => {
-            setActiveTab('farms')
-            setViewState('normal')
-          }}
-        />
-      )}
-
-      {activeTab === 'farms' && screen === 'home' && (
-        <ColonySummaryScreen
-          viewState={colonyState}
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          onNotifClick={() => alert('通知 → SCR-007（未実装）')}
-          onColonyClick={(id) => { setSelectedColonyId(id); setScreen('colony-detail') }}
-        />
-      )}
-
-      {screen === 'colony-detail' && (
+      {screen === 'colony-detail' ? (
         <ColonyDetailScreen
           colonyId={selectedColonyId ?? undefined}
           viewState={detailState}
           onBack={() => { setScreen('home'); setActiveTab('farms') }}
           onStartInspection={(id) => alert(`内検を始める → SCR-011 colonyId: ${id}（未実装）`)}
         />
-      )}
+      ) : (
+        <>
+          {activeTab === 'home' && (
+            <DashboardScreen
+              viewState={dashState}
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
+              onStartInspection={() => alert('内検を始める → SCR-011（未実装）')}
+              onNotifClick={() => alert('通知 → SCR-007（未実装）')}
+              onAlertColonies={() => {
+                setActiveTab('farms')
+                setViewState('normal')
+              }}
+            />
+          )}
 
-      {(activeTab === 'work' || activeTab === 'analytics' || activeTab === 'settings') && (
-        <DashboardScreen
-          viewState="empty"
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-        />
+          {activeTab === 'farms' && (
+            <ColonySummaryScreen
+              viewState={colonyState}
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
+              onNotifClick={() => alert('通知 → SCR-007（未実装）')}
+              onColonyClick={(id) => { setSelectedColonyId(id); setScreen('colony-detail') }}
+            />
+          )}
+
+          {(activeTab === 'work' || activeTab === 'analytics' || activeTab === 'settings') && (
+            <DashboardScreen
+              viewState="empty"
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
+            />
+          )}
+        </>
       )}
     </>
   )
