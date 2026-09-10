@@ -154,7 +154,7 @@
 
 .filterChip {
   height: 26px;
-  padding: 0 10px;
+  padding: 0 8px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-full);
   background: var(--color-surface);
@@ -164,17 +164,13 @@
   cursor: pointer;
   white-space: nowrap;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 3px;
   transition: background 0.1s, color 0.1s, border-color 0.1s;
 }
 
 .filterChip:hover {
-  background: var(--color-primary-soft);
-  border-color: var(--color-primary);
-  color: var(--color-primary);
-}
-
-.filterActive {
-  composes: filterChip;
   background: var(--color-primary-soft);
   border-color: var(--color-primary);
   color: var(--color-primary);
@@ -194,11 +190,18 @@
 }
 
 .sortVal {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0;
+  border: none;
+  background: none;
   font-size: 11px;
   font-weight: 600;
   color: var(--color-primary);
   line-height: 1.2;
   white-space: nowrap;
+  cursor: pointer;
 }
 
 /* ===== 養蜂場セクション ===== */

@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { Search, SlidersHorizontal, Map, Plus } from 'lucide-react'
+import { Search, Map, Plus, ChevronDown } from 'lucide-react'
 import { AppHeader, BottomNav, EmptyState, ErrorBanner } from '../../components'
 import type { TabId } from '../../components'
 import { ColonyCard } from './ColonyCard'
@@ -17,9 +17,6 @@ type SortKey = 'inspection'      // 今後拡張可能
 const SORT_LABELS: Record<SortKey, string> = {
   inspection: '最終内検順',
 }
-
-const STATUS_FILTER_OPTIONS = ['すべて', '良好', '注意', '危険'] as const
-type StatusFilter = typeof STATUS_FILTER_OPTIONS[number]
 
 interface ColonySummaryScreenProps {
   viewState?: ColonyListViewState
@@ -69,9 +66,7 @@ export function ColonySummaryScreen({
 }: ColonySummaryScreenProps) {
   const [apiaryTab, setApiaryTab] = useState<ApiaryTab>('all')
   const [query, setQuery] = useState('')
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('すべて')
   const [sortKey] = useState<SortKey>('inspection')
-  const [searchOpen, setSearchOpen] = useState(false)
 
   const { apiaries, fetchedAt } = mockColonyList
 
@@ -95,12 +90,8 @@ export function ColonySummaryScreen({
       const q = query.trim().toLowerCase()
       list = list.filter(c => c.name.toLowerCase().includes(q))
     }
-    if (statusFilter !== 'すべて') {
-      const map: Record<StatusFilter, string> = { 'すべて': '', '良好': 'good', '注意': 'warn', '危険': 'danger' }
-      list = list.filter(c => c.status === map[statusFilter])
-    }
     return list
-  }, [allColonies, apiaryTab, query, statusFilter])
+  }, [allColonies, apiaryTab, query])
 
   // フィルタ済みを養蜂場ごとにグループ化
   const filteredApiaries = useMemo(() =>
@@ -137,16 +128,6 @@ export function ColonySummaryScreen({
           <div className={styles.titleRow}>
             <h1 className={styles.screenTitle}>蜂群一覧</h1>
             <div className={styles.headerActions}>
-              <button
-                className={styles.iconBtn}
-                aria-label="検索"
-                onClick={() => setSearchOpen(v => !v)}
-              >
-                <Search size={18} aria-hidden />
-              </button>
-              <button className={styles.iconBtn} aria-label="フィルター">
-                <SlidersHorizontal size={18} aria-hidden />
-              </button>
               <button className={styles.iconBtn} aria-label="養蜂場配置・地図">
                 <Map size={18} aria-hidden />
               </button>
@@ -171,39 +152,33 @@ export function ColonySummaryScreen({
             ))}
           </div>
 
-          {/* 検索欄（トグル） */}
-          {searchOpen && (
-            <div className={styles.searchWrap}>
-              <Search size={14} className={styles.searchIcon} aria-hidden />
-              <input
-                type="search"
-                placeholder="蜂群名を検索"
-                value={query}
-                onChange={e => setQuery(e.target.value)}
-                className={styles.searchInput}
-                aria-label="蜂群名を検索"
-                autoFocus
-              />
-            </div>
-          )}
+          {/* 常時表示の検索欄 */}
+          <div className={styles.searchWrap}>
+            <Search size={14} className={styles.searchIcon} aria-hidden />
+            <input
+              type="search"
+              placeholder="蜂群名を検索"
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              className={styles.searchInput}
+              aria-label="蜂群名を検索"
+            />
+          </div>
 
-          {/* 詳細フィルター + 並べ替え */}
+          {/* フィルターチップ + 並べ替え */}
           <div className={styles.filterRow}>
             <div className={styles.filterChips}>
-              {STATUS_FILTER_OPTIONS.slice(1).map(opt => (
-                <button
-                  key={opt}
-                  className={statusFilter === opt ? styles.filterActive : styles.filterChip}
-                  onClick={() => setStatusFilter(statusFilter === opt ? 'すべて' : opt)}
-                  aria-pressed={statusFilter === opt}
-                >
-                  {opt}
+              {(['状態', '巣箱タイプ', '最終内検'] as const).map(label => (
+                <button key={label} className={styles.filterChip} aria-haspopup="listbox">
+                  {label} <ChevronDown size={10} aria-hidden />
                 </button>
               ))}
             </div>
             <div className={styles.sortLabel}>
               <span className={styles.sortKey}>並べ替え</span>
-              <span className={styles.sortVal}>{SORT_LABELS[sortKey]}</span>
+              <button className={styles.sortVal}>
+                {SORT_LABELS[sortKey]} <ChevronDown size={10} aria-hidden />
+              </button>
             </div>
           </div>
         </div>
@@ -247,24 +222,26 @@ export function ColonySummaryScreen({
                 description="検索条件やフィルターを変更してください。"
               />
             ) : (
-              filteredApiaries.map(apiary => (
-                <section key={apiary.id} aria-label={apiary.name}>
-                  <div className={styles.apiaryHeader}>
-                    <span className={styles.apiaryName}>{apiary.name}</span>
-                    <span className={styles.apiaryCount}>{apiary.colonies.length}群</span>
-                  </div>
-                  <div className={styles.grid}>
-                    {apiary.colonies.map(colony => (
-                      <ColonyCard
-                        key={colony.id}
-                        colony={colony}
-                        onClick={onColonyClick}
-                      />
-                    ))}
-                  </div>
-                  <CompositionLegend />
-                </section>
-              ))
+              <>
+                {filteredApiaries.map(apiary => (
+                  <section key={apiary.id} aria-label={apiary.name}>
+                    <div className={styles.apiaryHeader}>
+                      <span className={styles.apiaryName}>{apiary.name}</span>
+                      <span className={styles.apiaryCount}>{apiary.colonies.length}群</span>
+                    </div>
+                    <div className={styles.grid}>
+                      {apiary.colonies.map(colony => (
+                        <ColonyCard
+                          key={colony.id}
+                          colony={colony}
+                          onClick={onColonyClick}
+                        />
+                      ))}
+                    </div>
+                  </section>
+                ))}
+                <CompositionLegend />
+              </>
             )}
           </>
         )}
