@@ -6,8 +6,8 @@ interface Props {
 }
 
 const W = 300
-const H = 130
-const PAD = { top: 18, right: 12, bottom: 28, left: 26 }
+const H = 100
+const PAD = { top: 14, right: 8, bottom: 22, left: 22 }
 const GW = W - PAD.left - PAD.right
 const GH = H - PAD.top - PAD.bottom
 const WARN_LINE = 60
@@ -41,8 +41,8 @@ export function StrengthTrendChart({ history }: Props) {
               x1={PAD.left} y1={yPos(v)} x2={PAD.left + GW} y2={yPos(v)}
               stroke="var(--color-border)" strokeWidth={0.8}
             />
-            <text x={PAD.left - 4} y={yPos(v) + 4} textAnchor="end"
-              fontSize={9} fill="var(--color-text-secondary)">{v}</text>
+            <text x={PAD.left - 4} y={yPos(v) + 3.5} textAnchor="end"
+              fontSize={8.5} fill="var(--color-text-secondary)">{v}</text>
           </g>
         ))}
 
@@ -51,9 +51,8 @@ export function StrengthTrendChart({ history }: Props) {
           x1={PAD.left} y1={warnY} x2={PAD.left + GW} y2={warnY}
           stroke="#DC2626" strokeWidth={1.3} strokeDasharray="4 3"
         />
-        {/* Warning label: right side, above the line */}
-        <text x={PAD.left + GW} y={warnY - 4} textAnchor="end"
-          fontSize={8} fill="#DC2626" fontWeight="600">要注意ライン（60）</text>
+        <text x={PAD.left + GW} y={warnY - 3} textAnchor="end"
+          fontSize={7.5} fill="#DC2626" fontWeight="600">要注意ライン（60）</text>
 
         {/* Score line */}
         <polyline points={pts} fill="none" stroke="var(--color-primary)"
@@ -63,9 +62,9 @@ export function StrengthTrendChart({ history }: Props) {
         {history.map((pt, i) => (
           <g key={pt.date}>
             <text x={xPos(i, n)} y={H - 4} textAnchor="middle"
-              fontSize={9} fill="var(--color-text-secondary)">{shortDate(pt.date)}</text>
+              fontSize={8.5} fill="var(--color-text-secondary)">{shortDate(pt.date)}</text>
             <circle
-              cx={xPos(i, n)} cy={yPos(pt.score)} r={3.5}
+              cx={xPos(i, n)} cy={yPos(pt.score)} r={3}
               fill="var(--color-primary)" stroke="white" strokeWidth={1.5}
             />
           </g>

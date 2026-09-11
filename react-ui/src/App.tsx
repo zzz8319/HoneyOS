@@ -70,6 +70,7 @@ export default function App() {
         <ColonyDetailScreen
           colonyId={selectedColonyId ?? undefined}
           viewState={detailState}
+          initialPopover={new URLSearchParams(window.location.search).get('popover') === '1'}
           onBack={() => { setScreen('home'); setActiveTab('farms') }}
           onStartInspection={(id) => alert(`内検を始める → SCR-011 colonyId: ${id}（未実装）`)}
         />

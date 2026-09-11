@@ -14,8 +14,8 @@ const LINES = [
 ]
 
 const W = 300
-const H = 150
-const PAD = { top: 14, right: 12, bottom: 28, left: 26 }
+const H = 118
+const PAD = { top: 8, right: 8, bottom: 22, left: 22 }
 const GW = W - PAD.left - PAD.right
 const GH = H - PAD.top - PAD.bottom
 
@@ -45,8 +45,8 @@ export function CompositionTrendChart({ inspections, onPointClick, activeId }: P
               x1={PAD.left} y1={yPos(v)} x2={PAD.left + GW} y2={yPos(v)}
               stroke="var(--color-border)" strokeWidth={0.8}
             />
-            <text x={PAD.left - 4} y={yPos(v) + 4} textAnchor="end"
-              fontSize={9} fill="var(--color-text-secondary)">{v}</text>
+            <text x={PAD.left - 4} y={yPos(v) + 3.5} textAnchor="end"
+              fontSize={8.5} fill="var(--color-text-secondary)">{v}</text>
           </g>
         ))}
 
@@ -63,14 +63,14 @@ export function CompositionTrendChart({ inspections, onPointClick, activeId }: P
         {inspections.map((insp, i) => (
           <g key={insp.id}>
             <text x={xPos(i, n)} y={H - 4} textAnchor="middle"
-              fontSize={9} fill="var(--color-text-secondary)">{shortDate(insp.date)}</text>
+              fontSize={8.5} fill="var(--color-text-secondary)">{shortDate(insp.date)}</text>
             {LINES.map(({ key, color }) => {
               const isActive = activeId === insp.id
               return (
                 <circle
                   key={key}
                   cx={xPos(i, n)} cy={yPos(insp[key] as number)}
-                  r={isActive ? 5.5 : 3.5}
+                  r={isActive ? 5 : 3}
                   fill={color} stroke="white" strokeWidth={isActive ? 2 : 1.5}
                   style={{ cursor: 'pointer' }}
                   onClick={() => onPointClick?.(insp)}

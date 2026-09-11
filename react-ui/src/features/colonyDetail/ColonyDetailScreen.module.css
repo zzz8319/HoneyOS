@@ -5,7 +5,7 @@
   background: var(--color-bg);
   display: flex;
   flex-direction: column;
-  padding-bottom: 80px; /* CTA固定ボタン分 */
+  padding-bottom: 80px;
 }
 
 /* ===== 詳細ヘッダー ===== */
@@ -16,15 +16,15 @@
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  padding: var(--space-3) var(--space-4);
+  padding: var(--space-2) var(--space-4);
   background: var(--color-surface);
   border-bottom: 1px solid var(--color-border);
   box-shadow: var(--shadow-sm);
 }
 
 .backBtn {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -77,8 +77,8 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
-  padding: var(--space-3) var(--space-4);
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
 }
 
 /* ===== カード共通 ===== */
@@ -86,11 +86,11 @@
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  padding: var(--space-3) var(--space-4);
+  padding: 10px 12px;
   box-shadow: var(--shadow-sm);
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: 6px;
 }
 
 .cardHeader {
@@ -123,23 +123,16 @@
   line-height: 1.4;
 }
 
-.cardSubtitle {
-  font-size: 10px;
-  color: var(--color-text-secondary);
-  display: block;
-  margin-top: 1px;
-}
-
-/* 強さスコア右側 */
-.scoreWrap {
+/* 強さスコア: タイトル下に配置 */
+.scoreRow {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  flex-shrink: 0;
+  align-items: baseline;
+  gap: 6px;
+  margin-top: 2px;
 }
 
 .scoreVal {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 800;
   color: var(--color-text);
   font-variant-numeric: tabular-nums;
@@ -165,20 +158,20 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .legendItem {
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 11px;
+  font-size: 10px;
   color: var(--color-text-secondary);
 }
 
 .legendDot {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   flex-shrink: 0;
 }
@@ -188,22 +181,31 @@
   color: var(--color-text-secondary);
 }
 
-/* ポップアップ */
+/* チャートラッパー: ポップアップの基準位置 */
+.chartWrap {
+  position: relative;
+}
+
+/* ポップアップ: グラフ右上へ絶対配置 */
 .popover {
+  position: absolute;
+  top: 4px;
+  right: 0;
+  width: 62%;
+  z-index: 5;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  padding: var(--space-3);
+  padding: 8px 10px;
   box-shadow: var(--shadow-float);
-  position: relative;
 }
 
 .popoverClose {
   position: absolute;
-  top: var(--space-2);
-  right: var(--space-2);
-  width: 24px;
-  height: 24px;
+  top: 5px;
+  right: 5px;
+  width: 20px;
+  height: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -215,33 +217,28 @@
 }
 
 .popoverDate {
-  margin: 0 0 2px;
-  font-size: 13px;
+  margin: 0 0 3px;
+  font-size: 11px;
   font-weight: 700;
   color: var(--color-text);
-}
-
-.popoverWeather {
-  margin: 0 0 4px;
-  font-size: 11px;
-  color: var(--color-text-secondary);
+  padding-right: 18px;
 }
 
 .popoverNote {
-  margin: 0 0 var(--space-2);
-  font-size: 12px;
+  margin: 0 0 6px;
+  font-size: 11px;
   color: var(--color-text);
-  line-height: 1.5;
+  line-height: 1.4;
 }
 
 .popoverBtn {
   width: 100%;
-  height: 34px;
+  height: 28px;
   border: 1px solid var(--color-primary);
   border-radius: var(--radius-sm);
   background: var(--color-primary-soft);
   color: var(--color-primary);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.1s;
@@ -253,7 +250,7 @@
 .historyLink {
   border: none;
   background: none;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   color: var(--color-primary);
   padding: 0;
@@ -285,7 +282,7 @@
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  padding: var(--space-3) var(--space-4);
+  padding: 10px 12px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -359,7 +356,7 @@
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  padding: var(--space-3) var(--space-4);
+  padding: 10px 12px;
   box-shadow: var(--shadow-sm);
   display: flex;
   flex-direction: column;
@@ -375,7 +372,7 @@
   transform: translateX(-50%);
   width: 100%;
   max-width: 430px;
-  padding: var(--space-3) var(--space-4);
+  padding: var(--space-2) var(--space-4);
   background: var(--color-bg);
   border-top: 1px solid var(--color-border);
   box-sizing: border-box;

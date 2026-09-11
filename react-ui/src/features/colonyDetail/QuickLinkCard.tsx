@@ -2,7 +2,7 @@ import { ChevronRight } from 'lucide-react'
 import styles from './QuickLinkCard.module.css'
 
 interface Props {
-  icon: string
+  icon: React.ReactNode
   title: string
   subtitle: string
   onClick?: () => void
@@ -16,7 +16,7 @@ export function QuickLinkCard({ icon, title, subtitle, onClick }: Props) {
         <span className={styles.title}>{title}</span>
         <span className={styles.subtitle}>{subtitle}</span>
       </div>
-      <ChevronRight size={14} className={styles.chevron} aria-hidden />
+      <ChevronRight size={12} className={styles.chevron} aria-hidden />
     </button>
   )
 }

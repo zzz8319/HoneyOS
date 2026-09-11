@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ChevronLeft, X } from 'lucide-react'
+import { ChevronLeft, X, ClipboardList, Camera, Brain } from 'lucide-react'
 import { ErrorBanner } from '../../components'
 import { CompositionTrendChart } from './CompositionTrendChart'
 import { StrengthTrendChart } from './StrengthTrendChart'
@@ -14,6 +14,7 @@ export type ColonyDetailViewState = 'normal' | 'empty' | 'loading' | 'error' | '
 interface Props {
   colonyId?: string
   viewState?: ColonyDetailViewState
+  initialPopover?: boolean
   onBack?: () => void
   onStartInspection?: (colonyId: string) => void
 }
@@ -43,15 +44,14 @@ function CardSkeleton({ height = 120 }: { height?: number }) {
 export function ColonyDetailScreen({
   colonyId,
   viewState = 'normal',
+  initialPopover = false,
   onBack,
   onStartInspection,
 }: Props) {
   const colony = mockColonyDetail
-
-  // 8/28 内検を初期選択状態にしてポップアップを表示する
   const defaultActive = colony.inspections.find(i => i.date === '2026-08-28') ?? null
   const [activeInsp, setActiveInsp] = useState<InspectionPoint | null>(
-    viewState === 'normal' ? defaultActive : null,
+    initialPopover ? defaultActive : null,
   )
 
   const isLoading = viewState === 'loading'
@@ -109,7 +109,6 @@ export function ColonyDetailScreen({
           <div className={styles.cardHeader}>
             <h2 className={styles.cardTitle}>内訳の推移</h2>
           </div>
-          {/* 凡例 */}
           <div className={styles.legend}>
             {[
               { label: '蜂',   color: '#16A34A' },
@@ -124,33 +123,35 @@ export function ColonyDetailScreen({
             <span className={styles.legendNote}>（全巣枠の平均構成比）</span>
           </div>
 
-          {isLoading ? (
-            <CardSkeleton height={170} />
-          ) : (
-            <CompositionTrendChart
-              inspections={showData || isOffline ? colony.inspections : []}
-              onPointClick={handlePointClick}
-              activeId={activeInsp?.id}
-            />
-          )}
+          {/* チャート + フローティングポップアップ */}
+          <div className={styles.chartWrap}>
+            {isLoading ? (
+              <CardSkeleton height={125} />
+            ) : (
+              <CompositionTrendChart
+                inspections={showData || isOffline ? colony.inspections : []}
+                onPointClick={handlePointClick}
+                activeId={activeInsp?.id}
+              />
+            )}
 
-          {/* データポイントポップアップ */}
-          {activeInsp && !isLoading && (
-            <div className={styles.popover} role="dialog" aria-label="内検詳細">
-              <button className={styles.popoverClose} onClick={() => setActiveInsp(null)}
-                aria-label="閉じる"><X size={14} /></button>
-              <p className={styles.popoverDate}>
-                {shortDateLabel(activeInsp.date)} {activeInsp.time} {activeInsp.weather}
-              </p>
-              <p className={styles.popoverNote}>{activeInsp.note}</p>
-              <button
-                className={styles.popoverBtn}
-                onClick={() => alert(`枠ビューア → SCR-013 colonyId: ${colony.id} inspectionId: ${activeInsp.id}（未実装）`)}
-              >
-                ▣ 枠ビューアで見る
-              </button>
-            </div>
-          )}
+            {activeInsp && !isLoading && (
+              <div className={styles.popover} role="dialog" aria-label="内検詳細">
+                <button className={styles.popoverClose} onClick={() => setActiveInsp(null)}
+                  aria-label="閉じる"><X size={14} /></button>
+                <p className={styles.popoverDate}>
+                  {shortDateLabel(activeInsp.date)} {activeInsp.time} {activeInsp.weather}
+                </p>
+                <p className={styles.popoverNote}>{activeInsp.note}</p>
+                <button
+                  className={styles.popoverBtn}
+                  onClick={() => alert(`枠ビューア → SCR-013 colonyId: ${colony.id} inspectionId: ${activeInsp.id}（未実装）`)}
+                >
+                  ▣ 枠ビューアで見る
+                </button>
+              </div>
+            )}
+          </div>
 
           <button className={styles.historyLink}
             onClick={() => alert('内検履歴 → SCR-012（未実装）')}>
@@ -161,22 +162,22 @@ export function ColonyDetailScreen({
         {/* ===== 強さスコア推移カード ===== */}
         <section className={styles.card}>
           <div className={styles.cardHeader}>
-            <div className={styles.cardTitleRow}>
-              <h2 className={styles.cardTitle}>強さスコア推移</h2>
-              <span className={styles.betaBadge}>簡易指標 β</span>
-            </div>
-            <div className={styles.scoreWrap}>
-              <span className={styles.scoreVal}>
-                現在 {colony.strengthScore}
-              </span>
-              <span className={colony.strengthScoreDelta >= 0 ? styles.deltaUp : styles.deltaDown}>
-                {colony.strengthScoreDelta >= 0 ? '↑' : '↓'} {Math.abs(colony.strengthScoreDelta)}（前回比）
-              </span>
+            <div>
+              <div className={styles.cardTitleRow}>
+                <h2 className={styles.cardTitle}>強さスコア推移</h2>
+                <span className={styles.betaBadge}>簡易指標 β</span>
+              </div>
+              <div className={styles.scoreRow}>
+                <span className={styles.scoreVal}>現在 {colony.strengthScore}</span>
+                <span className={colony.strengthScoreDelta >= 0 ? styles.deltaUp : styles.deltaDown}>
+                  {colony.strengthScoreDelta >= 0 ? '↑' : '↓'} {Math.abs(colony.strengthScoreDelta)}（前回比）
+                </span>
+              </div>
             </div>
           </div>
 
           {isLoading ? (
-            <CardSkeleton height={148} />
+            <CardSkeleton height={100} />
           ) : (
             <StrengthTrendChart
               history={showData || isOffline ? colony.strengthHistory : []}
@@ -208,26 +209,26 @@ export function ColonyDetailScreen({
         {/* ===== クイック導線 ===== */}
         {isLoading ? (
           <div className={styles.quickRow}>
-            <CardSkeleton height={100} />
-            <CardSkeleton height={100} />
-            <CardSkeleton height={100} />
+            <CardSkeleton height={90} />
+            <CardSkeleton height={90} />
+            <CardSkeleton height={90} />
           </div>
         ) : (
           <div className={styles.quickRow}>
             <QuickLinkCard
-              icon="📋"
+              icon={<ClipboardList size={20} />}
               title="作業記録"
               subtitle={`直近 ${colony.workRecordCount}件`}
               onClick={() => alert('作業履歴（未実装）')}
             />
             <QuickLinkCard
-              icon="📷"
+              icon={<Camera size={20} />}
               title="カメラ画像"
               subtitle={`最新 ${colony.latestCameraDate}`}
               onClick={() => alert(`カメラ画像 → SCR-021 colonyId: ${colony.id}（未実装）`)}
             />
             <QuickLinkCard
-              icon="🤖"
+              icon={<Brain size={20} />}
               title="AI診断"
               subtitle={colony.aiDiagnosisLabel}
               onClick={() => alert('AI診断（未実装）')}
