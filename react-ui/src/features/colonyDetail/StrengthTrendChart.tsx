@@ -6,8 +6,8 @@ interface Props {
 }
 
 const W = 300
-const H = 100
-const PAD = { top: 14, right: 8, bottom: 22, left: 22 }
+const H = 80
+const PAD = { top: 12, right: 8, bottom: 20, left: 22 }
 const GW = W - PAD.left - PAD.right
 const GH = H - PAD.top - PAD.bottom
 const WARN_LINE = 60

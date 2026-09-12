@@ -14,8 +14,8 @@ const LINES = [
 ]
 
 const W = 300
-const H = 118
-const PAD = { top: 8, right: 8, bottom: 22, left: 22 }
+const H = 96
+const PAD = { top: 6, right: 8, bottom: 20, left: 22 }
 const GW = W - PAD.left - PAD.right
 const GH = H - PAD.top - PAD.bottom
 
