@@ -1,10 +1,9 @@
 import { useState, useCallback } from 'react'
 import {
   ArrowLeft, Search, MapPin, Flower2,
-  AlertTriangle, Car, Route as RouteIcon, X, AlignJustify,
+  AlertTriangle, Car, Navigation, X, AlignJustify,
 } from 'lucide-react'
 import { BottomNav } from '../../components'
-import { HiveBeeMark } from '../../components/icons'
 import type { Apiary, ApiaryMapViewState, LayerType } from './types'
 import { MOCK_APIARIES, MOCK_NECTAR_SOURCES } from './mockData'
 import styles from './ApiaryMapScreen.module.css'
@@ -21,93 +20,126 @@ function MapBackground() {
       preserveAspectRatio="xMidYMid slice"
       aria-hidden="true"
     >
-      {/* Land base — light beige */}
+      {/* ── Land base ── */}
       <rect width="390" height="560" fill="#EDE8D8" />
 
-      {/* Northern mountain/forest — NW block */}
-      <path d="M0,0 L0,200 Q30,185 60,170 Q85,158 110,145 Q140,130 165,118 Q165,80 155,40 Q140,10 100,0 Z" fill="#C8D9A4" />
-      {/* NE forest block */}
-      <path d="M250,0 L390,0 L390,165 Q370,155 350,142 Q325,128 305,118 Q285,106 268,95 Q258,60 255,30 Z" fill="#C8D9A4" />
-      {/* Small mid-west forest patch */}
-      <path d="M0,220 Q15,210 35,205 Q60,200 75,210 Q80,230 65,242 Q40,248 10,240 Z" fill="#C8D9A4" opacity="0.7" />
+      {/* ── Terrain: forests / hills ── */}
+      <path d="M0,0 L0,245 Q18,228 42,214 Q68,198 94,180 Q118,163 140,147 Q146,100 142,52 Q130,15 100,0 Z" fill="#C8D9A4" />
+      <path d="M278,0 L390,0 L390,195 Q370,183 352,170 Q332,157 314,143 Q296,130 282,114 Q276,72 278,36 Z" fill="#C8D9A4" />
+      <path d="M0,260 Q12,250 30,246 Q50,242 62,252 Q65,272 50,282 Q28,288 5,275 Z" fill="#C8D9A4" opacity="0.75" />
+      <path d="M0,308 Q10,300 26,298 Q40,296 44,308 Q42,320 24,324 Q8,322 0,314 Z" fill="#C8D9A4" opacity="0.6" />
+      <path d="M322,52 Q350,46 366,58 Q374,78 360,88 Q340,92 326,80 Z" fill="#C8D9A4" opacity="0.7" />
+      <path d="M356,122 Q377,118 390,126 L390,148 Q380,155 362,152 Q350,144 356,122 Z" fill="#C8D9A4" opacity="0.65" />
+      <path d="M218,0 L238,0 Q245,30 242,62 Q238,88 228,102 Q218,90 214,62 Q210,34 218,0 Z" fill="#C8D9A4" opacity="0.55" />
 
-      {/* Tenryu River — main course, curves south */}
-      <path
-        d="M295,0 Q300,40 299,80 Q298,130 296,180 Q293,235 291,280 Q289,330 287,375 Q285,415 283,455 Q281,490 280,520"
-        stroke="#8EC0D8" strokeWidth="10" fill="none" strokeLinecap="round"
-      />
-      {/* River widens to estuary */}
-      <path
-        d="M280,520 Q278,540 276,560"
-        stroke="#8EC0D8" strokeWidth="16" fill="none" strokeLinecap="round"
-      />
-      {/* Small reservoir near Hamamatsu */}
-      <ellipse cx="315" cy="195" rx="14" ry="8" fill="#8EC0D8" />
+      {/* ── City block areas ── */}
+      {/* Kakegawa urban area (lower-left) */}
+      <rect x="8" y="332" width="58" height="48" rx="2" fill="#E0D8C4" opacity="0.8" />
+      <line x1="24" y1="332" x2="24" y2="380" stroke="#CDC8B8" strokeWidth="0.7" />
+      <line x1="42" y1="332" x2="42" y2="380" stroke="#CDC8B8" strokeWidth="0.7" />
+      <line x1="8" y1="349" x2="66" y2="349" stroke="#CDC8B8" strokeWidth="0.7" />
+      <line x1="8" y1="363" x2="66" y2="363" stroke="#CDC8B8" strokeWidth="0.7" />
+      {/* Fukuroi-Iwata urban (center) */}
+      <rect x="162" y="302" width="78" height="58" rx="2" fill="#E0D8C4" opacity="0.7" />
+      <line x1="180" y1="302" x2="180" y2="360" stroke="#CDC8B8" strokeWidth="0.7" />
+      <line x1="200" y1="302" x2="200" y2="360" stroke="#CDC8B8" strokeWidth="0.7" />
+      <line x1="220" y1="302" x2="220" y2="360" stroke="#CDC8B8" strokeWidth="0.7" />
+      <line x1="162" y1="320" x2="240" y2="320" stroke="#CDC8B8" strokeWidth="0.7" />
+      <line x1="162" y1="338" x2="240" y2="338" stroke="#CDC8B8" strokeWidth="0.7" />
+      {/* Iwata district */}
+      <rect x="228" y="282" width="52" height="44" rx="2" fill="#E0D8C4" opacity="0.65" />
+      <line x1="244" y1="282" x2="244" y2="326" stroke="#CDC8B8" strokeWidth="0.7" />
+      <line x1="262" y1="282" x2="262" y2="326" stroke="#CDC8B8" strokeWidth="0.7" />
+      <line x1="228" y1="300" x2="280" y2="300" stroke="#CDC8B8" strokeWidth="0.7" />
+      {/* Hamamatsu urban (right) */}
+      <rect x="310" y="248" width="80" height="75" rx="2" fill="#E0D8C4" opacity="0.65" />
+      <line x1="328" y1="248" x2="328" y2="323" stroke="#CDC8B8" strokeWidth="0.7" />
+      <line x1="348" y1="248" x2="348" y2="323" stroke="#CDC8B8" strokeWidth="0.7" />
+      <line x1="368" y1="248" x2="368" y2="323" stroke="#CDC8B8" strokeWidth="0.7" />
+      <line x1="310" y1="265" x2="390" y2="265" stroke="#CDC8B8" strokeWidth="0.7" />
+      <line x1="310" y1="284" x2="390" y2="284" stroke="#CDC8B8" strokeWidth="0.7" />
+      <line x1="310" y1="304" x2="390" y2="304" stroke="#CDC8B8" strokeWidth="0.7" />
 
-      {/* Tributary from NW */}
-      <path
-        d="M118,0 Q124,50 135,100 Q148,152 168,198 Q180,218 188,230"
-        stroke="#A8CCD8" strokeWidth="4" fill="none" strokeLinecap="round"
-      />
+      {/* ── Tenryu River — center, flowing south ── */}
+      <path d="M150,0 Q153,55 151,110 Q149,168 146,222 Q143,272 141,318 Q139,358 138,398 Q137,432 136,472 Q135,508 134,544" stroke="#8EC0D8" strokeWidth="9" fill="none" strokeLinecap="round" />
+      <path d="M134,544 Q132,558 130,575" stroke="#8EC0D8" strokeWidth="16" fill="none" strokeLinecap="round" />
+      {/* S-curve meander */}
+      <path d="M146,222 Q155,248 158,272 Q156,300 148,318" stroke="#8EC0D8" strokeWidth="8" fill="none" strokeLinecap="round" />
+      {/* Reservoir */}
+      <ellipse cx="320" cy="212" rx="13" ry="7" fill="#8EC0D8" />
+      {/* Western tributary */}
+      <path d="M0,198 Q32,190 66,188 Q92,186 118,190 Q135,194 144,208" stroke="#A8CCD8" strokeWidth="3" fill="none" strokeLinecap="round" />
+      {/* Northern stream */}
+      <path d="M102,0 Q107,38 112,76 Q120,112 130,150 Q138,174 143,198" stroke="#A8CCD8" strokeWidth="2.5" fill="none" strokeLinecap="round" />
 
-      {/* Enshu-nada (Pacific) */}
-      <path d="M0,465 Q65,450 130,458 Q195,466 260,458 Q325,450 390,462 L390,560 L0,560 Z" fill="#8EC0D8" />
-      {/* Ocean wave textures */}
-      <path d="M15,488 Q45,483 75,488" stroke="#7BACC8" strokeWidth="1.5" fill="none" />
-      <path d="M95,502 Q135,497 175,502" stroke="#7BACC8" strokeWidth="1.5" fill="none" />
-      <path d="M195,490 Q235,485 275,490" stroke="#7BACC8" strokeWidth="1.5" fill="none" />
-      <path d="M300,505 Q330,500 360,505" stroke="#7BACC8" strokeWidth="1.5" fill="none" />
+      {/* ── Ocean ── */}
+      <path d="M0,460 Q52,450 106,454 Q158,458 205,452 Q252,447 282,450 Q322,453 390,447 L390,560 L0,560 Z" fill="#8EC0D8" />
+      <path d="M18,480 Q55,475 86,480" stroke="#7BACC8" strokeWidth="1.5" fill="none" />
+      <path d="M108,495 Q148,490 186,495" stroke="#7BACC8" strokeWidth="1.5" fill="none" />
+      <path d="M198,478 Q242,473 280,478" stroke="#7BACC8" strokeWidth="1.5" fill="none" />
+      <path d="M296,493 Q330,488 364,493" stroke="#7BACC8" strokeWidth="1.5" fill="none" />
+      <path d="M14,512 Q62,507 98,512" stroke="#7BACC8" strokeWidth="1.2" fill="none" />
+      <path d="M218,512 Q265,507 308,512" stroke="#7BACC8" strokeWidth="1.2" fill="none" />
 
-      {/* E1 Tomei Expressway — main dual carriageway */}
-      <path
-        d="M0,285 Q50,278 100,276 Q155,274 200,276 Q250,278 300,280 Q345,282 390,278"
-        stroke="#B0B0B0" strokeWidth="4" fill="none"
-      />
-      <path
-        d="M0,285 Q50,278 100,276 Q155,274 200,276 Q250,278 300,280 Q345,282 390,278"
-        stroke="white" strokeWidth="1.5" fill="none" strokeDasharray="14,9"
-      />
+      {/* ── E1 Tomei Expressway ── */}
+      <path d="M0,292 Q46,286 97,284 Q152,282 202,284 Q252,286 296,288 Q342,290 390,286" stroke="#A8A898" strokeWidth="4.5" fill="none" />
+      <path d="M0,292 Q46,286 97,284 Q152,282 202,284 Q252,286 296,288 Q342,290 390,286" stroke="white" strokeWidth="1.5" fill="none" strokeDasharray="14,9" />
 
-      {/* Route 1 — national highway */}
-      <path
-        d="M0,318 Q50,312 100,310 Q155,308 200,310 Q255,312 300,314 Q345,316 390,312"
-        stroke="#C4C4C0" strokeWidth="2.5" fill="none"
-      />
+      {/* ── National Route 1 ── */}
+      <path d="M0,322 Q50,316 102,314 Q156,312 202,314 Q256,316 296,318 Q344,321 390,317" stroke="#C4C4B8" strokeWidth="2.5" fill="none" />
 
-      {/* Route 150 along coast */}
-      <path
-        d="M0,428 Q65,418 130,425 Q195,432 260,425 Q320,418 390,428"
-        stroke="#C8C8C4" strokeWidth="2" fill="none"
-      />
+      {/* ── Route 150 coastal ── */}
+      <path d="M0,430 Q62,420 118,426 Q178,432 238,426 Q296,420 362,426 L390,428" stroke="#C8C8C0" strokeWidth="2" fill="none" />
 
-      {/* N-S local roads */}
-      <path d="M75,195 Q76,250 78,310 Q79,360 80,400" stroke="#D4D0C8" strokeWidth="1.5" fill="none" />
-      <path d="M178,175 Q179,240 180,300 Q181,355 182,410" stroke="#D4D0C8" strokeWidth="1.5" fill="none" />
-      <path d="M345,160 Q346,225 347,290 Q348,340 348,400" stroke="#D4D0C8" strokeWidth="1.5" fill="none" />
+      {/* ── Prefectural routes N-S ── */}
+      <path d="M70,207 Q72,262 74,314 Q75,358 76,402 Q77,436 77,458" stroke="#D0CCC4" strokeWidth="1.8" fill="none" />
+      <path d="M176,172 Q178,232 180,292 Q181,347 182,402 Q183,436 184,456" stroke="#D0CCC4" strokeWidth="1.8" fill="none" />
+      <path d="M250,168 Q252,228 254,292 Q256,347 257,402" stroke="#D0CCC4" strokeWidth="1.8" fill="none" />
+      <path d="M358,170 Q360,232 361,297 Q362,347 362,400" stroke="#D0CCC4" strokeWidth="1.8" fill="none" />
 
-      {/* E-W local roads */}
-      <path d="M0,245 Q90,242 178,245" stroke="#D4D0C8" strokeWidth="1.5" fill="none" />
-      <path d="M200,210 Q240,208 290,210" stroke="#D4D0C8" strokeWidth="1.5" fill="none" />
-      <path d="M292,255 Q320,253 390,255" stroke="#D4D0C8" strokeWidth="1.5" fill="none" />
-      <path d="M0,355 Q80,352 175,355" stroke="#D4D0C8" strokeWidth="1.5" fill="none" />
-      <path d="M200,345 Q245,342 290,345" stroke="#D4D0C8" strokeWidth="1.5" fill="none" />
-      <path d="M295,320 Q335,318 390,318" stroke="#D4D0C8" strokeWidth="1.5" fill="none" />
+      {/* ── E-W local roads ── */}
+      <path d="M0,250 Q46,246 96,244 Q126,243 152,245" stroke="#D0CCC4" strokeWidth="1.5" fill="none" />
+      <path d="M158,241 Q200,238 250,239 Q292,240 332,241" stroke="#D0CCC4" strokeWidth="1.5" fill="none" />
+      <path d="M256,218 Q296,215 340,217 Q368,219 390,220" stroke="#D0CCC4" strokeWidth="1.5" fill="none" />
+      <path d="M0,362 Q42,358 76,360 Q112,361 152,362" stroke="#D0CCC4" strokeWidth="1.5" fill="none" />
+      <path d="M182,360 Q216,357 254,358 Q280,359 295,361" stroke="#D0CCC4" strokeWidth="1.5" fill="none" />
+      <path d="M256,332 Q296,330 358,332 L390,333" stroke="#D0CCC4" strokeWidth="1.5" fill="none" />
+      <path d="M0,402 Q42,399 76,400" stroke="#D0CCC4" strokeWidth="1.2" fill="none" />
+      <path d="M182,402 Q216,399 254,400 Q280,401 295,403" stroke="#D0CCC4" strokeWidth="1.2" fill="none" />
 
-      {/* Crossing connectors */}
-      <path d="M75,310 Q125,310 178,310" stroke="#D4D0C8" strokeWidth="1.2" fill="none" />
-      <path d="M75,355 Q125,355 178,355" stroke="#D4D0C8" strokeWidth="1.2" fill="none" />
+      {/* ── Fine local streets ── */}
+      <path d="M74,362 Q112,360 156,362" stroke="#D8D4CC" strokeWidth="1" fill="none" />
+      <path d="M74,315 Q112,313 153,315" stroke="#D8D4CC" strokeWidth="1" fill="none" />
+      <path d="M28,250 Q28,292 30,322 Q31,358 32,398" stroke="#D8D4CC" strokeWidth="1" fill="none" />
+      <path d="M48,250 Q48,292 50,322 Q51,358 52,398" stroke="#D8D4CC" strokeWidth="1" fill="none" />
+      <path d="M196,284 Q196,332 197,362 Q198,392 199,422" stroke="#D8D4CC" strokeWidth="1" fill="none" />
+      <path d="M214,284 Q214,332 215,362 Q216,392 217,422" stroke="#D8D4CC" strokeWidth="1" fill="none" />
+      <path d="M162,318 Q162,338 162,358" stroke="#D8D4CC" strokeWidth="1" fill="none" />
+      <path d="M328,250 Q328,282 329,318" stroke="#D8D4CC" strokeWidth="1" fill="none" />
+      <path d="M348,250 Q348,282 349,318" stroke="#D8D4CC" strokeWidth="1" fill="none" />
+      <path d="M310,266 Q348,266 390,267" stroke="#D8D4CC" strokeWidth="1" fill="none" />
+      <path d="M310,284" stroke="#D8D4CC" strokeWidth="1" fill="none" />
+      <path d="M310,305 Q348,305 390,306" stroke="#D8D4CC" strokeWidth="1" fill="none" />
 
-      {/* City labels — positioned to avoid pin overlap */}
-      <text x="30"  y="278" fontSize="11" fill="#7A8590" fontFamily="sans-serif" fontWeight="500">掛川市</text>
-      <text x="145" y="255" fontSize="11" fill="#7A8590" fontFamily="sans-serif" fontWeight="500">袋井市</text>
-      <text x="208" y="302" fontSize="11" fill="#7A8590" fontFamily="sans-serif" fontWeight="500">磐田市</text>
-      <text x="332" y="255" fontSize="11" fill="#7A8590" fontFamily="sans-serif" fontWeight="500">浜松市</text>
+      {/* ── Route badges ── */}
+      <rect x="170" y="278" width="16" height="10" rx="2" fill="#6A8CC0" />
+      <text x="178" y="287" fontSize="7" fill="white" textAnchor="middle" fontFamily="sans-serif" fontWeight="700">1</text>
+      <rect x="194" y="421" width="22" height="11" rx="2" fill="#6A8CC0" />
+      <text x="205" y="430" fontSize="7" fill="white" textAnchor="middle" fontFamily="sans-serif" fontWeight="700">150</text>
 
-      {/* Ocean label */}
-      <text x="40" y="520" fontSize="11" fill="#5A90A8" fontFamily="sans-serif">遠州灘</text>
-      {/* River label */}
-      <text x="300" y="360" fontSize="10" fill="#5A90A8" fontFamily="sans-serif"
-        transform="rotate(-88 300 360)">天竜川</text>
+      {/* ── City labels (placed away from markers and their labels) ── */}
+      {/* 掛川市: upper-right, away from yamate at (46%,26%) */}
+      <text x="334" y="163" fontSize="11" fill="#7A8590" fontFamily="sans-serif" fontWeight="500">掛川市</text>
+      {/* 袋井市: right side */}
+      <text x="336" y="256" fontSize="11" fill="#7A8590" fontFamily="sans-serif" fontWeight="500">袋井市</text>
+      {/* 磐田市: center-lower, well below miyata at (63%,54%) */}
+      <text x="204" y="384" fontSize="11" fill="#7A8590" fontFamily="sans-serif" fontWeight="500">磐田市</text>
+      {/* 浜松市: right */}
+      <text x="338" y="228" fontSize="11" fill="#7A8590" fontFamily="sans-serif" fontWeight="500">浜松市</text>
+
+      {/* ── Ocean / river labels ── */}
+      <text x="38" y="516" fontSize="11" fill="#5A90A8" fontFamily="sans-serif">遠州灘</text>
+      <text x="153" y="356" fontSize="10" fill="#5A90A8" fontFamily="sans-serif" transform="rotate(-88 153 356)">天竜川</text>
     </svg>
   )
 }
@@ -129,7 +161,7 @@ function ApiaryPinMarker({ apiary, selected, onClick }: ApiaryPinProps) {
       aria-label={`${apiary.name}（${apiary.colonyCount}群）${selected ? '選択中' : ''}`}
       type="button"
     >
-      <svg width="36" height="46" viewBox="0 0 36 46" fill="none" aria-hidden="true">
+      <svg width="28" height="36" viewBox="0 0 36 46" fill="none" aria-hidden="true" className={styles.markerPin}>
         <filter id={`shadow-${apiary.id}`} x="-30%" y="-10%" width="160%" height="140%">
           <feDropShadow dx="0" dy="2" stdDeviation="2.5" floodOpacity="0.22" />
         </filter>
@@ -140,9 +172,9 @@ function ApiaryPinMarker({ apiary, selected, onClick }: ApiaryPinProps) {
         />
         <circle cx="18" cy="17" r="9.5" fill="white" />
       </svg>
-      {/* Two-line label: name + colony count */}
+      {/* Two-line label: name / colony count — displayed to the right of pin */}
       <span className={`${styles.markerLabel} ${selected ? styles.markerLabelSelected : ''}`}>
-        <span className={styles.markerLabelName}>{apiary.name.replace('養蜂場', '')}</span>
+        <span className={styles.markerLabelName}>{apiary.name}</span>
         <span className={styles.markerLabelCount} style={{ color: selected ? '#E39A16' : apiary.pinColor }}>
           {apiary.colonyCount}群
         </span>
@@ -181,7 +213,7 @@ function AlertMarker({ apiary }: { apiary: Apiary }) {
         <rect x="14.5" y="9" width="3" height="9.5" rx="1.5" fill="white" />
         <circle cx="16" cy="23" r="1.8" fill="white" />
       </svg>
-      <span className={styles.alertMarkerLabel}>{apiary.name.replace('養蜂場', '')}</span>
+      <span className={styles.alertMarkerLabel}>{apiary.name}</span>
     </div>
   )
 }
@@ -233,21 +265,22 @@ function ApiaryBottomSheet({ apiary, onClose, onViewList, onRoute }: BottomSheet
             {/* Colony count + distance on same row */}
             <div className={styles.sheetMetaRow}>
               <div className={styles.sheetCounts}>
-                <svg width="15" height="15" viewBox="0 0 22 22" fill="none" aria-hidden="true" className={styles.hiveIcon}>
-                  <rect x="7.5" y="7" width="7" height="10" rx="3.5" fill="#1F2937" />
-                  <rect x="7.5" y="10" width="7" height="1.5" rx="0.3" fill="white" />
-                  <rect x="7.5" y="13" width="7" height="1.5" rx="0.3" fill="white" />
-                  <rect x="9" y="6.5" width="4" height="2" rx="1" fill="#1F2937" />
-                  <circle cx="11" cy="4.5" r="2" fill="#1F2937" />
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true" className={styles.hiveIcon}>
+                  {/* 3-stack Langstroth hive boxes */}
+                  <rect x="2" y="1.5" width="12" height="3.5" rx="0.5" fill="#1F2937" />
+                  <rect x="2" y="5.5" width="12" height="3.5" rx="0.5" fill="#1F2937" opacity="0.82" />
+                  <rect x="2" y="9.5" width="12" height="3.5" rx="0.5" fill="#1F2937" opacity="0.65" />
+                  {/* Bottom board */}
+                  <rect x="1" y="13.5" width="14" height="1.5" rx="0.4" fill="#1F2937" opacity="0.45" />
                 </svg>
                 <span className={styles.sheetColonyCount}>{apiary.colonyCount}群</span>
                 {apiary.alertCount > 0 && (
-                  <span className={styles.sheetAlertCount}>注意 {apiary.alertCount}群</span>
+                  <span className={styles.sheetAlertCount}>・注意 {apiary.alertCount}群</span>
                 )}
               </div>
               <div className={styles.sheetDistance}>
                 <Car size={13} className={styles.carIcon} aria-hidden />
-                <span>{apiary.distanceKm}km</span>
+                <span>現在地から {apiary.distanceKm}km</span>
               </div>
             </div>
           </div>
@@ -258,7 +291,7 @@ function ApiaryBottomSheet({ apiary, onClose, onViewList, onRoute }: BottomSheet
             一覧を見る
           </button>
           <button className={styles.routeBtn} type="button" onClick={onRoute}>
-            <RouteIcon size={15} aria-hidden />
+            <Navigation size={15} aria-hidden />
             経路
           </button>
         </div>

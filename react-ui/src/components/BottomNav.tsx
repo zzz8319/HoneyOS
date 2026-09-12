@@ -1,11 +1,11 @@
 import { BarChart3, ClipboardCheck, Home, Settings } from 'lucide-react'
-import { HiveBeeMark } from './icons'
+import { ApiaryFarmIcon } from './icons'
 import styles from './BottomNav.module.css'
 
 export type TabId = 'home' | 'farms' | 'work' | 'analytics' | 'settings'
 
 const FarmsIcon = ({ size }: { size?: number }) => (
-  <HiveBeeMark size={size} />
+  <ApiaryFarmIcon size={size} />
 )
 
 interface NavItem {

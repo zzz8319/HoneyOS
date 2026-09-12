@@ -134,7 +134,7 @@
 .layerBtnActive {
   background: var(--color-primary);
   border-color: var(--color-primary);
-  color: var(--color-text);
+  color: white;
   font-weight: 600;
 }
 
@@ -218,36 +218,39 @@
 /* ── Apiary pin marker ─────────────────────────────────────────────────────── */
 .markerBtn {
   position: absolute;
-  transform: translate(-50%, -100%);
+  /* anchor at pin tip: shift left by half pin width (14px), up by full pin height (36px) */
+  transform: translate(-14px, -36px);
   background: none;
   border: none;
-  padding: 2px;
+  padding: 0;
   cursor: pointer;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
   z-index: 3;
-  min-width: 44px;
-  min-height: 52px;
 }
 
-.markerBtnSelected svg {
-  transform: scale(1.08);
+.markerPin {
+  flex-shrink: 0;
+}
+
+.markerBtnSelected .markerPin {
   filter: drop-shadow(0 3px 8px rgba(227, 154, 22, 0.4));
 }
 
-/* Two-line label */
+/* Two-line label — to the right of pin */
 .markerLabel {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   gap: 1px;
   background: white;
-  border: 1px solid var(--color-border);
-  border-radius: 6px;
-  padding: 3px 8px;
-  box-shadow: var(--shadow-sm);
+  border: 1px solid rgba(0,0,0,0.10);
+  border-radius: 7px;
+  padding: 4px 9px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.10);
+  white-space: nowrap;
 }
 
 .markerLabelSelected {
@@ -256,18 +259,18 @@
 }
 
 .markerLabelName {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--color-text);
   white-space: nowrap;
-  line-height: 1.2;
+  line-height: 1.3;
 }
 
 .markerLabelCount {
-  font-size: 10px;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 600;
   white-space: nowrap;
-  line-height: 1.2;
+  line-height: 1.3;
 }
 
 /* ── Flower / nectar marker ────────────────────────────────────────────────── */
@@ -458,11 +461,11 @@
 }
 
 .dragHandle {
-  width: 36px;
-  height: 4px;
-  background: var(--color-border);
+  width: 32px;
+  height: 3px;
+  background: #D0CCC4;
   border-radius: var(--radius-full);
-  margin: 10px auto 4px;
+  margin: 10px auto 6px;
 }
 
 .closeBtn {
@@ -495,8 +498,8 @@
 /* Pin icon with circular background */
 .sheetPinWrap {
   flex-shrink: 0;
-  width: 52px;
-  height: 52px;
+  width: 48px;
+  height: 48px;
   background: var(--color-primary-soft);
   border-radius: 50%;
   display: flex;
@@ -511,16 +514,16 @@
 }
 
 .sheetName {
-  font-size: 17px;
+  font-size: 18px;
   font-weight: 700;
   color: var(--color-text);
-  margin: 0 0 2px;
+  margin: 0 0 3px;
 }
 
 .sheetLocation {
   font-size: 13px;
   color: var(--color-text-secondary);
-  margin: 0 0 6px;
+  margin: 0 0 8px;
 }
 
 /* Colony count + distance on same row */
@@ -543,13 +546,13 @@
 }
 
 .sheetColonyCount {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--color-text);
 }
 
 .sheetAlertCount {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--color-danger);
 }
@@ -558,7 +561,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--color-text-secondary);
   white-space: nowrap;
 }
