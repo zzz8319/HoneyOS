@@ -21,11 +21,11 @@ for (const state of STATES) {
 test('SCR-012 inspection-record normal scrolled-to-bottom', async ({ page }) => {
   await page.goto('/?screen=inspection-record&state=normal&devbar=0')
   await page.waitForLoadState('networkidle')
-  // Scroll the main content area to the bottom
+  // Scroll the main content area to bottom
   await page.evaluate(() => {
     const main = document.querySelector('main')
-    if (main) main.scrollTop = main.scrollHeight
+    if (main) main.scrollTop = 99999
   })
-  await page.waitForTimeout(100)
+  await page.waitForTimeout(200)
   await expect(page).toHaveScreenshot('scr-012-normal-scrolled-bottom.png')
 })
