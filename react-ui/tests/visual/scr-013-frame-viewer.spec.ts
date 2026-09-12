@@ -21,8 +21,13 @@ for (const state of STATES) {
     await page.waitForLoadState('networkidle')
 
     if (state !== 'loading') {
-      await page.waitForTimeout(100)
+      await page.waitForTimeout(150)
     }
+
+    // Reset scroll so summary card is always visible at top
+    await page.evaluate(() => {
+      document.querySelector('main')?.scrollTo(0, 0)
+    })
 
     await expect(page).toHaveScreenshot(`scr-013-${state}.png`, {
       fullPage: false,
