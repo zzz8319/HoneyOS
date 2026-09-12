@@ -1,0 +1,395 @@
+.shell {
+  min-height: 100dvh;
+  max-width: 430px;
+  margin: auto;
+  background: var(--color-bg);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ===== 詳細ヘッダー ===== */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+}
+
+.backBtn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.1s;
+}
+
+.backBtn:hover { background: var(--color-bg); }
+
+.headerInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.colonyName {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--color-text);
+  line-height: 1.2;
+}
+
+.location {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  display: block;
+}
+
+/* 状態バッジ */
+.badge {
+  flex-shrink: 0;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  line-height: 1.4;
+}
+
+.badge_good   { background: var(--color-ok-soft);     color: var(--color-ok); }
+.badge_warn   { background: var(--color-warn-soft);   color: var(--color-warn); }
+.badge_danger { background: var(--color-danger-soft); color: var(--color-danger); }
+
+/* ===== メインコンテンツ ===== */
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px 16px calc(var(--detail-fixed-cta-height) + var(--space-4) + env(safe-area-inset-bottom, 0px));
+}
+
+/* ===== カード共通 ===== */
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 8px 12px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.cardTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.betaBadge {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  background: var(--color-border);
+  border-radius: var(--radius-full);
+  padding: 2px 6px;
+  line-height: 1.4;
+}
+
+/* 強さスコア: タイトル下に配置 */
+.scoreRow {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.scoreVal {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.deltaUp {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-ok);
+  font-variant-numeric: tabular-nums;
+}
+
+.deltaDown {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-danger);
+  font-variant-numeric: tabular-nums;
+}
+
+/* 凡例 */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  color: var(--color-text-secondary);
+}
+
+.legendDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.legendNote {
+  font-size: 10px;
+  color: var(--color-text-secondary);
+}
+
+/* チャートラッパー: ポップアップの基準位置 */
+.chartWrap {
+  position: relative;
+}
+
+/* ポップアップ: グラフ右上へ絶対配置 */
+.popover {
+  position: absolute;
+  top: 4px;
+  right: 0;
+  width: 62%;
+  z-index: 5;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 8px 10px;
+  box-shadow: var(--shadow-float);
+}
+
+.popoverClose {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  padding: 0;
+}
+
+.popoverDate {
+  margin: 0 0 3px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-text);
+  padding-right: 18px;
+}
+
+.popoverNote {
+  margin: 0 0 6px;
+  font-size: 11px;
+  color: var(--color-text);
+  line-height: 1.4;
+}
+
+.popoverBtn {
+  width: 100%;
+  height: 28px;
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-sm);
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.popoverBtn:hover { background: var(--color-primary); color: #fff; }
+
+/* 内検履歴リンク */
+.historyLink {
+  border: none;
+  background: none;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-primary);
+  padding: 0;
+  cursor: pointer;
+  text-align: right;
+  align-self: flex-end;
+}
+
+/* 簡易指標β注記 */
+.betaNote {
+  border: none;
+  background: none;
+  font-size: 10px;
+  color: var(--color-text-secondary);
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+  text-decoration: underline;
+}
+
+/* ===== クイック導線 ===== */
+.quickRow {
+  display: flex;
+  gap: var(--space-2);
+}
+
+/* ===== エラーセクション ===== */
+.errorSection {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.errorMsg {
+  font-size: 12px;
+  color: var(--color-danger);
+}
+
+.retryBtn {
+  border: 1px solid var(--color-danger);
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--color-danger);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* ===== 空状態 ===== */
+.emptyWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-6) var(--space-4);
+  text-align: center;
+}
+
+.emptyEmoji {
+  font-size: 40px;
+}
+
+.emptyTitle {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.emptyDesc {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+/* ===== スケルトン ===== */
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.skel {
+  background: linear-gradient(
+    90deg,
+    var(--color-border) 25%,
+    color-mix(in srgb, var(--color-border) 50%, var(--color-surface)) 50%,
+    var(--color-border) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: 4px;
+}
+
+.skelCard {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  flex: 1;
+}
+
+/* ===== 固定CTAボタン ===== */
+.ctaWrap {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 430px;
+  padding: var(--space-2) var(--space-4) calc(var(--space-2) + env(safe-area-inset-bottom, 0px));
+  background: var(--color-bg);
+  border-top: 1px solid var(--color-border);
+  box-sizing: border-box;
+}
+
+.ctaBtn {
+  width: 100%;
+  height: 52px;
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  min-height: 44px;
+}
+
+.ctaBtn:hover { opacity: 0.9; }
+.ctaBtn:active { opacity: 0.8; }

@@ -1,0 +1,104 @@
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 8px 12px;
+  box-shadow: var(--shadow-sm);
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+
+.headerLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.timestamp {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  display: block;
+}
+
+.detailLink {
+  border: none;
+  background: none;
+  font-size: 12px;
+  font-weight: 600;
+  color: #2563EB;
+  padding: 0;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.kpiRow {
+  display: flex;
+  align-items: stretch;
+}
+
+.kpi {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  flex: 1;
+  padding: var(--space-2) var(--space-1);
+}
+
+.divider {
+  width: 1px;
+  background: var(--color-border);
+  align-self: stretch;
+  flex-shrink: 0;
+}
+
+.kpiIcon {
+  color: var(--color-text-secondary);
+  line-height: 1;
+}
+
+.kpiLabel {
+  font-size: 10px;
+  color: var(--color-text-secondary);
+}
+
+.kpiValue {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.kpiUnit {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--color-text-secondary);
+}
+
+.deltaUp {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-ok);
+  font-variant-numeric: tabular-nums;
+}
+
+.deltaDown {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-danger);
+  font-variant-numeric: tabular-nums;
+}
