@@ -50,15 +50,17 @@ function QueenExcluder() {
 // ── StageSection ─────────────────────────────────────────────────────────────
 interface StageSectionProps {
   stage: ViewerStage
+  frameOffset: number
   selectedFrameIndex: number | null
   onFrameSelect: (i: number) => void
 }
-function StageSection({ stage, selectedFrameIndex, onFrameSelect }: StageSectionProps) {
+function StageSection({ stage, frameOffset, selectedFrameIndex, onFrameSelect }: StageSectionProps) {
   const recorded = stage.frames.filter(Boolean).length
   return (
     <div className={styles.stageSection}>
       <div className={styles.stageHeader}>
         <div className={styles.stageHeaderLeft}>
+          <span className={styles.stageIndicator} aria-hidden />
           <span className={styles.stageName}>{stage.label}</span>
           <span className={styles.stageBadge}>{recorded}/{stage.frameCount}枠記録済み</span>
         </div>
@@ -67,22 +69,28 @@ function StageSection({ stage, selectedFrameIndex, onFrameSelect }: StageSection
         </button>
       </div>
 
-      <div className={styles.frameGrid} role="radiogroup" aria-label={`${stage.label}の枠一覧`}>
+      <div
+        className={styles.frameGrid}
+        role="radiogroup"
+        aria-label={`${stage.label}の枠一覧`}
+        style={{ gridTemplateColumns: `repeat(${stage.frameCount}, 1fr)` }}
+      >
         {stage.frames.map((frame, i) => {
           const isFoundation = stage.foundationFrames.includes(i)
           const hasAlert = stage.alertFrames.includes(i)
           const isActive = selectedFrameIndex === i
+          const displayNum = frameOffset + i + 1
           return (
             <button
               key={i}
               className={`${styles.frameCard} ${isActive ? styles.frameCardActive : ''}`}
               onClick={() => onFrameSelect(i)}
               aria-pressed={isActive}
-              aria-label={`${i + 1}枠目${frame ? '（記録済み）' : isFoundation ? '（巣礎）' : '（未記録）'}`}
+              aria-label={`${displayNum}枠目${frame ? '（記録済み）' : isFoundation ? '（巣礎）' : '（未記録）'}`}
               type="button"
             >
               <FrameMiniBar frame={frame} isFoundation={isFoundation} />
-              <span className={styles.frameNum}>{i + 1}</span>
+              <span className={styles.frameNum}>{displayNum}</span>
               {hasAlert && <span className={styles.alertBadge} aria-label="注意">！</span>}
             </button>
           )
@@ -196,6 +204,18 @@ export function FrameViewerScreen({
     sum + st.frames.reduce((fs, f) =>
       f ? fs + Math.round(f.bee / 100 * 10000) : fs, 0), 0)
 
+  // Compute frame-number offsets: bottom stage = 1..N, next stage = N+1..M
+  // stages array is top-to-bottom visually; reverse gives bottom-to-top
+  const stageOffsets = (() => {
+    const map: Record<string, number> = {}
+    let offset = 0
+    for (const st of [...record.stages].reverse()) {
+      map[st.id] = offset
+      offset += st.frameCount
+    }
+    return map
+  })()
+
   const selectedStage = selected
     ? record.stages.find(s => s.id === selected.stageId) ?? null
     : null
@@ -270,7 +290,7 @@ export function FrameViewerScreen({
                 <span className={styles.summaryIcon}>🐝</span>
                 <div className={styles.summaryText}>
                   <span className={styles.summaryValue}>
-                    推定 {estimatedBees.toLocaleString()}匹
+                    {estimatedBees.toLocaleString()}匹
                   </span>
                   <span className={styles.summaryLabel}>推定総蜂数</span>
                 </div>
@@ -282,7 +302,7 @@ export function FrameViewerScreen({
                   <span className={styles.summaryValue}>
                     {record.queenStatus ? QUEEN_LABEL[record.queenStatus] : '未確認'}
                   </span>
-                  <span className={styles.summaryLabel}>女王の状態</span>
+                  <span className={styles.summaryLabel}>女王</span>
                 </div>
               </div>
             </div>
@@ -318,6 +338,7 @@ export function FrameViewerScreen({
                 {stage.hasQueenExcluderAbove && <QueenExcluder />}
                 <StageSection
                   stage={stage}
+                  frameOffset={stageOffsets[stage.id] ?? 0}
                   selectedFrameIndex={
                     selected?.stageId === stage.id ? selected.frameIndex : null
                   }

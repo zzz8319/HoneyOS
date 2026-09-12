@@ -1,11 +1,11 @@
 import type { FrameRecord, ViewerStage, InspectionRecord, ViewerViewState } from './types'
 
-const F1: FrameRecord = { bee: 35, brood: 22, honey: 20 }
-const F2: FrameRecord = { bee: 32, brood: 18, honey: 28 }
+const F1: FrameRecord = { bee: 38, brood: 22, honey: 20 }
+const F2: FrameRecord = { bee: 34, brood: 18, honey: 28 }
 const F3: FrameRecord = { bee: 28, brood: 20, honey: 30 }
 const F4: FrameRecord = { bee: 25, brood: 15, honey: 35 }
 const F6: FrameRecord = { bee: 20, brood: 10, honey: 42 }
-const G1: FrameRecord = { bee: 20, brood: 10, honey: 42 }
+const G1: FrameRecord = { bee: 22, brood: 10, honey: 42 }
 const G2: FrameRecord = { bee: 18, brood: 8,  honey: 45 }
 
 const STAGES_AUG28: ViewerStage[] = [
@@ -15,7 +15,7 @@ const STAGES_AUG28: ViewerStage[] = [
     frameCount: 6,
     frames: [G1, G2, null, null, null, null],
     hasQueenExcluderAbove: false,
-    foundationFrames: [],
+    foundationFrames: [5],
     alertFrames: [],
   },
   {
