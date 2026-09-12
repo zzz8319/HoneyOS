@@ -95,7 +95,7 @@ export function getInitialSelected(
     case 'history':
       return { stageId: 'stage-1', frameIndex: 2 }  // 3枠目
     case 'frame-selected':
-      return { stageId: 'stage-1', frameIndex: 5 }  // 6枠目
+      return { stageId: 'stage-1', frameIndex: 2 }  // 3枠目
     case 'other-stage':
       return { stageId: 'stage-2', frameIndex: 1 }  // 2段目 2枠目
     case 'deselected':

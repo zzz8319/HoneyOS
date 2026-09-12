@@ -110,34 +110,37 @@ function StageSection({ stage, frameOffset, selectedFrameIndex, onFrameSelect }:
 interface DetailPanelProps {
   stage: ViewerStage
   frameIndex: number
+  frameOffset: number
   onClose: () => void
   onEdit: (target: EditTarget) => void
   onMemo: () => void
 }
-function DetailPanel({ stage, frameIndex, onClose, onEdit, onMemo }: DetailPanelProps) {
+function DetailPanel({ stage, frameIndex, frameOffset, onClose, onEdit, onMemo }: DetailPanelProps) {
   const frame = stage.frames[frameIndex]
   const empty = frame ? Math.max(0, 100 - frame.bee - frame.brood - frame.honey) : 100
+  const displayNum = frameOffset + frameIndex + 1
 
   return (
     <div className={styles.detailPanel}>
       <div className={styles.detailDragHandle} aria-hidden />
       <div className={styles.detailHeader}>
-        <h3 className={styles.detailTitle}>{frameIndex + 1}枠目</h3>
+        <h3 className={styles.detailTitle}>{displayNum}枠目</h3>
         <button className={styles.detailCloseBtn} onClick={onClose} type="button" aria-label="パネルを閉じる">×</button>
       </div>
       <div className={styles.detailBody}>
-        <div className={styles.compositionList}>
+        {/* Compact horizontal composition */}
+        <div className={styles.compositionCompact}>
           {([
             { color: BAR.bee,   label: '蜂',   value: frame?.bee   ?? 0 },
             { color: BAR.brood, label: '育児', value: frame?.brood ?? 0 },
             { color: BAR.honey, label: '貯蜜', value: frame?.honey ?? 0 },
-            { color: BAR.empty, label: '空間', value: empty },
+            { color: BAR.empty, label: '空き', value: empty },
           ] as const).map(({ color, label, value }) => (
-            <div key={label} className={styles.compositionRow}>
-              <span className={styles.compositionDot} style={{ background: color }} />
-              <span className={styles.compositionLabel}>{label}</span>
-              <span className={styles.compositionValue}>{value}%</span>
-            </div>
+            <span key={label} className={styles.compositionChip}>
+              <span className={styles.compositionChipDot} style={{ background: color }} />
+              <span className={styles.compositionChipLabel}>{label}</span>
+              <span className={styles.compositionChipValue}>{value}%</span>
+            </span>
           ))}
         </div>
 
@@ -227,6 +230,8 @@ export function FrameViewerScreen({
     ? record.stages.find(s => s.id === selected.stageId) ?? null
     : null
 
+  const showNormal = !isLoading && !isEmpty && !isError
+
   return (
     <div className={styles.shell}>
 
@@ -255,14 +260,67 @@ export function FrameViewerScreen({
         </button>
       </div>
 
+      {/* Top section — non-scrollable: always visible below date switcher */}
+      {showNormal && (
+        <div className={styles.topSection}>
+          {isOffline && (
+            <div className={styles.offlineBanner}>
+              オフラインです。キャッシュ済みの記録を表示しています。
+            </div>
+          )}
+
+          {/* Summary card */}
+          <div className={styles.summaryCard}>
+            <div className={styles.summaryCell}>
+              <span className={styles.summaryIcon}>🐝</span>
+              <div className={styles.summaryText}>
+                <span className={styles.summaryLabel}>推定総蜂数</span>
+                <span className={styles.summaryValue}>
+                  {estimatedBees.toLocaleString()}匹
+                </span>
+              </div>
+            </div>
+            <div className={styles.summaryDivider} />
+            <div className={styles.summaryCell}>
+              <span className={styles.summaryIcon}>👑</span>
+              <div className={styles.summaryText}>
+                <span className={styles.summaryLabel}>女王</span>
+                <span className={`${styles.queenBadge} ${styles[QUEEN_BADGE_CLASS[record.queenStatus ?? 'unconfirmed']]}`}>
+                  {record.queenStatus ? QUEEN_LABEL[record.queenStatus] : '未確認'}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Legend */}
+          <div className={styles.legend}>
+            {([
+              { color: BAR.bee,   label: '蜂' },
+              { color: BAR.brood, label: '育児' },
+              { color: BAR.honey, label: '貯蜜' },
+              { color: BAR.empty, label: '空き' },
+            ] as const).map(({ color, label }) => (
+              <span key={label} className={styles.legendItem}>
+                <span className={styles.legendDot} style={{ background: color }} />
+                {label}
+              </span>
+            ))}
+            <span className={styles.legendItem}>
+              <span className={styles.legendDotFoundation} />
+              巣礎
+            </span>
+          </div>
+
+          {/* Add stage (準備中) */}
+          <button className={styles.addStageBtn} type="button" disabled>
+            <Plus size={15} aria-hidden />
+            段を追加（準備中）
+          </button>
+        </div>
+      )}
+
       {/* Scrollable content */}
       <main className={styles.content}>
-
-        {isOffline && (
-          <div className={styles.offlineBanner}>
-            オフラインです。キャッシュ済みの記録を表示しています。
-          </div>
-        )}
 
         {isLoading && (
           <>
@@ -289,56 +347,8 @@ export function FrameViewerScreen({
           </div>
         )}
 
-        {!isLoading && !isEmpty && !isError && (
+        {showNormal && (
           <>
-            {/* Summary card */}
-            <div className={styles.summaryCard}>
-              <div className={styles.summaryCell}>
-                <span className={styles.summaryIcon}>🐝</span>
-                <div className={styles.summaryText}>
-                  <span className={styles.summaryValue}>
-                    {estimatedBees.toLocaleString()}匹
-                  </span>
-                  <span className={styles.summaryLabel}>推定総蜂数</span>
-                </div>
-              </div>
-              <div className={styles.summaryDivider} />
-              <div className={styles.summaryCell}>
-                <span className={styles.summaryIcon}>👑</span>
-                <div className={styles.summaryText}>
-                  <span className={styles.summaryLabel}>女王</span>
-                  <span className={`${styles.queenBadge} ${styles[QUEEN_BADGE_CLASS[record.queenStatus ?? 'unconfirmed']]}`}>
-                    {record.queenStatus ? QUEEN_LABEL[record.queenStatus] : '未確認'}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Legend */}
-            <div className={styles.legend}>
-              {([
-                { color: BAR.bee,   label: '蜂' },
-                { color: BAR.brood, label: '育児' },
-                { color: BAR.honey, label: '貯蜜' },
-                { color: BAR.empty, label: '空き' },
-              ] as const).map(({ color, label }) => (
-                <span key={label} className={styles.legendItem}>
-                  <span className={styles.legendDot} style={{ background: color }} />
-                  {label}
-                </span>
-              ))}
-              <span className={styles.legendItem}>
-                <span className={styles.legendDotFoundation} />
-                巣礎
-              </span>
-            </div>
-
-            {/* Add stage (準備中) */}
-            <button className={styles.addStageBtn} type="button" disabled>
-              <Plus size={15} aria-hidden />
-              段を追加（準備中）
-            </button>
-
             {/* Stage list */}
             {record.stages.map(stage => (
               <div key={stage.id}>
@@ -359,6 +369,7 @@ export function FrameViewerScreen({
               <DetailPanel
                 stage={selectedStage}
                 frameIndex={selected.frameIndex}
+                frameOffset={stageOffsets[selectedStage.id] ?? 0}
                 onClose={() => setSelected(null)}
                 onEdit={handleEdit}
                 onMemo={() => alert('内検メモ（未実装）')}
