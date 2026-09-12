@@ -480,7 +480,7 @@ export function InspectionRecordScreen({
         {/* Mode tabs */}
         <div className={styles.modeTabs} role="tablist">
           <button role="tab" aria-selected className={`${styles.modeTab} ${styles.modeTabActive}`} type="button">枠式</button>
-          <button role="tab" aria-selected={false} className={styles.modeTab} type="button">割合式</button>
+          <button role="tab" aria-selected={false} className={`${styles.modeTab} ${styles.modeTabDisabled}`} disabled type="button">割合式（準備中）</button>
         </div>
         <p className={styles.modeHint}>前回の方式を選択済み</p>
 
