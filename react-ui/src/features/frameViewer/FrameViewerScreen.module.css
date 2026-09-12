@@ -1,0 +1,645 @@
+/* SCR-013 枠ビューア */
+
+.shell {
+  height: 100dvh;
+  max-width: 430px;
+  margin: auto;
+  background: var(--color-bg);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ===== Header ===== */
+.header {
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-4);
+  height: 52px;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.backBtn,
+.menuBtn {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.backBtn { margin-left: -12px; }
+.menuBtn { margin-right: -12px; }
+.backBtn:active, .menuBtn:active { opacity: 0.6; }
+
+.headerTitle {
+  flex: 1;
+  text-align: center;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+/* ===== Date switcher ===== */
+.dateSwitcher {
+  display: flex;
+  align-items: center;
+  padding: 8px var(--space-4) 4px;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+  gap: var(--space-2);
+}
+
+.dateArrowBtn {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.dateArrowBtn:disabled {
+  color: var(--color-text-secondary);
+  opacity: 0.35;
+  cursor: default;
+}
+.dateArrowBtn:not(:disabled):active { background: var(--color-bg); }
+
+.dateCenter {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.dateLabel {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.dateHint {
+  font-size: 10px;
+  color: var(--color-text-secondary);
+}
+
+/* ===== Top section (non-scrollable) ===== */
+.topSection {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4) 0;
+  background: var(--color-bg);
+}
+
+/* ===== Scrollable content (stages only) ===== */
+.content {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4) var(--space-4);
+}
+
+/* Extra bottom padding when detail panel is visible so stages aren't hidden */
+.contentWithPanel {
+  padding-bottom: 215px;
+}
+
+/* ===== Offline banner ===== */
+.offlineBanner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: var(--color-warn-soft);
+  color: var(--color-warn);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-warn);
+}
+
+/* ===== Summary card ===== */
+.summaryCard {
+  display: flex;
+  align-items: center;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.summaryCell {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 12px var(--space-3);
+  min-height: 56px;
+}
+
+.summaryDivider {
+  width: 1px;
+  height: 36px;
+  background: var(--color-border);
+  flex-shrink: 0;
+}
+
+.summaryIcon {
+  flex-shrink: 0;
+  display: block;
+}
+
+.summaryText {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.summaryLabel {
+  font-size: 10px;
+  color: var(--color-text-secondary);
+}
+
+.summaryValue {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Queen status badge */
+.queenBadge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: var(--radius-full);
+  line-height: 1.4;
+}
+
+.queenBadgeLaying {
+  background: #DCFCE7;
+  color: #15803D;
+}
+
+.queenBadgeUnconfirmed {
+  background: #FEE2E2;
+  color: #DC2626;
+}
+
+.queenBadgeConcern {
+  background: #FEE2E2;
+  color: #DC2626;
+}
+
+/* ===== Legend ===== */
+.legend {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--color-text-secondary);
+}
+
+.legendDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.legendDotFoundation {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  flex-shrink: 0;
+  background: repeating-linear-gradient(
+    -45deg,
+    rgba(0,0,0,.15) 0,
+    rgba(0,0,0,.15) 2px,
+    #E3E5E8 2px,
+    #E3E5E8 7px
+  );
+}
+
+/* ===== Add stage button (enabled) ===== */
+.addStageBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  width: 100%;
+  height: 44px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.addStageBtn:active { background: var(--color-bg); }
+
+/* ===== Queen excluder ===== */
+.queenExcluder {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 4px 0;
+}
+
+.queenExcluder::before,
+.queenExcluder::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  border-top: 2px dashed var(--color-border);
+}
+
+.queenExcluderLabel {
+  font-size: 10px;
+  color: var(--color-text-secondary);
+  font-weight: 600;
+  white-space: nowrap;
+  padding: 2px 6px;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-full);
+}
+
+/* ===== Stage section ===== */
+.stageSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.stageHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.stageHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.stageIndicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: transparent;
+  border: 1.5px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.stageName {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.stageMenuBtn {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  margin-right: -12px;
+}
+.stageMenuBtn:active { opacity: 0.6; }
+
+/* ===== Frame grid ===== */
+.frameGrid {
+  display: grid;
+  gap: 4px;
+}
+
+.frameCard {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  border: 2px solid transparent;
+  border-radius: var(--radius-sm);
+  background: none;
+  padding: 3px 2px;
+  cursor: pointer;
+  position: relative;
+}
+
+.frameCardActive {
+  border-color: var(--color-primary);
+}
+
+/* mini bar (vertical) */
+.miniBar {
+  width: 100%;
+  height: 72px;
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.miniBarEmpty {
+  background: #E3E5E8;
+  opacity: 0.5;
+}
+
+.miniBarFoundation {
+  background: repeating-linear-gradient(
+    -45deg,
+    rgba(0,0,0,.12) 0,
+    rgba(0,0,0,.12) 2px,
+    #E3E5E8 2px,
+    #E3E5E8 8px
+  );
+}
+
+.frameNum {
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-secondary);
+  line-height: 1;
+}
+
+/* Alert badge */
+.alertBadge {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--color-danger);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  pointer-events: none;
+}
+
+/* ===== Detail panel — fixed bottom sheet, no overlay ===== */
+.detailPanel {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 11;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-top-left-radius: var(--radius-md);
+  border-top-right-radius: var(--radius-md);
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.10);
+  overflow: hidden;
+}
+
+.detailDragHandle {
+  width: 32px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--color-border);
+  margin: 5px auto 0;
+}
+
+.detailHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-3);
+  height: 40px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.detailTitle {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.detailCloseBtn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  margin-right: -8px;
+  font-size: 18px;
+  line-height: 1;
+}
+.detailCloseBtn:active { opacity: 0.6; }
+
+.detailBody {
+  padding: 6px var(--space-3) 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+/* Composition — single row, no wrap */
+.compositionCompact {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0 10px;
+}
+
+.compositionChip {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+
+.compositionChipDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.compositionChipLabel {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.compositionChipValue {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Edit CTA */
+.editBtn {
+  width: 100%;
+  height: 40px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  min-height: 36px;
+}
+.editBtn:active { opacity: 0.85; }
+
+/* Memo row */
+.memoRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 5px 0;
+  border-top: 1px solid var(--color-border);
+  cursor: pointer;
+  min-height: 36px;
+}
+.memoLabel {
+  font-size: 12px;
+  color: var(--color-text);
+  flex: 1;
+  font-weight: 600;
+}
+.memoValue {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.memoChevron {
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+}
+
+/* Add stage in detail panel (enabled) */
+.detailAddStageBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  width: 100%;
+  height: 36px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.detailAddStageBtn:active { background: var(--color-bg); }
+
+/* ===== Loading skeleton ===== */
+.skeleton {
+  background: linear-gradient(90deg, var(--color-border) 25%, var(--color-bg) 50%, var(--color-border) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: var(--radius-sm);
+}
+
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.skeletonSummary {
+  height: 56px;
+  border-radius: var(--radius-md);
+}
+
+.skeletonStage {
+  height: 140px;
+  border-radius: var(--radius-md);
+}
+
+/* ===== Empty / Error states ===== */
+.centerState {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  text-align: center;
+}
+
+.stateIcon {
+  font-size: 48px;
+  line-height: 1;
+}
+
+.stateTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.stateDesc {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.retryBtn {
+  height: 44px;
+  padding: 0 var(--space-4);
+  border: 1.5px solid var(--color-primary);
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--color-primary);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.retryBtn:active { opacity: 0.7; }

@@ -9,10 +9,14 @@ import { InspectionStartScreen } from './features/inspectionStart'
 import type { InspectionStartViewState } from './features/inspectionStart'
 import { InspectionRecordScreen } from './features/inspectionRecord'
 import type { RecordViewState } from './features/inspectionRecord'
+import { FrameViewerScreen } from './features/frameViewer'
+import type { ViewerViewState } from './features/frameViewer'
+import type { InspectionRecord } from './features/frameViewer/types'
+import { AddStageScreen } from './features/addStage'
 import type { TabId } from './components'
 import styles from './App.module.css'
 
-type ViewState = DashboardViewState | ColonyListViewState | ColonyDetailViewState | InspectionStartViewState | RecordViewState
+type ViewState = DashboardViewState | ColonyListViewState | ColonyDetailViewState | InspectionStartViewState | RecordViewState | ViewerViewState
 
 const STATES: { id: ViewState; label: string }[] = [
   { id: 'normal',  label: '通常' },
@@ -22,7 +26,7 @@ const STATES: { id: ViewState; label: string }[] = [
   { id: 'offline', label: 'オフライン' },
 ]
 
-const VALID_STATES: ViewState[] = ['normal', 'selected', 'empty', 'loading', 'error', 'offline', 'multi-stage', 'unsaved', 'saved', 'draft-restore', 'save-error']
+const VALID_STATES: ViewState[] = ['normal', 'selected', 'empty', 'loading', 'error', 'offline', 'multi-stage', 'unsaved', 'saved', 'draft-restore', 'save-error', 'frame-selected', 'deselected', 'other-stage', 'history']
 const VALID_TABS: TabId[] = ['home', 'farms', 'work', 'analytics', 'settings']
 
 const IS_DEV = import.meta.env.DEV &&
@@ -33,7 +37,7 @@ function readParam<T extends string>(key: string, valid: T[], fallback: T): T {
   return (valid.includes(p as T) ? p : fallback) as T
 }
 
-const VALID_SCREENS = ['home', 'farms', 'colony-detail', 'inspection-start', 'inspection-record'] as const
+const VALID_SCREENS = ['home', 'farms', 'colony-detail', 'inspection-start', 'inspection-record', 'frame-viewer', 'add-stage'] as const
 type Screen = typeof VALID_SCREENS[number]
 
 export default function App() {
@@ -49,12 +53,14 @@ export default function App() {
   const [selectedColonyId, setSelectedColonyId] = useState<string | null>(() =>
     new URLSearchParams(window.location.search).get('colonyId'),
   )
+  const [addStageRecord, setAddStageRecord] = useState<InspectionRecord | null>(null)
 
   const dashState    = viewState as DashboardViewState
   const colonyState  = viewState as ColonyListViewState
   const detailState  = viewState as ColonyDetailViewState
   const inspState    = viewState as InspectionStartViewState
   const recordState  = viewState as RecordViewState
+  const viewerState  = viewState as ViewerViewState
 
   return (
     <>
@@ -72,12 +78,25 @@ export default function App() {
         </div>
       )}
 
-      {screen === 'inspection-record' ? (
+      {screen === 'add-stage' && addStageRecord ? (
+        <AddStageScreen
+          record={addStageRecord}
+          onBack={() => setScreen('frame-viewer')}
+          onSave={() => setScreen('frame-viewer')}
+        />
+      ) : screen === 'frame-viewer' ? (
+        <FrameViewerScreen
+          viewState={viewerState}
+          onBack={() => setScreen('inspection-record')}
+          onEdit={() => setScreen('inspection-record')}
+          onAddStage={(record) => { setAddStageRecord(record); setScreen('add-stage') }}
+        />
+      ) : screen === 'inspection-record' ? (
         <InspectionRecordScreen
           viewState={recordState}
           onBack={() => setScreen('inspection-start')}
           onReselect={() => setScreen('inspection-start')}
-          onSave={() => alert('SCR-013へ遷移（未実装）')}
+          onSave={() => setScreen('frame-viewer')}
         />
       ) : screen === 'inspection-start' ? (
         <InspectionStartScreen

@@ -7,6 +7,7 @@ export default defineConfig({
       name: 'chromium-mobile',
       use: {
         ...devices['Pixel 5'],
+        viewport: { width: 390, height: 844 },
         launchOptions: {
           executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome',
         },
