@@ -20,14 +20,14 @@ for (const state of STATES) {
     await page.goto(`${BASE}/?screen=${SCREEN}&state=${state}&devbar=0`)
     await page.waitForLoadState('networkidle')
 
-    if (state !== 'loading') {
-      await page.waitForTimeout(150)
-    }
+    await page.waitForTimeout(state === 'loading' ? 50 : 200)
 
-    // Reset scroll so summary card is always visible at top
+    // Reset scroll position so summary card is always fully visible
     await page.evaluate(() => {
-      document.querySelector('main')?.scrollTo(0, 0)
+      const main = document.querySelector('main')
+      if (main) main.scrollTop = 0
     })
+    await page.waitForTimeout(50)
 
     await expect(page).toHaveScreenshot(`scr-013-${state}.png`, {
       fullPage: false,
