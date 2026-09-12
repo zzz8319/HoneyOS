@@ -331,7 +331,7 @@ export function InspectionRecordScreen({
 
   const [stages, setStages] = useState<StageRecord[]>(() => getInitialStages(viewState))
   const [queenStatus, setQueenStatus] = useState<QueenStatus | null>(
-    viewState === 'saved' ? 'laying' : null
+    viewState === 'unsaved' ? null : 'laying'
   )
   const [observations, setObservations] = useState<string[]>(
     viewState === 'saved' ? ['巣礎'] : []
