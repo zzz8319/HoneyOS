@@ -165,9 +165,8 @@
 }
 
 .summaryIcon {
-  font-size: 20px;
-  line-height: 1;
   flex-shrink: 0;
+  display: block;
 }
 
 .summaryText {
@@ -257,9 +256,9 @@
   gap: var(--space-1);
   width: 100%;
   height: 44px;
-  border: 1.5px dashed var(--color-border);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
-  background: none;
+  background: var(--color-surface);
   color: var(--color-text-secondary);
   font-size: 13px;
   font-weight: 600;
@@ -425,12 +424,12 @@
   right: 0;
   z-index: 11;
   background: var(--color-surface);
-  border: 1.5px solid var(--color-primary);
+  border: 1px solid var(--color-border);
   border-top-left-radius: var(--radius-md);
   border-top-right-radius: var(--radius-md);
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
-  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.10);
   overflow: hidden;
 }
 
@@ -569,9 +568,9 @@
   gap: var(--space-1);
   width: 100%;
   height: 36px;
-  border: 1.5px dashed var(--color-border);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
-  background: none;
+  background: var(--color-surface);
   color: var(--color-text-secondary);
   font-size: 12px;
   font-weight: 600;
