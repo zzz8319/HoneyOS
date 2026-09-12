@@ -363,21 +363,24 @@ export function FrameViewerScreen({
                 />
               </div>
             ))}
-
-            {/* Detail panel */}
-            {selected && selectedStage && (
-              <DetailPanel
-                stage={selectedStage}
-                frameIndex={selected.frameIndex}
-                frameOffset={stageOffsets[selectedStage.id] ?? 0}
-                onClose={() => setSelected(null)}
-                onEdit={handleEdit}
-                onMemo={() => alert('内検メモ（未実装）')}
-              />
-            )}
           </>
         )}
       </main>
+
+      {/* Bottom sheet detail panel — positioned absolutely inside .shell */}
+      {showNormal && selected && selectedStage && (
+        <>
+          <div className={styles.overlay} onClick={() => setSelected(null)} aria-hidden />
+          <DetailPanel
+            stage={selectedStage}
+            frameIndex={selected.frameIndex}
+            frameOffset={stageOffsets[selectedStage.id] ?? 0}
+            onClose={() => setSelected(null)}
+            onEdit={handleEdit}
+            onMemo={() => alert('内検メモ（未実装）')}
+          />
+        </>
+      )}
     </div>
   )
 }

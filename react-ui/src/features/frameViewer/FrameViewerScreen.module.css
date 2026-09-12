@@ -8,6 +8,7 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  position: relative;
 }
 
 /* ===== Header ===== */
@@ -421,13 +422,29 @@
   pointer-events: none;
 }
 
-/* ===== Detail panel ===== */
+/* ===== Overlay backdrop ===== */
+.overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+/* ===== Detail panel — fixed bottom sheet ===== */
 .detailPanel {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 11;
   background: var(--color-surface);
   border: 1.5px solid var(--color-primary);
-  border-radius: var(--radius-md);
+  border-top-left-radius: var(--radius-md);
+  border-top-right-radius: var(--radius-md);
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.12);
   overflow: hidden;
-  box-shadow: var(--shadow-sm);
 }
 
 .detailDragHandle {
