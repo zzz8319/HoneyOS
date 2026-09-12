@@ -214,7 +214,7 @@ export function ColonyDetailScreen({
             <CardSkeleton height={90} />
           </div>
         ) : (
-          <div className={styles.quickRow}>
+          <div className={styles.quickRow} data-testid="quick-links">
             <QuickLinkCard
               icon={<ClipboardList size={20} />}
               title="作業記録"
@@ -239,7 +239,7 @@ export function ColonyDetailScreen({
       </main>
 
       {/* ===== 固定CTAボタン ===== */}
-      <div className={styles.ctaWrap}>
+      <div className={styles.ctaWrap} data-testid="inspection-start-cta">
         <button
           className={styles.ctaBtn}
           onClick={() => onStartInspection?.(colonyId ?? colony.id)}

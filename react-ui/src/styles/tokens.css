@@ -31,4 +31,7 @@
   /* --- Shadow --- */
   --shadow-float: 0 8px 24px rgba(23, 33, 43, .12);
   --shadow-sm: 0 1px 4px rgba(23, 33, 43, .08);
+
+  /* --- Screen-specific --- */
+  --detail-fixed-cta-height: 68px; /* CTA button 52px + top padding 8px + bottom padding 8px */
 }
