@@ -11,6 +11,8 @@ import { InspectionRecordScreen } from './features/inspectionRecord'
 import type { RecordViewState } from './features/inspectionRecord'
 import { FrameViewerScreen } from './features/frameViewer'
 import type { ViewerViewState } from './features/frameViewer'
+import type { InspectionRecord } from './features/frameViewer/types'
+import { AddStageScreen } from './features/addStage'
 import type { TabId } from './components'
 import styles from './App.module.css'
 
@@ -35,7 +37,7 @@ function readParam<T extends string>(key: string, valid: T[], fallback: T): T {
   return (valid.includes(p as T) ? p : fallback) as T
 }
 
-const VALID_SCREENS = ['home', 'farms', 'colony-detail', 'inspection-start', 'inspection-record', 'frame-viewer'] as const
+const VALID_SCREENS = ['home', 'farms', 'colony-detail', 'inspection-start', 'inspection-record', 'frame-viewer', 'add-stage'] as const
 type Screen = typeof VALID_SCREENS[number]
 
 export default function App() {
@@ -51,6 +53,7 @@ export default function App() {
   const [selectedColonyId, setSelectedColonyId] = useState<string | null>(() =>
     new URLSearchParams(window.location.search).get('colonyId'),
   )
+  const [addStageRecord, setAddStageRecord] = useState<InspectionRecord | null>(null)
 
   const dashState    = viewState as DashboardViewState
   const colonyState  = viewState as ColonyListViewState
@@ -75,11 +78,18 @@ export default function App() {
         </div>
       )}
 
-      {screen === 'frame-viewer' ? (
+      {screen === 'add-stage' && addStageRecord ? (
+        <AddStageScreen
+          record={addStageRecord}
+          onBack={() => setScreen('frame-viewer')}
+          onSave={() => setScreen('frame-viewer')}
+        />
+      ) : screen === 'frame-viewer' ? (
         <FrameViewerScreen
           viewState={viewerState}
           onBack={() => setScreen('inspection-record')}
           onEdit={() => setScreen('inspection-record')}
+          onAddStage={(record) => { setAddStageRecord(record); setScreen('add-stage') }}
         />
       ) : screen === 'inspection-record' ? (
         <InspectionRecordScreen

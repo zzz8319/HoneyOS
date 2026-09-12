@@ -61,14 +61,12 @@ interface StageSectionProps {
   onFrameSelect: (i: number) => void
 }
 function StageSection({ stage, frameOffset, selectedFrameIndex, onFrameSelect }: StageSectionProps) {
-  const recorded = stage.frames.filter(Boolean).length
   return (
     <div className={styles.stageSection}>
       <div className={styles.stageHeader}>
         <div className={styles.stageHeaderLeft}>
           <span className={styles.stageIndicator} aria-hidden />
-          <span className={styles.stageName}>{stage.label}</span>
-          <span className={styles.stageBadge}>{recorded}/{stage.frameCount}枠記録済み</span>
+          <span className={styles.stageName}>{stage.label}{'　'}{stage.frameCount}枠</span>
         </div>
         <button className={styles.stageMenuBtn} type="button" aria-label={`${stage.label}のメニュー`} disabled>
           <MoreVertical size={16} aria-hidden />
@@ -114,8 +112,9 @@ interface DetailPanelProps {
   onClose: () => void
   onEdit: (target: EditTarget) => void
   onMemo: () => void
+  onAddStage: () => void
 }
-function DetailPanel({ stage, frameIndex, frameOffset, onClose, onEdit, onMemo }: DetailPanelProps) {
+function DetailPanel({ stage, frameIndex, frameOffset, onClose, onEdit, onMemo, onAddStage }: DetailPanelProps) {
   const frame = stage.frames[frameIndex]
   const empty = frame ? Math.max(0, 100 - frame.bee - frame.brood - frame.honey) : 100
   const displayNum = frameOffset + frameIndex + 1
@@ -128,7 +127,7 @@ function DetailPanel({ stage, frameIndex, frameOffset, onClose, onEdit, onMemo }
         <button className={styles.detailCloseBtn} onClick={onClose} type="button" aria-label="パネルを閉じる">×</button>
       </div>
       <div className={styles.detailBody}>
-        {/* Compact horizontal composition */}
+        {/* Compact horizontal composition — single row */}
         <div className={styles.compositionCompact}>
           {([
             { color: BAR.bee,   label: '蜂',   value: frame?.bee   ?? 0 },
@@ -158,9 +157,9 @@ function DetailPanel({ stage, frameIndex, frameOffset, onClose, onEdit, onMemo }
           <ChevronRightSmall size={16} className={styles.memoChevron} aria-hidden />
         </div>
 
-        <button className={styles.detailAddStageBtn} type="button" disabled>
-          <Plus size={15} aria-hidden />
-          段を追加（準備中）
+        <button className={styles.detailAddStageBtn} type="button" onClick={onAddStage}>
+          <Plus size={14} aria-hidden />
+          段を追加
         </button>
       </div>
     </div>
@@ -173,6 +172,7 @@ interface Props {
   initialRecord?: InspectionRecord
   onBack?: () => void
   onEdit?: (target: EditTarget, record: InspectionRecord) => void
+  onAddStage?: (record: InspectionRecord) => void
 }
 
 export function FrameViewerScreen({
@@ -180,6 +180,7 @@ export function FrameViewerScreen({
   initialRecord,
   onBack,
   onEdit,
+  onAddStage,
 }: Props) {
   const isLoading = viewState === 'loading'
   const isEmpty   = viewState === 'empty'
@@ -214,8 +215,6 @@ export function FrameViewerScreen({
     sum + st.frames.reduce((fs, f) =>
       f ? fs + Math.round(f.bee / 100 * 10000) : fs, 0), 0)
 
-  // Compute frame-number offsets: bottom stage = 1..N, next stage = N+1..M
-  // stages array is top-to-bottom visually; reverse gives bottom-to-top
   const stageOffsets = (() => {
     const map: Record<string, number> = {}
     let offset = 0
@@ -260,7 +259,7 @@ export function FrameViewerScreen({
         </button>
       </div>
 
-      {/* Top section — non-scrollable: always visible below date switcher */}
+      {/* Top section — non-scrollable */}
       {showNormal && (
         <div className={styles.topSection}>
           {isOffline && (
@@ -311,15 +310,15 @@ export function FrameViewerScreen({
             </span>
           </div>
 
-          {/* Add stage (準備中) */}
-          <button className={styles.addStageBtn} type="button" disabled>
+          {/* Add stage */}
+          <button className={styles.addStageBtn} type="button" onClick={() => onAddStage?.(record)}>
             <Plus size={15} aria-hidden />
-            段を追加（準備中）
+            段を追加
           </button>
         </div>
       )}
 
-      {/* Scrollable content */}
+      {/* Scrollable content — stages only */}
       <main className={styles.content}>
 
         {isLoading && (
@@ -349,7 +348,6 @@ export function FrameViewerScreen({
 
         {showNormal && (
           <>
-            {/* Stage list */}
             {record.stages.map(stage => (
               <div key={stage.id}>
                 {stage.hasQueenExcluderAbove && <QueenExcluder />}
@@ -367,19 +365,17 @@ export function FrameViewerScreen({
         )}
       </main>
 
-      {/* Bottom sheet detail panel — positioned absolutely inside .shell */}
+      {/* Bottom sheet detail panel — no overlay */}
       {showNormal && selected && selectedStage && (
-        <>
-          <div className={styles.overlay} onClick={() => setSelected(null)} aria-hidden />
-          <DetailPanel
-            stage={selectedStage}
-            frameIndex={selected.frameIndex}
-            frameOffset={stageOffsets[selectedStage.id] ?? 0}
-            onClose={() => setSelected(null)}
-            onEdit={handleEdit}
-            onMemo={() => alert('内検メモ（未実装）')}
-          />
-        </>
+        <DetailPanel
+          stage={selectedStage}
+          frameIndex={selected.frameIndex}
+          frameOffset={stageOffsets[selectedStage.id] ?? 0}
+          onClose={() => setSelected(null)}
+          onEdit={handleEdit}
+          onMemo={() => alert('内検メモ（未実装）')}
+          onAddStage={() => onAddStage?.(record)}
+        />
       )}
     </div>
   )

@@ -98,7 +98,7 @@
   color: var(--color-text-secondary);
 }
 
-/* ===== Top section (non-scrollable — always visible) ===== */
+/* ===== Top section (non-scrollable) ===== */
 .topSection {
   flex-shrink: 0;
   display: flex;
@@ -108,7 +108,7 @@
   background: var(--color-bg);
 }
 
-/* ===== Scrollable content (stages + detail panel only) ===== */
+/* ===== Scrollable content (stages only) ===== */
 .content {
   flex: 1;
   overflow-y: auto;
@@ -244,7 +244,7 @@
   );
 }
 
-/* ===== Add stage button ===== */
+/* ===== Add stage button (enabled) ===== */
 .addStageBtn {
   display: flex;
   align-items: center;
@@ -258,9 +258,9 @@
   color: var(--color-text-secondary);
   font-size: 13px;
   font-weight: 600;
-  cursor: not-allowed;
-  opacity: 0.6;
+  cursor: pointer;
 }
+.addStageBtn:active { background: var(--color-bg); }
 
 /* ===== Queen excluder ===== */
 .queenExcluder {
@@ -322,15 +322,6 @@
   color: var(--color-text);
 }
 
-.stageBadge {
-  font-size: 11px;
-  color: var(--color-text-secondary);
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
-  padding: 1px 6px;
-  border-radius: var(--radius-full);
-}
-
 .stageMenuBtn {
   width: 44px;
   height: 44px;
@@ -345,10 +336,9 @@
 }
 .stageMenuBtn:active { opacity: 0.6; }
 
-/* ===== Frame grid (fit all frames without scroll) ===== */
+/* ===== Frame grid ===== */
 .frameGrid {
   display: grid;
-  /* grid-template-columns set via inline style per stage */
   gap: 4px;
 }
 
@@ -422,15 +412,7 @@
   pointer-events: none;
 }
 
-/* ===== Overlay backdrop ===== */
-.overlay {
-  position: absolute;
-  inset: 0;
-  z-index: 10;
-  background: rgba(0, 0, 0, 0.2);
-}
-
-/* ===== Detail panel — fixed bottom sheet ===== */
+/* ===== Detail panel — fixed bottom sheet, no overlay ===== */
 .detailPanel {
   position: absolute;
   bottom: 0;
@@ -452,14 +434,14 @@
   height: 4px;
   border-radius: 2px;
   background: var(--color-border);
-  margin: 8px auto 0;
+  margin: 6px auto 0;
 }
 
 .detailHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px var(--space-3);
+  padding: 6px var(--space-3) 6px;
   border-bottom: 1px solid var(--color-border);
 }
 
@@ -487,53 +469,57 @@
 .detailCloseBtn:active { opacity: 0.6; }
 
 .detailBody {
-  padding: var(--space-3);
+  padding: 8px var(--space-3) 10px;
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: 6px;
 }
 
-/* Composition — compact horizontal chips */
+/* Composition — single row, no wrap */
 .compositionCompact {
   display: flex;
-  flex-wrap: wrap;
-  gap: 4px 12px;
+  flex-wrap: nowrap;
+  gap: 0 10px;
 }
 
 .compositionChip {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
 }
 
 .compositionChipDot {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   flex-shrink: 0;
 }
 
 .compositionChipLabel {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--color-text-secondary);
+  white-space: nowrap;
 }
 
 .compositionChipValue {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   color: var(--color-text);
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 /* Edit CTA */
 .editBtn {
   width: 100%;
-  height: 52px;
+  height: 44px;
   border: none;
   border-radius: var(--radius-md);
   background: var(--color-primary);
   color: #fff;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
   cursor: pointer;
   min-height: 44px;
@@ -545,10 +531,10 @@
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  padding: 10px 0;
+  padding: 6px 0;
   border-top: 1px solid var(--color-border);
   cursor: pointer;
-  min-height: 44px;
+  min-height: 40px;
 }
 .memoLabel {
   font-size: 13px;
@@ -569,22 +555,23 @@
   flex-shrink: 0;
 }
 
+/* Add stage in detail panel (enabled) */
 .detailAddStageBtn {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: var(--space-1);
   width: 100%;
-  height: 44px;
+  height: 40px;
   border: 1.5px dashed var(--color-border);
   border-radius: var(--radius-sm);
   background: none;
   color: var(--color-text-secondary);
   font-size: 13px;
   font-weight: 600;
-  cursor: not-allowed;
-  opacity: 0.6;
+  cursor: pointer;
 }
+.detailAddStageBtn:active { background: var(--color-bg); }
 
 /* ===== Loading skeleton ===== */
 .skeleton {
