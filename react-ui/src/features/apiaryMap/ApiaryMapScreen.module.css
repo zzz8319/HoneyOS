@@ -5,6 +5,8 @@
   height: 100dvh;
   background: var(--color-bg);
   overflow: hidden;
+  /* Account for fixed BottomNav (72px) so mapWrapper ends above it */
+  padding-bottom: 72px;
 }
 
 /* ── Header ────────────────────────────────────────────────────────────────── */
@@ -116,10 +118,10 @@
   align-items: center;
   justify-content: center;
   gap: 5px;
-  height: 36px;
-  padding: 0 var(--space-2);
+  height: 34px;
+  padding: 0 var(--space-3);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-md);
   background: var(--color-surface);
   color: var(--color-text-secondary);
   font-size: 13px;
@@ -130,9 +132,9 @@
 }
 
 .layerBtnActive {
-  background: var(--color-primary-soft);
+  background: var(--color-primary);
   border-color: var(--color-primary);
-  color: var(--color-primary);
+  color: var(--color-text);
   font-weight: 600;
 }
 
@@ -188,7 +190,7 @@
   height: 44px;
   padding: 0 var(--space-5);
   background: var(--color-primary);
-  color: white;
+  color: var(--color-text);
   border: none;
   border-radius: var(--radius-md);
   font-size: 14px;
@@ -219,40 +221,53 @@
   transform: translate(-50%, -100%);
   background: none;
   border: none;
-  padding: 4px;
+  padding: 2px;
   cursor: pointer;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 2px;
   z-index: 3;
-  /* 44px touch target via padding */
   min-width: 44px;
   min-height: 52px;
 }
 
 .markerBtnSelected svg {
-  transform: scale(1.1);
-  filter: drop-shadow(0 3px 8px rgba(227, 154, 22, 0.45));
+  transform: scale(1.08);
+  filter: drop-shadow(0 3px 8px rgba(227, 154, 22, 0.4));
 }
 
+/* Two-line label */
 .markerLabel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
   background: white;
   border: 1px solid var(--color-border);
   border-radius: 6px;
-  padding: 2px 7px;
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--color-text);
-  white-space: nowrap;
+  padding: 3px 8px;
   box-shadow: var(--shadow-sm);
 }
 
 .markerLabelSelected {
-  background: var(--color-primary);
   border-color: var(--color-primary);
-  color: white;
+  border-width: 1.5px;
+}
+
+.markerLabelName {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text);
+  white-space: nowrap;
+  line-height: 1.2;
+}
+
+.markerLabelCount {
+  font-size: 10px;
   font-weight: 700;
+  white-space: nowrap;
+  line-height: 1.2;
 }
 
 /* ── Flower / nectar marker ────────────────────────────────────────────────── */
@@ -263,7 +278,7 @@
   flex-direction: column;
   align-items: center;
   gap: 2px;
-  z-index: 3;
+  z-index: 2;
   pointer-events: none;
 }
 
@@ -315,14 +330,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-primary);
   cursor: pointer;
   z-index: 5;
   transition: bottom 0.2s ease;
 }
 
 .locationBtnUp {
-  bottom: 224px;
+  /* sheet ~190px + 12px gap */
+  bottom: 208px;
 }
 
 /* ── No-location message ───────────────────────────────────────────────────── */
@@ -343,7 +358,7 @@
 }
 
 .locationMsgUp {
-  bottom: 224px;
+  bottom: 208px;
 }
 
 .locationMsgClose {
@@ -438,7 +453,7 @@
   background: var(--color-surface);
   border-top-left-radius: var(--radius-lg);
   border-top-right-radius: var(--radius-lg);
-  box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.10);
   z-index: 10;
 }
 
@@ -467,18 +482,26 @@
 }
 
 .sheetContent {
-  padding: var(--space-2) var(--space-4) var(--space-5);
+  padding: var(--space-1) var(--space-4) var(--space-4);
 }
 
 .sheetTop {
   display: flex;
   gap: var(--space-3);
   align-items: flex-start;
-  margin-bottom: var(--space-2);
+  margin-bottom: var(--space-3);
 }
 
-.sheetPinIcon {
+/* Pin icon with circular background */
+.sheetPinWrap {
   flex-shrink: 0;
+  width: 52px;
+  height: 52px;
+  background: var(--color-primary-soft);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-top: 2px;
 }
 
@@ -491,7 +514,7 @@
   font-size: 17px;
   font-weight: 700;
   color: var(--color-text);
-  margin: 0 0 3px;
+  margin: 0 0 2px;
 }
 
 .sheetLocation {
@@ -500,10 +523,23 @@
   margin: 0 0 6px;
 }
 
+/* Colony count + distance on same row */
+.sheetMetaRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
 .sheetCounts {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--space-1);
+}
+
+.hiveIcon {
+  flex-shrink: 0;
+  color: var(--color-text);
 }
 
 .sheetColonyCount {
@@ -521,10 +557,10 @@
 .sheetDistance {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 13px;
+  gap: 4px;
+  font-size: 12px;
   color: var(--color-text-secondary);
-  margin-bottom: var(--space-3);
+  white-space: nowrap;
 }
 
 .carIcon {
@@ -532,10 +568,10 @@
   flex-shrink: 0;
 }
 
+/* Action buttons */
 .sheetBtns {
   display: flex;
   gap: var(--space-3);
-  flex-shrink: 0;
 }
 
 .listBtn {
@@ -556,9 +592,9 @@
   border: none;
   border-radius: var(--radius-md);
   background: var(--color-primary);
-  color: white;
+  color: var(--color-text);
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   display: flex;
   align-items: center;
