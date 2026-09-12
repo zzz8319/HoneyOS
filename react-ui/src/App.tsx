@@ -5,10 +5,12 @@ import { ColonySummaryScreen } from './features/colonyList'
 import type { ColonyListViewState } from './features/colonyList'
 import { ColonyDetailScreen } from './features/colonyDetail'
 import type { ColonyDetailViewState } from './features/colonyDetail'
+import { InspectionStartScreen } from './features/inspectionStart'
+import type { InspectionStartViewState } from './features/inspectionStart'
 import type { TabId } from './components'
 import styles from './App.module.css'
 
-type ViewState = DashboardViewState | ColonyListViewState | ColonyDetailViewState
+type ViewState = DashboardViewState | ColonyListViewState | ColonyDetailViewState | InspectionStartViewState
 
 const STATES: { id: ViewState; label: string }[] = [
   { id: 'normal',  label: '通常' },
@@ -29,7 +31,7 @@ function readParam<T extends string>(key: string, valid: T[], fallback: T): T {
   return (valid.includes(p as T) ? p : fallback) as T
 }
 
-const VALID_SCREENS = ['home', 'farms', 'colony-detail'] as const
+const VALID_SCREENS = ['home', 'farms', 'colony-detail', 'inspection-start'] as const
 type Screen = typeof VALID_SCREENS[number]
 
 export default function App() {
@@ -46,9 +48,10 @@ export default function App() {
     new URLSearchParams(window.location.search).get('colonyId'),
   )
 
-  const dashState = viewState as DashboardViewState
-  const colonyState = viewState as ColonyListViewState
-  const detailState = viewState as ColonyDetailViewState
+  const dashState    = viewState as DashboardViewState
+  const colonyState  = viewState as ColonyListViewState
+  const detailState  = viewState as ColonyDetailViewState
+  const inspState    = viewState as InspectionStartViewState
 
   return (
     <>
@@ -66,13 +69,23 @@ export default function App() {
         </div>
       )}
 
-      {screen === 'colony-detail' ? (
+      {screen === 'inspection-start' ? (
+        <InspectionStartScreen
+          viewState={inspState}
+          initialColonyId={selectedColonyId ?? undefined}
+          onClose={() => {
+            if (selectedColonyId) { setScreen('colony-detail') }
+            else { setScreen('home'); setActiveTab('home') }
+          }}
+          onStart={() => alert('SCR-012へ遷移（未実装）')}
+        />
+      ) : screen === 'colony-detail' ? (
         <ColonyDetailScreen
           colonyId={selectedColonyId ?? undefined}
           viewState={detailState}
           initialPopover={new URLSearchParams(window.location.search).get('popover') === '1'}
           onBack={() => { setScreen('home'); setActiveTab('farms') }}
-          onStartInspection={(id) => alert(`内検を始める → SCR-011 colonyId: ${id}（未実装）`)}
+          onStartInspection={(id) => { setSelectedColonyId(id); setScreen('inspection-start') }}
         />
       ) : (
         <>
@@ -81,7 +94,7 @@ export default function App() {
               viewState={dashState}
               activeTab={activeTab}
               onTabChange={setActiveTab}
-              onStartInspection={() => alert('内検を始める → SCR-011（未実装）')}
+              onStartInspection={() => { setSelectedColonyId(null); setScreen('inspection-start') }}
               onNotifClick={() => alert('通知 → SCR-007（未実装）')}
               onAlertColonies={() => {
                 setActiveTab('farms')
