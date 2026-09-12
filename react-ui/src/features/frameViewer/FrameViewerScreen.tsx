@@ -19,6 +19,12 @@ const QUEEN_LABEL: Record<string, string> = {
   concern:     '不安',
 }
 
+const QUEEN_BADGE_CLASS: Record<string, string> = {
+  laying:      'queenBadgeLaying',
+  unconfirmed: 'queenBadgeUnconfirmed',
+  concern:     'queenBadgeConcern',
+}
+
 // ── FrameMiniBar ─────────────────────────────────────────────────────────────
 function FrameMiniBar({ frame, isFoundation }: { frame: FrameRecord | null; isFoundation: boolean }) {
   if (isFoundation) {
@@ -114,6 +120,7 @@ function DetailPanel({ stage, frameIndex, onClose, onEdit, onMemo }: DetailPanel
 
   return (
     <div className={styles.detailPanel}>
+      <div className={styles.detailDragHandle} aria-hidden />
       <div className={styles.detailHeader}>
         <h3 className={styles.detailTitle}>{frameIndex + 1}枠目</h3>
         <button className={styles.detailCloseBtn} onClick={onClose} type="button" aria-label="パネルを閉じる">×</button>
@@ -299,10 +306,10 @@ export function FrameViewerScreen({
               <div className={styles.summaryCell}>
                 <span className={styles.summaryIcon}>👑</span>
                 <div className={styles.summaryText}>
-                  <span className={styles.summaryValue}>
+                  <span className={styles.summaryLabel}>女王</span>
+                  <span className={`${styles.queenBadge} ${styles[QUEEN_BADGE_CLASS[record.queenStatus ?? 'unconfirmed']]}`}>
                     {record.queenStatus ? QUEEN_LABEL[record.queenStatus] : '未確認'}
                   </span>
-                  <span className={styles.summaryLabel}>女王</span>
                 </div>
               </div>
             </div>
