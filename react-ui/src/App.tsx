@@ -20,7 +20,7 @@ const STATES: { id: ViewState; label: string }[] = [
   { id: 'offline', label: 'オフライン' },
 ]
 
-const VALID_STATES: ViewState[] = ['normal', 'empty', 'loading', 'error', 'offline']
+const VALID_STATES: ViewState[] = ['normal', 'selected', 'empty', 'loading', 'error', 'offline']
 const VALID_TABS: TabId[] = ['home', 'farms', 'work', 'analytics', 'settings']
 
 const IS_DEV = import.meta.env.DEV &&

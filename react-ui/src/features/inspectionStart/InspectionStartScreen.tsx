@@ -4,8 +4,8 @@ import {
   Search, SlidersHorizontal,
 } from 'lucide-react'
 import {
-  MOCK_COLONIES, APIARIES, sortColonies,
-  type SelectableColony,
+  MOCK_COLONIES, APIARIES, SORT_OPTIONS, sortColonies,
+  type SelectableColony, type SortMode,
 } from './mockData'
 import styles from './InspectionStartScreen.module.css'
 
@@ -14,7 +14,7 @@ export type InspectionStartViewState =
 
 interface Props {
   viewState?: InspectionStartViewState
-  initialColonyId?: string   // SCR-009のCTAから来た場合は選択済みで開く
+  initialColonyId?: string   // SCR-009 CTAから来た場合は選択済みで開く
   onClose?: () => void
   onStart?: (params: {
     colonyId: string
@@ -24,20 +24,20 @@ interface Props {
   }) => void
 }
 
-// 状態バッジの配色
-const BADGE_CLASS: Record<string, string> = {
-  overdue: 'badgeOverdue',
-  danger:  'badgeDanger',
-  warn:    'badgeWarn',
-  good:    'badgeGood',
-}
-
 // 構成比バー色
 const BAR_COLORS = {
   bee:   '#3D4551',
   brood: '#E07B6A',
   honey: '#D97706',
   empty: '#D1D5DB',
+}
+
+// 状態バッジスタイル
+const BADGE_CLASS: Record<string, string> = {
+  overdue: 'badgeOverdue',
+  danger:  'badgeDanger',
+  warn:    'badgeWarn',
+  good:    'badgeGood',
 }
 
 interface CompositionBarProps {
@@ -69,7 +69,7 @@ function CompositionBar({ bee, brood, honey, empty }: CompositionBarProps) {
   )
 }
 
-function deltaPct(curr: number, prev: number): string {
+function beeDeltaPct(curr: number, prev: number): string {
   const d = curr - prev
   return (d >= 0 ? '+' : '') + d + '%'
 }
@@ -81,9 +81,8 @@ interface ColonyCardProps {
   disabled?: boolean
 }
 function ColonyCard({ colony, selected, onSelect, disabled }: ColonyCardProps) {
-  const beeD  = colony.bee   - colony.prevBee
-  const totalPrev = colony.prevBee + colony.prevBrood + colony.prevHoney + colony.prevEmpty
-  const beeTotal = totalPrev ? Math.round((beeD / totalPrev) * 100) : 0
+  const beeD = colony.bee - colony.prevBee
+  const isUp = beeD >= 0
 
   return (
     <button
@@ -91,18 +90,21 @@ function ColonyCard({ colony, selected, onSelect, disabled }: ColonyCardProps) {
       onClick={onSelect}
       disabled={disabled}
       aria-pressed={selected}
+      data-colony-id={colony.id}
     >
       {/* ラジオ */}
-      <div className={`${styles.radio} ${selected ? styles.radioSelected : ''}`}>
+      <div className={`${styles.radio} ${selected ? styles.radioSelected : ''}`} aria-hidden>
         {selected && <div className={styles.radioDot} />}
       </div>
 
       <div className={styles.cardBody}>
-        {/* 上段: ID / 養蜂場 / バッジ・経過 */}
+        {/* 上段 */}
         <div className={styles.cardTop}>
           <div className={styles.cardIds}>
-            <span className={styles.colonyIdText}>{colony.colonyId}</span>
-            <span className={styles.apiaryText}>{colony.apiaryName}</span>
+            <div className={styles.cardNameRow}>
+              <span className={styles.colonyIdText}>{colony.colonyId}</span>
+              <span className={styles.apiaryText}>{colony.apiaryName}</span>
+            </div>
           </div>
           <div className={styles.cardRight}>
             <span className={`${styles.badge} ${styles[BADGE_CLASS[colony.status]]}`}>
@@ -120,21 +122,22 @@ function ColonyCard({ colony, selected, onSelect, disabled }: ColonyCardProps) {
           empty={colony.empty}
         />
 
-        {/* 下段: 前回比 */}
+        {/* 下段: 蜂量前回比 / 前回内検日 */}
         <div className={styles.cardBottom}>
-          <span className={styles.prevLabel}>前回比</span>
-          <span className={beeTotal >= 0 ? styles.deltaUp : styles.deltaDown}>
-            {deltaPct(colony.bee, colony.prevBee)}（蜂）
+          <span className={styles.prevLabel}>蜂量の前回比</span>
+          <span className={isUp ? styles.deltaUp : styles.deltaDown}>
+            {beeDeltaPct(colony.bee, colony.prevBee)}
           </span>
           <span className={styles.prevSep}>前回</span>
-          <span className={styles.prevDate}>{colony.prevInspDate}</span>
+          <span className={styles.prevDate}>
+            {colony.prevInspDate}（{colony.prevInspRelLabel}）
+          </span>
         </div>
       </div>
     </button>
   )
 }
 
-// スケルトンカード
 function SkeletonCard() {
   return (
     <div className={styles.skelCard}>
@@ -142,27 +145,29 @@ function SkeletonCard() {
       <div className={styles.skelBody}>
         <div className={`${styles.skel} ${styles.skelLine}`} style={{ width: '60%' }} />
         <div className={`${styles.skel} ${styles.skelBar}`} />
-        <div className={`${styles.skel} ${styles.skelLine}`} style={{ width: '40%' }} />
+        <div className={`${styles.skel} ${styles.skelLine}`} style={{ width: '45%' }} />
       </div>
     </div>
   )
 }
 
-// 凡例
 function Legend() {
   return (
-    <div className={styles.legend}>
-      {[
-        { color: BAR_COLORS.bee,   label: '蜂' },
-        { color: BAR_COLORS.brood, label: '育児' },
-        { color: BAR_COLORS.honey, label: '貯蜜' },
-        { color: BAR_COLORS.empty, label: '空間' },
-      ].map(({ color, label }) => (
-        <span key={label} className={styles.legendItem}>
-          <span className={styles.legendDot} style={{ background: color }} />
-          {label}
-        </span>
-      ))}
+    <div className={styles.legendWrap}>
+      <div className={styles.legend}>
+        {[
+          { color: BAR_COLORS.bee,   label: '蜂' },
+          { color: BAR_COLORS.brood, label: '育児' },
+          { color: BAR_COLORS.honey, label: '貯蜜' },
+          { color: BAR_COLORS.empty, label: '空間' },
+        ].map(({ color, label }) => (
+          <span key={label} className={styles.legendItem}>
+            <span className={styles.legendDot} style={{ background: color }} />
+            {label}
+          </span>
+        ))}
+      </div>
+      <span className={styles.legendNote}>全巣枠の平均構成比</span>
     </div>
   )
 }
@@ -178,18 +183,22 @@ export function InspectionStartScreen({
   const isOffline = viewState === 'offline'
   const isEmpty   = viewState === 'empty'
 
-  const [selectedId, setSelectedId]   = useState<string | null>(
-    viewState === 'selected' ? (initialColonyId ?? 'a03') : (initialColonyId ?? null),
-  )
+  // selected状態: A-05を確実に選択済みにする
+  const [selectedId, setSelectedId] = useState<string | null>(() => {
+    if (viewState === 'selected') return initialColonyId ?? 'a05'
+    return initialColonyId ?? null
+  })
+
   const [apiaryFilter, setApiaryFilter] = useState('all')
   const [searchQuery, setSearchQuery]   = useState('')
+  const [sortMode, setSortMode]         = useState<SortMode>('recommended')
 
-  const inspDate = '2026年9月8日（火）'
-  const weather  = '晴れ'
+  const inspDate    = '2026年9月8日（火）'
+  const weather     = '晴れ'
   const temperature = 28
 
   const filtered = useMemo(() => {
-    let list = sortColonies(MOCK_COLONIES)
+    let list = sortColonies(MOCK_COLONIES, sortMode)
     if (apiaryFilter !== 'all') list = list.filter(c => c.apiaryKey === apiaryFilter)
     if (searchQuery) {
       const q = searchQuery.toLowerCase()
@@ -197,22 +206,18 @@ export function InspectionStartScreen({
         c.colonyId.toLowerCase().includes(q) || c.apiaryName.includes(q),
       )
     }
-    // offlineは cached のみ
     if (isOffline) list = list.filter(c => c.cached)
     return list
-  }, [apiaryFilter, searchQuery, isOffline])
+  }, [apiaryFilter, searchQuery, sortMode, isOffline])
 
   const selectedColony = MOCK_COLONIES.find(c => c.id === selectedId) ?? null
 
   const handleStart = () => {
     if (!selectedColony) return
-    onStart?.({
-      colonyId: selectedColony.id,
-      inspDate,
-      weather,
-      temperature,
-    })
+    onStart?.({ colonyId: selectedColony.id, inspDate, weather, temperature })
   }
+
+  const showList = !isLoading && !isError && !isEmpty
 
   return (
     <div className={styles.shell}>
@@ -225,7 +230,7 @@ export function InspectionStartScreen({
         <div className={styles.headerSpacer} />
       </header>
 
-      {/* ===== 進捗インジケータ ===== */}
+      {/* ===== 進捗 ===== */}
       <div className={styles.progress}>
         <div className={styles.progressMeta}>
           <span className={styles.progressStep}>1 / 2</span>
@@ -273,8 +278,15 @@ export function InspectionStartScreen({
         <div className={styles.sortRow}>
           <span className={styles.sortLabel}>並び替え</span>
           <div className={styles.sortSelectWrap}>
-            <select className={styles.sortSelect} defaultValue="recommended">
-              <option value="recommended">最終内検順（新しい順） ▼</option>
+            <select
+              className={styles.sortSelect}
+              value={sortMode}
+              onChange={e => setSortMode(e.target.value as SortMode)}
+              data-testid="sort-select"
+            >
+              {SORT_OPTIONS.map(o => (
+                <option key={o.value} value={o.value}>{o.label}</option>
+              ))}
             </select>
           </div>
         </div>
@@ -299,7 +311,10 @@ export function InspectionStartScreen({
           <div className={styles.emptyWrap}>
             <span className={styles.emptyEmoji}>🐝</span>
             <p className={styles.emptyTitle}>条件に合う蜂群がありません</p>
-            <button className={styles.clearBtn} onClick={() => { setApiaryFilter('all'); setSearchQuery('') }}>
+            <button
+              className={styles.clearBtn}
+              onClick={() => { setApiaryFilter('all'); setSearchQuery('') }}
+            >
               フィルターを解除
             </button>
           </div>
@@ -315,7 +330,7 @@ export function InspectionStartScreen({
         )}
 
         {/* 蜂群リスト */}
-        {!isLoading && !isError && !isEmpty && (
+        {showList && (
           <>
             <div className={styles.cardList} role="radiogroup" aria-label="蜂群選択">
               {filtered.map(colony => (
@@ -332,7 +347,7 @@ export function InspectionStartScreen({
           </>
         )}
 
-        {/* ===== 内検準備情報 ===== */}
+        {/* 内検準備情報（loading / error以外は常時表示） */}
         {!isLoading && !isError && (
           <div className={styles.prepSection}>
             <button className={styles.prepRow}>
@@ -345,7 +360,7 @@ export function InspectionStartScreen({
             <button className={styles.prepRow}>
               <Sun size={18} className={styles.prepIcon} aria-hidden />
               <span className={styles.prepKey}>天気</span>
-              <span className={styles.prepVal}>{weather} {temperature}℃ （自動取得）</span>
+              <span className={styles.prepVal}>{weather} {temperature}℃（自動取得）</span>
               <ChevronRight size={16} className={styles.prepChevron} aria-hidden />
             </button>
           </div>
