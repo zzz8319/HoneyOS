@@ -1,0 +1,724 @@
+/* SCR-012 内検記録画面 */
+
+.shell {
+  height: 100dvh;
+  max-width: 430px;
+  margin: auto;
+  background: var(--color-bg);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ===== Header ===== */
+.header {
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-4);
+  height: 52px;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.backBtn {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  margin-left: -12px;
+}
+.backBtn:active { opacity: 0.6; }
+
+.headerTitle {
+  flex: 1;
+  text-align: center;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.headerSpacer { width: 44px; margin-right: -12px; }
+
+/* ===== Progress ===== */
+.progress {
+  background: var(--color-surface);
+  padding: 10px var(--space-4) 0;
+  flex-shrink: 0;
+}
+
+.progressMeta {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin-bottom: 8px;
+}
+
+.progressStep {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.progressLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.progressTrack {
+  height: 4px;
+  background: var(--color-border);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--color-primary);
+  border-radius: var(--radius-full);
+}
+
+/* ===== Scrollable content ===== */
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4) calc(96px + env(safe-area-inset-bottom, 0px));
+  overflow-y: auto;
+}
+
+/* ===== Banners ===== */
+.offlineBanner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: var(--color-warn-soft);
+  color: var(--color-warn);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-warn);
+}
+
+.draftSavedChip {
+  margin-left: auto;
+  font-size: 11px;
+  background: var(--color-warn);
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.draftBanner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--color-ok-soft);
+  color: var(--color-ok);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-ok);
+}
+
+.bannerClose {
+  border: none;
+  background: none;
+  color: var(--color-ok);
+  font-size: 16px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0 4px;
+}
+
+.errorBanner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  background: var(--color-surface);
+  border: 1px solid var(--color-danger);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+}
+
+.errorBanner span { font-size: 13px; color: var(--color-danger); }
+
+.retryBtn {
+  border: 1px solid var(--color-danger);
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--color-danger);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+/* ===== Colony context row ===== */
+.colonyRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: 10px var(--space-3);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  text-align: left;
+  min-height: 44px;
+}
+
+.colonyLabel {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--color-text);
+}
+
+.colonyApiary {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.colonyBadge {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  background: #F3F4F6;
+  padding: 2px 7px;
+  border-radius: var(--radius-full);
+}
+
+.colonyHint {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+/* ===== Mode tabs ===== */
+.modeTabs {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.modeTab {
+  flex: 1;
+  height: 40px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.modeTabActive {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
+
+.modeTabDisabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.modeHint {
+  margin: -6px 0 0;
+  font-size: 11px;
+  color: var(--color-text-secondary);
+}
+
+/* ===== Add stage button ===== */
+.addStageBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  width: 100%;
+  height: 44px;
+  border: 1.5px dashed var(--color-border);
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.addStageBtn:active { background: var(--color-bg); }
+
+/* ===== Stage list ===== */
+.stageList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+/* ===== Queen excluder ===== */
+.queenExcluder {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 2px 0;
+}
+
+.queenExcluder::before,
+.queenExcluder::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  border-top: 2px dashed var(--color-border);
+}
+
+.queenExcluderLabel {
+  font-size: 10px;
+  color: var(--color-text-secondary);
+  font-weight: 600;
+  white-space: nowrap;
+  padding: 2px 6px;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-full);
+}
+
+/* ===== Stage accordion ===== */
+.stage {
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.stageActive {
+  border-color: var(--color-primary);
+}
+
+.stageHeader {
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+}
+
+.stageToggleBtn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0 var(--space-3);
+  min-height: 48px;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.stageActive .stageToggleBtn {
+  background: var(--color-primary-soft);
+}
+
+.stageName {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.stageInfo {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.stageRecorded {
+  color: var(--color-ok);
+  font-weight: 600;
+}
+
+.chevron {
+  margin-left: auto;
+  color: var(--color-text-secondary);
+  transition: transform 0.2s;
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+.stageMenuBtn {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* ===== Stage body ===== */
+.stageBody {
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  border-top: 1px solid var(--color-border);
+}
+
+/* ===== Frame strip ===== */
+.frameStrip {
+  display: flex;
+  gap: 4px;
+}
+
+.frameBtn {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  border: 2px solid transparent;
+  border-radius: var(--radius-sm);
+  background: none;
+  padding: 3px 2px;
+  cursor: pointer;
+}
+
+.frameBtnActive {
+  border-color: var(--color-primary);
+}
+
+.frameBtnEmpty .miniBar {
+  opacity: 0.5;
+}
+
+/* mini bar (vertical) */
+.miniBar {
+  width: 100%;
+  height: 72px;
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.frameNum {
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-secondary);
+  line-height: 1;
+}
+
+/* ===== Frame editor ===== */
+.editorSection {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.editorTitle {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+/* preview bar */
+.editorPreview {
+  height: 18px;
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+}
+
+/* slider row */
+.sliderRow {
+  display: grid;
+  grid-template-columns: 36px 40px 1fr 44px 40px;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+}
+
+.sliderLabel {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.adjBtn {
+  height: 36px;
+  min-width: 36px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.adjBtn:active { background: var(--color-bg); }
+
+.slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--color-border);
+  outline: none;
+  cursor: pointer;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--thumb-color, var(--color-primary));
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0,0,0,.2);
+}
+
+.slider::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: none;
+  background: var(--thumb-color, var(--color-primary));
+  cursor: pointer;
+}
+
+.sliderValue {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* empty row */
+.emptyRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 4px 0;
+}
+
+.emptyLabel {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  width: 36px;
+}
+
+.emptyValue {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.emptyNote {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+}
+
+/* ===== Frame navigator ===== */
+.frameNav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.frameNavBtn {
+  height: 44px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.frameNavBtn:disabled {
+  color: var(--color-text-secondary);
+  cursor: default;
+  opacity: 0.5;
+}
+
+.frameNavBtn:not(:disabled):active { background: var(--color-bg); }
+
+.frameNavCount {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  flex: 1;
+}
+
+/* ===== Legend ===== */
+.legendArea {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.legend {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--color-text-secondary);
+}
+
+.legendDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.estCount {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ===== Section cards (queen/observations) ===== */
+.sectionCard {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  box-shadow: var(--shadow-sm);
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.chipRow {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.chip {
+  height: 44px;
+  padding: 0 var(--space-3);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.1s, border-color 0.1s;
+}
+
+.chipActive {
+  background: var(--color-primary-soft);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+/* ===== Session info ===== */
+.sessionInfo {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.sessionItem {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+/* ===== Fixed CTA ===== */
+.ctaWrap {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 430px;
+  padding: var(--space-2) var(--space-4) calc(var(--space-2) + env(safe-area-inset-bottom, 0px));
+  background: var(--color-bg);
+  border-top: 1px solid var(--color-border);
+  box-sizing: border-box;
+  z-index: 10;
+}
+
+.ctaHint {
+  margin: 0 0 4px;
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+.ctaBtn {
+  width: 100%;
+  height: 52px;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  background: var(--color-border);
+  color: var(--color-text-secondary);
+  min-height: 44px;
+}
+
+.ctaBtnActive {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.ctaBtn:disabled { cursor: default; }
+.ctaBtnActive:hover  { opacity: 0.92; }
+.ctaBtnActive:active { opacity: 0.8; }
