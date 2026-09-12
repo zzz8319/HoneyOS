@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { ArrowLeft, ChevronLeft, ChevronRight, MoreVertical, Plus, ChevronRight as ChevronRightSmall } from 'lucide-react'
-import { BeeIcon, QueenCrownIcon } from '../../components/icons'
+import { HiveBeeMark, QueenMark } from '../../components/icons'
 import type { ViewerStage, FrameRecord, InspectionRecord, EditTarget, ViewerViewState } from './types'
 import { MOCK_RECORDS, getInitialRecord, getInitialSelected, getRecordIndex } from './mockData'
 import styles from './FrameViewerScreen.module.css'
@@ -272,7 +272,7 @@ export function FrameViewerScreen({
           {/* Summary card */}
           <div className={styles.summaryCard}>
             <div className={styles.summaryCell}>
-              <BeeIcon size={22} color="var(--color-text-secondary)" className={styles.summaryIcon} />
+              <HiveBeeMark size={22} className={styles.summaryIcon} />
               <div className={styles.summaryText}>
                 <span className={styles.summaryLabel}>推定総蜂数</span>
                 <span className={styles.summaryValue}>
@@ -282,7 +282,7 @@ export function FrameViewerScreen({
             </div>
             <div className={styles.summaryDivider} />
             <div className={styles.summaryCell}>
-              <QueenCrownIcon size={22} color="var(--color-text-secondary)" className={styles.summaryIcon} />
+              <QueenMark size={22} className={styles.summaryIcon} />
               <div className={styles.summaryText}>
                 <span className={styles.summaryLabel}>女王</span>
                 <span className={`${styles.queenBadge} ${styles[QUEEN_BADGE_CLASS[record.queenStatus ?? 'unconfirmed']]}`}>
