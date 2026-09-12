@@ -7,10 +7,12 @@ import { ColonyDetailScreen } from './features/colonyDetail'
 import type { ColonyDetailViewState } from './features/colonyDetail'
 import { InspectionStartScreen } from './features/inspectionStart'
 import type { InspectionStartViewState } from './features/inspectionStart'
+import { InspectionRecordScreen } from './features/inspectionRecord'
+import type { RecordViewState } from './features/inspectionRecord'
 import type { TabId } from './components'
 import styles from './App.module.css'
 
-type ViewState = DashboardViewState | ColonyListViewState | ColonyDetailViewState | InspectionStartViewState
+type ViewState = DashboardViewState | ColonyListViewState | ColonyDetailViewState | InspectionStartViewState | RecordViewState
 
 const STATES: { id: ViewState; label: string }[] = [
   { id: 'normal',  label: '通常' },
@@ -20,7 +22,7 @@ const STATES: { id: ViewState; label: string }[] = [
   { id: 'offline', label: 'オフライン' },
 ]
 
-const VALID_STATES: ViewState[] = ['normal', 'selected', 'empty', 'loading', 'error', 'offline']
+const VALID_STATES: ViewState[] = ['normal', 'selected', 'empty', 'loading', 'error', 'offline', 'multi-stage', 'unsaved', 'saved', 'draft-restore', 'save-error']
 const VALID_TABS: TabId[] = ['home', 'farms', 'work', 'analytics', 'settings']
 
 const IS_DEV = import.meta.env.DEV &&
@@ -31,7 +33,7 @@ function readParam<T extends string>(key: string, valid: T[], fallback: T): T {
   return (valid.includes(p as T) ? p : fallback) as T
 }
 
-const VALID_SCREENS = ['home', 'farms', 'colony-detail', 'inspection-start'] as const
+const VALID_SCREENS = ['home', 'farms', 'colony-detail', 'inspection-start', 'inspection-record'] as const
 type Screen = typeof VALID_SCREENS[number]
 
 export default function App() {
@@ -52,6 +54,7 @@ export default function App() {
   const colonyState  = viewState as ColonyListViewState
   const detailState  = viewState as ColonyDetailViewState
   const inspState    = viewState as InspectionStartViewState
+  const recordState  = viewState as RecordViewState
 
   return (
     <>
@@ -69,7 +72,14 @@ export default function App() {
         </div>
       )}
 
-      {screen === 'inspection-start' ? (
+      {screen === 'inspection-record' ? (
+        <InspectionRecordScreen
+          viewState={recordState}
+          onBack={() => setScreen('inspection-start')}
+          onReselect={() => setScreen('inspection-start')}
+          onSave={() => alert('SCR-013へ遷移（未実装）')}
+        />
+      ) : screen === 'inspection-start' ? (
         <InspectionStartScreen
           viewState={inspState}
           initialColonyId={selectedColonyId ?? undefined}
@@ -77,7 +87,7 @@ export default function App() {
             if (selectedColonyId) { setScreen('colony-detail') }
             else { setScreen('home'); setActiveTab('home') }
           }}
-          onStart={() => alert('SCR-012へ遷移（未実装）')}
+          onStart={() => { setScreen('inspection-record') }}
         />
       ) : screen === 'colony-detail' ? (
         <ColonyDetailScreen
