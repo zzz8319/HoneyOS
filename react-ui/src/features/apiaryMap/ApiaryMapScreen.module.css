@@ -322,7 +322,7 @@
 }
 
 .locationBtnUp {
-  bottom: 204px;
+  bottom: 224px;
 }
 
 /* ── No-location message ───────────────────────────────────────────────────── */
@@ -343,7 +343,7 @@
 }
 
 .locationMsgUp {
-  bottom: 204px;
+  bottom: 224px;
 }
 
 .locationMsgClose {
@@ -467,7 +467,7 @@
 }
 
 .sheetContent {
-  padding: var(--space-2) var(--space-4) var(--space-4);
+  padding: var(--space-2) var(--space-4) var(--space-5);
 }
 
 .sheetTop {
@@ -535,6 +535,7 @@
 .sheetBtns {
   display: flex;
   gap: var(--space-3);
+  flex-shrink: 0;
 }
 
 .listBtn {

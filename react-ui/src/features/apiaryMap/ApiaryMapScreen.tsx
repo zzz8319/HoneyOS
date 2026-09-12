@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react'
 import {
   ArrowLeft, Search, List, MapPin, Flower2,
-  AlertTriangle, Navigation, Car, Route as RouteIcon, X,
+  AlertTriangle, Car, Route as RouteIcon, X,
 } from 'lucide-react'
 import { BottomNav } from '../../components'
 import type { Apiary, ApiaryMapViewState, LayerType } from './types'
@@ -439,7 +439,13 @@ export function ApiaryMapScreen({ viewState = 'normal', onBack, onViewColonyList
             aria-label="現在地へ戻る"
             onClick={handleLocationBtn}
           >
-            <Navigation size={18} aria-hidden />
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <circle cx="10" cy="10" r="3.5" stroke="#333" strokeWidth="1.8" fill="none" />
+              <line x1="10" y1="1" x2="10" y2="5.5" stroke="#333" strokeWidth="1.8" strokeLinecap="round" />
+              <line x1="10" y1="14.5" x2="10" y2="19" stroke="#333" strokeWidth="1.8" strokeLinecap="round" />
+              <line x1="1" y1="10" x2="5.5" y2="10" stroke="#333" strokeWidth="1.8" strokeLinecap="round" />
+              <line x1="14.5" y1="10" x2="19" y2="10" stroke="#333" strokeWidth="1.8" strokeLinecap="round" />
+            </svg>
           </button>
         )}
 
