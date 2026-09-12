@@ -1,0 +1,590 @@
+/* SCR-011 内検開始画面 */
+
+.shell {
+  min-height: 100dvh;
+  max-width: 430px;
+  margin: auto;
+  background: var(--color-bg);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ===== ヘッダー ===== */
+.header {
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-4);
+  height: 52px;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.closeBtn {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  margin-left: -12px;
+}
+
+.closeBtn:active { opacity: 0.6; }
+
+.headerTitle {
+  flex: 1;
+  text-align: center;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.headerSpacer { width: 44px; margin-right: -12px; }
+
+/* ===== 進捗 ===== */
+.progress {
+  background: var(--color-surface);
+  padding: 10px var(--space-4) 0;
+  flex-shrink: 0;
+}
+
+.progressMeta {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin-bottom: 8px;
+}
+
+.progressStep {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.progressLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.progressTrack {
+  height: 4px;
+  background: var(--color-border);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--color-primary);
+  border-radius: var(--radius-full);
+  transition: width 0.3s;
+}
+
+/* ===== スクロールコンテンツ ===== */
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4) calc(76px + env(safe-area-inset-bottom, 0px));
+  overflow-y: auto;
+}
+
+/* ===== 養蜂場タブ ===== */
+.apiaryTabs {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.apiaryTab {
+  flex: 1;
+  height: 44px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+
+.apiaryTabActive {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
+
+/* ===== 検索・ソート ===== */
+.searchRow {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.searchInputWrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 0 var(--space-3);
+  height: 44px;
+}
+
+.searchIcon {
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+}
+
+.searchInput {
+  flex: 1;
+  border: none;
+  background: none;
+  font-size: 13px;
+  color: var(--color-text);
+  outline: none;
+}
+
+.searchInput::placeholder { color: var(--color-text-secondary); }
+
+.filterBtn {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.sortRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: -4px;
+}
+
+.sortLabel {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.sortSelectWrap {
+  flex: 1;
+}
+
+.sortSelect {
+  width: 100%;
+  height: 36px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 12px;
+  padding: 0 var(--space-2);
+  appearance: none;
+  cursor: pointer;
+}
+
+/* ===== オフラインバナー ===== */
+.offlineBanner {
+  background: var(--color-warn-soft);
+  color: var(--color-warn);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-warn);
+}
+
+/* ===== エラー ===== */
+.errorSection {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 12px;
+}
+
+.errorMsg { font-size: 13px; color: var(--color-danger); }
+
+.retryBtn {
+  border: 1px solid var(--color-danger);
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--color-danger);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+/* ===== 空状態 ===== */
+.emptyWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-6) 0;
+  text-align: center;
+}
+
+.emptyEmoji { font-size: 40px; }
+
+.emptyTitle {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.clearBtn {
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-sm);
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 20px;
+  cursor: pointer;
+}
+
+/* ===== カードリスト ===== */
+.cardList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+/* ===== 蜂群選択カード ===== */
+.colonyCard {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  width: 100%;
+  text-align: left;
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 10px var(--space-3);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: border-color 0.12s;
+  min-height: 44px;
+}
+
+.colonyCard:active { opacity: 0.85; }
+
+.colonyCardSelected {
+  border-color: var(--color-primary);
+  background: var(--color-primary-soft);
+}
+
+/* ラジオボタン */
+.radio {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--color-border);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2px;
+  transition: border-color 0.12s;
+}
+
+.radioSelected {
+  border-color: var(--color-primary);
+}
+
+.radioDot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--color-primary);
+}
+
+/* カード本体 */
+.cardBody {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cardTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.cardIds {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.cardNameRow {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.colonyIdText {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.apiaryText {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+}
+
+.cardRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+/* 状態バッジ */
+.badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+}
+
+.badgeOverdue { background: #F3F4F6; color: #6B7280; }
+.badgeDanger  { background: var(--color-danger-soft); color: var(--color-danger); }
+.badgeWarn    { background: var(--color-warn-soft);   color: var(--color-warn); }
+.badgeGood    { background: var(--color-ok-soft);     color: var(--color-ok); }
+
+.daysAgo {
+  font-size: 10px;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+/* 構成比バー */
+.compBar {
+  display: flex;
+  height: 22px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.compSeg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  transition: flex 0.2s;
+}
+
+.compPct {
+  font-size: 10px;
+  font-weight: 600;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* 下段: 前回比 */
+.cardBottom {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 11px;
+  flex-wrap: wrap;
+}
+
+.prevLabel {
+  color: var(--color-text-secondary);
+}
+
+.deltaUp   { color: var(--color-ok);     font-weight: 600; font-variant-numeric: tabular-nums; }
+.deltaDown { color: var(--color-danger); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+.prevSep  { color: var(--color-text-secondary); }
+.prevDate { color: var(--color-text-secondary); font-variant-numeric: tabular-nums; }
+
+/* ===== 凡例 ===== */
+.legendWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.legend {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--color-text-secondary);
+}
+
+.legendDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.legendNote {
+  font-size: 10px;
+  color: var(--color-text-secondary);
+}
+
+/* ===== スケルトン ===== */
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.skel {
+  background: linear-gradient(
+    90deg,
+    var(--color-border) 25%,
+    color-mix(in srgb, var(--color-border) 50%, var(--color-surface)) 50%,
+    var(--color-border) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: 4px;
+}
+
+.skelCard {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 10px var(--space-3);
+}
+
+.skelRadio {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.skelBody {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.skelLine { height: 14px; border-radius: 4px; }
+.skelBar  { height: 22px; border-radius: var(--radius-sm); }
+
+/* ===== 内検準備情報 ===== */
+.prepSection {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.prepRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: 12px var(--space-3);
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+  min-height: 44px;
+}
+
+.prepRow:active { background: var(--color-bg); }
+
+.prepIcon { color: var(--color-text-secondary); flex-shrink: 0; }
+.prepKey  { font-size: 12px; color: var(--color-text-secondary); white-space: nowrap; }
+.prepVal  { flex: 1; font-size: 13px; font-weight: 600; color: var(--color-text); text-align: right; }
+.prepChevron { color: var(--color-text-secondary); flex-shrink: 0; }
+
+.prepDivider {
+  height: 1px;
+  background: var(--color-border);
+  margin: 0 var(--space-3);
+}
+
+/* ===== 固定CTA ===== */
+.ctaWrap {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 430px;
+  padding: var(--space-2) var(--space-4) calc(var(--space-2) + env(safe-area-inset-bottom, 0px));
+  background: var(--color-bg);
+  border-top: 1px solid var(--color-border);
+  box-sizing: border-box;
+  z-index: 10;
+}
+
+.ctaBtn {
+  width: 100%;
+  height: 52px;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  background: var(--color-border);
+  color: var(--color-text-secondary);
+  min-height: 44px;
+}
+
+.ctaBtnActive {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.ctaBtn:disabled { cursor: default; }
+.ctaBtnActive:hover  { opacity: 0.92; }
+.ctaBtnActive:active { opacity: 0.8; }
