@@ -319,7 +319,7 @@ export function FrameViewerScreen({
       )}
 
       {/* Scrollable content — stages only */}
-      <main className={styles.content}>
+      <main className={`${styles.content} ${showNormal && selected && selectedStage ? styles.contentWithPanel : ''}`}>
 
         {isLoading && (
           <>
