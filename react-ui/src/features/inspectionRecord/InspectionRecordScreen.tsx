@@ -453,7 +453,7 @@ export function InspectionRecordScreen({
         {isOffline && (
           <div className={styles.offlineBanner}>
             オフラインです。入力内容は下書き保存されます。
-            {draftSaved && <span className={styles.draftSavedChip}>下書き保存済み</span>}
+            {draftSaved && <span className={styles.draftSavedChip}>下書き保存済</span>}
           </div>
         )}
         {draftMsg && (

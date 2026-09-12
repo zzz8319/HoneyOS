@@ -70,14 +70,28 @@ export function getInitialStages(viewState: RecordViewState): StageRecord[] {
         isExpanded: true,
       }]
     default:
-      return [{
-        id: 'stage-1',
-        label: '1段目',
-        frameCount: 8,
-        frames: [F_L, F_2, F_3, F_4, F_5, null, null, null],
-        hasQueenExcluderAbove: false,
-        isExpanded: true,
-      }]
+      return [
+        {
+          id: 'stage-2',
+          label: '2段目',
+          frameCount: 6,
+          frames: [
+            { bee: 20, brood: 10, honey: 42 },
+            { bee: 18, brood: 8,  honey: 45 },
+            null, null, null, null,
+          ],
+          hasQueenExcluderAbove: false,
+          isExpanded: false,
+        },
+        {
+          id: 'stage-1',
+          label: '1段目',
+          frameCount: 8,
+          frames: [F_L, F_2, F_3, F_4, F_5, null, null, null],
+          hasQueenExcluderAbove: true,
+          isExpanded: true,
+        },
+      ]
   }
 }
 
