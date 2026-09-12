@@ -118,6 +118,11 @@
   padding: var(--space-3) var(--space-4) var(--space-4);
 }
 
+/* Extra bottom padding when detail panel is visible so stages aren't hidden */
+.contentWithPanel {
+  padding-bottom: 215px;
+}
+
 /* ===== Offline banner ===== */
 .offlineBanner {
   display: flex;
@@ -430,18 +435,19 @@
 }
 
 .detailDragHandle {
-  width: 36px;
+  width: 32px;
   height: 4px;
   border-radius: 2px;
   background: var(--color-border);
-  margin: 6px auto 0;
+  margin: 5px auto 0;
 }
 
 .detailHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 6px var(--space-3) 6px;
+  padding: 0 var(--space-3);
+  height: 40px;
   border-bottom: 1px solid var(--color-border);
 }
 
@@ -453,8 +459,8 @@
 }
 
 .detailCloseBtn {
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -462,17 +468,17 @@
   background: none;
   color: var(--color-text-secondary);
   cursor: pointer;
-  margin-right: -10px;
+  margin-right: -8px;
   font-size: 18px;
   line-height: 1;
 }
 .detailCloseBtn:active { opacity: 0.6; }
 
 .detailBody {
-  padding: 8px var(--space-3) 10px;
+  padding: 6px var(--space-3) 8px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
 }
 
 /* Composition — single row, no wrap */
@@ -514,15 +520,15 @@
 /* Edit CTA */
 .editBtn {
   width: 100%;
-  height: 44px;
+  height: 40px;
   border: none;
   border-radius: var(--radius-md);
   background: var(--color-primary);
   color: #fff;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
   cursor: pointer;
-  min-height: 44px;
+  min-height: 36px;
 }
 .editBtn:active { opacity: 0.85; }
 
@@ -531,19 +537,19 @@
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  padding: 6px 0;
+  padding: 5px 0;
   border-top: 1px solid var(--color-border);
   cursor: pointer;
-  min-height: 40px;
+  min-height: 36px;
 }
 .memoLabel {
-  font-size: 13px;
+  font-size: 12px;
   color: var(--color-text);
   flex: 1;
   font-weight: 600;
 }
 .memoValue {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--color-text-secondary);
   max-width: 140px;
   overflow: hidden;
@@ -562,12 +568,12 @@
   justify-content: center;
   gap: var(--space-1);
   width: 100%;
-  height: 40px;
+  height: 36px;
   border: 1.5px dashed var(--color-border);
   border-radius: var(--radius-sm);
   background: none;
   color: var(--color-text-secondary);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
 }
