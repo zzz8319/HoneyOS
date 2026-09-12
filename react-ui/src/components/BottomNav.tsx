@@ -1,7 +1,12 @@
-import { BarChart3, ClipboardCheck, Home, Settings, Sprout } from 'lucide-react'
+import { BarChart3, ClipboardCheck, Home, Settings } from 'lucide-react'
+import { ApiaryFarmIcon } from './icons'
 import styles from './BottomNav.module.css'
 
 export type TabId = 'home' | 'farms' | 'work' | 'analytics' | 'settings'
+
+const FarmsIcon = ({ size }: { size?: number }) => (
+  <ApiaryFarmIcon size={size} />
+)
 
 interface NavItem {
   id: TabId
@@ -11,7 +16,7 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { id: 'home',      label: 'ホーム',   Icon: Home },
-  { id: 'farms',     label: '養蜂場',   Icon: Sprout },
+  { id: 'farms',     label: '養蜂場',   Icon: FarmsIcon },
   { id: 'work',      label: '作業',     Icon: ClipboardCheck },
   { id: 'analytics', label: '分析',     Icon: BarChart3 },
   { id: 'settings',  label: '設定',     Icon: Settings },
