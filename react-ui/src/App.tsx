@@ -17,10 +17,12 @@ import { ApiaryMapScreen } from './features/apiaryMap'
 import type { ApiaryMapViewState } from './features/apiaryMap'
 import { InspectionCompleteScreen } from './features/inspectionComplete'
 import type { CompleteViewState } from './features/inspectionComplete'
+import { CameraImagesScreen } from './features/cameraImages'
+import type { CameraViewState } from './features/cameraImages'
 import type { TabId } from './components'
 import styles from './App.module.css'
 
-type ViewState = DashboardViewState | ColonyListViewState | ColonyDetailViewState | InspectionStartViewState | RecordViewState | ViewerViewState | ApiaryMapViewState | CompleteViewState
+type ViewState = DashboardViewState | ColonyListViewState | ColonyDetailViewState | InspectionStartViewState | RecordViewState | ViewerViewState | ApiaryMapViewState | CompleteViewState | CameraViewState
 
 const STATES: { id: ViewState; label: string }[] = [
   { id: 'normal',  label: '通常' },
@@ -30,7 +32,7 @@ const STATES: { id: ViewState; label: string }[] = [
   { id: 'offline', label: 'オフライン' },
 ]
 
-const VALID_STATES: ViewState[] = ['normal', 'selected', 'empty', 'loading', 'error', 'offline', 'multi-stage', 'unsaved', 'saved', 'draft-restore', 'save-error', 'frame-selected', 'deselected', 'other-stage', 'history', 'other-apiary', 'nectar', 'alert', 'no-results', 'no-location', 'healthy', 'first-inspection', 'ai-analyzed', 'reminder-off', 'missing-record']
+const VALID_STATES: ViewState[] = ['normal', 'selected', 'empty', 'loading', 'error', 'offline', 'multi-stage', 'unsaved', 'saved', 'draft-restore', 'save-error', 'frame-selected', 'deselected', 'other-stage', 'history', 'other-apiary', 'nectar', 'alert', 'no-results', 'no-location', 'healthy', 'first-inspection', 'ai-analyzed', 'reminder-off', 'missing-record', 'none-selected', 'inspection-tab', 'auto-capture-tab', 'upload-error', 'camera-permission-denied', 'context-missing']
 const VALID_TABS: TabId[] = ['home', 'farms', 'work', 'analytics', 'settings']
 
 const IS_DEV = import.meta.env.DEV &&
@@ -41,7 +43,7 @@ function readParam<T extends string>(key: string, valid: T[], fallback: T): T {
   return (valid.includes(p as T) ? p : fallback) as T
 }
 
-const VALID_SCREENS = ['home', 'farms', 'colony-detail', 'inspection-start', 'inspection-record', 'frame-viewer', 'add-stage', 'apiary-map', 'inspection-complete'] as const
+const VALID_SCREENS = ['home', 'farms', 'colony-detail', 'inspection-start', 'inspection-record', 'frame-viewer', 'add-stage', 'apiary-map', 'inspection-complete', 'camera-images'] as const
 type Screen = typeof VALID_SCREENS[number]
 
 export default function App() {
@@ -59,6 +61,7 @@ export default function App() {
   )
   const [addStageRecord, setAddStageRecord] = useState<InspectionRecord | null>(null)
 
+  const cameraState   = viewState as CameraViewState
   const dashState     = viewState as DashboardViewState
   const colonyState   = viewState as ColonyListViewState
   const detailState   = viewState as ColonyDetailViewState
@@ -84,7 +87,13 @@ export default function App() {
         </div>
       )}
 
-      {screen === 'inspection-complete' ? (
+      {screen === 'camera-images' ? (
+        <CameraImagesScreen
+          viewState={cameraState}
+          onBack={() => setScreen('inspection-record')}
+          onAnalyze={() => alert('AI解析 → SCR-014（未実装）')}
+        />
+      ) : screen === 'inspection-complete' ? (
         <InspectionCompleteScreen
           viewState={completeState}
           onNextColony={() => { setSelectedColonyId(null); setScreen('inspection-start') }}
