@@ -13,10 +13,12 @@ import { FrameViewerScreen } from './features/frameViewer'
 import type { ViewerViewState } from './features/frameViewer'
 import type { InspectionRecord } from './features/frameViewer/types'
 import { AddStageScreen } from './features/addStage'
+import { InspectionCompleteScreen } from './features/inspectionComplete'
+import type { CompleteViewState } from './features/inspectionComplete'
 import type { TabId } from './components'
 import styles from './App.module.css'
 
-type ViewState = DashboardViewState | ColonyListViewState | ColonyDetailViewState | InspectionStartViewState | RecordViewState | ViewerViewState
+type ViewState = DashboardViewState | ColonyListViewState | ColonyDetailViewState | InspectionStartViewState | RecordViewState | ViewerViewState | CompleteViewState
 
 const STATES: { id: ViewState; label: string }[] = [
   { id: 'normal',  label: '通常' },
@@ -26,7 +28,7 @@ const STATES: { id: ViewState; label: string }[] = [
   { id: 'offline', label: 'オフライン' },
 ]
 
-const VALID_STATES: ViewState[] = ['normal', 'selected', 'empty', 'loading', 'error', 'offline', 'multi-stage', 'unsaved', 'saved', 'draft-restore', 'save-error', 'frame-selected', 'deselected', 'other-stage', 'history']
+const VALID_STATES: ViewState[] = ['normal', 'selected', 'empty', 'loading', 'error', 'offline', 'multi-stage', 'unsaved', 'saved', 'draft-restore', 'save-error', 'frame-selected', 'deselected', 'other-stage', 'history', 'healthy', 'first-inspection', 'ai-analyzed', 'reminder-off', 'missing-record']
 const VALID_TABS: TabId[] = ['home', 'farms', 'work', 'analytics', 'settings']
 
 const IS_DEV = import.meta.env.DEV &&
@@ -37,7 +39,7 @@ function readParam<T extends string>(key: string, valid: T[], fallback: T): T {
   return (valid.includes(p as T) ? p : fallback) as T
 }
 
-const VALID_SCREENS = ['home', 'farms', 'colony-detail', 'inspection-start', 'inspection-record', 'frame-viewer', 'add-stage'] as const
+const VALID_SCREENS = ['home', 'farms', 'colony-detail', 'inspection-start', 'inspection-record', 'frame-viewer', 'add-stage', 'inspection-complete'] as const
 type Screen = typeof VALID_SCREENS[number]
 
 export default function App() {
@@ -55,12 +57,13 @@ export default function App() {
   )
   const [addStageRecord, setAddStageRecord] = useState<InspectionRecord | null>(null)
 
-  const dashState    = viewState as DashboardViewState
-  const colonyState  = viewState as ColonyListViewState
-  const detailState  = viewState as ColonyDetailViewState
-  const inspState    = viewState as InspectionStartViewState
-  const recordState  = viewState as RecordViewState
-  const viewerState  = viewState as ViewerViewState
+  const dashState     = viewState as DashboardViewState
+  const colonyState   = viewState as ColonyListViewState
+  const detailState   = viewState as ColonyDetailViewState
+  const inspState     = viewState as InspectionStartViewState
+  const recordState   = viewState as RecordViewState
+  const viewerState   = viewState as ViewerViewState
+  const completeState = viewState as CompleteViewState
 
   return (
     <>
@@ -78,7 +81,16 @@ export default function App() {
         </div>
       )}
 
-      {screen === 'add-stage' && addStageRecord ? (
+      {screen === 'inspection-complete' ? (
+        <InspectionCompleteScreen
+          viewState={completeState}
+          onNextColony={() => { setSelectedColonyId(null); setScreen('inspection-start') }}
+          onAddNote={() => alert('作業記録追加 → SCR-026（未実装）')}
+          onDashboard={() => { setScreen('home'); setActiveTab('home') }}
+          onEdit={() => setScreen('inspection-record')}
+          onAiAnalyze={() => alert('AI解析 → SCR-014（未実装）')}
+        />
+      ) : screen === 'add-stage' && addStageRecord ? (
         <AddStageScreen
           record={addStageRecord}
           onBack={() => setScreen('frame-viewer')}
@@ -96,7 +108,7 @@ export default function App() {
           viewState={recordState}
           onBack={() => setScreen('inspection-start')}
           onReselect={() => setScreen('inspection-start')}
-          onSave={() => setScreen('frame-viewer')}
+          onSave={() => setScreen('inspection-complete')}
         />
       ) : screen === 'inspection-start' ? (
         <InspectionStartScreen
