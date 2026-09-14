@@ -21,7 +21,8 @@ interface Props {
   onSuccess?: () => void
 }
 
-// ── Brain AI icon (neural-network style) ─────────────────────
+// ── Brain AI icon ────────────────────────────────────────────
+// Two brain lobes with a central sulcus and neural sparks
 
 function BrainAiIcon({ size = 22 }: { size?: number }) {
   return (
@@ -31,28 +32,25 @@ function BrainAiIcon({ size = 22 }: { size?: number }) {
       viewBox="0 0 24 24"
       fill="none"
       stroke="#1E3A5F"
-      strokeWidth="1.8"
+      strokeWidth="1.7"
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
     >
-      {/* Left hemisphere */}
-      <path d="M11.5 5C9 5 6.5 7 6.5 10c0 1.2.5 2.3 1.2 3.1-.8.8-1.2 1.8-1.2 3C6.5 18.3 8.5 20 11 20c.2 0 .3 0 .5-.02" />
-      {/* Right hemisphere */}
-      <path d="M12.5 5C15 5 17.5 7 17.5 10c0 1.2-.5 2.3-1.2 3.1.8.8 1.2 1.8 1.2 3 0 2.2-2 3.9-4.5 3.9-.2 0-.3 0-.5-.02" />
-      {/* Top bridge */}
-      <line x1="11.5" y1="5" x2="12.5" y2="5" />
-      {/* Neural nodes */}
-      <circle cx="9.2" cy="10" r="1.1" fill="#1E3A5F" stroke="none" />
-      <circle cx="14.8" cy="10" r="1.1" fill="#1E3A5F" stroke="none" />
-      <circle cx="9.2" cy="15" r="1.1" fill="#1E3A5F" stroke="none" />
-      <circle cx="14.8" cy="15" r="1.1" fill="#1E3A5F" stroke="none" />
-      {/* Horizontal connections */}
-      <line x1="9.2" y1="10" x2="14.8" y2="10" strokeWidth="1.2" />
-      <line x1="9.2" y1="15" x2="14.8" y2="15" strokeWidth="1.2" />
-      {/* Vertical connections */}
-      <line x1="9.2" y1="10" x2="9.2" y2="15" strokeWidth="1.2" />
-      <line x1="14.8" y1="10" x2="14.8" y2="15" strokeWidth="1.2" />
+      {/* Left lobe — rounded organic shape */}
+      <path d="M12 6.5C12 6.5 10 5 7.5 5.5C5 6 4 8 4 9.5C4 11 4.8 12.2 6 12.8C4.8 13.5 4 14.8 4 16.2C4 18.3 5.8 20 8 20C9.2 20 10.3 19.5 11 18.7" />
+      {/* Right lobe — mirror */}
+      <path d="M12 6.5C12 6.5 14 5 16.5 5.5C19 6 20 8 20 9.5C20 11 19.2 12.2 18 12.8C19.2 13.5 20 14.8 20 16.2C20 18.3 18.2 20 16 20C14.8 20 13.7 19.5 13 18.7" />
+      {/* Central sulcus (top stem) */}
+      <path d="M12 5.5 L12 6.5" strokeWidth="2" />
+      {/* Left intra-lobe fissure */}
+      <path d="M6.5 10.5 C7.5 10 8.5 10.5 9 11.5" strokeWidth="1.3" />
+      <path d="M6.2 14.5 C7 14 8.2 14.5 8.8 15.5" strokeWidth="1.3" />
+      {/* Right intra-lobe fissure */}
+      <path d="M17.5 10.5 C16.5 10 15.5 10.5 15 11.5" strokeWidth="1.3" />
+      <path d="M17.8 14.5 C17 14 15.8 14.5 15.2 15.5" strokeWidth="1.3" />
+      {/* Neural spark dots */}
+      <circle cx="12" cy="12.5" r="1" fill="#1E3A5F" stroke="none" />
     </svg>
   )
 }
@@ -566,11 +564,9 @@ export function TaskCreateScreen({ viewState, onBack, onSuccess }: Props) {
 
         <div className={styles.divider} />
 
-        {/* 養蜂場 */}
-        <div className={styles.formSection}>
-          <div className={styles.labelRow}>
-            <span className={styles.label}>養蜂場</span>
-          </div>
+        {/* 養蜂場 — 横並びレイアウト */}
+        <div className={styles.apiaryInlineRow}>
+          <span className={styles.apiaryInlineLabel}>養蜂場</span>
           <div className={`${styles.apiaryRow} ${selectedColony ? styles.apiaryRowLocked : ''}`}>
             {selectedColony ? (
               <>
@@ -634,6 +630,9 @@ export function TaskCreateScreen({ viewState, onBack, onSuccess }: Props) {
           <Info size={15} className={styles.infoCardIcon} />
           <span className={styles.infoCardText}>v1.0では単発タスクのみ作成できます。</span>
         </div>
+
+        {/* spacer so infoCard clears the fixed footer */}
+        <div className={styles.bodyEnd} />
 
       </div>
 

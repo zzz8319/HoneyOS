@@ -159,7 +159,7 @@
   overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
-  padding: 4px 0 12px;
+  padding: 4px 0 0;
 }
 
 /* ── Form section ───────────────────────────────────────────── */
@@ -374,8 +374,25 @@
 
 .addColonyBtn:active { background: var(--color-bg, #F8F7F4); }
 
+/* ── Apiary inline row (label + field side-by-side) ─────────── */
+.apiaryInlineRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  min-height: 60px;
+}
+
+.apiaryInlineLabel {
+  flex: 0 0 80px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text, #17212B);
+}
+
 /* ── Apiary row ─────────────────────────────────────────────── */
 .apiaryRow {
+  flex: 1;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -385,6 +402,7 @@
   padding: 0 10px;
   height: 44px;
   cursor: pointer;
+  min-width: 0;
 }
 
 .apiaryRowLocked { cursor: default; }
@@ -509,6 +527,11 @@
   padding: 10px 12px;
   background: #F3F4F6;
   border-radius: var(--radius-sm, 8px);
+}
+
+/* spacer after the last item so content clears the fixed footer */
+.bodyEnd {
+  height: 16px;
 }
 
 .infoCardIcon { color: var(--color-text-secondary, #66707A); flex-shrink: 0; margin-top: 1px; }
