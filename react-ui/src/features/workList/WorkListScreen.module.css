@@ -1,0 +1,589 @@
+/* ── Shell ─────────────────────────────────────────────────── */
+.screen {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  background: var(--color-bg, #F8F7F4);
+  padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+}
+
+/* ── Header ────────────────────────────────────────────────── */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--color-surface, #FFFFFF);
+  border-bottom: 1px solid var(--color-border, #E3E5E8);
+  padding: 0 4px;
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  height: 52px;
+  gap: 4px;
+}
+
+.headerTitle {
+  flex: 1;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-text, #17212B);
+  padding: 0 8px;
+}
+
+.iconBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text, #17212B);
+  border-radius: var(--radius-sm, 8px);
+  flex-shrink: 0;
+}
+
+.iconBtn:active { background: var(--color-border, #E3E5E8); }
+
+/* ── View segment ──────────────────────────────────────────── */
+.segmentRow {
+  display: flex;
+  align-items: center;
+  padding: 6px 12px 8px;
+  gap: 8px;
+}
+
+.segmentControl {
+  display: flex;
+  background: var(--color-bg, #F8F7F4);
+  border: 1px solid var(--color-border, #E3E5E8);
+  border-radius: var(--radius-sm, 8px);
+  padding: 2px;
+  flex: 0 0 66%;
+}
+
+.segmentBtn {
+  flex: 1;
+  height: 28px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-secondary, #66707A);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.segmentBtnActive {
+  background: var(--color-primary, #E39A16);
+  color: #17212B;
+  font-weight: 700;
+}
+
+.segmentLabel {
+  font-size: 11px;
+  color: var(--color-text-secondary, #66707A);
+  flex: 1;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* ── Content ────────────────────────────────────────────────── */
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* ── Month + Date strip ─────────────────────────────────────── */
+.calendarSection {
+  background: var(--color-surface, #FFFFFF);
+  border-bottom: 1px solid var(--color-border, #E3E5E8);
+  padding: 8px 12px 10px;
+}
+
+.monthRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.monthLabel {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text, #17212B);
+  flex: 1;
+}
+
+.monthNavBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-secondary, #66707A);
+  border-radius: var(--radius-sm, 8px);
+}
+
+.dateStrip {
+  display: flex;
+  gap: 4px;
+}
+
+.dateCell {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 6px 2px 5px;
+  border-radius: var(--radius-sm, 8px);
+  cursor: pointer;
+  background: none;
+  border: none;
+}
+
+.dateCellActive {
+  background: var(--color-primary, #E39A16);
+}
+
+.dateDayName {
+  font-size: 10px;
+  color: var(--color-text-secondary, #66707A);
+  font-weight: 500;
+  line-height: 1;
+}
+
+.dateCellActive .dateDayName { color: #17212B; }
+
+.dateNum {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text, #17212B);
+  line-height: 1;
+}
+
+.dateCellActive .dateNum { color: #17212B; font-weight: 700; }
+
+.dateDots {
+  display: flex;
+  gap: 2px;
+  height: 5px;
+  align-items: center;
+}
+
+.dateDot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+}
+
+/* ── Filters ────────────────────────────────────────────────── */
+.filterRow {
+  display: flex;
+  gap: 6px;
+  padding: 8px 12px;
+  overflow-x: auto;
+  background: var(--color-surface, #FFFFFF);
+  border-bottom: 1px solid var(--color-border, #E3E5E8);
+}
+
+.filterRow::-webkit-scrollbar { display: none; }
+
+.filterChip {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--color-border, #E3E5E8);
+  border-radius: var(--radius-full, 9999px);
+  background: var(--color-surface, #FFFFFF);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text, #17212B);
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.filterChipActive {
+  border-color: var(--color-primary, #E39A16);
+  background: #FFFDF5;
+  color: #B47D0E;
+}
+
+/* ── Overdue banner ─────────────────────────────────────────── */
+.overdueBanner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 12px 0;
+  padding: 8px 10px;
+  background: #FEE2E2;
+  border: 1px solid #FECACA;
+  border-radius: var(--radius-sm, 8px);
+  cursor: pointer;
+}
+
+.overdueText {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-danger, #DC2626);
+}
+
+.overdueIcon { color: var(--color-danger, #DC2626); flex-shrink: 0; }
+.overdueChevron { color: var(--color-danger, #DC2626); flex-shrink: 0; }
+
+/* ── Task sections ──────────────────────────────────────────── */
+.taskSection {
+  padding: 0 12px;
+  margin-top: 8px;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  padding: 4px 0 4px;
+}
+
+.sectionTitle {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text, #17212B);
+  flex: 1;
+}
+
+.sectionCount {
+  font-size: 12px;
+  color: var(--color-text-secondary, #66707A);
+}
+
+.taskList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 4px;
+}
+
+/* ── Task card ──────────────────────────────────────────────── */
+.taskCard {
+  background: var(--color-surface, #FFFFFF);
+  border: 1px solid var(--color-border, #E3E5E8);
+  border-radius: var(--radius-sm, 8px);
+  padding: 9px 10px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+}
+
+.taskCard:active { background: var(--color-bg, #F8F7F4); }
+
+.taskCardCompleted {
+  opacity: 0.65;
+}
+
+.checkCircle {
+  flex-shrink: 0;
+  margin-top: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid var(--color-border, #E3E5E8);
+  background: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.checkCircleChecked {
+  border-color: var(--color-ok, #16A34A);
+  background: var(--color-ok, #16A34A);
+}
+
+.checkCircleLoading {
+  border-color: var(--color-border, #E3E5E8);
+  background: none;
+  opacity: 0.5;
+}
+
+.taskBody { flex: 1; min-width: 0; }
+
+.taskTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 2px;
+}
+
+.taskTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text, #17212B);
+  flex: 1;
+  min-width: 0;
+}
+
+.taskTitleCompleted {
+  text-decoration: line-through;
+  color: var(--color-text-secondary, #66707A);
+}
+
+.taskMeta {
+  font-size: 11px;
+  color: var(--color-text-secondary, #66707A);
+  line-height: 1.4;
+}
+
+.taskTagRow {
+  display: flex;
+  gap: 4px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+
+/* ── Status tags ────────────────────────────────────────────── */
+.tag {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 7px;
+  border-radius: var(--radius-full, 9999px);
+  white-space: nowrap;
+}
+
+.tagOverdue {
+  background: #FEE2E2;
+  color: var(--color-danger, #DC2626);
+  border: 1px solid #FECACA;
+}
+
+.tagToday {
+  background: #FEF3C7;
+  color: var(--color-warn, #D97706);
+  border: 1px solid #FDE68A;
+}
+
+.tagTomorrow {
+  background: #DCFCE7;
+  color: var(--color-ok, #16A34A);
+  border: 1px solid #BBF7D0;
+}
+
+.tagUpcoming {
+  background: #EDE9FE;
+  color: #7C3AED;
+  border: 1px solid #DDD6FE;
+}
+
+.tagCategory {
+  background: var(--color-bg, #F8F7F4);
+  color: var(--color-text-secondary, #66707A);
+  border: 1px solid var(--color-border, #E3E5E8);
+}
+
+/* ── Completed section toggle ───────────────────────────────── */
+.completedToggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 10px 12px 6px;
+  text-align: left;
+}
+
+.completedToggleLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-secondary, #66707A);
+  flex: 1;
+}
+
+/* ── FAB ────────────────────────────────────────────────────── */
+.fab {
+  position: fixed;
+  bottom: calc(72px + 12px + env(safe-area-inset-bottom, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 32px);
+  max-width: 358px;
+  height: 48px;
+  background: var(--color-primary, #E39A16);
+  color: #17212B;
+  border: none;
+  border-radius: var(--radius-sm, 8px);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  z-index: 9;
+}
+
+.fab:active { background: var(--color-warn, #D97706); }
+
+/* ── Offline banner ─────────────────────────────────────────── */
+.offlineBanner {
+  margin: 8px 12px 0;
+  background: #FEF3C7;
+  border: 1px solid #FDE68A;
+  border-radius: var(--radius-sm, 8px);
+  padding: 6px 12px;
+  font-size: 12px;
+  color: var(--color-warn, #D97706);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ── Full-screen states ─────────────────────────────────────── */
+.stateScreen {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  background: var(--color-bg, #F8F7F4);
+}
+
+.stateBody {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.stateIcon { color: var(--color-text-secondary, #66707A); }
+
+.stateTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text, #17212B);
+  margin: 0;
+}
+
+.stateDesc {
+  font-size: 14px;
+  color: var(--color-text-secondary, #66707A);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.retryBtn {
+  height: 44px;
+  padding: 0 28px;
+  border: none;
+  border-radius: var(--radius-sm, 8px);
+  background: var(--color-primary, #E39A16);
+  color: #17212B;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ── Spinner ────────────────────────────────────────────────── */
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--color-border, #E3E5E8);
+  border-top-color: var(--color-primary, #E39A16);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.spinnerSmall {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(23,33,43,0.2);
+  border-top-color: #17212B;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Calendar grid (calendar-view state) ────────────────────── */
+.calendarGrid {
+  padding: 8px 12px 12px;
+  background: var(--color-surface, #FFFFFF);
+  border-bottom: 1px solid var(--color-border, #E3E5E8);
+}
+
+.calendarWeekHeader {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 4px;
+}
+
+.calendarWeekDay {
+  text-align: center;
+  font-size: 11px;
+  color: var(--color-text-secondary, #66707A);
+  padding: 2px 0;
+}
+
+.calendarDays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.calendarDay {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm, 8px);
+  font-size: 13px;
+  color: var(--color-text, #17212B);
+  cursor: pointer;
+  border: none;
+  background: none;
+  position: relative;
+}
+
+.calendarDayActive {
+  background: var(--color-primary, #E39A16);
+  color: #17212B;
+  font-weight: 700;
+}
+
+.calendarDayOtherMonth {
+  color: var(--color-border, #E3E5E8);
+}
+
+.calendarDayDot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--color-danger, #DC2626);
+  position: absolute;
+  bottom: 3px;
+}
