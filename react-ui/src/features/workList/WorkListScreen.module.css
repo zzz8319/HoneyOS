@@ -1,0 +1,621 @@
+/* ── Shell ─────────────────────────────────────────────────── */
+.screen {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  background: var(--color-bg, #F8F7F4);
+  /* bottom clearance: BottomNav 72px + FAB 48px + gap 12px + safe-area */
+  padding-bottom: calc(140px + env(safe-area-inset-bottom, 0px));
+}
+
+/* ── Header ────────────────────────────────────────────────── */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--color-surface, #FFFFFF);
+  border-bottom: 1px solid var(--color-border, #E3E5E8);
+  padding: 0 4px;
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  height: 52px;
+  gap: 0;
+}
+
+.headerTitle {
+  flex: 1;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-text, #17212B);
+  padding: 0 8px;
+}
+
+.iconBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text, #17212B);
+  border-radius: var(--radius-sm, 8px);
+  flex-shrink: 0;
+}
+
+.iconBtn:active { background: var(--color-border, #E3E5E8); }
+
+/* ── Segment control row ───────────────────────────────────── */
+.segmentRow {
+  display: flex;
+  align-items: center;
+  padding: 6px 12px 8px;
+  gap: 8px;
+  background: var(--color-surface, #FFFFFF);
+  border-bottom: 1px solid var(--color-border, #E3E5E8);
+}
+
+.segmentControl {
+  display: flex;
+  background: var(--color-bg, #F8F7F4);
+  border: 1px solid var(--color-border, #E3E5E8);
+  border-radius: var(--radius-sm, 8px);
+  padding: 2px;
+  flex: 0 0 62%;
+}
+
+.segmentBtn {
+  flex: 1;
+  height: 28px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-secondary, #66707A);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.segmentBtnActive {
+  background: var(--color-primary, #E39A16);
+  color: #17212B;
+  font-weight: 700;
+}
+
+.segmentLabel {
+  font-size: 11px;
+  color: var(--color-text-secondary, #66707A);
+  flex: 1;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* ── Month + date strip ─────────────────────────────────────── */
+.calendarSection {
+  background: var(--color-surface, #FFFFFF);
+  border-bottom: 1px solid var(--color-border, #E3E5E8);
+  padding: 8px 12px 10px;
+}
+
+.monthRow {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.monthLabel {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text, #17212B);
+  flex: 1;
+}
+
+.monthNavBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-secondary, #66707A);
+  border-radius: var(--radius-sm, 8px);
+}
+
+.dateStrip {
+  display: flex;
+  gap: 3px;
+}
+
+.dateCell {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 5px 2px 4px;
+  border-radius: var(--radius-sm, 8px);
+  cursor: pointer;
+  background: none;
+  border: none;
+}
+
+.dateCellActive {
+  background: var(--color-primary, #E39A16);
+}
+
+.dateDayName {
+  font-size: 10px;
+  color: var(--color-text-secondary, #66707A);
+  font-weight: 500;
+  line-height: 1;
+}
+
+.dateCellActive .dateDayName { color: #17212B; }
+
+.dateNum {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text, #17212B);
+  line-height: 1;
+}
+
+.dateCellActive .dateNum { color: #17212B; font-weight: 700; }
+
+.dateDots {
+  display: flex;
+  gap: 2px;
+  height: 4px;
+  align-items: center;
+}
+
+.dateDot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+}
+
+/* ── Filter chips ───────────────────────────────────────────── */
+.filterRow {
+  display: flex;
+  gap: 6px;
+  padding: 7px 12px;
+  background: var(--color-surface, #FFFFFF);
+  border-bottom: 1px solid var(--color-border, #E3E5E8);
+  overflow-x: auto;
+}
+
+.filterRow::-webkit-scrollbar { display: none; }
+
+.filterChip {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--color-border, #E3E5E8);
+  border-radius: var(--radius-full, 9999px);
+  background: var(--color-surface, #FFFFFF);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text, #17212B);
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.filterChipActive {
+  border-color: var(--color-primary, #E39A16);
+  background: #FFFDF5;
+  color: #B47D0E;
+}
+
+/* ── Overdue banner ─────────────────────────────────────────── */
+.overdueBanner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 12px 4px;
+  padding: 8px 10px;
+  background: #FEE2E2;
+  border: 1px solid #FECACA;
+  border-radius: var(--radius-sm, 8px);
+  cursor: pointer;
+}
+
+.overdueText {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-danger, #DC2626);
+}
+
+.overdueIcon { color: var(--color-danger, #DC2626); flex-shrink: 0; }
+.overdueChevron { color: var(--color-danger, #DC2626); flex-shrink: 0; }
+
+/* ── Offline banner ─────────────────────────────────────────── */
+.offlineBanner {
+  margin: 6px 12px 0;
+  background: #FEF3C7;
+  border: 1px solid #FDE68A;
+  border-radius: var(--radius-sm, 8px);
+  padding: 6px 12px;
+  font-size: 12px;
+  color: var(--color-warn, #D97706);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ── Content ────────────────────────────────────────────────── */
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Section ────────────────────────────────────────────────── */
+.section {
+  padding: 8px 12px 0;
+}
+
+.sectionHeader {
+  padding: 0 2px 5px;
+}
+
+.sectionTitle {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-secondary, #66707A);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+/* ── Task list container (white grouped rows) ───────────────── */
+.taskGroup {
+  background: var(--color-surface, #FFFFFF);
+  border: 1px solid var(--color-border, #E3E5E8);
+  border-radius: var(--radius-sm, 8px);
+  overflow: hidden;
+}
+
+/* ── Task row ───────────────────────────────────────────────── */
+.taskRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px 9px 6px;
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  position: relative;
+}
+
+.taskRow + .taskRow {
+  border-top: 1px solid var(--color-border, #E3E5E8);
+}
+
+.taskRow:active { background: var(--color-bg, #F8F7F4); }
+
+.taskRowCompleted { opacity: 0.6; }
+
+/* ── Checkbox ───────────────────────────────────────────────── */
+.checkWrap {
+  /* 44px tap area without affecting layout */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: -4px -4px -4px -4px;
+}
+
+.checkCircle {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid var(--color-border, #E3E5E8);
+  background: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.checkCircleChecked {
+  border-color: var(--color-ok, #16A34A);
+  background: var(--color-ok, #16A34A);
+}
+
+/* ── Category icon circle ───────────────────────────────────── */
+.iconCircle {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.iconCircleAmber  { background: #FEF3C7; }
+.iconCircleRed    { background: #FEE2E2; }
+.iconCircleGreen  { background: #DCFCE7; }
+.iconCirclePurple { background: #EDE9FE; }
+.iconCircleGray   { background: #F3F4F6; }
+
+/* ── Row body ───────────────────────────────────────────────── */
+.rowBody {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rowTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text, #17212B);
+  line-height: 1.3;
+}
+
+.rowTitleCompleted {
+  text-decoration: line-through;
+  color: var(--color-text-secondary, #66707A);
+}
+
+.rowTagRow {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.rowTag {
+  font-size: 11px;
+  color: var(--color-text-secondary, #66707A);
+  background: var(--color-bg, #F8F7F4);
+  border: 1px solid var(--color-border, #E3E5E8);
+  border-radius: var(--radius-full, 9999px);
+  padding: 1px 6px;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.rowNote {
+  font-size: 11px;
+  color: var(--color-text-secondary, #66707A);
+  line-height: 1.3;
+}
+
+/* ── Deadline tag ───────────────────────────────────────────── */
+.deadlineTag {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: var(--radius-full, 9999px);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.deadlineOverdue {
+  background: #FEE2E2;
+  color: var(--color-danger, #DC2626);
+  border: 1px solid #FECACA;
+}
+
+.deadlineToday {
+  background: #FEF3C7;
+  color: var(--color-warn, #D97706);
+  border: 1px solid #FDE68A;
+}
+
+.deadlineTomorrow {
+  background: #DCFCE7;
+  color: var(--color-ok, #16A34A);
+  border: 1px solid #BBF7D0;
+}
+
+.deadlineUpcoming {
+  background: #F3F4F6;
+  color: var(--color-text-secondary, #66707A);
+  border: 1px solid var(--color-border, #E3E5E8);
+}
+
+.rowChevron {
+  color: var(--color-border, #E3E5E8);
+  flex-shrink: 0;
+}
+
+/* ── Completed toggle ───────────────────────────────────────── */
+.completedToggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 10px 14px 6px;
+  text-align: left;
+}
+
+.completedToggleLabel {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-secondary, #66707A);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+/* ── FAB (compact pill, bottom-right) ──────────────────────── */
+.fab {
+  position: fixed;
+  /* stay inside the app's max content width (430px) */
+  right: max(16px, calc(50% - 215px + 16px));
+  bottom: calc(72px + 12px + env(safe-area-inset-bottom, 0px));
+  height: 48px;
+  padding: 0 20px 0 16px;
+  background: var(--color-primary, #E39A16);
+  color: #17212B;
+  border: none;
+  border-radius: 24px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.20);
+  z-index: 9;
+  white-space: nowrap;
+}
+
+.fab:active { background: var(--color-warn, #D97706); }
+
+/* ── Full-screen states ─────────────────────────────────────── */
+.stateScreen {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  background: var(--color-bg, #F8F7F4);
+}
+
+.stateBody {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.stateIcon { color: var(--color-text-secondary, #66707A); }
+
+.stateTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text, #17212B);
+  margin: 0;
+}
+
+.stateDesc {
+  font-size: 14px;
+  color: var(--color-text-secondary, #66707A);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.retryBtn {
+  height: 44px;
+  padding: 0 28px;
+  border: none;
+  border-radius: var(--radius-sm, 8px);
+  background: var(--color-primary, #E39A16);
+  color: #17212B;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ── Spinner ────────────────────────────────────────────────── */
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--color-border, #E3E5E8);
+  border-top-color: var(--color-primary, #E39A16);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.spinnerSmall {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(23,33,43,0.25);
+  border-top-color: #17212B;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Calendar grid (calendar-view state) ────────────────────── */
+.calendarGrid {
+  padding: 8px 12px 12px;
+  background: var(--color-surface, #FFFFFF);
+  border-bottom: 1px solid var(--color-border, #E3E5E8);
+}
+
+.calendarWeekHeader {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 4px;
+}
+
+.calendarWeekDay {
+  text-align: center;
+  font-size: 11px;
+  color: var(--color-text-secondary, #66707A);
+  padding: 2px 0;
+}
+
+.calendarDays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.calendarDay {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm, 8px);
+  font-size: 13px;
+  color: var(--color-text, #17212B);
+  cursor: pointer;
+  border: none;
+  background: none;
+  position: relative;
+}
+
+.calendarDayActive {
+  background: var(--color-primary, #E39A16);
+  color: #17212B;
+  font-weight: 700;
+}
+
+.calendarDayOtherMonth {
+  color: var(--color-border, #E3E5E8);
+}
+
+.calendarDayDot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--color-danger, #DC2626);
+  position: absolute;
+  bottom: 3px;
+}
