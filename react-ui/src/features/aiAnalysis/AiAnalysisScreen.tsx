@@ -409,7 +409,7 @@ function InspectionDataCard({ data }: { data: InspectionData }) {
   )
 }
 
-function DataMissingCard({ onRetry }: { onRetry: () => void }) {
+function DataMissingCard({ onRetry, isRetrying }: { onRetry: () => void; isRetrying: boolean }) {
   return (
     <div className={styles.card}>
       <div className={styles.cardHeader}>
@@ -419,8 +419,10 @@ function DataMissingCard({ onRetry }: { onRetry: () => void }) {
         <div className={styles.dataMissingIcon}>
           <AlertIcon/>
         </div>
-        <p className={styles.dataMissingText}>内検データを取得できませんでした。<br/>内検を完了してから再度お試しください。</p>
-        <button className={styles.retryDataBtn} onClick={onRetry}>再試行</button>
+        <p className={styles.dataMissingText}>内検データを取得できませんでした。ネットワーク接続を確認してから再度お試しください。</p>
+        <button className={styles.retryDataBtn} onClick={onRetry} disabled={isRetrying} aria-busy={isRetrying}>
+          {isRetrying ? '再試行中…' : '再試行'}
+        </button>
       </div>
     </div>
   )
@@ -522,6 +524,7 @@ export function AiAnalysisScreen({
       : new Set<AnalysisTarget>(['health', 'disease-pest', 'queen'])
   )
   const [showTargetError, setShowTargetError] = useState(false)
+  const [isRetrying, setIsRetrying] = useState(false)
 
   const atMax = photos.length >= MAX_PHOTOS
 
@@ -554,9 +557,13 @@ export function AiAnalysisScreen({
   }
 
   function handleRetryData() {
+    if (isRetrying) return
+    setIsRetrying(true)
     // 内検データのみ再取得。選択済み画像・解析対象は保持。
     // 実装時: window.HoneyDB 経由で内検データを再フェッチ。
     console.log('[SCR-014] 内検データ再取得リクエスト（未接続）:', { inspectionId, colonyId })
+    // モック: 2秒後にリセット（実装時は結果に応じて viewState を変更）
+    setTimeout(() => setIsRetrying(false), 2000)
   }
 
   // ── Full-screen special states ─────────────────────────
@@ -617,7 +624,7 @@ export function AiAnalysisScreen({
   const canNoImage = targets.size > 0 && !isPending && !isDataMissing
 
   return (
-    <div className={styles.screen}>
+    <div className={styles.screen} aria-busy={isPending}>
       <ScreenHeader onBack={onBack}/>
       <StepIndicator current={1}/>
 
@@ -669,7 +676,7 @@ export function AiAnalysisScreen({
         />
 
         {/* 5. 内検データカード */}
-        {isDataMissing ? <DataMissingCard onRetry={handleRetryData}/> : <InspectionDataCard data={inspData}/>}
+        {isDataMissing ? <DataMissingCard onRetry={handleRetryData} isRetrying={isRetrying}/> : <InspectionDataCard data={inspData}/>}
 
         {/* 6. 解析対象 */}
         <AnalysisTargets

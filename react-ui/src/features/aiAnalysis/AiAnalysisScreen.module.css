@@ -13,7 +13,7 @@
   z-index: 10;
   background: var(--color-surface, #FFFFFF);
   border-bottom: 1px solid var(--color-border, #E3E5E8);
-  padding: 10px 4px 10px;
+  padding: 8px 4px 8px;
 }
 
 .headerRow {
@@ -60,7 +60,7 @@
 .steps {
   display: flex;
   align-items: center;
-  padding: 10px 20px;
+  padding: 8px 20px;
   background: var(--color-surface, #FFFFFF);
   border-bottom: 1px solid var(--color-border, #E3E5E8);
   gap: 0;
@@ -159,7 +159,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 7px 12px;
+  padding: 6px 12px;
   cursor: default;
 }
 
@@ -316,10 +316,10 @@
 }
 
 .dataDesc {
-  padding: 0 12px 4px;
+  padding: 0 12px 2px;
   font-size: 12px;
   color: var(--color-text-secondary, #66707A);
-  line-height: 1.4;
+  line-height: 1.3;
 }
 
 .dataGrid {
@@ -329,7 +329,7 @@
 }
 
 .dataCell {
-  padding: 5px 6px;
+  padding: 4px 6px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -510,7 +510,7 @@
   padding: 6px 0 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
 }
 
 .startBtn {
@@ -613,11 +613,11 @@
 @keyframes spin { to { transform: rotate(360deg); } }
 
 .offlineBanner {
-  margin: 8px 16px 0;
+  margin: 4px 16px 0;
   background: #FEF3C7;
   border: 1px solid #FDE68A;
   border-radius: var(--radius-sm, 8px);
-  padding: 8px 12px;
+  padding: 5px 12px;
   font-size: 12px;
   color: var(--color-warn, #D97706);
   display: flex;
@@ -626,11 +626,11 @@
 }
 
 .errorBanner {
-  margin: 8px 16px 0;
+  margin: 4px 16px 0;
   background: #FEF2F2;
   border: 1px solid #FECACA;
   border-radius: var(--radius-sm, 8px);
-  padding: 8px 12px;
+  padding: 5px 12px;
   font-size: 12px;
   color: var(--color-danger, #DC2626);
   display: flex;
@@ -665,7 +665,7 @@
 }
 
 .retryDataBtn {
-  height: 36px;
+  height: 44px;
   padding: 0 20px;
   border: 1.5px solid var(--color-primary, #E39A16);
   border-radius: var(--radius-sm, 8px);
