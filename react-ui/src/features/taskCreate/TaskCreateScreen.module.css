@@ -1,21 +1,19 @@
 /* ── Shell ─────────────────────────────────────────────────── */
 .screen {
+  height: 100dvh;
   display: flex;
   flex-direction: column;
-  min-height: 100dvh;
+  overflow: hidden;
   background: #FFFFFF;
-  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 /* ── Header ────────────────────────────────────────────────── */
 .header {
-  position: sticky;
-  top: 0;
+  flex: 0 0 auto;
   z-index: 20;
   background: #FFFFFF;
   border-bottom: 1px solid var(--color-border, #E3E5E8);
   padding: 0 4px;
-  flex-shrink: 0;
 }
 
 .headerRow {
@@ -57,10 +55,10 @@
 
 /* ── Error banner ───────────────────────────────────────────── */
 .errorBanner {
+  flex: 0 0 auto;
   display: flex;
   align-items: flex-start;
   gap: 8px;
-  margin: 0;
   padding: 10px 16px;
   background: #FEE2E2;
   border-bottom: 1px solid #FECACA;
@@ -76,6 +74,7 @@
 
 /* ── Offline banner ─────────────────────────────────────────── */
 .offlineBanner {
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -88,6 +87,7 @@
 
 /* ── AI Recommendation card ─────────────────────────────────── */
 .aiCard {
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -95,7 +95,6 @@
   padding: 10px 12px;
   background: #F3F4F6;
   border-radius: var(--radius-sm, 8px);
-  flex-shrink: 0;
 }
 
 .aiCardLeft {
@@ -106,7 +105,7 @@
   min-width: 0;
 }
 
-.aiCardIcon { color: #6366F1; flex-shrink: 0; }
+.aiCardIcon { color: #1E3A5F; flex-shrink: 0; }
 
 .aiCardTexts { min-width: 0; }
 
@@ -155,10 +154,12 @@
 
 /* ── Scrollable form body ───────────────────────────────────── */
 .body {
-  flex: 1;
+  flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
+  overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
-  padding: 4px 0 16px;
+  padding: 4px 0 12px;
 }
 
 /* ── Form section ───────────────────────────────────────────── */
@@ -495,8 +496,9 @@
 
 .switchKnobOn { transform: translateX(20px); }
 
-.switchBtn:disabled .switchTrack { opacity: 0.5; }
+/* disabled: preserve color, just mark not-interactive */
 .switchBtn:disabled { cursor: not-allowed; }
+.switchBtn:disabled .switchTrack { opacity: 0.65; }
 
 /* ── Info card ──────────────────────────────────────────────── */
 .infoCard {
@@ -526,12 +528,15 @@
 
 /* ── Bottom actions ─────────────────────────────────────────── */
 .bottomActions {
+  flex: 0 0 auto;
+  position: relative;
+  z-index: 10;
   display: flex;
   gap: 8px;
-  padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+  padding: 12px 16px;
+  padding-bottom: max(12px, env(safe-area-inset-bottom, 12px));
   background: #FFFFFF;
   border-top: 1px solid var(--color-border, #E3E5E8);
-  flex-shrink: 0;
 }
 
 .cancelBtn {

@@ -21,16 +21,38 @@ interface Props {
   onSuccess?: () => void
 }
 
-// ── Inline SVG icons ─────────────────────────────────────────
+// ── Brain AI icon (neural-network style) ─────────────────────
 
-function AiIcon({ size = 20 }: { size?: number }) {
+function BrainAiIcon({ size = 22 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 2a4 4 0 0 1 4 4 4 4 0 0 1-4 4 4 4 0 0 1-4-4 4 4 0 0 1 4-4z" />
-      <path d="M12 10v2" />
-      <path d="M8 14h8" />
-      <path d="M9 17l-2 4" />
-      <path d="M15 17l2 4" />
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="#1E3A5F"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      {/* Left hemisphere */}
+      <path d="M11.5 5C9 5 6.5 7 6.5 10c0 1.2.5 2.3 1.2 3.1-.8.8-1.2 1.8-1.2 3C6.5 18.3 8.5 20 11 20c.2 0 .3 0 .5-.02" />
+      {/* Right hemisphere */}
+      <path d="M12.5 5C15 5 17.5 7 17.5 10c0 1.2-.5 2.3-1.2 3.1.8.8 1.2 1.8 1.2 3 0 2.2-2 3.9-4.5 3.9-.2 0-.3 0-.5-.02" />
+      {/* Top bridge */}
+      <line x1="11.5" y1="5" x2="12.5" y2="5" />
+      {/* Neural nodes */}
+      <circle cx="9.2" cy="10" r="1.1" fill="#1E3A5F" stroke="none" />
+      <circle cx="14.8" cy="10" r="1.1" fill="#1E3A5F" stroke="none" />
+      <circle cx="9.2" cy="15" r="1.1" fill="#1E3A5F" stroke="none" />
+      <circle cx="14.8" cy="15" r="1.1" fill="#1E3A5F" stroke="none" />
+      {/* Horizontal connections */}
+      <line x1="9.2" y1="10" x2="14.8" y2="10" strokeWidth="1.2" />
+      <line x1="9.2" y1="15" x2="14.8" y2="15" strokeWidth="1.2" />
+      {/* Vertical connections */}
+      <line x1="9.2" y1="10" x2="9.2" y2="15" strokeWidth="1.2" />
+      <line x1="14.8" y1="10" x2="14.8" y2="15" strokeWidth="1.2" />
     </svg>
   )
 }
@@ -76,9 +98,7 @@ function ColonyPicker({
   onClose: () => void
 }) {
   const [query, setQuery] = useState('')
-  const filtered = MOCK_COLONIES.filter(
-    c => c.name.includes(query) || c.apiaryName.includes(query),
-  )
+
   const groups = MOCK_COLONIES.reduce<Record<string, Colony[]>>((acc, c) => {
     if (!acc[c.apiaryName]) acc[c.apiaryName] = []
     acc[c.apiaryName].push(c)
@@ -93,8 +113,6 @@ function ColonyPicker({
     },
     {},
   )
-
-  void filtered
 
   return (
     <div className={styles.overlay} onClick={onClose}>
@@ -200,10 +218,37 @@ function Switch({
   )
 }
 
+// ── Header ───────────────────────────────────────────────────
+
+function Header({ onClose }: { onClose: () => void }) {
+  return (
+    <div className={styles.header}>
+      <div className={styles.headerRow}>
+        <div className={styles.headerSide}>
+          <button className={styles.iconBtn} onClick={onClose} aria-label="閉じる">
+            <X size={20} />
+          </button>
+        </div>
+        <span className={styles.headerTitle}>タスク作成</span>
+        <div className={styles.headerSide} />
+      </div>
+    </div>
+  )
+}
+
 // ── Main component ───────────────────────────────────────────
 
 export function TaskCreateScreen({ viewState, onBack, onSuccess }: Props) {
-  const isAi = viewState === 'normal-ai' || viewState === 'date-picker' || viewState === 'colony-picker' || viewState === 'discard-dialog' || viewState === 'submit-error' || viewState === 'validation-error' || viewState === 'submitting' || viewState === 'offline'
+  // validation-error uses empty values (manual context) to show empty-field errors
+  const isAi = (
+    viewState === 'normal-ai' ||
+    viewState === 'date-picker' ||
+    viewState === 'colony-picker' ||
+    viewState === 'discard-dialog' ||
+    viewState === 'submit-error' ||
+    viewState === 'submitting' ||
+    viewState === 'offline'
+  )
   const ctx = isAi ? AI_CONTEXT : MANUAL_CONTEXT
 
   const titleId = useId()
@@ -214,15 +259,21 @@ export function TaskCreateScreen({ viewState, onBack, onSuccess }: Props) {
   const [showAiCard, setShowAiCard] = useState(ctx.source === 'ai-recommendation')
   const [linkedRecommendationId, setLinkedRecommendationId] = useState(ctx.recommendationId)
 
-  // Form state
-  const [title, setTitle] = useState(ctx.initialTitle ?? '')
-  const [dueDate, setDueDate] = useState(ctx.initialDueDate ?? '')
+  // Form state — validation-error starts empty; all others from context
+  const [title, setTitle] = useState(
+    viewState === 'validation-error' ? '' : (ctx.initialTitle ?? ''),
+  )
+  const [dueDate, setDueDate] = useState(
+    viewState === 'validation-error' ? '' : (ctx.initialDueDate ?? ''),
+  )
   const [priority, setPriority] = useState<TaskPriority>(ctx.initialPriority ?? 'high')
   const [selectedColony, setSelectedColony] = useState<Colony | null>(() => {
-    if (!ctx.colonyId) return null
+    if (viewState === 'validation-error' || !ctx.colonyId) return null
     return MOCK_COLONIES.find(c => c.id === ctx.colonyId) ?? null
   })
-  const [memo, setMemo] = useState(ctx.initialMemo ?? '')
+  const [memo, setMemo] = useState(
+    viewState === 'validation-error' ? '' : (ctx.initialMemo ?? ''),
+  )
   const [reminderOn, setReminderOn] = useState(true)
 
   // UI overlays — initialise from viewState for snapshot testing
@@ -230,9 +281,13 @@ export function TaskCreateScreen({ viewState, onBack, onSuccess }: Props) {
   const [showDatePicker, setShowDatePicker] = useState(viewState === 'date-picker')
   const [showDiscardDialog, setShowDiscardDialog] = useState(viewState === 'discard-dialog')
 
-  // Validation errors
-  const [titleError, setTitleError] = useState(viewState === 'validation-error' ? 'タイトルを入力してください。' : '')
-  const [dueDateError, setDueDateError] = useState(viewState === 'validation-error' ? '期限日を選択してください。' : '')
+  // Validation errors — only shown when fields are actually empty
+  const [titleError, setTitleError] = useState(
+    viewState === 'validation-error' ? 'タイトルを入力してください。' : '',
+  )
+  const [dueDateError, setDueDateError] = useState(
+    viewState === 'validation-error' ? '期限日を選択してください。' : '',
+  )
 
   const isSubmitting = viewState === 'submitting'
   const isOffline = viewState === 'offline'
@@ -327,9 +382,10 @@ export function TaskCreateScreen({ viewState, onBack, onSuccess }: Props) {
       className={styles.screen}
       aria-busy={isSubmitting}
     >
+      {/* Fixed header */}
       <Header onClose={handleClose} />
 
-      {/* Error banner */}
+      {/* Fixed banners (shrink body, never push footer) */}
       {hasSubmitError && (
         <div className={styles.errorBanner} role="alert">
           <AlertCircle size={16} className={styles.errorBannerIcon} />
@@ -338,8 +394,6 @@ export function TaskCreateScreen({ viewState, onBack, onSuccess }: Props) {
           </span>
         </div>
       )}
-
-      {/* Offline banner */}
       {isOffline && (
         <div className={styles.offlineBanner} role="status">
           <WifiOff size={15} />
@@ -347,11 +401,13 @@ export function TaskCreateScreen({ viewState, onBack, onSuccess }: Props) {
         </div>
       )}
 
-      {/* AI card */}
+      {/* AI card (outside scroll, shrinks body) */}
       {showAiCard && ctx.source === 'ai-recommendation' && (
         <div className={styles.aiCard}>
           <div className={styles.aiCardLeft}>
-            <AiIcon size={22} />
+            <span className={styles.aiCardIcon}>
+              <BrainAiIcon size={22} />
+            </span>
             <div className={styles.aiCardTexts}>
               <div className={styles.aiCardTitle}>AI推奨から作成</div>
               <div className={styles.aiCardSub}>24時間以内に再確認（A-03）</div>
@@ -376,7 +432,7 @@ export function TaskCreateScreen({ viewState, onBack, onSuccess }: Props) {
         </div>
       )}
 
-      {/* Scrollable body */}
+      {/* Scrollable body — flex: 1 1 auto; min-height: 0 */}
       <div className={styles.body}>
 
         {/* タイトル */}
@@ -581,7 +637,7 @@ export function TaskCreateScreen({ viewState, onBack, onSuccess }: Props) {
 
       </div>
 
-      {/* Bottom actions */}
+      {/* Fixed footer — always visible, never pushed off screen */}
       <div className={styles.bottomActions}>
         <button
           className={styles.cancelBtn}
@@ -638,24 +694,6 @@ export function TaskCreateScreen({ viewState, onBack, onSuccess }: Props) {
           onDiscard={handleDiscard}
         />
       )}
-    </div>
-  )
-}
-
-// ── Header (extracted for reuse in full-screen states) ────────
-
-function Header({ onClose }: { onClose: () => void }) {
-  return (
-    <div className={styles.header}>
-      <div className={styles.headerRow}>
-        <div className={styles.headerSide}>
-          <button className={styles.iconBtn} onClick={onClose} aria-label="閉じる">
-            <X size={20} />
-          </button>
-        </div>
-        <span className={styles.headerTitle}>タスク作成</span>
-        <div className={styles.headerSide} />
-      </div>
     </div>
   )
 }
