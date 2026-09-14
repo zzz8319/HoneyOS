@@ -15,6 +15,7 @@
 
 .item,
 .itemActive {
+  position: relative;
   min-height: 44px;
   display: grid;
   place-content: center;
@@ -34,6 +35,18 @@
 .itemActive {
   color: var(--color-primary);
   font-weight: 700;
+}
+
+.itemActive::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 26px;
+  height: 3px;
+  background: var(--color-primary);
+  border-radius: 0 0 2px 2px;
 }
 
 .label {
