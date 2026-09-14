@@ -104,11 +104,10 @@ function ScreenHeader({ colonyLabel, onBack }: { colonyLabel: string; onBack: ()
         <button className={styles.iconBtn} onClick={onBack} aria-label="戻る">
           <BackIcon/>
         </button>
-        <div className={styles.headerTitles}>
+        <div className={styles.headerTitlesCentered}>
           <div className={styles.headerTitle}>推奨作業</div>
           <div className={styles.headerSubtitle}>{colonyLabel}・AI診断結果から作成</div>
         </div>
-        <div style={{ width: 44 }} aria-hidden="true"/>
       </div>
     </header>
   )

@@ -18,6 +18,7 @@
 }
 
 .headerRow {
+  position: relative;
   display: flex;
   align-items: center;
 }
@@ -39,6 +40,15 @@
 .iconBtn:active { background: var(--color-border, #E3E5E8); }
 
 .headerTitles { flex: 1; min-width: 0; }
+
+/* Absolutely centred title group — independent of back-button width */
+.headerTitlesCentered {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  pointer-events: none;
+}
 
 .headerTitle {
   font-size: 17px;
