@@ -21,10 +21,12 @@ import { CameraImagesScreen } from './features/cameraImages'
 import type { CameraViewState } from './features/cameraImages'
 import { AiAnalysisScreen } from './features/aiAnalysis'
 import type { AiAnalysisViewState } from './features/aiAnalysis'
+import { AiDiagnosisScreen } from './features/aiDiagnosis'
+import type { DiagnosisViewState } from './features/aiDiagnosis'
 import type { TabId } from './components'
 import styles from './App.module.css'
 
-type ViewState = DashboardViewState | ColonyListViewState | ColonyDetailViewState | InspectionStartViewState | RecordViewState | ViewerViewState | ApiaryMapViewState | CompleteViewState | CameraViewState | AiAnalysisViewState
+type ViewState = DashboardViewState | ColonyListViewState | ColonyDetailViewState | InspectionStartViewState | RecordViewState | ViewerViewState | ApiaryMapViewState | CompleteViewState | CameraViewState | AiAnalysisViewState | DiagnosisViewState
 
 const STATES: { id: ViewState; label: string }[] = [
   { id: 'normal',  label: '通常' },
@@ -34,7 +36,7 @@ const STATES: { id: ViewState; label: string }[] = [
   { id: 'offline', label: 'オフライン' },
 ]
 
-const VALID_STATES: ViewState[] = ['normal', 'selected', 'empty', 'loading', 'error', 'offline', 'multi-stage', 'unsaved', 'saved', 'draft-restore', 'save-error', 'frame-selected', 'deselected', 'other-stage', 'history', 'other-apiary', 'nectar', 'alert', 'no-results', 'no-location', 'healthy', 'first-inspection', 'ai-analyzed', 'reminder-off', 'missing-record', 'none-selected', 'inspection-tab', 'auto-capture-tab', 'upload-error', 'camera-permission-denied', 'context-missing', 'no-images', 'max-images', 'targets-empty', 'loading-inspection', 'data-missing', 'request-pending', 'request-error']
+const VALID_STATES: ViewState[] = ['normal', 'selected', 'empty', 'loading', 'error', 'offline', 'multi-stage', 'unsaved', 'saved', 'draft-restore', 'save-error', 'frame-selected', 'deselected', 'other-stage', 'history', 'other-apiary', 'nectar', 'alert', 'no-results', 'no-location', 'healthy', 'first-inspection', 'ai-analyzed', 'reminder-off', 'missing-record', 'none-selected', 'inspection-tab', 'auto-capture-tab', 'upload-error', 'camera-permission-denied', 'context-missing', 'no-images', 'max-images', 'targets-empty', 'loading-inspection', 'data-missing', 'request-pending', 'request-error', 'saving', 'offline-no-cache']
 const VALID_TABS: TabId[] = ['home', 'farms', 'work', 'analytics', 'settings']
 
 const IS_DEV = import.meta.env.DEV &&
@@ -45,7 +47,7 @@ function readParam<T extends string>(key: string, valid: T[], fallback: T): T {
   return (valid.includes(p as T) ? p : fallback) as T
 }
 
-const VALID_SCREENS = ['home', 'farms', 'colony-detail', 'inspection-start', 'inspection-record', 'frame-viewer', 'add-stage', 'apiary-map', 'inspection-complete', 'camera-images', 'ai-analysis'] as const
+const VALID_SCREENS = ['home', 'farms', 'colony-detail', 'inspection-start', 'inspection-record', 'frame-viewer', 'add-stage', 'apiary-map', 'inspection-complete', 'camera-images', 'ai-analysis', 'ai-diagnosis'] as const
 type Screen = typeof VALID_SCREENS[number]
 
 export default function App() {
@@ -64,6 +66,7 @@ export default function App() {
   const [addStageRecord, setAddStageRecord] = useState<InspectionRecord | null>(null)
 
   const aiState       = viewState as AiAnalysisViewState
+  const diagState     = viewState as DiagnosisViewState
   const cameraState   = viewState as CameraViewState
   const dashState     = viewState as DashboardViewState
   const colonyState   = viewState as ColonyListViewState
@@ -90,11 +93,19 @@ export default function App() {
         </div>
       )}
 
-      {screen === 'ai-analysis' ? (
+      {screen === 'ai-diagnosis' ? (
+        <AiDiagnosisScreen
+          viewState={diagState}
+          onBack={() => setScreen('ai-analysis')}
+          onViewRecommendations={() => alert('推奨作業 → SCR-023（未実装）')}
+          onReanalyze={() => setScreen('ai-analysis')}
+          onReturnToRecord={() => setScreen('inspection-record')}
+        />
+      ) : screen === 'ai-analysis' ? (
         <AiAnalysisScreen
           viewState={aiState}
           onBack={() => setScreen('camera-images')}
-          onAnalysisComplete={() => alert('AI診断結果 → SCR-022（未実装）')}
+          onAnalysisComplete={() => setScreen('ai-diagnosis')}
         />
       ) : screen === 'camera-images' ? (
         <CameraImagesScreen
