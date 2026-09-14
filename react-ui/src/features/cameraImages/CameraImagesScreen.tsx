@@ -9,6 +9,8 @@ interface Props {
   onAnalyze?: (photoIds: string[]) => void
 }
 
+// ── Icons ────────────────────────────────────────────────
+
 function PlaceholderIcon() {
   return (
     <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden="true">
@@ -64,9 +66,19 @@ function BackIcon() {
   )
 }
 
-function CameraIcon() {
+function MoreIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="5" r="1.5" fill="currentColor"/>
+      <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
+      <circle cx="12" cy="19" r="1.5" fill="currentColor"/>
+    </svg>
+  )
+}
+
+function CameraIcon({ size = 18 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 18 18" fill="none" aria-hidden="true">
       <rect x="1.5" y="5" width="15" height="11" rx="2" stroke="currentColor" strokeWidth="1.3"/>
       <circle cx="9" cy="10.5" r="2.5" stroke="currentColor" strokeWidth="1.3"/>
       <path d="M6 5l1-2h4l1 2" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
@@ -91,6 +103,121 @@ function VideoIcon() {
     </svg>
   )
 }
+
+function ChevronRightIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path d="M6 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  )
+}
+
+// ── Header (shared across all states) ────────────────────
+
+function ScreenHeader({ onBack, subtitle }: { onBack: () => void; subtitle: string }) {
+  return (
+    <header className={styles.header}>
+      <div className={styles.headerTop}>
+        <button className={styles.backBtn} onClick={onBack} aria-label="戻る">
+          <BackIcon/>
+        </button>
+        <div className={styles.headerTitles}>
+          <div className={styles.headerTitle}>カメラ画像</div>
+          <div className={styles.headerSubtitle}>{subtitle}</div>
+        </div>
+        {/* 三点メニュー: 利用可能な操作が未接続のため表示のみ */}
+        <button className={styles.moreBtn} aria-label="メニュー" disabled>
+          <MoreIcon/>
+        </button>
+      </div>
+    </header>
+  )
+}
+
+// ── Footer (shared across all states) ────────────────────
+
+function Footer({
+  count,
+  onClear,
+  onAnalyze,
+  disabled,
+}: {
+  count: number
+  onClear: () => void
+  onAnalyze: () => void
+  disabled: boolean
+}) {
+  return (
+    <footer className={styles.footer}>
+      <div className={styles.footerLeft}>
+        <span className={styles.footerCount}>{count}枚選択</span>
+        <button className={styles.clearBtn} onClick={onClear} disabled={disabled}>
+          解除
+        </button>
+      </div>
+      <button className={styles.analyzeBtn} onClick={onAnalyze} disabled={disabled}>
+        AI解析にかける
+      </button>
+    </footer>
+  )
+}
+
+// ── Camera / Upload action row ────────────────────────────
+
+function ActionRow({
+  cameraRef,
+  uploadRef,
+}: {
+  cameraRef: React.RefObject<HTMLInputElement | null>
+  uploadRef: React.RefObject<HTMLInputElement | null>
+}) {
+  return (
+    <div className={styles.actionRow}>
+      <button className={styles.actionBtn} onClick={() => cameraRef.current?.click()}>
+        <CameraIcon/>撮影
+      </button>
+      <button className={styles.actionBtn} onClick={() => uploadRef.current?.click()}>
+        <UploadIcon/>アップロード
+      </button>
+      <input
+        ref={cameraRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        style={{ display: 'none' }}
+        aria-hidden="true"
+      />
+      <input
+        ref={uploadRef}
+        type="file"
+        accept="image/*"
+        multiple
+        style={{ display: 'none' }}
+        aria-hidden="true"
+      />
+    </div>
+  )
+}
+
+// ── Live feed card ────────────────────────────────────────
+
+function LiveFeedCard() {
+  return (
+    <div className={styles.liveFeedCard} aria-disabled="true">
+      <span className={styles.liveFeedIcon}><VideoIcon/></span>
+      <div className={styles.liveFeedBody}>
+        <div className={styles.liveFeedTop}>
+          <span className={styles.liveFeedLabel}>ライブ映像</span>
+          <span className={styles.liveFeedBadge}>将来対応</span>
+        </div>
+        <p className={styles.liveFeedDesc}>巣箱のライブ映像は今後対応予定です。</p>
+      </div>
+      <span className={styles.liveFeedChevron}><ChevronRightIcon/></span>
+    </div>
+  )
+}
+
+// ── Photo tile ────────────────────────────────────────────
 
 function PhotoTile({
   photo,
@@ -136,6 +263,8 @@ function PhotoTile({
   )
 }
 
+// ── Inspection group card ─────────────────────────────────
+
 function InspectionGroupCard({
   group,
   selectedIds,
@@ -149,7 +278,7 @@ function InspectionGroupCard({
     <div className={styles.groupCard}>
       <div className={styles.groupHeader}>
         <span className={styles.groupIcon}><CalendarIcon/></span>
-        <span className={styles.groupDate}>{group.dateLabel}</span>
+        <span className={styles.groupDate}>{group.dateLabel}の内検</span>
         <span className={styles.groupCount}>{group.photos.length}枚</span>
       </div>
       <div className={styles.photoGrid}>
@@ -167,6 +296,8 @@ function InspectionGroupCard({
   )
 }
 
+// ── Auto-capture group card ───────────────────────────────
+
 function AutoCaptureGroupCard({
   group,
   selectedIds,
@@ -180,7 +311,10 @@ function AutoCaptureGroupCard({
     <div className={styles.groupCard}>
       <div className={styles.groupHeader}>
         <span className={styles.groupIcon}><RobotIcon/></span>
-        <span className={styles.groupDate}>{group.dateLabel}</span>
+        <div className={styles.groupHeaderText}>
+          <span className={styles.groupDate}>ロボット自動撮影</span>
+          <span className={styles.groupSubDate}>{group.dateLabel}</span>
+        </div>
         <span className={styles.groupCount}>{group.photos.length}枚</span>
       </div>
       <div className={styles.photoGrid}>
@@ -198,6 +332,8 @@ function AutoCaptureGroupCard({
   )
 }
 
+// ── Main screen ───────────────────────────────────────────
+
 export function CameraImagesScreen({ viewState, onBack, onAnalyze }: Props) {
   const [activeTab, setActiveTab] = useState<CameraTabId>(() => {
     if (viewState === 'inspection-tab') return 'inspection'
@@ -207,9 +343,11 @@ export function CameraImagesScreen({ viewState, onBack, onAnalyze }: Props) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => {
     if (viewState === 'none-selected') return new Set()
     if (viewState === 'auto-capture-tab') return new Set()
-    if (viewState === 'loading' || viewState === 'error' || viewState === 'offline'
-        || viewState === 'empty' || viewState === 'camera-permission-denied'
-        || viewState === 'context-missing') return new Set()
+    if (
+      viewState === 'loading' || viewState === 'error' || viewState === 'offline'
+      || viewState === 'empty' || viewState === 'camera-permission-denied'
+      || viewState === 'context-missing'
+    ) return new Set()
     return new Set(DEFAULT_SELECTED_IDS)
   })
 
@@ -227,17 +365,16 @@ export function CameraImagesScreen({ viewState, onBack, onAnalyze }: Props) {
     })
   }
 
-  function clearSelection() {
-    setSelectedIds(new Set())
-  }
+  function clearSelection() { setSelectedIds(new Set()) }
 
   const selectedCount = selectedIds.size
+  const subtitle = `${data.colonyLabel}・${data.apiaryName}`
 
-  // ── Loading ──────────────────────────────────────────
+  // ── Loading ──────────────────────────────────────────────
   if (viewState === 'loading') {
     return (
       <div className={styles.screen}>
-        <Header onBack={onBack} subtitle={`${data.colonyLabel}・${data.apiaryName}`}/>
+        <ScreenHeader onBack={onBack} subtitle={subtitle}/>
         <div className={styles.stateBox}>
           <div className={styles.spinner}/>
           <p className={styles.stateBody}>読み込み中…</p>
@@ -247,11 +384,11 @@ export function CameraImagesScreen({ viewState, onBack, onAnalyze }: Props) {
     )
   }
 
-  // ── Error ────────────────────────────────────────────
+  // ── Error ────────────────────────────────────────────────
   if (viewState === 'error') {
     return (
       <div className={styles.screen}>
-        <Header onBack={onBack} subtitle={`${data.colonyLabel}・${data.apiaryName}`}/>
+        <ScreenHeader onBack={onBack} subtitle={subtitle}/>
         <div className={styles.stateBox}>
           <span className={styles.stateIcon}>
             <svg width="40" height="40" viewBox="0 0 40 40" fill="none" aria-hidden="true">
@@ -268,11 +405,11 @@ export function CameraImagesScreen({ viewState, onBack, onAnalyze }: Props) {
     )
   }
 
-  // ── Offline ──────────────────────────────────────────
+  // ── Offline ──────────────────────────────────────────────
   if (viewState === 'offline') {
     return (
       <div className={styles.screen}>
-        <Header onBack={onBack} subtitle={`${data.colonyLabel}・${data.apiaryName}`}/>
+        <ScreenHeader onBack={onBack} subtitle={subtitle}/>
         <div className={styles.stateBox}>
           <span className={styles.stateIcon}>
             <svg width="40" height="40" viewBox="0 0 40 40" fill="none" aria-hidden="true">
@@ -290,11 +427,11 @@ export function CameraImagesScreen({ viewState, onBack, onAnalyze }: Props) {
     )
   }
 
-  // ── Camera permission denied ─────────────────────────
+  // ── Camera permission denied ──────────────────────────────
   if (viewState === 'camera-permission-denied') {
     return (
       <div className={styles.screen}>
-        <Header onBack={onBack} subtitle={`${data.colonyLabel}・${data.apiaryName}`}/>
+        <ScreenHeader onBack={onBack} subtitle={subtitle}/>
         <div className={styles.stateBox}>
           <span className={styles.stateIcon}>
             <svg width="40" height="40" viewBox="0 0 40 40" fill="none" aria-hidden="true">
@@ -312,11 +449,11 @@ export function CameraImagesScreen({ viewState, onBack, onAnalyze }: Props) {
     )
   }
 
-  // ── Context missing ──────────────────────────────────
+  // ── Context missing ───────────────────────────────────────
   if (viewState === 'context-missing') {
     return (
       <div className={styles.screen}>
-        <Header onBack={onBack} subtitle="—"/>
+        <ScreenHeader onBack={onBack} subtitle="—"/>
         <div className={styles.stateBox}>
           <span className={styles.stateIcon}>
             <svg width="40" height="40" viewBox="0 0 40 40" fill="none" aria-hidden="true">
@@ -333,19 +470,20 @@ export function CameraImagesScreen({ viewState, onBack, onAnalyze }: Props) {
     )
   }
 
-  // ── Normal content ───────────────────────────────────
+  // ── Normal / content states ───────────────────────────────
   const allInspectionPhotos = data.inspectionGroups.flatMap((g) => g.photos)
   const allAutoCapturePhotos = data.autoCaptureGroups.flatMap((g) => g.photos)
 
   const showInspection = activeTab === 'all' || activeTab === 'inspection'
   const showAutoCapture = activeTab === 'all' || activeTab === 'auto-capture'
 
-  const isEmpty = viewState === 'empty'
+  const hasNoPhotos = viewState === 'empty'
     || (activeTab === 'inspection' && allInspectionPhotos.length === 0)
     || (activeTab === 'auto-capture' && allAutoCapturePhotos.length === 0)
 
   return (
     <div className={styles.screen}>
+      {/* 1. ヘッダー */}
       <header className={styles.header}>
         <div className={styles.headerTop}>
           <button className={styles.backBtn} onClick={onBack} aria-label="戻る">
@@ -355,8 +493,13 @@ export function CameraImagesScreen({ viewState, onBack, onAnalyze }: Props) {
             <div className={styles.headerTitle}>カメラ画像</div>
             <div className={styles.headerSubtitle}>{data.colonyLabel}・{data.apiaryName}</div>
           </div>
+          {/* 三点メニュー: 利用可能な操作が未接続のため表示のみ */}
+          <button className={styles.moreBtn} aria-label="メニュー" disabled>
+            <MoreIcon/>
+          </button>
         </div>
 
+        {/* 2. タブ */}
         <div className={styles.segmentRow} role="tablist">
           {([
             { id: 'all' as CameraTabId, label: 'すべて' },
@@ -376,39 +519,17 @@ export function CameraImagesScreen({ viewState, onBack, onAnalyze }: Props) {
         </div>
       </header>
 
+      {/* upload-error バナー */}
       {viewState === 'upload-error' && (
         <div className={styles.errorBanner} role="alert">
           アップロードに失敗しました。ネットワークを確認して再度お試しください。
         </div>
       )}
 
-      <div className={styles.actionBar}>
-        <button className={styles.actionBtn} onClick={() => cameraInputRef.current?.click()}>
-          <CameraIcon/>撮影
-        </button>
-        <button className={styles.actionBtn} onClick={() => uploadInputRef.current?.click()}>
-          <UploadIcon/>アップロード
-        </button>
-        <input
-          ref={cameraInputRef}
-          type="file"
-          accept="image/*"
-          capture="environment"
-          style={{ display: 'none' }}
-          aria-hidden="true"
-        />
-        <input
-          ref={uploadInputRef}
-          type="file"
-          accept="image/*"
-          multiple
-          style={{ display: 'none' }}
-          aria-hidden="true"
-        />
-      </div>
-
+      {/* コンテンツ領域 */}
       <div className={styles.content}>
-        {isEmpty ? (
+        {hasNoPhotos ? (
+          /* empty 状態 */
           <div className={styles.stateBox}>
             <span className={styles.stateIcon}><PlaceholderIcon/></span>
             <p className={styles.stateTitle}>画像がありません</p>
@@ -416,6 +537,7 @@ export function CameraImagesScreen({ viewState, onBack, onAnalyze }: Props) {
           </div>
         ) : (
           <>
+            {/* 3. 内検写真グループ */}
             {showInspection && data.inspectionGroups.map((group) => (
               <InspectionGroupCard
                 key={group.inspectionId}
@@ -425,6 +547,7 @@ export function CameraImagesScreen({ viewState, onBack, onAnalyze }: Props) {
               />
             ))}
 
+            {/* 4. 自動撮影グループ */}
             {showAutoCapture && data.autoCaptureGroups.map((group, i) => (
               <AutoCaptureGroupCard
                 key={i}
@@ -433,18 +556,17 @@ export function CameraImagesScreen({ viewState, onBack, onAnalyze }: Props) {
                 onToggle={togglePhoto}
               />
             ))}
-
-            {activeTab === 'all' && (
-              <div className={styles.liveFeedCard} aria-disabled="true">
-                <span className={styles.liveFeedIcon}><VideoIcon/></span>
-                <span className={styles.liveFeedLabel}>ライブフィード</span>
-                <span className={styles.liveFeedBadge}>将来対応</span>
-              </div>
-            )}
           </>
         )}
+
+        {/* 5. ライブ映像カード (全タブ共通) */}
+        <LiveFeedCard/>
+
+        {/* 6. 撮影／アップロードボタン (ライブ映像カードの直下) */}
+        <ActionRow cameraRef={cameraInputRef} uploadRef={uploadInputRef}/>
       </div>
 
+      {/* 7. 固定フッター */}
       <Footer
         count={selectedCount}
         onClear={clearSelection}
@@ -452,47 +574,5 @@ export function CameraImagesScreen({ viewState, onBack, onAnalyze }: Props) {
         disabled={selectedCount === 0}
       />
     </div>
-  )
-}
-
-function Header({ onBack, subtitle }: { onBack: () => void; subtitle: string }) {
-  return (
-    <header className={styles.header}>
-      <div className={styles.headerTop}>
-        <button className={styles.backBtn} onClick={onBack} aria-label="戻る">
-          <BackIcon/>
-        </button>
-        <div className={styles.headerTitles}>
-          <div className={styles.headerTitle}>カメラ画像</div>
-          <div className={styles.headerSubtitle}>{subtitle}</div>
-        </div>
-      </div>
-    </header>
-  )
-}
-
-function Footer({
-  count,
-  onClear,
-  onAnalyze,
-  disabled,
-}: {
-  count: number
-  onClear: () => void
-  onAnalyze: () => void
-  disabled: boolean
-}) {
-  return (
-    <footer className={styles.footer}>
-      <div className={styles.footerLeft}>
-        <span className={styles.footerCount}>{count}枚選択</span>
-        <button className={styles.clearBtn} onClick={onClear} disabled={disabled}>
-          解除
-        </button>
-      </div>
-      <button className={styles.analyzeBtn} onClick={onAnalyze} disabled={disabled}>
-        AI解析にかける
-      </button>
-    </footer>
   )
 }
