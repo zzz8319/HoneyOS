@@ -4,7 +4,8 @@
   flex-direction: column;
   min-height: 100dvh;
   background: var(--color-bg, #F8F7F4);
-  padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+  /* bottom clearance: BottomNav 72px + FAB 48px + gap 12px + safe-area */
+  padding-bottom: calc(140px + env(safe-area-inset-bottom, 0px));
 }
 
 /* ── Header ────────────────────────────────────────────────── */
@@ -21,7 +22,7 @@
   display: flex;
   align-items: center;
   height: 52px;
-  gap: 4px;
+  gap: 0;
 }
 
 .headerTitle {
@@ -48,12 +49,14 @@
 
 .iconBtn:active { background: var(--color-border, #E3E5E8); }
 
-/* ── View segment ──────────────────────────────────────────── */
+/* ── Segment control row ───────────────────────────────────── */
 .segmentRow {
   display: flex;
   align-items: center;
   padding: 6px 12px 8px;
   gap: 8px;
+  background: var(--color-surface, #FFFFFF);
+  border-bottom: 1px solid var(--color-border, #E3E5E8);
 }
 
 .segmentControl {
@@ -62,7 +65,7 @@
   border: 1px solid var(--color-border, #E3E5E8);
   border-radius: var(--radius-sm, 8px);
   padding: 2px;
-  flex: 0 0 66%;
+  flex: 0 0 62%;
 }
 
 .segmentBtn {
@@ -95,15 +98,7 @@
   white-space: nowrap;
 }
 
-/* ── Content ────────────────────────────────────────────────── */
-.content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
-
-/* ── Month + Date strip ─────────────────────────────────────── */
+/* ── Month + date strip ─────────────────────────────────────── */
 .calendarSection {
   background: var(--color-surface, #FFFFFF);
   border-bottom: 1px solid var(--color-border, #E3E5E8);
@@ -113,7 +108,7 @@
 .monthRow {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   margin-bottom: 8px;
 }
 
@@ -139,7 +134,7 @@
 
 .dateStrip {
   display: flex;
-  gap: 4px;
+  gap: 3px;
 }
 
 .dateCell {
@@ -147,8 +142,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
-  padding: 6px 2px 5px;
+  gap: 2px;
+  padding: 5px 2px 4px;
   border-radius: var(--radius-sm, 8px);
   cursor: pointer;
   background: none;
@@ -169,7 +164,7 @@
 .dateCellActive .dateDayName { color: #17212B; }
 
 .dateNum {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--color-text, #17212B);
   line-height: 1;
@@ -180,24 +175,24 @@
 .dateDots {
   display: flex;
   gap: 2px;
-  height: 5px;
+  height: 4px;
   align-items: center;
 }
 
 .dateDot {
-  width: 5px;
-  height: 5px;
+  width: 4px;
+  height: 4px;
   border-radius: 50%;
 }
 
-/* ── Filters ────────────────────────────────────────────────── */
+/* ── Filter chips ───────────────────────────────────────────── */
 .filterRow {
   display: flex;
   gap: 6px;
-  padding: 8px 12px;
-  overflow-x: auto;
+  padding: 7px 12px;
   background: var(--color-surface, #FFFFFF);
   border-bottom: 1px solid var(--color-border, #E3E5E8);
+  overflow-x: auto;
 }
 
 .filterRow::-webkit-scrollbar { display: none; }
@@ -230,7 +225,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  margin: 8px 12px 0;
+  margin: 8px 12px 4px;
   padding: 8px 10px;
   background: #FEE2E2;
   border: 1px solid #FECACA;
@@ -248,70 +243,100 @@
 .overdueIcon { color: var(--color-danger, #DC2626); flex-shrink: 0; }
 .overdueChevron { color: var(--color-danger, #DC2626); flex-shrink: 0; }
 
-/* ── Task sections ──────────────────────────────────────────── */
-.taskSection {
-  padding: 0 12px;
-  margin-top: 8px;
+/* ── Offline banner ─────────────────────────────────────────── */
+.offlineBanner {
+  margin: 6px 12px 0;
+  background: #FEF3C7;
+  border: 1px solid #FDE68A;
+  border-radius: var(--radius-sm, 8px);
+  padding: 6px 12px;
+  font-size: 12px;
+  color: var(--color-warn, #D97706);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ── Content ────────────────────────────────────────────────── */
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Section ────────────────────────────────────────────────── */
+.section {
+  padding: 8px 12px 0;
 }
 
 .sectionHeader {
-  display: flex;
-  align-items: center;
-  padding: 4px 0 4px;
+  padding: 0 2px 5px;
 }
 
 .sectionTitle {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--color-text, #17212B);
-  flex: 1;
-}
-
-.sectionCount {
   font-size: 12px;
+  font-weight: 700;
   color: var(--color-text-secondary, #66707A);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
 }
 
-.taskList {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding-bottom: 4px;
-}
-
-/* ── Task card ──────────────────────────────────────────────── */
-.taskCard {
+/* ── Task list container (white grouped rows) ───────────────── */
+.taskGroup {
   background: var(--color-surface, #FFFFFF);
   border: 1px solid var(--color-border, #E3E5E8);
   border-radius: var(--radius-sm, 8px);
-  padding: 9px 10px;
+  overflow: hidden;
+}
+
+/* ── Task row ───────────────────────────────────────────────── */
+.taskRow {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 10px;
-  cursor: pointer;
-  text-align: left;
+  padding: 9px 10px 9px 6px;
+  background: none;
+  border: none;
   width: 100%;
+  text-align: left;
+  cursor: pointer;
+  position: relative;
 }
 
-.taskCard:active { background: var(--color-bg, #F8F7F4); }
-
-.taskCardCompleted {
-  opacity: 0.65;
+.taskRow + .taskRow {
+  border-top: 1px solid var(--color-border, #E3E5E8);
 }
 
-.checkCircle {
-  flex-shrink: 0;
-  margin-top: 1px;
+.taskRow:active { background: var(--color-bg, #F8F7F4); }
+
+.taskRowCompleted { opacity: 0.6; }
+
+/* ── Checkbox ───────────────────────────────────────────────── */
+.checkWrap {
+  /* 44px tap area without affecting layout */
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: -4px -4px -4px -4px;
+}
+
+.checkCircle {
   width: 20px;
   height: 20px;
   border-radius: 50%;
   border: 2px solid var(--color-border, #E3E5E8);
   background: none;
-  cursor: pointer;
-  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .checkCircleChecked {
@@ -319,87 +344,107 @@
   background: var(--color-ok, #16A34A);
 }
 
-.checkCircleLoading {
-  border-color: var(--color-border, #E3E5E8);
-  background: none;
-  opacity: 0.5;
-}
-
-.taskBody { flex: 1; min-width: 0; }
-
-.taskTitleRow {
+/* ── Category icon circle ───────────────────────────────────── */
+.iconCircle {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-bottom: 2px;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
-.taskTitle {
+.iconCircleAmber  { background: #FEF3C7; }
+.iconCircleRed    { background: #FEE2E2; }
+.iconCircleGreen  { background: #DCFCE7; }
+.iconCirclePurple { background: #EDE9FE; }
+.iconCircleGray   { background: #F3F4F6; }
+
+/* ── Row body ───────────────────────────────────────────────── */
+.rowBody {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rowTitle {
   font-size: 14px;
   font-weight: 600;
   color: var(--color-text, #17212B);
-  flex: 1;
-  min-width: 0;
+  line-height: 1.3;
 }
 
-.taskTitleCompleted {
+.rowTitleCompleted {
   text-decoration: line-through;
   color: var(--color-text-secondary, #66707A);
 }
 
-.taskMeta {
+.rowTagRow {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.rowTag {
   font-size: 11px;
   color: var(--color-text-secondary, #66707A);
-  line-height: 1.4;
-}
-
-.taskTagRow {
-  display: flex;
-  gap: 4px;
-  margin-top: 4px;
-  flex-wrap: wrap;
-}
-
-/* ── Status tags ────────────────────────────────────────────── */
-.tag {
-  font-size: 11px;
+  background: var(--color-bg, #F8F7F4);
+  border: 1px solid var(--color-border, #E3E5E8);
+  border-radius: var(--radius-full, 9999px);
+  padding: 1px 6px;
+  white-space: nowrap;
   font-weight: 500;
+}
+
+.rowNote {
+  font-size: 11px;
+  color: var(--color-text-secondary, #66707A);
+  line-height: 1.3;
+}
+
+/* ── Deadline tag ───────────────────────────────────────────── */
+.deadlineTag {
+  font-size: 11px;
+  font-weight: 600;
   padding: 2px 7px;
   border-radius: var(--radius-full, 9999px);
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
-.tagOverdue {
+.deadlineOverdue {
   background: #FEE2E2;
   color: var(--color-danger, #DC2626);
   border: 1px solid #FECACA;
 }
 
-.tagToday {
+.deadlineToday {
   background: #FEF3C7;
   color: var(--color-warn, #D97706);
   border: 1px solid #FDE68A;
 }
 
-.tagTomorrow {
+.deadlineTomorrow {
   background: #DCFCE7;
   color: var(--color-ok, #16A34A);
   border: 1px solid #BBF7D0;
 }
 
-.tagUpcoming {
-  background: #EDE9FE;
-  color: #7C3AED;
-  border: 1px solid #DDD6FE;
-}
-
-.tagCategory {
-  background: var(--color-bg, #F8F7F4);
+.deadlineUpcoming {
+  background: #F3F4F6;
   color: var(--color-text-secondary, #66707A);
   border: 1px solid var(--color-border, #E3E5E8);
 }
 
-/* ── Completed section toggle ───────────────────────────────── */
+.rowChevron {
+  color: var(--color-border, #E3E5E8);
+  flex-shrink: 0;
+}
+
+/* ── Completed toggle ───────────────────────────────────────── */
 .completedToggle {
   display: flex;
   align-items: center;
@@ -408,15 +453,16 @@
   background: none;
   border: none;
   cursor: pointer;
-  padding: 10px 12px 6px;
+  padding: 10px 14px 6px;
   text-align: left;
 }
 
 .completedToggleLabel {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: 700;
   color: var(--color-text-secondary, #66707A);
-  flex: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
 }
 
 /* ── FAB ────────────────────────────────────────────────────── */
@@ -444,20 +490,6 @@
 }
 
 .fab:active { background: var(--color-warn, #D97706); }
-
-/* ── Offline banner ─────────────────────────────────────────── */
-.offlineBanner {
-  margin: 8px 12px 0;
-  background: #FEF3C7;
-  border: 1px solid #FDE68A;
-  border-radius: var(--radius-sm, 8px);
-  padding: 6px 12px;
-  font-size: 12px;
-  color: var(--color-warn, #D97706);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
 
 /* ── Full-screen states ─────────────────────────────────────── */
 .stateScreen {
@@ -518,9 +550,9 @@
 
 .spinnerSmall {
   display: inline-block;
-  width: 14px;
-  height: 14px;
-  border: 2px solid rgba(23,33,43,0.2);
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(23,33,43,0.25);
   border-top-color: #17212B;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;

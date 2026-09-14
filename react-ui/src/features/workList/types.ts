@@ -10,22 +10,20 @@ export type WorkListViewState =
   | 'overdue-filtered'
   | 'updating-completion'
 
-export type TaskPriority = 'high' | 'medium' | 'low'
 export type TaskStatus = 'overdue' | 'today' | 'tomorrow' | 'upcoming' | 'completed'
+export type TaskIconType = 'inspection' | 'thermometer' | 'feeding' | 'sprout' | 'tool'
 
 export interface WorkTask {
   id: string
   title: string
-  colonyId?: string
-  colonyName?: string
-  apiaryName?: string
-  dueDate: string // ISO date string
+  /** Colony ID tag (e.g. "A-05") or apiary name (e.g. "宮田養蜂場") */
+  tag: string
+  note?: string
+  dueDate: string
   status: TaskStatus
-  priority: TaskPriority
-  category: string
+  iconType: TaskIconType
   completedAt?: string
 }
 
 export type FilterStatus = '未完了' | '完了済み' | '全て'
-export type FilterApiary = '全養蜂場' | string
 export type FilterSort = '期限順' | '優先度順' | '作成日順'

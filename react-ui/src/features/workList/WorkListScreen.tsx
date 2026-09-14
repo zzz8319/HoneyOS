@@ -16,7 +16,7 @@ import {
 } from 'lucide-react'
 import { BottomNav } from '../../components'
 import type { TabId } from '../../components'
-import type { WorkListViewState, WorkTask } from './types'
+import type { WorkListViewState, WorkTask, TaskIconType } from './types'
 import { MOCK_TASKS } from './mockData'
 import styles from './WorkListScreen.module.css'
 
@@ -27,77 +27,148 @@ interface Props {
   onTaskClick?: (id: string) => void
 }
 
-const DAY_NAMES = ['日', '月', '火', '水', '木', '金', '土']
 const WEEK_DAYS = ['月', '火', '水', '木', '金', '土', '日']
 
-// 2026-09-08..14 week strip
+// 2026-09-08..14 — initial selected = 8 (月)
 const WEEK_STRIP = [
-  { month: '9月', day: 8, dayName: '月', dots: ['#DC2626'] },
-  { month: '9月', day: 9, dayName: '火', dots: [] },
-  { month: '9月', day: 10, dayName: '水', dots: ['#16A34A'] },
-  { month: '9月', day: 11, dayName: '木', dots: ['#16A34A'] },
-  { month: '9月', day: 12, dayName: '金', dots: [] },
-  { month: '9月', day: 13, dayName: '土', dots: [] },
-  { month: '9月', day: 14, dayName: '日', dots: ['#DC2626', '#D97706'] },
+  { day: 8,  dayName: '月', dots: ['#DC2626'] },
+  { day: 9,  dayName: '火', dots: [] as string[] },
+  { day: 10, dayName: '水', dots: ['#16A34A'] },
+  { day: 11, dayName: '木', dots: ['#16A34A'] },
+  { day: 12, dayName: '金', dots: [] as string[] },
+  { day: 13, dayName: '土', dots: [] as string[] },
+  { day: 14, dayName: '日', dots: ['#DC2626', '#D97706'] },
 ]
 
-function getStatusTag(task: WorkTask) {
-  switch (task.status) {
-    case 'overdue':   return { label: '期限切れ', cls: styles.tagOverdue }
-    case 'today':     return { label: '今日', cls: styles.tagToday }
-    case 'tomorrow':  return { label: '明日', cls: styles.tagTomorrow }
-    case 'upcoming':  return { label: '3日後', cls: styles.tagUpcoming }
+// ── Category icons (inline SVG, no emoji) ──────────────────────
+
+function IconInspection({ size = 18 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#B47D0E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <line x1="8" y1="8" x2="16" y2="8" />
+      <line x1="8" y1="12" x2="16" y2="12" />
+      <line x1="8" y1="16" x2="12" y2="16" />
+    </svg>
+  )
+}
+
+function IconThermometer({ size = 18 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z" />
+    </svg>
+  )
+}
+
+function IconFeeding({ size = 18 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#B47D0E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M8 3h8l1 7H7L8 3z" />
+      <rect x="7" y="10" width="10" height="9" rx="1" />
+      <line x1="12" y1="10" x2="12" y2="19" />
+    </svg>
+  )
+}
+
+function IconSprout({ size = 18 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#16A34A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 22v-8" />
+      <path d="M12 14C12 8 7 5 3 6c0 4 3 8 9 8z" />
+      <path d="M12 14c0-6 5-9 9-8 0 4-3 8-9 8z" />
+    </svg>
+  )
+}
+
+function IconTool({ size = 18 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#7C3AED" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+    </svg>
+  )
+}
+
+function CategoryIcon({ iconType }: { iconType: TaskIconType }) {
+  switch (iconType) {
+    case 'inspection':   return <div className={`${styles.iconCircle} ${styles.iconCircleAmber}`}><IconInspection /></div>
+    case 'thermometer':  return <div className={`${styles.iconCircle} ${styles.iconCircleRed}`}><IconThermometer /></div>
+    case 'feeding':      return <div className={`${styles.iconCircle} ${styles.iconCircleAmber}`}><IconFeeding /></div>
+    case 'sprout':       return <div className={`${styles.iconCircle} ${styles.iconCircleGreen}`}><IconSprout /></div>
+    case 'tool':         return <div className={`${styles.iconCircle} ${styles.iconCirclePurple}`}><IconTool /></div>
+  }
+}
+
+function DeadlineTag({ status }: { status: WorkTask['status'] }) {
+  switch (status) {
+    case 'overdue':   return <span className={`${styles.deadlineTag} ${styles.deadlineOverdue}`}>期限切れ1日</span>
+    case 'today':     return <span className={`${styles.deadlineTag} ${styles.deadlineToday}`}>今日</span>
+    case 'tomorrow':  return <span className={`${styles.deadlineTag} ${styles.deadlineTomorrow}`}>明日</span>
+    case 'upcoming':  return <span className={`${styles.deadlineTag} ${styles.deadlineUpcoming}`}>3日後</span>
     default:          return null
   }
 }
 
-function CheckButton({ checked, loading, onClick }: { checked: boolean; loading: boolean; onClick: () => void }) {
+function CheckButton({
+  checked,
+  loading,
+  onClick,
+}: {
+  checked: boolean
+  loading: boolean
+  onClick: () => void
+}) {
   return (
     <button
-      className={`${styles.checkCircle} ${checked ? styles.checkCircleChecked : ''} ${loading ? styles.checkCircleLoading : ''}`}
+      className={styles.checkWrap}
       onClick={(e) => { e.stopPropagation(); onClick() }}
       aria-label={checked ? '未完了に戻す' : '完了にする'}
     >
-      {checked && <Check size={12} color="#fff" strokeWidth={3} />}
-      {loading && <span className={styles.spinnerSmall} />}
+      <span className={`${styles.checkCircle} ${checked ? styles.checkCircleChecked : ''}`}>
+        {loading
+          ? <span className={styles.spinnerSmall} />
+          : checked
+            ? <Check size={11} color="#fff" strokeWidth={3} />
+            : null}
+      </span>
     </button>
   )
 }
 
-function TaskCard({ task, onToggle, loading }: { task: WorkTask; onToggle: (id: string) => void; loading: boolean }) {
-  const tag = getStatusTag(task)
+function TaskRow({
+  task,
+  onToggle,
+  loading,
+}: {
+  task: WorkTask
+  onToggle: (id: string) => void
+  loading: boolean
+}) {
   const completed = task.status === 'completed'
   return (
-    <button className={`${styles.taskCard} ${completed ? styles.taskCardCompleted : ''}`}>
+    <div className={`${styles.taskRow} ${completed ? styles.taskRowCompleted : ''}`}>
       <CheckButton checked={completed} loading={loading} onClick={() => onToggle(task.id)} />
-      <div className={styles.taskBody}>
-        <div className={styles.taskTitleRow}>
-          <span className={`${styles.taskTitle} ${completed ? styles.taskTitleCompleted : ''}`}>{task.title}</span>
-        </div>
-        {task.colonyName && (
-          <div className={styles.taskMeta}>{task.apiaryName} · {task.colonyName}</div>
-        )}
-        {!task.colonyName && task.apiaryName && (
-          <div className={styles.taskMeta}>{task.apiaryName}</div>
-        )}
-        <div className={styles.taskTagRow}>
-          {tag && <span className={`${styles.tag} ${tag.cls}`}>{tag.label}</span>}
-          <span className={`${styles.tag} ${styles.tagCategory}`}>{task.category}</span>
+      <CategoryIcon iconType={task.iconType} />
+      <div className={styles.rowBody}>
+        <span className={`${styles.rowTitle} ${completed ? styles.rowTitleCompleted : ''}`}>{task.title}</span>
+        <div className={styles.rowTagRow}>
+          <span className={styles.rowTag}>{task.tag}</span>
+          {task.note && <span className={styles.rowNote}>{task.note}</span>}
         </div>
       </div>
-    </button>
+      <DeadlineTag status={task.status} />
+      <ChevronRight size={16} className={styles.rowChevron} />
+    </div>
   )
 }
 
-function CalendarGrid() {
-  // September 2026 — starts on Tuesday (index 1 in Mon-first grid)
-  const startOffset = 1 // Tuesday
+function CalendarGrid({ selectedDay, onSelectDay }: { selectedDay: number; onSelectDay: (d: number) => void }) {
+  const startOffset = 1 // September 2026 starts on Tuesday (Mon-first)
   const daysInMonth = 30
   const cells: (number | null)[] = [
     ...Array(startOffset).fill(null),
     ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
   ]
-  // pad to full weeks
   while (cells.length % 7 !== 0) cells.push(null)
 
   return (
@@ -109,7 +180,8 @@ function CalendarGrid() {
         {cells.map((day, i) => (
           <button
             key={i}
-            className={`${styles.calendarDay} ${day === 14 ? styles.calendarDayActive : ''} ${day === null ? styles.calendarDayOtherMonth : ''}`}
+            className={`${styles.calendarDay} ${day === selectedDay ? styles.calendarDayActive : ''} ${day === null ? styles.calendarDayOtherMonth : ''}`}
+            onClick={() => day && onSelectDay(day)}
           >
             {day ?? ''}
             {(day === 7 || day === 14) && <span className={styles.calendarDayDot} />}
@@ -120,7 +192,7 @@ function CalendarGrid() {
   )
 }
 
-function Header({ onAdd }: { onAdd?: () => void }) {
+function Header() {
   return (
     <div className={styles.header}>
       <div className={styles.headerRow}>
@@ -136,20 +208,10 @@ function Header({ onAdd }: { onAdd?: () => void }) {
   )
 }
 
-function OfflineBanner({ hasCache }: { hasCache: boolean }) {
-  return (
-    <div className={styles.offlineBanner}>
-      <WifiOff size={14} />
-      {hasCache
-        ? 'オフラインです。キャッシュされたデータを表示しています。'
-        : 'オフラインです。データを表示できません。'}
-    </div>
-  )
-}
-
-export function WorkListScreen({ viewState, onTabChange, onAddTask, onTaskClick }: Props) {
-  const isCalendar = viewState === 'calendar-view'
-  const [view, setView] = useState<'list' | 'calendar'>(isCalendar ? 'calendar' : 'list')
+export function WorkListScreen({ viewState, onTabChange, onAddTask }: Props) {
+  const isCalendarInit = viewState === 'calendar-view'
+  const [view, setView] = useState<'list' | 'calendar'>(isCalendarInit ? 'calendar' : 'list')
+  const [selectedDay, setSelectedDay] = useState(isCalendarInit ? 14 : 8)
   const [completedOpen, setCompletedOpen] = useState(viewState === 'completed-expanded')
   const [updatingId, setUpdatingId] = useState<string | null>(
     viewState === 'updating-completion' ? 'task-2' : null,
@@ -169,7 +231,9 @@ export function WorkListScreen({ viewState, onTabChange, onAddTask, onTaskClick 
     }, 800)
   }
 
-  // Loading state
+  const noop = () => {}
+
+  // ── Full-screen states ──────────────────────────────────────
   if (viewState === 'loading') {
     return (
       <div className={styles.stateScreen}>
@@ -178,12 +242,11 @@ export function WorkListScreen({ viewState, onTabChange, onAddTask, onTaskClick 
           <div className={styles.spinner} />
           <p className={styles.stateDesc}>作業データを読み込み中…</p>
         </div>
-        <BottomNav activeTab="work" onTabChange={onTabChange ?? (() => {})} />
+        <BottomNav activeTab="work" onTabChange={onTabChange ?? noop} />
       </div>
     )
   }
 
-  // Error state
   if (viewState === 'error') {
     return (
       <div className={styles.stateScreen}>
@@ -194,12 +257,11 @@ export function WorkListScreen({ viewState, onTabChange, onAddTask, onTaskClick 
           <p className={styles.stateDesc}>ネットワーク接続を確認してから再試行してください。</p>
           <button className={styles.retryBtn}>再試行</button>
         </div>
-        <BottomNav activeTab="work" onTabChange={onTabChange ?? (() => {})} />
+        <BottomNav activeTab="work" onTabChange={onTabChange ?? noop} />
       </div>
     )
   }
 
-  // Offline, no cache
   if (viewState === 'offline-no-cache') {
     return (
       <div className={styles.stateScreen}>
@@ -209,12 +271,11 @@ export function WorkListScreen({ viewState, onTabChange, onAddTask, onTaskClick 
           <p className={styles.stateTitle}>オフラインです</p>
           <p className={styles.stateDesc}>表示できるキャッシュデータがありません。接続後に再読み込みしてください。</p>
         </div>
-        <BottomNav activeTab="work" onTabChange={onTabChange ?? (() => {})} />
+        <BottomNav activeTab="work" onTabChange={onTabChange ?? noop} />
       </div>
     )
   }
 
-  // Empty state
   if (viewState === 'empty') {
     return (
       <div className={styles.stateScreen}>
@@ -228,17 +289,18 @@ export function WorkListScreen({ viewState, onTabChange, onAddTask, onTaskClick 
           <Plus size={18} />
           作業を追加
         </button>
-        <BottomNav activeTab="work" onTabChange={onTabChange ?? (() => {})} />
+        <BottomNav activeTab="work" onTabChange={onTabChange ?? noop} />
       </div>
     )
   }
 
-  // Determine tasks to show
+  // ── Normal / filtered states ────────────────────────────────
   const tasks = MOCK_TASKS.map(t =>
     completedIds.has(t.id) ? { ...t, status: 'completed' as const } : t,
   )
 
   const isOverdueFilter = viewState === 'overdue-filtered'
+  const isOffline = viewState === 'offline'
 
   const todayTasks = isOverdueFilter
     ? tasks.filter(t => t.status === 'overdue')
@@ -250,13 +312,13 @@ export function WorkListScreen({ viewState, onTabChange, onAddTask, onTaskClick 
 
   const completedTasks = tasks.filter(t => t.status === 'completed')
 
-  const todaySectionLabel = isOverdueFilter ? '期限切れ' : '今日'
-
-  const isOffline = viewState === 'offline'
+  const todaySectionLabel = isOverdueFilter
+    ? `期限切れ（${todayTasks.length}件）`
+    : `今日（${todayTasks.length}件）`
 
   return (
     <div className={styles.screen}>
-      <Header onAdd={onAddTask} />
+      <Header />
 
       {/* Segment control */}
       <div className={styles.segmentRow}>
@@ -280,24 +342,33 @@ export function WorkListScreen({ viewState, onTabChange, onAddTask, onTaskClick 
       </div>
 
       {/* Offline banner */}
-      {isOffline && <OfflineBanner hasCache />}
+      {isOffline && (
+        <div className={styles.offlineBanner}>
+          <WifiOff size={14} />
+          オフラインです。キャッシュされたデータを表示しています。
+        </div>
+      )}
 
-      {/* Calendar view */}
+      {/* Calendar tab */}
       {view === 'calendar' ? (
-        <CalendarGrid />
+        <CalendarGrid selectedDay={selectedDay} onSelectDay={setSelectedDay} />
       ) : (
         <>
-          {/* Month + date strip */}
+          {/* Month header + date strip */}
           <div className={styles.calendarSection}>
             <div className={styles.monthRow}>
               <button className={styles.monthNavBtn}><ChevronLeft size={16} /></button>
               <span className={styles.monthLabel}>2026年9月</span>
-              <Calendar size={16} color="var(--color-text-secondary, #66707A)" />
+              <Calendar size={15} color="var(--color-text-secondary, #66707A)" />
               <button className={styles.monthNavBtn}><ChevronRight size={16} /></button>
             </div>
             <div className={styles.dateStrip}>
-              {WEEK_STRIP.map((d, i) => (
-                <button key={i} className={`${styles.dateCell} ${d.day === 14 ? styles.dateCellActive : ''}`}>
+              {WEEK_STRIP.map((d) => (
+                <button
+                  key={d.day}
+                  className={`${styles.dateCell} ${d.day === selectedDay ? styles.dateCellActive : ''}`}
+                  onClick={() => setSelectedDay(d.day)}
+                >
                   <span className={styles.dateDayName}>{d.dayName}</span>
                   <span className={styles.dateNum}>{d.day}</span>
                   <div className={styles.dateDots}>
@@ -325,7 +396,7 @@ export function WorkListScreen({ viewState, onTabChange, onAddTask, onTaskClick 
         </>
       )}
 
-      {/* Main content */}
+      {/* Scrollable content */}
       <div className={styles.content}>
         {/* Overdue banner */}
         {!isOverdueFilter && (
@@ -336,14 +407,14 @@ export function WorkListScreen({ viewState, onTabChange, onAddTask, onTaskClick 
           </div>
         )}
 
-        {/* Today section */}
-        <div className={styles.taskSection}>
+        {/* Today / overdue section */}
+        <div className={styles.section}>
           <div className={styles.sectionHeader}>
-            <span className={styles.sectionTitle}>{todaySectionLabel}（{todayTasks.length}件）</span>
+            <span className={styles.sectionTitle}>{todaySectionLabel}</span>
           </div>
-          <div className={styles.taskList}>
+          <div className={styles.taskGroup}>
             {todayTasks.map(task => (
-              <TaskCard
+              <TaskRow
                 key={task.id}
                 task={task}
                 onToggle={handleToggle}
@@ -355,13 +426,13 @@ export function WorkListScreen({ viewState, onTabChange, onAddTask, onTaskClick 
 
         {/* This week section */}
         {weekTasks.length > 0 && (
-          <div className={styles.taskSection}>
+          <div className={styles.section}>
             <div className={styles.sectionHeader}>
               <span className={styles.sectionTitle}>今週（{weekTasks.length}件）</span>
             </div>
-            <div className={styles.taskList}>
+            <div className={styles.taskGroup}>
               {weekTasks.map(task => (
-                <TaskCard
+                <TaskRow
                   key={task.id}
                   task={task}
                   onToggle={handleToggle}
@@ -372,18 +443,19 @@ export function WorkListScreen({ viewState, onTabChange, onAddTask, onTaskClick 
           </div>
         )}
 
-        {/* Completed section */}
+        {/* Completed section toggle */}
         <button className={styles.completedToggle} onClick={() => setCompletedOpen(o => !o)}>
           {completedOpen
-            ? <ChevronDown size={16} color="var(--color-text-secondary, #66707A)" />
-            : <ChevronRight size={16} color="var(--color-text-secondary, #66707A)" />}
+            ? <ChevronDown size={14} color="var(--color-text-secondary, #66707A)" />
+            : <ChevronRight size={14} color="var(--color-text-secondary, #66707A)" />}
           <span className={styles.completedToggleLabel}>完了済み {completedTasks.length}件</span>
         </button>
+
         {completedOpen && (
-          <div className={styles.taskSection}>
-            <div className={styles.taskList}>
+          <div className={styles.section} style={{ paddingTop: 0 }}>
+            <div className={styles.taskGroup}>
               {completedTasks.map(task => (
-                <TaskCard
+                <TaskRow
                   key={task.id}
                   task={task}
                   onToggle={handleToggle}
@@ -401,7 +473,7 @@ export function WorkListScreen({ viewState, onTabChange, onAddTask, onTaskClick 
         作業を追加
       </button>
 
-      <BottomNav activeTab="work" onTabChange={onTabChange ?? (() => {})} />
+      <BottomNav activeTab="work" onTabChange={onTabChange ?? noop} />
     </div>
   )
 }
