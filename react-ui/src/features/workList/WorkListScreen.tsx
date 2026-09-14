@@ -283,10 +283,10 @@ export function WorkListScreen({ viewState, onTabChange, onAddTask }: Props) {
         <div className={styles.stateBody}>
           <ClipboardList size={40} className={styles.stateIcon} />
           <p className={styles.stateTitle}>作業がありません</p>
-          <p className={styles.stateDesc}>「+ 作業を追加」から新しい作業を登録してください。</p>
+          <p className={styles.stateDesc}>「作業を追加」から新しい作業を登録してください。</p>
         </div>
         <button className={styles.fab} onClick={onAddTask}>
-          <Plus size={18} />
+          <Plus size={16} />
           作業を追加
         </button>
         <BottomNav activeTab="work" onTabChange={onTabChange ?? noop} />
@@ -469,7 +469,7 @@ export function WorkListScreen({ viewState, onTabChange, onAddTask }: Props) {
 
       {/* FAB */}
       <button className={styles.fab} onClick={onAddTask}>
-        <Plus size={18} />
+        <Plus size={16} />
         作業を追加
       </button>
 

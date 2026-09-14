@@ -465,28 +465,28 @@
   letter-spacing: 0.3px;
 }
 
-/* ── FAB ────────────────────────────────────────────────────── */
+/* ── FAB (compact pill, bottom-right) ──────────────────────── */
 .fab {
   position: fixed;
+  /* stay inside the app's max content width (430px) */
+  right: max(16px, calc(50% - 215px + 16px));
   bottom: calc(72px + 12px + env(safe-area-inset-bottom, 0px));
-  left: 50%;
-  transform: translateX(-50%);
-  width: calc(100% - 32px);
-  max-width: 358px;
   height: 48px;
+  padding: 0 20px 0 16px;
   background: var(--color-primary, #E39A16);
   color: #17212B;
   border: none;
-  border-radius: var(--radius-sm, 8px);
-  font-size: 15px;
+  border-radius: 24px;
+  font-size: 14px;
   font-weight: 700;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.20);
   z-index: 9;
+  white-space: nowrap;
 }
 
 .fab:active { background: var(--color-warn, #D97706); }
