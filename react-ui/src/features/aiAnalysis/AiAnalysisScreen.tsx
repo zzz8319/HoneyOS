@@ -266,12 +266,14 @@ function ImageCard({
   onCamera,
   onAdd,
   atMax,
+  disabled = false,
 }: {
   photos: SelectedPhoto[]
   onDelete: (id: string) => void
   onCamera: () => void
   onAdd: () => void
   atMax: boolean
+  disabled?: boolean
 }) {
   return (
     <div className={styles.card}>
@@ -301,6 +303,8 @@ function ImageCard({
               className={styles.deleteBtn}
               onClick={() => onDelete(p.id)}
               aria-label={`写真 ${p.timeLabel} を解析対象から除外`}
+              disabled={disabled}
+              style={disabled ? { opacity: 0.4, cursor: 'not-allowed' } : undefined}
             >
               <CloseIcon/>
             </button>
@@ -308,20 +312,20 @@ function ImageCard({
         ))}
 
         <button
-          className={`${styles.actionTile} ${atMax ? styles.actionTileDisabled : ''}`}
+          className={`${styles.actionTile} ${(atMax || disabled) ? styles.actionTileDisabled : ''}`}
           onClick={onCamera}
           aria-label="カメラで撮影して追加"
-          disabled={atMax}
+          disabled={atMax || disabled}
         >
           <CameraIcon size={20}/>
           <span className={styles.actionTileLabel}>撮影</span>
         </button>
 
         <button
-          className={`${styles.actionTile} ${atMax ? styles.actionTileDisabled : ''}`}
+          className={`${styles.actionTile} ${(atMax || disabled) ? styles.actionTileDisabled : ''}`}
           onClick={onAdd}
           aria-label="写真を追加"
-          disabled={atMax}
+          disabled={atMax || disabled}
         >
           <PlusIcon/>
           <span className={styles.actionTileLabel}>追加</span>
@@ -405,7 +409,7 @@ function InspectionDataCard({ data }: { data: InspectionData }) {
   )
 }
 
-function DataMissingCard() {
+function DataMissingCard({ onRetry }: { onRetry: () => void }) {
   return (
     <div className={styles.card}>
       <div className={styles.cardHeader}>
@@ -416,6 +420,7 @@ function DataMissingCard() {
           <AlertIcon/>
         </div>
         <p className={styles.dataMissingText}>内検データを取得できませんでした。<br/>内検を完了してから再度お試しください。</p>
+        <button className={styles.retryDataBtn} onClick={onRetry}>再試行</button>
       </div>
     </div>
   )
@@ -433,16 +438,22 @@ function AnalysisTargets({
   selected,
   onToggle,
   showError,
+  disabled = false,
 }: {
   selected: Set<AnalysisTarget>
   onToggle: (t: AnalysisTarget) => void
   showError: boolean
+  disabled?: boolean
 }) {
   return (
     <div className={styles.card}>
       <div className={styles.targetSection}>
         <div className={styles.targetTitle}>解析対象<span className={styles.cardSubtitle}>（複数選択可）</span></div>
-        <div className={styles.targetChips} role="group" aria-label="解析対象の選択">
+        <div
+          className={`${styles.targetChips} ${disabled ? styles.targetChipDisabled : ''}`}
+          role="group"
+          aria-label="解析対象の選択"
+        >
           {ALL_TARGETS.map((t) => {
             const active = selected.has(t.id)
             return (
@@ -452,6 +463,7 @@ function AnalysisTargets({
                 onClick={() => onToggle(t.id)}
                 aria-pressed={active}
                 aria-label={t.label}
+                disabled={disabled}
               >
                 <span className={`${styles.chipCheck} ${active ? styles.chipCheckActive : ''}`} aria-hidden="true">
                   {active && <CheckIcon size={10}/>}
@@ -541,6 +553,12 @@ export function AiAnalysisScreen({
     onAnalysisComplete?.(inspectionId, colonyId)
   }
 
+  function handleRetryData() {
+    // 内検データのみ再取得。選択済み画像・解析対象は保持。
+    // 実装時: window.HoneyDB 経由で内検データを再フェッチ。
+    console.log('[SCR-014] 内検データ再取得リクエスト（未接続）:', { inspectionId, colonyId })
+  }
+
   // ── Full-screen special states ─────────────────────────
   if (viewState === 'context-missing') {
     return (
@@ -590,11 +608,13 @@ export function AiAnalysisScreen({
   }
 
   // ── Normal / content layout ────────────────────────────
-  const canStart = targets.size > 0 && viewState !== 'request-pending'
   const isPending = viewState === 'request-pending'
   const isError = viewState === 'request-error'
   const isOffline = viewState === 'offline'
   const isDataMissing = viewState === 'data-missing'
+  // 内検データ必須: data-missing時は解析不可
+  const canStart = targets.size > 0 && !isPending && !isDataMissing
+  const canNoImage = targets.size > 0 && !isPending && !isDataMissing
 
   return (
     <div className={styles.screen}>
@@ -629,6 +649,7 @@ export function AiAnalysisScreen({
           onCamera={() => cameraInputRef.current?.click()}
           onAdd={() => uploadInputRef.current?.click()}
           atMax={atMax}
+          disabled={isPending}
         />
         <input
           ref={cameraInputRef}
@@ -648,13 +669,14 @@ export function AiAnalysisScreen({
         />
 
         {/* 5. 内検データカード */}
-        {isDataMissing ? <DataMissingCard/> : <InspectionDataCard data={inspData}/>}
+        {isDataMissing ? <DataMissingCard onRetry={handleRetryData}/> : <InspectionDataCard data={inspData}/>}
 
         {/* 6. 解析対象 */}
         <AnalysisTargets
           selected={targets}
           onToggle={toggleTarget}
           showError={showTargetError}
+          disabled={isPending}
         />
 
         {/* 7. セキュリティ案内 */}
@@ -688,7 +710,7 @@ export function AiAnalysisScreen({
           <button
             className={styles.noImageLink}
             onClick={() => handleStart(false)}
-            disabled={isPending || targets.size === 0}
+            disabled={!canNoImage}
             aria-label="画像なしで解析する"
           >
             画像なしで解析する<ChevronRightIcon size={14}/>
