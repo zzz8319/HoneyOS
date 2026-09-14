@@ -3,7 +3,7 @@
   flex-direction: column;
   min-height: 100dvh;
   background: var(--color-bg, #F8F7F4);
-  padding-bottom: max(100px, calc(80px + env(safe-area-inset-bottom, 0px)));
+  padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
 }
 
 /* ── Header ────────────────────────────────────────── */
@@ -60,7 +60,7 @@
 .steps {
   display: flex;
   align-items: center;
-  padding: 14px 20px;
+  padding: 10px 20px;
   background: var(--color-surface, #FFFFFF);
   border-bottom: 1px solid var(--color-border, #E3E5E8);
   gap: 0;
@@ -109,16 +109,16 @@
   height: 1px;
   background: var(--color-border, #E3E5E8);
   margin: 0 6px;
-  margin-bottom: 18px;
+  margin-bottom: 16px;
 }
 
 /* ── Content ────────────────────────────────────────── */
 .content {
   flex: 1;
-  padding: 12px 16px 0;
+  padding: 8px 16px 0;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 /* ── Card base ──────────────────────────────────────── */
@@ -133,7 +133,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 12px 6px;
+  padding: 8px 12px 4px;
 }
 
 .cardTitle {
@@ -159,7 +159,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 12px;
+  padding: 10px 12px;
   cursor: default;
 }
 
@@ -202,7 +202,7 @@
 .imageScroll {
   display: flex;
   gap: 8px;
-  padding: 8px 12px 12px;
+  padding: 6px 12px 10px;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
@@ -316,10 +316,10 @@
 }
 
 .dataDesc {
-  padding: 0 12px 8px;
+  padding: 0 12px 4px;
   font-size: 12px;
   color: var(--color-text-secondary, #66707A);
-  line-height: 1.5;
+  line-height: 1.4;
 }
 
 .dataGrid {
@@ -329,11 +329,11 @@
 }
 
 .dataCell {
-  padding: 10px 8px;
+  padding: 7px 6px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
+  gap: 2px;
   border-right: 1px solid var(--color-border, #E3E5E8);
   border-bottom: 1px solid var(--color-border, #E3E5E8);
   text-align: center;
@@ -396,36 +396,39 @@
 
 /* ── Analysis targets ───────────────────────────────── */
 .targetSection {
-  padding: 10px 12px 12px;
+  padding: 8px 12px 8px;
 }
 
 .targetTitle {
   font-size: 13px;
   font-weight: 700;
   color: var(--color-text, #17212B);
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .targetChips {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  flex-wrap: nowrap;
+  gap: 6px;
 }
 
 .targetChip {
   display: flex;
   align-items: center;
-  gap: 6px;
-  height: 36px;
-  padding: 0 12px;
+  gap: 5px;
+  height: 34px;
+  padding: 0 10px;
   border-radius: var(--radius-full, 9999px);
   border: 1.5px solid var(--color-border, #E3E5E8);
   background: var(--color-surface, #FFFFFF);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   color: var(--color-text-secondary, #66707A);
   cursor: pointer;
   transition: border-color 0.15s, background 0.15s;
+  white-space: nowrap;
+  flex: 1;
+  justify-content: center;
 }
 
 .targetChipActive {
@@ -462,7 +465,7 @@
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  padding: 12px;
+  padding: 8px 12px;
   background: var(--color-bg, #F8F7F4);
   border: 1px solid var(--color-border, #E3E5E8);
   border-radius: var(--radius-md, 12px);
@@ -477,7 +480,7 @@
 .securityText {
   font-size: 12px;
   color: var(--color-text-secondary, #66707A);
-  line-height: 1.6;
+  line-height: 1.4;
 }
 
 /* ── Time estimate row ──────────────────────────────── */
@@ -485,7 +488,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 4px 0;
+  padding: 6px 4px 0;
 }
 
 .timeLeft {
@@ -504,15 +507,15 @@
 
 /* ── Bottom CTA area ─────────────────────────────────── */
 .ctaArea {
-  padding: 10px 0 0;
+  padding: 6px 0 0;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .startBtn {
   width: 100%;
-  height: 52px;
+  height: 48px;
   border: none;
   border-radius: var(--radius-sm, 8px);
   background: var(--color-primary, #E39A16);
