@@ -7,8 +7,9 @@ export const MOCK_COLONIES: WorkRecordColony[] = [
   { id: 'A-03', name: 'A-03', apiaryId: 'apiary-1', apiaryName: '宮田養蜂場' },
   { id: 'A-04', name: 'A-04', apiaryId: 'apiary-1', apiaryName: '宮田養蜂場' },
   { id: 'A-05', name: 'A-05', apiaryId: 'apiary-1', apiaryName: '宮田養蜂場' },
-  { id: 'B-01', name: 'B-01', apiaryId: 'apiary-2', apiaryName: '田中養蜂場' },
+  { id: 'B-01', name: 'B-01', apiaryId: 'apiary-1', apiaryName: '宮田養蜂場' },
   { id: 'B-02', name: 'B-02', apiaryId: 'apiary-2', apiaryName: '田中養蜂場' },
+  { id: 'C-01', name: 'C-01', apiaryId: 'apiary-2', apiaryName: '田中養蜂場' },
 ]
 
 export const MOCK_APIARIES: WorkRecordApiary[] = [
@@ -25,8 +26,8 @@ export const LINKED_CONTEXT: WorkRecordContext = {
   taskName: 'B-01 給餌',
   colonyId: 'B-01',
   colonyName: 'B-01',
-  apiaryId: 'apiary-2',
-  apiaryName: '田中養蜂場',
+  apiaryId: 'apiary-1',
+  apiaryName: '宮田養蜂場',
   workType: 'feed',
   dueDate: '2026-09-08',
   initialMemo: '群勢回復のため給餌。',

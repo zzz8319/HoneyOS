@@ -607,7 +607,7 @@ export function WorkRecordScreen({ viewState, onBack, onSuccess }: WorkRecordScr
           <BackIcon />
         </button>
         <span className={styles.headerTitle}>作業記録</span>
-        <span className={styles.badge}>{ctx.taskId ? '編集中' : '新規'}</span>
+        <span className={styles.badge}>新規</span>
       </header>
 
       {/* Banners */}
