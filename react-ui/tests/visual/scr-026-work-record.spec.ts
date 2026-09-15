@@ -6,10 +6,18 @@ function url(state: string) {
   return `${BASE}/?screen=work-record&state=${state}&devbar=0`
 }
 
-test('SCR-026 normal-linked', async ({ page }) => {
-  await page.goto(url('normal-linked'))
+test('SCR-026 normal-linked-top', async ({ page }) => {
+  await page.goto(url('normal-linked-top'))
   await page.waitForLoadState('networkidle')
-  await expect(page).toHaveScreenshot('scr-026-normal-linked.png')
+  await expect(page).toHaveScreenshot('scr-026-normal-linked-top.png')
+})
+
+test('SCR-026 normal-linked-bottom', async ({ page }) => {
+  await page.goto(url('normal-linked-top'))
+  await page.waitForLoadState('networkidle')
+  await page.getByTestId('work-record-body').evaluate(el => { el.scrollTop = el.scrollHeight })
+  await page.waitForTimeout(100)
+  await expect(page).toHaveScreenshot('scr-026-normal-linked-bottom.png')
 })
 
 test('SCR-026 normal-new', async ({ page }) => {

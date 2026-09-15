@@ -134,6 +134,20 @@ function CheckIcon() {
   )
 }
 
+function CameraOffIcon() {
+  return (
+    <svg width="64" height="64" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+      {/* Camera body */}
+      <path d="M6 20a5 5 0 0 0-5 5v24a5 5 0 0 0 5 5h40a5 5 0 0 0 5-5V25a5 5 0 0 0-5-5h-8l-5-8H27l-5 8H6z"
+        fill="#F3F4F6" stroke="#94A3B8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      {/* Lens circle */}
+      <circle cx="26" cy="34" r="9" fill="#E2E8F0" stroke="#94A3B8" strokeWidth="2" />
+      {/* Slash line across entire icon */}
+      <line x1="8" y1="8" x2="56" y2="56" stroke="#DC2626" strokeWidth="4" strokeLinecap="round" />
+    </svg>
+  )
+}
+
 function Spinner() {
   return <div className={styles.spinner} aria-hidden="true" />
 }
@@ -426,7 +440,8 @@ interface WorkRecordScreenProps {
 
 export function WorkRecordScreen({ viewState, onBack, onSuccess }: WorkRecordScreenProps) {
   const isLinked = (
-    viewState === 'normal-linked' ||
+    viewState === 'normal-linked-top' ||
+    viewState === 'normal-linked-bottom' ||
     viewState === 'saving-draft' ||
     viewState === 'saving' ||
     viewState === 'save-error' ||
@@ -441,10 +456,12 @@ export function WorkRecordScreen({ viewState, onBack, onSuccess }: WorkRecordScr
 
   const ctx = isLinked ? LINKED_CONTEXT : NEW_CONTEXT
 
-  const initWorkType = viewState === 'validation-error' ? null : (ctx.workType ?? null)
-  const initColonyId = viewState === 'validation-error' ? null : (ctx.colonyId ?? null)
-  const initDate = viewState === 'validation-error' ? '' : (ctx.dueDate ?? '')
-  const initTime = viewState === 'validation-error' ? '' : '10:30'
+  const isValidationError = viewState === 'validation-error'
+  const initWorkType = isValidationError ? null : (ctx.workType ?? null)
+  const initColonyId = isValidationError ? null : (ctx.colonyId ?? null)
+  const initDate = isValidationError ? '' : (ctx.dueDate ?? '')
+  // Only linked states pre-fill the time; new/error states start empty
+  const initTime = isLinked && !isValidationError ? '10:30' : ''
 
   const [workType, setWorkType] = useState<WorkType | null>(initWorkType)
   const [selectedColony, setSelectedColony] = useState<WorkRecordColony | null>(() => {
@@ -540,6 +557,7 @@ export function WorkRecordScreen({ viewState, onBack, onSuccess }: WorkRecordScr
           <span className={styles.badge}>新規</span>
         </header>
         <div className={styles.errorBody}>
+          <CameraOffIcon />
           <h2 className={styles.errorBodyTitle}>カメラのアクセスが拒否されました</h2>
           <p className={styles.errorBodyText}>設定からカメラへのアクセスを許可してください。</p>
           <button className={styles.errorBackBtn} onClick={onBack}>戻る</button>
@@ -642,7 +660,7 @@ export function WorkRecordScreen({ viewState, onBack, onSuccess }: WorkRecordScr
       )}
 
       {/* Scrollable body */}
-      <div className={styles.body}>
+      <div className={styles.body} data-testid="work-record-body">
 
         {/* Work type */}
         <div className={styles.section}>
@@ -755,8 +773,16 @@ export function WorkRecordScreen({ viewState, onBack, onSuccess }: WorkRecordScr
               <ClockIcon />
             </button>
           </div>
-          {errors.performedDate && <p className={styles.errorText}>{errors.performedDate}</p>}
-          {errors.performedTime && !errors.performedDate && <p className={styles.errorText}>{errors.performedTime}</p>}
+          {(errors.performedDate || errors.performedTime) && (
+            <div className={styles.datetimeErrors}>
+              <div className={styles.dateErrorCol}>
+                {errors.performedDate && <p className={styles.errorText}>{errors.performedDate}</p>}
+              </div>
+              <div className={styles.timeErrorCol}>
+                {errors.performedTime && <p className={styles.errorText}>{errors.performedTime}</p>}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Feed-specific fields */}

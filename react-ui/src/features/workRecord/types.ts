@@ -1,5 +1,6 @@
 export type WorkRecordViewState =
-  | 'normal-linked'
+  | 'normal-linked-top'
+  | 'normal-linked-bottom'
   | 'normal-new'
   | 'validation-error'
   | 'loading'

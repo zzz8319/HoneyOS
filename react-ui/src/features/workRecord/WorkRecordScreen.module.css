@@ -370,6 +370,20 @@
   border-color: #DC2626 !important;
 }
 
+.datetimeErrors {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.dateErrorCol {
+  flex: 3;
+}
+
+.timeErrorCol {
+  flex: 2;
+}
+
 .errorText {
   margin: 4px 0 0;
   font-size: 12px;
