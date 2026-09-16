@@ -517,7 +517,7 @@ export function WorkRecordScreen({ viewState, onBack, onSuccess }: WorkRecordScr
   const [feedUnit, setFeedUnit] = useState('L')
   const [memo, setMemo] = useState(ctx.initialMemo ?? '')
   const [completeTask, setCompleteTask] = useState(true)
-  const [photos, setPhotos] = useState<string[]>(viewState === 'photo-added' ? ['preview-1'] : [])
+  const [photos, setPhotos] = useState<string[]>(viewState === 'photo-added' ? ['/fixtures/sample-photo.png'] : [])
   const [isDirty, setIsDirty] = useState(false)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -908,21 +908,10 @@ export function WorkRecordScreen({ viewState, onBack, onSuccess }: WorkRecordScr
           <div className={styles.photosGrid}>
             {photos.map((src, idx) => (
               <div key={idx} className={styles.photoThumb}>
-                {src.startsWith('blob:') || src.startsWith('preview') ? (
-                  <svg className={styles.photoSvgThumb} viewBox="0 0 80 80" aria-label={`写真${idx + 1}`}>
-                    <rect width="80" height="80" rx="8" fill="#D1FAE5" />
-                    <rect x="10" y="20" width="60" height="40" rx="4" fill="#A7F3D0" />
-                    <circle cx="28" cy="34" r="7" fill="#6EE7B7" />
-                    <path d="M10 50 L26 36 L38 46 L52 30 L70 50 Z" fill="#34D399" />
-                    <circle cx="55" cy="28" r="5" fill="#FCD34D" />
-                    <rect x="30" y="52" width="20" height="3" rx="1.5" fill="#6EE7B7" />
-                  </svg>
-                ) : (
-                  <img src={src} alt={`写真${idx + 1}`} className={styles.photoImg} />
-                )}
+                <img src={src} alt={`写真${idx + 1}`} className={styles.photoImg} />
                 <button
                   className={styles.photoRemove}
-                  aria-label={`写真${idx + 1}を削除`}
+                  aria-label="写真を削除"
                   onClick={() => removePhoto(idx)}
                 >
                   <CloseIcon />

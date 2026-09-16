@@ -68,10 +68,18 @@ test('SCR-026 offline', async ({ page }) => {
   await expect(page).toHaveScreenshot('scr-026-offline.png')
 })
 
-test('SCR-026 photo-added', async ({ page }) => {
+test('SCR-026 photo-added-top', async ({ page }) => {
   await page.goto(url('photo-added'))
   await page.waitForLoadState('networkidle')
-  await expect(page).toHaveScreenshot('scr-026-photo-added.png')
+  await expect(page).toHaveScreenshot('scr-026-photo-added-top.png')
+})
+
+test('SCR-026 photo-added-bottom', async ({ page }) => {
+  await page.goto(url('photo-added'))
+  await page.waitForLoadState('networkidle')
+  await page.getByTestId('work-record-body').evaluate(el => { el.scrollTop = el.scrollHeight })
+  await page.waitForTimeout(100)
+  await expect(page).toHaveScreenshot('scr-026-photo-added-bottom.png')
 })
 
 test('SCR-026 photo-upload-error', async ({ page }) => {
