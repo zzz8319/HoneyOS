@@ -543,6 +543,14 @@
   border: 1px solid #BBF7D0;
 }
 
+.photoSvgThumb {
+  width: 80px;
+  height: 80px;
+  border-radius: var(--radius-sm, 8px);
+  display: block;
+  border: 1px solid #BBF7D0;
+}
+
 .photoImg {
   width: 80px;
   height: 80px;

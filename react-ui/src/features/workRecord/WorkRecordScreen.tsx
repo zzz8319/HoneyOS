@@ -154,67 +154,109 @@ function Spinner() {
 
 // ── Work type icons ────────────────────────────────────────────────────────
 
+// 採蜜：蜂蜜瓶（丸みある胴体＋蓋＋蜜ライン）
 function HarvestIcon({ active }: { active: boolean }) {
-  const color = active ? 'var(--color-primary, #E39A16)' : '#334155'
+  const stroke = active ? 'var(--color-primary, #E39A16)' : '#334155'
+  const fill = active ? '#FEF3C7' : '#F1F5F9'
   return (
     <svg width="28" height="28" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-      <path d="M16 4C16 4 8 10 8 18a8 8 0 0 0 16 0c0-8-8-14-8-14z"
-        fill={active ? '#FEF3C7' : '#F1F5F9'}
-        stroke={color} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M16 13 v9" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
-      <path d="M13 16 l3-3 3 3" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      {/* 瓶蓋 */}
+      <rect x="12" y="5" width="8" height="4" rx="1.5" fill={fill} stroke={stroke} strokeWidth="1.7" />
+      {/* 瓶の首 */}
+      <rect x="13" y="9" width="6" height="2.5" fill={fill} stroke={stroke} strokeWidth="1.5" />
+      {/* 瓶の胴体（下が広い） */}
+      <path d="M10 12 Q9 14 9 18 Q9 25 16 25 Q23 25 23 18 Q23 14 22 12 Z"
+        fill={fill} stroke={stroke} strokeWidth="1.7" strokeLinejoin="round" />
+      {/* 蜜ライン */}
+      <line x1="12" y1="18" x2="20" y2="18" stroke={stroke} strokeWidth="1.4" strokeLinecap="round" />
+      <line x1="12" y1="21" x2="20" y2="21" stroke={stroke} strokeWidth="1.4" strokeLinecap="round" />
     </svg>
   )
 }
 
+// 給餌：給餌ドリンカー（逆さ瓶＋皿型トレー）
 function FeedIcon({ active }: { active: boolean }) {
-  const color = active ? 'var(--color-primary, #E39A16)' : '#334155'
+  const stroke = active ? 'var(--color-primary, #E39A16)' : '#334155'
+  const fill = active ? '#FEF3C7' : '#F1F5F9'
   return (
     <svg width="28" height="28" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-      <path d="M8 20 C8 14 12 10 16 8 C20 10 24 14 24 20" stroke={color} strokeWidth="1.7" strokeLinecap="round" fill="none" />
-      <rect x="8" y="20" width="16" height="5" rx="2"
-        fill={active ? '#FEF3C7' : '#F1F5F9'} stroke={color} strokeWidth="1.7" />
-      <path d="M12 20 L12 16" stroke={color} strokeWidth="1.3" strokeLinecap="round" />
-      <path d="M16 20 L16 14" stroke={color} strokeWidth="1.3" strokeLinecap="round" />
-      <path d="M20 20 L20 16" stroke={color} strokeWidth="1.3" strokeLinecap="round" />
+      {/* 逆さ瓶の胴体 */}
+      <rect x="12" y="6" width="8" height="13" rx="3" fill={fill} stroke={stroke} strokeWidth="1.7" />
+      {/* 瓶口（下） */}
+      <rect x="14" y="19" width="4" height="2.5" fill={fill} stroke={stroke} strokeWidth="1.5" />
+      {/* 皿型トレー */}
+      <path d="M8 22 Q8 26 16 26 Q24 26 24 22 Z"
+        fill={fill} stroke={stroke} strokeWidth="1.7" strokeLinejoin="round" />
+      {/* 液体ライン（瓶内） */}
+      <line x1="13" y1="13" x2="19" y2="13" stroke={stroke} strokeWidth="1.4" strokeLinecap="round" />
     </svg>
   )
 }
 
+// 治療：温度計
 function TreatmentIcon({ active }: { active: boolean }) {
-  const color = active ? 'var(--color-primary, #E39A16)' : '#334155'
+  const stroke = active ? 'var(--color-primary, #E39A16)' : '#334155'
+  const fill = active ? '#FEF3C7' : '#F1F5F9'
+  const bulbFill = active ? '#E39A16' : '#94A3B8'
   return (
     <svg width="28" height="28" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-      <rect x="14" y="7" width="4" height="18" rx="2"
-        fill={active ? '#FEF3C7' : '#F1F5F9'} stroke={color} strokeWidth="1.7" />
-      <rect x="7" y="14" width="18" height="4" rx="2"
-        fill={active ? '#FEF3C7' : '#F1F5F9'} stroke={color} strokeWidth="1.7" />
+      {/* 温度計の管 */}
+      <rect x="14" y="5" width="4" height="16" rx="2" fill={fill} stroke={stroke} strokeWidth="1.7" />
+      {/* 水銀柱 */}
+      <rect x="15.2" y="10" width="1.6" height="10" rx="0.8" fill={bulbFill} />
+      {/* 球部 */}
+      <circle cx="16" cy="23" r="4" fill={bulbFill} stroke={stroke} strokeWidth="1.7" />
+      {/* 目盛り */}
+      <line x1="18" y1="9" x2="20" y2="9" stroke={stroke} strokeWidth="1.2" strokeLinecap="round" />
+      <line x1="18" y1="12" x2="20" y2="12" stroke={stroke} strokeWidth="1.2" strokeLinecap="round" />
+      <line x1="18" y1="15" x2="20" y2="15" stroke={stroke} strokeWidth="1.2" strokeLinecap="round" />
     </svg>
   )
 }
 
+// 分蜂：植物の芽・二股に分かれる枝
 function SwarmIcon({ active }: { active: boolean }) {
-  const color = active ? 'var(--color-primary, #E39A16)' : '#334155'
+  const stroke = active ? 'var(--color-primary, #E39A16)' : '#334155'
+  const fill = active ? '#FEF3C7' : '#F1F5F9'
   return (
     <svg width="28" height="28" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-      <circle cx="16" cy="16" r="5" fill={active ? '#FEF3C7' : '#F1F5F9'} stroke={color} strokeWidth="1.7" />
-      <circle cx="8" cy="10" r="2.5" fill={active ? '#FEF3C7' : '#F1F5F9'} stroke={color} strokeWidth="1.4" />
-      <circle cx="24" cy="10" r="2.5" fill={active ? '#FEF3C7' : '#F1F5F9'} stroke={color} strokeWidth="1.4" />
-      <circle cx="8" cy="22" r="2.5" fill={active ? '#FEF3C7' : '#F1F5F9'} stroke={color} strokeWidth="1.4" />
-      <circle cx="24" cy="22" r="2.5" fill={active ? '#FEF3C7' : '#F1F5F9'} stroke={color} strokeWidth="1.4" />
+      {/* 中央の茎 */}
+      <line x1="16" y1="26" x2="16" y2="16" stroke={stroke} strokeWidth="1.7" strokeLinecap="round" />
+      {/* 左枝 */}
+      <path d="M16 16 Q12 12 10 8" stroke={stroke} strokeWidth="1.7" strokeLinecap="round" fill="none" />
+      {/* 右枝 */}
+      <path d="M16 16 Q20 12 22 8" stroke={stroke} strokeWidth="1.7" strokeLinecap="round" fill="none" />
+      {/* 左の芽（楕円の葉） */}
+      <ellipse cx="9" cy="7" rx="3.5" ry="2.5" fill={fill} stroke={stroke} strokeWidth="1.5"
+        transform="rotate(-20 9 7)" />
+      {/* 右の芽（楕円の葉） */}
+      <ellipse cx="23" cy="7" rx="3.5" ry="2.5" fill={fill} stroke={stroke} strokeWidth="1.5"
+        transform="rotate(20 23 7)" />
     </svg>
   )
 }
 
+// 越冬：雪の結晶（6方向＋中心円）
 function WinterIcon({ active }: { active: boolean }) {
-  const color = active ? 'var(--color-primary, #E39A16)' : '#334155'
+  const stroke = active ? 'var(--color-primary, #E39A16)' : '#334155'
+  const fill = active ? '#FEF3C7' : '#F1F5F9'
   return (
     <svg width="28" height="28" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-      <line x1="16" y1="6" x2="16" y2="26" stroke={color} strokeWidth="1.7" strokeLinecap="round" />
-      <line x1="6" y1="16" x2="26" y2="16" stroke={color} strokeWidth="1.7" strokeLinecap="round" />
-      <line x1="9" y1="9" x2="23" y2="23" stroke={color} strokeWidth="1.7" strokeLinecap="round" />
-      <line x1="23" y1="9" x2="9" y2="23" stroke={color} strokeWidth="1.7" strokeLinecap="round" />
-      <circle cx="16" cy="16" r="2.5" fill={active ? '#FEF3C7' : '#F1F5F9'} stroke={color} strokeWidth="1.5" />
+      {/* 縦軸 */}
+      <line x1="16" y1="5" x2="16" y2="27" stroke={stroke} strokeWidth="1.7" strokeLinecap="round" />
+      {/* 横軸 */}
+      <line x1="5" y1="16" x2="27" y2="16" stroke={stroke} strokeWidth="1.7" strokeLinecap="round" />
+      {/* 斜め軸 */}
+      <line x1="8.5" y1="8.5" x2="23.5" y2="23.5" stroke={stroke} strokeWidth="1.7" strokeLinecap="round" />
+      <line x1="23.5" y1="8.5" x2="8.5" y2="23.5" stroke={stroke} strokeWidth="1.7" strokeLinecap="round" />
+      {/* 上の枝刺 */}
+      <line x1="13" y1="9" x2="16" y2="12" stroke={stroke} strokeWidth="1.3" strokeLinecap="round" />
+      <line x1="19" y1="9" x2="16" y2="12" stroke={stroke} strokeWidth="1.3" strokeLinecap="round" />
+      {/* 下の枝刺 */}
+      <line x1="13" y1="23" x2="16" y2="20" stroke={stroke} strokeWidth="1.3" strokeLinecap="round" />
+      <line x1="19" y1="23" x2="16" y2="20" stroke={stroke} strokeWidth="1.3" strokeLinecap="round" />
+      {/* 中心円 */}
+      <circle cx="16" cy="16" r="2.5" fill={fill} stroke={stroke} strokeWidth="1.5" />
     </svg>
   )
 }
@@ -867,7 +909,14 @@ export function WorkRecordScreen({ viewState, onBack, onSuccess }: WorkRecordScr
             {photos.map((src, idx) => (
               <div key={idx} className={styles.photoThumb}>
                 {src.startsWith('blob:') || src.startsWith('preview') ? (
-                  <div className={styles.photoPreviewPlaceholder} />
+                  <svg className={styles.photoSvgThumb} viewBox="0 0 80 80" aria-label={`写真${idx + 1}`}>
+                    <rect width="80" height="80" rx="8" fill="#D1FAE5" />
+                    <rect x="10" y="20" width="60" height="40" rx="4" fill="#A7F3D0" />
+                    <circle cx="28" cy="34" r="7" fill="#6EE7B7" />
+                    <path d="M10 50 L26 36 L38 46 L52 30 L70 50 Z" fill="#34D399" />
+                    <circle cx="55" cy="28" r="5" fill="#FCD34D" />
+                    <rect x="30" y="52" width="20" height="3" rx="1.5" fill="#6EE7B7" />
+                  </svg>
                 ) : (
                   <img src={src} alt={`写真${idx + 1}`} className={styles.photoImg} />
                 )}
