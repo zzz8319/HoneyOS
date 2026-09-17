@@ -17,26 +17,12 @@ import { ApiaryMapScreen } from './features/apiaryMap'
 import type { ApiaryMapViewState } from './features/apiaryMap'
 import { InspectionCompleteScreen } from './features/inspectionComplete'
 import type { CompleteViewState } from './features/inspectionComplete'
-import { CameraImagesScreen } from './features/cameraImages'
-import type { CameraViewState } from './features/cameraImages'
-import { AiAnalysisScreen } from './features/aiAnalysis'
-import type { AiAnalysisViewState } from './features/aiAnalysis'
-import { AiDiagnosisScreen } from './features/aiDiagnosis'
-import type { DiagnosisViewState } from './features/aiDiagnosis'
-import { RecommendedWorkScreen } from './features/recommendedWork'
-import type { RecommendedWorkState } from './features/recommendedWork'
-import { WorkListScreen } from './features/workList'
-import type { WorkListViewState } from './features/workList'
-import { TaskCreateScreen } from './features/taskCreate'
-import type { TaskCreateViewState } from './features/taskCreate'
-import { WorkRecordScreen } from './features/workRecord'
-import type { WorkRecordViewState } from './features/workRecord'
 import { WorkHistoryScreen } from './features/workHistory'
 import type { WorkHistoryViewState } from './features/workHistory'
 import type { TabId } from './components'
 import styles from './App.module.css'
 
-type ViewState = DashboardViewState | ColonyListViewState | ColonyDetailViewState | InspectionStartViewState | RecordViewState | ViewerViewState | ApiaryMapViewState | CompleteViewState | CameraViewState | AiAnalysisViewState | DiagnosisViewState | RecommendedWorkState | WorkListViewState | TaskCreateViewState | WorkRecordViewState | WorkHistoryViewState
+type ViewState = DashboardViewState | ColonyListViewState | ColonyDetailViewState | InspectionStartViewState | RecordViewState | ViewerViewState | ApiaryMapViewState | CompleteViewState | WorkHistoryViewState
 
 const STATES: { id: ViewState; label: string }[] = [
   { id: 'normal',  label: '通常' },
@@ -46,7 +32,16 @@ const STATES: { id: ViewState; label: string }[] = [
   { id: 'offline', label: 'オフライン' },
 ]
 
-const VALID_STATES: ViewState[] = ['normal', 'selected', 'empty', 'loading', 'error', 'offline', 'multi-stage', 'unsaved', 'saved', 'draft-restore', 'save-error', 'frame-selected', 'deselected', 'other-stage', 'history', 'other-apiary', 'nectar', 'alert', 'no-results', 'no-location', 'healthy', 'first-inspection', 'ai-analyzed', 'reminder-off', 'missing-record', 'none-selected', 'inspection-tab', 'auto-capture-tab', 'upload-error', 'camera-permission-denied', 'context-missing', 'no-images', 'max-images', 'targets-empty', 'loading-inspection', 'data-missing', 'request-pending', 'request-error', 'saving', 'offline-no-cache', 'multi-selected', 'creating-tasks', 'calendar-view', 'completed-expanded', 'overdue-filtered', 'updating-completion', 'normal-ai', 'normal-manual', 'validation-error', 'submitting', 'submit-error', 'colony-picker', 'date-picker', 'discard-dialog', 'normal-linked-top', 'normal-linked-bottom', 'normal-new', 'saving-draft', 'save-error', 'photo-upload-error', 'photo-added', 'discard-confirm', 'colony-selector', 'time-picker', 'filtered-feeding', 'filtered-apiary', 'filtered-colony', 'filtered-period', 'search-results', 'offline-no-cache', 'filter-menu', 'search-open']
+const VALID_STATES: ViewState[] = [
+  'normal', 'selected', 'empty', 'loading', 'error', 'offline',
+  'multi-stage', 'unsaved', 'saved', 'draft-restore', 'save-error',
+  'frame-selected', 'deselected', 'other-stage', 'history', 'other-apiary',
+  'nectar', 'alert', 'no-results', 'no-location', 'healthy', 'first-inspection',
+  'ai-analyzed', 'reminder-off', 'missing-record',
+  // SCR-027 states
+  'filtered-feeding', 'filtered-apiary', 'filtered-colony', 'filtered-period',
+  'search-results', 'offline-no-cache', 'filter-menu', 'search-open',
+]
 const VALID_TABS: TabId[] = ['home', 'farms', 'work', 'analytics', 'settings']
 
 const IS_DEV = import.meta.env.DEV &&
@@ -57,7 +52,10 @@ function readParam<T extends string>(key: string, valid: T[], fallback: T): T {
   return (valid.includes(p as T) ? p : fallback) as T
 }
 
-const VALID_SCREENS = ['home', 'farms', 'colony-detail', 'inspection-start', 'inspection-record', 'frame-viewer', 'add-stage', 'apiary-map', 'inspection-complete', 'camera-images', 'ai-analysis', 'ai-diagnosis', 'recommended-work', 'work', 'task-create', 'work-record', 'work-history'] as const
+const VALID_SCREENS = [
+  'home', 'farms', 'colony-detail', 'inspection-start', 'inspection-record',
+  'frame-viewer', 'add-stage', 'apiary-map', 'inspection-complete', 'work-history',
+] as const
 type Screen = typeof VALID_SCREENS[number]
 
 export default function App() {
@@ -75,22 +73,15 @@ export default function App() {
   )
   const [addStageRecord, setAddStageRecord] = useState<InspectionRecord | null>(null)
 
-  const taskCreateState   = viewState as TaskCreateViewState
-  const workRecordState   = viewState as WorkRecordViewState
-  const workHistoryState  = viewState as WorkHistoryViewState
-  const workListState = viewState as WorkListViewState
-  const aiState       = viewState as AiAnalysisViewState
-  const diagState     = viewState as DiagnosisViewState
-  const recWorkState  = viewState as RecommendedWorkState
-  const cameraState   = viewState as CameraViewState
-  const dashState     = viewState as DashboardViewState
-  const colonyState   = viewState as ColonyListViewState
-  const detailState   = viewState as ColonyDetailViewState
-  const inspState     = viewState as InspectionStartViewState
-  const recordState   = viewState as RecordViewState
-  const viewerState   = viewState as ViewerViewState
-  const mapState      = viewState as ApiaryMapViewState
-  const completeState = viewState as CompleteViewState
+  const workHistoryState = viewState as WorkHistoryViewState
+  const dashState        = viewState as DashboardViewState
+  const colonyState      = viewState as ColonyListViewState
+  const detailState      = viewState as ColonyDetailViewState
+  const inspState        = viewState as InspectionStartViewState
+  const recordState      = viewState as RecordViewState
+  const viewerState      = viewState as ViewerViewState
+  const mapState         = viewState as ApiaryMapViewState
+  const completeState    = viewState as CompleteViewState
 
   return (
     <>
@@ -111,57 +102,11 @@ export default function App() {
       {screen === 'work-history' ? (
         <WorkHistoryScreen
           viewState={workHistoryState}
-          onBack={() => setScreen('work')}
-          onAddRecord={() => { setScreen('work-record'); setViewState('normal-new') }}
-          onRecordTap={(_id) => alert('作業記録詳細 → 未実装')}
+          onBack={() => setScreen('home')}
+          onAddRecord={() => alert('作業記録追加 → SCR-026（未実装）')}
+          onRecordTap={(_id) => alert('作業履歴詳細 → 未実装')}
           onAnalyze={() => alert('詳しく分析する → SCR-028（未実装）')}
           onTabChange={setActiveTab}
-        />
-      ) : screen === 'work-record' ? (
-        <WorkRecordScreen
-          viewState={workRecordState}
-          onBack={() => setScreen('work')}
-          onSuccess={() => setScreen('work')}
-        />
-      ) : screen === 'task-create' ? (
-        <TaskCreateScreen
-          viewState={taskCreateState}
-          onBack={() => setScreen('work')}
-          onSuccess={() => setScreen('work')}
-        />
-      ) : screen === 'work' ? (
-        <WorkListScreen
-          viewState={workListState}
-          onTabChange={setActiveTab}
-          onAddTask={() => { setScreen('task-create'); setViewState('normal-manual') }}
-        />
-      ) : screen === 'recommended-work' ? (
-        <RecommendedWorkScreen
-          viewState={recWorkState}
-          onBack={() => setScreen('ai-diagnosis')}
-          onAddToTask={(id) => alert(`タスクに追加: ${id} → SCR-025（未実装）`)}
-          onRecord={(id) => alert(`作業記録: ${id} → SCR-026（未実装）`)}
-          onCreateTasks={(ids) => alert(`タスク作成: ${ids.join(', ')} → SCR-025（未実装）`)}
-        />
-      ) : screen === 'ai-diagnosis' ? (
-        <AiDiagnosisScreen
-          viewState={diagState}
-          onBack={() => setScreen('ai-analysis')}
-          onViewRecommendations={() => setScreen('recommended-work')}
-          onReanalyze={() => setScreen('ai-analysis')}
-          onReturnToRecord={() => setScreen('inspection-record')}
-        />
-      ) : screen === 'ai-analysis' ? (
-        <AiAnalysisScreen
-          viewState={aiState}
-          onBack={() => setScreen('camera-images')}
-          onAnalysisComplete={() => setScreen('ai-diagnosis')}
-        />
-      ) : screen === 'camera-images' ? (
-        <CameraImagesScreen
-          viewState={cameraState}
-          onBack={() => setScreen('inspection-record')}
-          onAnalyze={() => setScreen('ai-analysis')}
         />
       ) : screen === 'inspection-complete' ? (
         <InspectionCompleteScreen
