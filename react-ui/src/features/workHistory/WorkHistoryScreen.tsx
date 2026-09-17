@@ -222,16 +222,16 @@ function buildSubtitle(rec: WorkHistoryRecord): string {
   const d = rec.details
   if (!d) return rec.title
   if (rec.workType === 'harvest' && d.harvestAmount != null) {
-    return `${rec.title}　${formatAmount(d.harvestAmount, d.harvestUnit ?? '')}`
+    return `${rec.title} ${formatAmount(d.harvestAmount, d.harvestUnit ?? '')}`
   }
   if (rec.workType === 'feeding') {
     const parts: string[] = []
     if (d.feedType) parts.push(d.feedType)
     if (d.feedAmount != null) parts.push(formatAmount(d.feedAmount, d.feedUnit ?? ''))
-    return parts.length > 0 ? `${rec.title}　${parts.join(' ')}` : rec.title
+    return parts.length > 0 ? `${rec.title} ${parts.join(' ')}` : rec.title
   }
   if (rec.workType === 'treatment' && d.treatmentName) {
-    return `${rec.title}　${d.treatmentName}`
+    return `${rec.title} ${d.treatmentName}`
   }
   return rec.title
 }

@@ -104,7 +104,7 @@ export default function App() {
           viewState={workHistoryState}
           onBack={() => setScreen('home')}
           onAddRecord={() => alert('作業記録追加 → SCR-026（未実装）')}
-          onRecordTap={(_id) => alert('作業履歴詳細 → 未実装')}
+          onRecordTap={() => alert('作業履歴詳細 → 未実装')}
           onAnalyze={() => alert('詳しく分析する → SCR-028（未実装）')}
           onTabChange={setActiveTab}
         />
