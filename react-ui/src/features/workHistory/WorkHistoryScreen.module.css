@@ -560,6 +560,12 @@
   cursor: pointer;
 }
 
+/* ── Nav spacer — keeps layout above fixed BottomNav (72px) ── */
+.navSpacer {
+  flex: 0 0 72px;
+  height: 72px;
+}
+
 /* ── Spinner ── */
 .spinner {
   width: 36px;
