@@ -85,11 +85,20 @@ function CloseIcon() {
   )
 }
 
-function Spinner() {
-  return <div className={styles.spinner} aria-hidden="true" />
+function CheckIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+  )
 }
 
-// ── Work type icons (shared with SCR-026) ──────────────────────────────────
+function Spinner() {
+  return <div className={styles.spinner} role="status" aria-label="読み込み中" />
+}
+
+// ── Work type icons ────────────────────────────────────────────────────────
 
 function HarvestSvg({ stroke, fill }: { stroke: string; fill: string }) {
   return (
@@ -204,17 +213,22 @@ function formatDayTime(date: string, time: string): string {
   return `${m}月${d}日 ${time}`
 }
 
+function formatAmount(amount: number, unit: string): string {
+  // Always show one decimal place so "1.0 L" not "1 L"
+  return `${amount % 1 === 0 ? amount.toFixed(1) : amount} ${unit}`
+}
+
 function buildSubtitle(rec: WorkHistoryRecord): string {
   const d = rec.details
   if (!d) return rec.title
-  if (rec.workType === 'harvest') {
-    const amt = d.harvestAmount != null ? ` ${d.harvestAmount} ${d.harvestUnit ?? ''}` : ''
-    return `${rec.title}　${amt.trim()}`
+  if (rec.workType === 'harvest' && d.harvestAmount != null) {
+    return `${rec.title}　${formatAmount(d.harvestAmount, d.harvestUnit ?? '')}`
   }
   if (rec.workType === 'feeding') {
-    const feed = [d.feedType, d.feedAmount != null ? `${d.feedAmount} ${d.feedUnit ?? ''}` : null]
-      .filter(Boolean).join(' ')
-    return `${rec.title}　${feed}`
+    const parts: string[] = []
+    if (d.feedType) parts.push(d.feedType)
+    if (d.feedAmount != null) parts.push(formatAmount(d.feedAmount, d.feedUnit ?? ''))
+    return parts.length > 0 ? `${rec.title}　${parts.join(' ')}` : rec.title
   }
   if (rec.workType === 'treatment' && d.treatmentName) {
     return `${rec.title}　${d.treatmentName}`
@@ -239,7 +253,7 @@ function buildMeta(rec: WorkHistoryRecord): string | null {
 function isWithinPeriod(date: string, period: PeriodOption, start: string, end: string): boolean {
   if (period === 'all') return true
   const d = new Date(date)
-  const now = new Date('2026-09-16') // fixture reference date
+  const now = new Date('2026-09-16')
   if (period === '7d') {
     const ago = new Date(now); ago.setDate(ago.getDate() - 7)
     return d >= ago && d <= now
@@ -270,6 +284,7 @@ function matchesSearch(rec: WorkHistoryRecord, q: string): boolean {
     rec.details?.feedType ?? '',
     rec.details?.treatmentName ?? '',
     rec.details?.process ?? '',
+    buildMeta(rec) ?? '',
   ]
   return fields.some(f => f.toLowerCase().includes(lower))
 }
@@ -297,7 +312,6 @@ export function WorkHistoryScreen({
 }: WorkHistoryScreenProps) {
   const isOffline = viewState === 'offline' || viewState === 'offline-no-cache'
 
-  // Derive initial filter state from viewState
   const initFilters = (): WorkHistoryFilters => {
     if (viewState === 'filtered-feeding') {
       return { workType: 'feeding', apiaryId: null, colonyId: null, period: 'all', periodStart: '', periodEnd: '', searchQuery: '' }
@@ -322,23 +336,25 @@ export function WorkHistoryScreen({
     viewState === 'search-results' || viewState === 'search-open'
   )
   const [menuOpen, setMenuOpen] = useState(viewState === 'filter-menu')
-  const [sortDesc] = useState(true)
+  const [sortDesc, setSortDesc] = useState(true)
 
   const setFilter = <K extends keyof WorkHistoryFilters>(key: K, value: WorkHistoryFilters[K]) => {
     setFilters(prev => {
       const next = { ...prev, [key]: value }
-      // clear colony when apiary changes
       if (key === 'apiaryId') next.colonyId = null
       return next
     })
   }
 
-  // Available colonies for current apiary selection
+  const resetFilters = () => {
+    setFilters({ workType: 'all', apiaryId: null, colonyId: null, period: 'all', periodStart: '', periodEnd: '', searchQuery: '' })
+    setSearchOpen(false)
+  }
+
   const availableColonies = filters.apiaryId
     ? MOCK_COLONIES.filter(c => c.apiaryId === filters.apiaryId)
     : MOCK_COLONIES
 
-  // Apply all filters
   const filteredRecords = useMemo(() => {
     if (viewState === 'empty') return []
     if (viewState === 'loading' || viewState === 'error' || viewState === 'offline-no-cache') return []
@@ -358,7 +374,6 @@ export function WorkHistoryScreen({
     recs = recs.filter(r => isWithinPeriod(r.performedDate, filters.period, filters.periodStart, filters.periodEnd))
     recs = recs.filter(r => matchesSearch(r, filters.searchQuery))
 
-    // Sort by date+time descending
     recs.sort((a, b) => {
       const da = `${a.performedDate}T${a.performedTime}`
       const db = `${b.performedDate}T${b.performedTime}`
@@ -368,7 +383,6 @@ export function WorkHistoryScreen({
     return recs
   }, [filters, viewState, sortDesc])
 
-  // Group by month
   const monthGroups = useMemo(() => {
     const groups: { key: string; records: typeof filteredRecords }[] = []
     for (const rec of filteredRecords) {
@@ -379,8 +393,6 @@ export function WorkHistoryScreen({
     }
     return groups
   }, [filteredRecords])
-
-  const hasActiveFilter = filters.workType !== 'all' || filters.apiaryId || filters.colonyId || filters.period !== 'all' || !!filters.searchQuery
 
   const WORK_TYPE_TABS: { id: WorkHistoryWorkType | 'all'; label: string }[] = [
     { id: 'all',       label: 'すべて' },
@@ -412,7 +424,7 @@ export function WorkHistoryScreen({
             <button className={styles.headerBtn} aria-label="メニュー"><MoreIcon /></button>
           </div>
         </header>
-        <div className={styles.loadingBody} role="status" aria-live="polite">
+        <div className={styles.loadingBody}>
           <Spinner />
           <p className={styles.loadingText}>作業履歴を読み込み中…</p>
         </div>
@@ -436,7 +448,7 @@ export function WorkHistoryScreen({
           <p className={styles.errorTitle}>作業履歴を取得できませんでした</p>
           <p className={styles.errorText}>ネットワーク接続を確認してから再度お試しください。</p>
           <div className={styles.errorActions}>
-            <button className={styles.retryBtn} onClick={() => {}}>再試行</button>
+            <button className={styles.retryBtn}>再試行</button>
             <button className={styles.backLinkBtn} onClick={onBack}>戻る</button>
           </div>
         </div>
@@ -479,8 +491,9 @@ export function WorkHistoryScreen({
         <span className={styles.headerTitle}>作業履歴</span>
         <div className={styles.headerRight}>
           <button
-            className={styles.headerBtn}
+            className={`${styles.headerBtn} ${searchOpen ? styles.headerBtnActive : ''}`}
             aria-label="検索"
+            aria-pressed={searchOpen}
             onClick={() => setSearchOpen(s => !s)}
           >
             <SearchIcon />
@@ -490,17 +503,34 @@ export function WorkHistoryScreen({
               className={styles.headerBtn}
               aria-label="メニュー"
               aria-expanded={menuOpen}
+              aria-haspopup="menu"
               onClick={() => setMenuOpen(s => !s)}
             >
               <MoreIcon />
             </button>
             {menuOpen && (
-              <div className={styles.menuDropdown} role="menu">
-                <button className={styles.menuItem} role="menuitem"
-                  onClick={() => { setMenuOpen(false) }}>
-                  表示順（新しい順）
-                </button>
-              </div>
+              <>
+                <div className={styles.menuBackdrop} onClick={() => setMenuOpen(false)} />
+                <div className={styles.menuDropdown} role="menu">
+                  <button
+                    className={`${styles.menuItem} ${sortDesc ? styles.menuItemActive : ''}`}
+                    role="menuitem"
+                    onClick={() => { setSortDesc(true); setMenuOpen(false) }}
+                  >
+                    {sortDesc && <CheckIcon />}
+                    <span>新しい順</span>
+                  </button>
+                  <div className={styles.menuDivider} />
+                  <button
+                    className={`${styles.menuItem} ${!sortDesc ? styles.menuItemActive : ''}`}
+                    role="menuitem"
+                    onClick={() => { setSortDesc(false); setMenuOpen(false) }}
+                  >
+                    {!sortDesc && <CheckIcon />}
+                    <span>古い順</span>
+                  </button>
+                </div>
+              </>
             )}
           </div>
         </div>
@@ -519,15 +549,13 @@ export function WorkHistoryScreen({
             aria-label="作業名・蜂群・メモを検索"
             autoFocus
           />
-          {filters.searchQuery && (
-            <button
-              className={styles.searchClear}
-              aria-label="検索を解除"
-              onClick={() => setFilter('searchQuery', '')}
-            >
-              <CloseIcon />
-            </button>
-          )}
+          <button
+            className={styles.searchClear}
+            aria-label="検索を閉じる"
+            onClick={() => { setFilter('searchQuery', ''); setSearchOpen(false) }}
+          >
+            <CloseIcon />
+          </button>
         </div>
       )}
 
@@ -604,7 +632,6 @@ export function WorkHistoryScreen({
             onChange={e => setFilter('periodStart', e.target.value)} aria-label="開始日" />
           <span className={styles.periodSep}>〜</span>
           <input type="date" className={styles.periodInput} value={filters.periodEnd}
-            max={new Date('2026-09-16').toISOString().split('T')[0]}
             onChange={e => setFilter('periodEnd', e.target.value)} aria-label="終了日" />
         </div>
       )}
@@ -622,16 +649,11 @@ export function WorkHistoryScreen({
         )}
 
         {/* No-results state */}
-        {showNoResults && !showEmpty && (
+        {showNoResults && (
           <div className={styles.emptyState}>
             <p className={styles.emptyTitle}>条件に一致する履歴がありません</p>
             <p className={styles.emptyText}>検索条件やフィルターを変更してください。</p>
-            <button
-              className={styles.emptyAction}
-              onClick={() => setFilters({ workType: 'all', apiaryId: null, colonyId: null, period: 'all', periodStart: '', periodEnd: '', searchQuery: '' })}
-            >
-              条件を解除
-            </button>
+            <button className={styles.emptyAction} onClick={resetFilters}>条件を解除</button>
           </div>
         )}
 
@@ -643,6 +665,7 @@ export function WorkHistoryScreen({
               {records.map(rec => {
                 const subtitle = buildSubtitle(rec)
                 const meta = buildMeta(rec)
+                const colonyText = rec.colonyLabels.join('・')
                 return (
                   <button
                     key={rec.id}
@@ -654,11 +677,9 @@ export function WorkHistoryScreen({
                     <div className={styles.cardCenter}>
                       <span className={styles.cardTitle}>{subtitle}</span>
                       <span className={styles.cardDate}>{formatDayTime(rec.performedDate, rec.performedTime)}</span>
-                      {rec.colonyLabels.length > 0 && (
+                      {colonyText && (
                         <div className={styles.cardTags}>
-                          {rec.colonyLabels.map(l => (
-                            <span key={l} className={styles.cardTag}>{l}</span>
-                          ))}
+                          <span className={styles.cardTag}>{colonyText}</span>
                         </div>
                       )}
                     </div>
@@ -676,7 +697,7 @@ export function WorkHistoryScreen({
         <div className={styles.bodyEnd} />
       </div>
 
-      {/* Bottom actions */}
+      {/* Bottom actions — side by side */}
       <div className={styles.bottomActions}>
         <button className={styles.analyzeBtn} onClick={onAnalyze} aria-label="詳しく分析する">
           <BarChartIcon />
@@ -693,13 +714,6 @@ export function WorkHistoryScreen({
           <span>作業記録を追加</span>
         </button>
       </div>
-
-      {/* Filter active badge indicator */}
-      {hasActiveFilter && !showEmpty && (
-        <div className={styles.filterBadge} aria-live="polite">
-          {filteredRecords.length}件
-        </div>
-      )}
 
       <BottomNav activeTab="work" onTabChange={onTabChange} />
     </div>
