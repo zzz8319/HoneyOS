@@ -697,23 +697,28 @@ export function WorkHistoryScreen({
         <div className={styles.bodyEnd} />
       </div>
 
-      {/* Bottom actions — side by side */}
-      <div className={styles.bottomActions}>
-        <button className={styles.analyzeBtn} onClick={onAnalyze} aria-label="詳しく分析する">
-          <BarChartIcon />
-          <span>詳しく分析する</span>
-          <ChevronRightIcon />
-        </button>
-        <button
-          className={styles.fab}
-          onClick={onAddRecord}
-          aria-label="作業記録を追加"
-          disabled={isOffline}
-        >
-          <PlusIcon />
-          <span>作業記録を追加</span>
-        </button>
-      </div>
+      {/* Bottom actions — shown when records are visible */}
+      {!showEmpty && !showNoResults && (
+        <div className={styles.bottomActions}>
+          <button className={styles.analyzeBtn} onClick={onAnalyze} aria-label="詳しく分析する">
+            <BarChartIcon />
+            <span>詳しく分析する</span>
+            <ChevronRightIcon />
+          </button>
+          <button
+            className={styles.fab}
+            onClick={onAddRecord}
+            aria-label="作業記録を追加"
+            disabled={isOffline}
+          >
+            <PlusIcon />
+            <span>作業記録を追加</span>
+          </button>
+        </div>
+      )}
+
+      {/* Spacer so fixed BottomNav (72px) doesn't cover the actions above */}
+      <div className={styles.navSpacer} aria-hidden="true" />
 
       <BottomNav activeTab="work" onTabChange={onTabChange} />
     </div>
