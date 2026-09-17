@@ -218,20 +218,23 @@ function formatAmount(amount: number, unit: string): string {
   return `${amount % 1 === 0 ? amount.toFixed(1) : amount} ${unit}`
 }
 
+// Full-width space (U+3000) separator used between work type and detail text
+const FS = String.fromCharCode(0x3000)
+
 function buildSubtitle(rec: WorkHistoryRecord): string {
   const d = rec.details
   if (!d) return rec.title
   if (rec.workType === 'harvest' && d.harvestAmount != null) {
-    return `${rec.title} ${formatAmount(d.harvestAmount, d.harvestUnit ?? '')}`
+    return rec.title + FS + formatAmount(d.harvestAmount, d.harvestUnit ?? '')
   }
   if (rec.workType === 'feeding') {
     const parts: string[] = []
     if (d.feedType) parts.push(d.feedType)
     if (d.feedAmount != null) parts.push(formatAmount(d.feedAmount, d.feedUnit ?? ''))
-    return parts.length > 0 ? `${rec.title} ${parts.join(' ')}` : rec.title
+    return parts.length > 0 ? rec.title + FS + parts.join(' ') : rec.title
   }
   if (rec.workType === 'treatment' && d.treatmentName) {
-    return `${rec.title} ${d.treatmentName}`
+    return rec.title + FS + d.treatmentName
   }
   return rec.title
 }

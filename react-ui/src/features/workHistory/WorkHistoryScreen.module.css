@@ -43,12 +43,13 @@
 }
 
 .headerTitle {
-  font-size: 17px;
-  font-weight: 600;
+  font-size: 18px;
+  font-weight: 700;
   color: var(--color-text, #17212B);
   flex: 1;
   text-align: center;
   white-space: nowrap;
+  text-decoration: none;
 }
 
 .headerRight {
