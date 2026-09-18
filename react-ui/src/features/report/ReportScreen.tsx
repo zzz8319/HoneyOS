@@ -93,15 +93,6 @@ function IconAlert() {
   )
 }
 
-function IconHistory() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M1 8a7 7 0 1 0 7-7A7 7 0 0 0 2 4"/>
-      <path d="M1 1v3h3"/>
-      <path d="M8 5v3l2 2"/>
-    </svg>
-  )
-}
 
 function IconFilePdf() {
   return (
@@ -152,15 +143,16 @@ function HarvestChart({
   const numBars = visibleData.length
   const barGroupW = chartW / numBars
   const barW = Math.max(4, Math.floor(barGroupW * 0.55))
-  // Y-axis grid: 0, half, max rounded to nice number
-  const gridTop = Math.ceil(maxKg / 10) * 10
-  const gridMid = Math.round(gridTop / 2)
+  // Y-axis: minimum scale 0-60, expand to next 20 if data exceeds 60
+  const gridTop = Math.max(60, Math.ceil(maxKg / 20) * 20)
+  const gridLines: number[] = []
+  for (let v = 0; v <= gridTop; v += 20) gridLines.push(v)
 
   return (
     <div className={styles.svgWrap}>
       <svg viewBox={`0 0 ${W} ${H}`} aria-label="採蜜量の推移">
         {/* grid lines */}
-        {[0, gridMid, gridTop].map(v => {
+        {gridLines.map(v => {
           const y = PAD_T + chartH - (v / gridTop) * chartH
           return (
             <g key={v}>
@@ -239,7 +231,7 @@ function StrengthChart({
     <div className={styles.svgWrap}>
       <svg viewBox={`0 0 ${W} ${H}`} aria-label="強さスコア推移">
         {/* grid lines */}
-        {[0, 50, 100].map(v => {
+        {[0, 20, 40, 60, 80, 100].map(v => {
           const y = PAD_T + chartH - (v / 100) * chartH
           return (
             <g key={v}>
@@ -587,7 +579,7 @@ export function ReportScreen({
             </span>
             {kpi.inspectionRatePrevChange != null && (
               <span className={`${styles.kpiChange} ${kpi.inspectionRatePrevChange < 0 ? styles.kpiChangeMinus : ''}`}>
-                {fmtChange(kpi.inspectionRatePrevChange, 'pt')}
+                {fmtChange(kpi.inspectionRatePrevChange)}
               </span>
             )}
           </div>
@@ -670,7 +662,6 @@ export function ReportScreen({
         {/* 最下部操作 */}
         <div className={styles.bottomActions}>
           <button className={styles.historyBtn} onClick={onViewHistory}>
-            <IconHistory/>
             履歴を見る ›
           </button>
           <button className={styles.exportBtn} disabled aria-label="PDFエクスポート（未実装）">

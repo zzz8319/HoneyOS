@@ -72,8 +72,8 @@ export const REPORT_RECORDS: ReportRecord[] = [
   { id: 'rr-0705', workType: 'inspection',performedDate: '2026-07-15', apiaryId: 'apiary-1', colonyIds: ['A-02'], hasInspection: true },
 
   // ── 2026年8月 ──
-  { id: 'rr-0801', workType: 'harvest',   performedDate: '2026-08-07', apiaryId: 'apiary-1', colonyIds: ['A-01', 'A-02'], harvestAmountKg: 20.0 },
-  { id: 'rr-0802', workType: 'harvest',   performedDate: '2026-08-18', apiaryId: 'apiary-2', colonyIds: ['B-01'], harvestAmountKg: 20.0 },
+  { id: 'rr-0801', workType: 'harvest',   performedDate: '2026-08-07', apiaryId: 'apiary-1', colonyIds: ['A-01', 'A-02'], harvestAmountKg: 19.0 },
+  { id: 'rr-0802', workType: 'harvest',   performedDate: '2026-08-18', apiaryId: 'apiary-2', colonyIds: ['B-01'], harvestAmountKg: 19.0 },
   { id: 'rr-0803', workType: 'feeding',   performedDate: '2026-08-12', apiaryId: 'apiary-1', colonyIds: ['A-03'] },
   { id: 'rr-0804', workType: 'swarming',  performedDate: '2026-08-28', apiaryId: 'apiary-1', colonyIds: ['A-05'] },
   { id: 'rr-0805', workType: 'wintering', performedDate: '2026-08-20', apiaryId: 'apiary-1', colonyIds: [] },
@@ -81,34 +81,29 @@ export const REPORT_RECORDS: ReportRecord[] = [
   { id: 'rr-0807', workType: 'inspection',performedDate: '2026-08-10', apiaryId: 'apiary-2', colonyIds: ['B-01'], hasInspection: true },
 
   // ── 2026年9月 (target month) ──
-  // harvest: 4件 = 42.6 kg total
+  // harvest: 4件 = 42.6 kg total → ↑12% vs Aug 38.0 kg
   { id: 'rr-0901', workType: 'harvest',   performedDate: '2026-09-07', apiaryId: 'apiary-1', colonyIds: ['A-01', 'A-02'], harvestAmountKg: 12.4 },
   { id: 'rr-0902', workType: 'harvest',   performedDate: '2026-09-10', apiaryId: 'apiary-1', colonyIds: ['A-03'], harvestAmountKg: 10.2 },
   { id: 'rr-0903', workType: 'harvest',   performedDate: '2026-09-14', apiaryId: 'apiary-2', colonyIds: ['B-01'], harvestAmountKg: 11.5 },
   { id: 'rr-0904', workType: 'harvest',   performedDate: '2026-09-20', apiaryId: 'apiary-1', colonyIds: ['A-04'], harvestAmountKg: 8.5 },
   // feeding: 7件
-  { id: 'rr-0905', workType: 'feeding',   performedDate: '2026-09-06', apiaryId: 'apiary-1', colonyIds: ['B-01'] },
+  { id: 'rr-0905', workType: 'feeding',   performedDate: '2026-09-06', apiaryId: 'apiary-1', colonyIds: ['B-01'], isAiAlert: true },
   { id: 'rr-0906', workType: 'feeding',   performedDate: '2026-09-08', apiaryId: 'apiary-1', colonyIds: ['A-03'] },
   { id: 'rr-0907', workType: 'feeding',   performedDate: '2026-09-09', apiaryId: 'apiary-1', colonyIds: ['A-04'] },
   { id: 'rr-0908', workType: 'feeding',   performedDate: '2026-09-11', apiaryId: 'apiary-2', colonyIds: ['B-01'] },
   { id: 'rr-0909', workType: 'feeding',   performedDate: '2026-09-12', apiaryId: 'apiary-1', colonyIds: ['A-05'] },
   { id: 'rr-0910', workType: 'feeding',   performedDate: '2026-09-13', apiaryId: 'apiary-1', colonyIds: ['A-01'] },
   { id: 'rr-0911', workType: 'feeding',   performedDate: '2026-09-15', apiaryId: 'apiary-1', colonyIds: ['A-02'] },
-  // treatment: 2件
-  { id: 'rr-0912', workType: 'treatment', performedDate: '2026-09-02', apiaryId: 'apiary-1', colonyIds: ['A-03', 'A-04'] },
-  { id: 'rr-0913', workType: 'treatment', performedDate: '2026-09-16', apiaryId: 'apiary-2', colonyIds: ['B-01'] },
+  // treatment: 2件 (hasInspection flags cover A-04 and B-01 for inspectionRate)
+  { id: 'rr-0912', workType: 'treatment', performedDate: '2026-09-02', apiaryId: 'apiary-1', colonyIds: ['A-04'], isAiAlert: true },
+  { id: 'rr-0913', workType: 'treatment', performedDate: '2026-09-16', apiaryId: 'apiary-2', colonyIds: ['B-01'], isAiAlert: true, hasInspection: true },
   // other (swarming/wintering/inspection): 5件
   { id: 'rr-0914', workType: 'swarming',  performedDate: '2026-09-03', apiaryId: 'apiary-1', colonyIds: ['A-05'] },
   { id: 'rr-0915', workType: 'wintering', performedDate: '2026-09-04', apiaryId: 'apiary-1', colonyIds: [] },
-  // inspections (hasInspection=true): 3件 (used for inspectionRate)
+  // inspections (hasInspection=true): A-01, A-02, A-03, A-04(via rr-0912), B-01(via rr-0913) = 5/6 = 84%
   { id: 'rr-0916', workType: 'inspection',performedDate: '2026-09-05', apiaryId: 'apiary-1', colonyIds: ['A-01'], hasInspection: true },
   { id: 'rr-0917', workType: 'inspection',performedDate: '2026-09-05', apiaryId: 'apiary-1', colonyIds: ['A-02'], hasInspection: true },
-  { id: 'rr-0918', workType: 'inspection',performedDate: '2026-09-05', apiaryId: 'apiary-1', colonyIds: ['A-03'], hasInspection: true },
-  // 5 out of 6 colonies inspected (A-01, A-02, A-03, A-04(treatment), B-01(feeding)) = 83.3% ≈ 84%
-  // AI alerts: 3件
-  { id: 'rr-0919', workType: 'treatment', performedDate: '2026-09-17', apiaryId: 'apiary-1', colonyIds: ['A-05'], isAiAlert: true },
-  { id: 'rr-0920', workType: 'treatment', performedDate: '2026-09-18', apiaryId: 'apiary-2', colonyIds: ['B-01'], isAiAlert: true },
-  { id: 'rr-0921', workType: 'feeding',   performedDate: '2026-09-19', apiaryId: 'apiary-1', colonyIds: ['A-04'], isAiAlert: true },
+  { id: 'rr-0918', workType: 'inspection',performedDate: '2026-09-05', apiaryId: 'apiary-1', colonyIds: ['A-03', 'A-04'], hasInspection: true },
 ]
 
 // Monthly strength scores per colony (reuses same definition as ColonyDetail)
@@ -147,7 +142,7 @@ export const STRENGTH_ENTRIES: StrengthEntry[] = [
   { month: 8, apiaryId: 'apiary-1', colonyId: 'A-02', score: 72 },
   { month: 8, apiaryId: 'apiary-2', colonyId: 'B-01', score: 72 },
   // 2026年9月
-  { month: 9, apiaryId: 'apiary-1', colonyId: 'A-01', score: 78 },
-  { month: 9, apiaryId: 'apiary-1', colonyId: 'A-02', score: 74 },
+  { month: 9, apiaryId: 'apiary-1', colonyId: 'A-01', score: 74 },
+  { month: 9, apiaryId: 'apiary-1', colonyId: 'A-02', score: 72 },
   { month: 9, apiaryId: 'apiary-2', colonyId: 'B-01', score: 76 },
 ]

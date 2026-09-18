@@ -55,7 +55,7 @@ export function calcInspectionRate(
   for (const id of inspectedIds) {
     if (activeIds.has(id)) count++
   }
-  return Math.round((count / activeColonies.length) * 100)
+  return Math.ceil((count / activeColonies.length) * 100)
 }
 
 export function calcAiAlertCount(records: ReportRecord[]): number {
