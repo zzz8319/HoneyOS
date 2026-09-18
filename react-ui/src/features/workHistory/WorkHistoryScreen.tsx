@@ -421,7 +421,7 @@ export function WorkHistoryScreen({
       <div className={styles.screen}>
         <header className={styles.header}>
           <button className={styles.headerBtn} onClick={onBack} aria-label="戻る"><BackIcon /></button>
-          <span className={styles.headerTitle}>作業履歴</span>
+          <h1 className={styles.headerTitle}>作業履歴</h1>
           <div className={styles.headerRight}>
             <button className={styles.headerBtn} aria-label="検索"><SearchIcon /></button>
             <button className={styles.headerBtn} aria-label="メニュー"><MoreIcon /></button>
@@ -441,7 +441,7 @@ export function WorkHistoryScreen({
       <div className={styles.screen}>
         <header className={styles.header}>
           <button className={styles.headerBtn} onClick={onBack} aria-label="戻る"><BackIcon /></button>
-          <span className={styles.headerTitle}>作業履歴</span>
+          <h1 className={styles.headerTitle}>作業履歴</h1>
           <div className={styles.headerRight}>
             <button className={styles.headerBtn} aria-label="検索"><SearchIcon /></button>
             <button className={styles.headerBtn} aria-label="メニュー"><MoreIcon /></button>
@@ -465,7 +465,7 @@ export function WorkHistoryScreen({
       <div className={styles.screen}>
         <header className={styles.header}>
           <button className={styles.headerBtn} onClick={onBack} aria-label="戻る"><BackIcon /></button>
-          <span className={styles.headerTitle}>作業履歴</span>
+          <h1 className={styles.headerTitle}>作業履歴</h1>
           <div className={styles.headerRight}>
             <button className={styles.headerBtn} aria-label="検索"><SearchIcon /></button>
             <button className={styles.headerBtn} aria-label="メニュー"><MoreIcon /></button>
@@ -491,7 +491,7 @@ export function WorkHistoryScreen({
       {/* Header */}
       <header className={styles.header}>
         <button className={styles.headerBtn} onClick={onBack} aria-label="戻る"><BackIcon /></button>
-        <span className={styles.headerTitle}>作業履歴</span>
+        <h1 className={styles.headerTitle}>作業履歴</h1>
         <div className={styles.headerRight}>
           <button
             className={`${styles.headerBtn} ${searchOpen ? styles.headerBtnActive : ''}`}
