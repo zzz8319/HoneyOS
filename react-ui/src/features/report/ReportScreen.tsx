@@ -21,18 +21,12 @@ import styles from './ReportScreen.module.css'
 
 // ── Icons (inline SVG) ──────────────────────────────────────────────────────
 
-function IconBack() {
-  return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M19 12H5M12 5l-7 7 7 7"/>
-    </svg>
-  )
-}
-
 function IconMore() {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/>
+      <circle cx="12" cy="5" r="1.5" fill="currentColor"/>
+      <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
+      <circle cx="12" cy="19" r="1.5" fill="currentColor"/>
     </svg>
   )
 }
@@ -64,8 +58,8 @@ function IconSelectChevron() {
 function IconHoney() {
   return (
     <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-      <path d="M10 2l3 5H7L10 2z" fill="#E39A16" opacity="0.8"/>
-      <rect x="6" y="7" width="8" height="10" rx="2" fill="#E39A16" opacity="0.6"/>
+      <rect x="5" y="8" width="4" height="9" rx="1" fill="#E39A16" opacity="0.6"/>
+      <rect x="11" y="4" width="4" height="13" rx="1" fill="#E39A16" opacity="0.85"/>
     </svg>
   )
 }
@@ -109,13 +103,29 @@ function IconHistory() {
   )
 }
 
-function IconDownload() {
+function IconFilePdf() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M8 2v8M5 7l3 3 3-3M2 12h12"/>
+      <path d="M9 2H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V6L9 2z"/>
+      <path d="M9 2v4h4"/>
+      <path d="M5 9h1.5a1 1 0 0 1 0 2H5V9zM9 9h1c.6 0 1 .4 1 1s-.4 1-1 1"/>
     </svg>
   )
 }
+
+function IconFileCsv() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M9 2H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V6L9 2z"/>
+      <path d="M9 2v4h4"/>
+      <path d="M5 10c0-.6.4-1 1-1h.5M11 9l-.5 2.5L9.5 9 9 11.5"/>
+    </svg>
+  )
+}
+
+// ── MONTH_LABELS ─────────────────────────────────────────────────────────────
+
+const MONTH_LABELS = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月']
 
 // ── Harvest bar chart (SVG) ──────────────────────────────────────────────────
 
@@ -127,35 +137,44 @@ function HarvestChart({
   selectedMonth: number
 }) {
   const W = 340
-  const H = 120
-  const PAD_L = 28
-  const PAD_R = 8
-  const PAD_T = 8
-  const PAD_B = 20
+  const H = 140
+  const PAD_L = 30
+  const PAD_R = 6
+  const PAD_T = 16
+  const PAD_B = 24
   const chartW = W - PAD_L - PAD_R
   const chartH = H - PAD_T - PAD_B
-  const barW = Math.floor(chartW / 12) - 2
-  const maxKg = Math.max(...data.map(d => d.kg), 1)
-  const MONTHS = ['1','2','3','4','5','6','7','8','9','10','11','12']
+  const maxKg = Math.max(...data.map(d => d.kg), 10)
+  // Only render months that exist in data (trim trailing zeros for monthly fixture)
+  const nonZeroMonths = data.filter(d => d.kg > 0)
+  const lastMonth = nonZeroMonths.length > 0 ? nonZeroMonths[nonZeroMonths.length - 1].month : 12
+  const visibleData = data.slice(0, lastMonth)
+  const numBars = visibleData.length
+  const barGroupW = chartW / numBars
+  const barW = Math.max(4, Math.floor(barGroupW * 0.55))
+  // Y-axis grid: 0, half, max rounded to nice number
+  const gridTop = Math.ceil(maxKg / 10) * 10
+  const gridMid = Math.round(gridTop / 2)
 
   return (
     <div className={styles.svgWrap}>
-      <svg viewBox={`0 0 ${W} ${H}`} aria-label="月別収穫量">
+      <svg viewBox={`0 0 ${W} ${H}`} aria-label="採蜜量の推移">
         {/* grid lines */}
-        {[0, 0.5, 1].map(f => {
-          const y = PAD_T + chartH * (1 - f)
-          const kg = Math.round(maxKg * f)
+        {[0, gridMid, gridTop].map(v => {
+          const y = PAD_T + chartH - (v / gridTop) * chartH
           return (
-            <g key={f}>
-              <line x1={PAD_L} x2={W - PAD_R} y1={y} y2={y} stroke="#E3E5E8" strokeWidth="0.5"/>
-              <text x={PAD_L - 2} y={y + 4} fontSize="8" textAnchor="end" fill="#66707A">{kg}</text>
+            <g key={v}>
+              <line x1={PAD_L} x2={W - PAD_R} y1={y} y2={y} stroke="#E3E5E8" strokeWidth="0.75"/>
+              <text x={PAD_L - 3} y={y + 4} fontSize="8" textAnchor="end" fill="#9CA3AF">{v}</text>
             </g>
           )
         })}
+        {/* baseline */}
+        <line x1={PAD_L} x2={W - PAD_R} y1={PAD_T + chartH} y2={PAD_T + chartH} stroke="#E3E5E8" strokeWidth="0.75"/>
         {/* bars */}
-        {data.map((d, i) => {
-          const barH = d.kg === 0 ? 0 : Math.max(2, (d.kg / maxKg) * chartH)
-          const x = PAD_L + i * (chartW / 12) + (chartW / 12 - barW) / 2
+        {visibleData.map((d, i) => {
+          const barH = d.kg === 0 ? 0 : Math.max(2, (d.kg / gridTop) * chartH)
+          const x = PAD_L + i * barGroupW + (barGroupW - barW) / 2
           const y = PAD_T + chartH - barH
           const active = d.month === selectedMonth
           return (
@@ -165,8 +184,14 @@ function HarvestChart({
                 rx="2"
                 fill={active ? '#E39A16' : '#FDE68A'}
               />
-              <text x={x + barW / 2} y={H - 6} fontSize="8" textAnchor="middle" fill="#66707A">
-                {MONTHS[i]}
+              {/* value label on active bar */}
+              {active && d.kg > 0 && (
+                <text x={x + barW / 2} y={y - 3} fontSize="9" textAnchor="middle" fill="#E39A16" fontWeight="600">
+                  {d.kg.toFixed(1)}
+                </text>
+              )}
+              <text x={x + barW / 2} y={H - 5} fontSize="8" textAnchor="middle" fill="#9CA3AF">
+                {MONTH_LABELS[i]}
               </text>
             </g>
           )
@@ -178,16 +203,21 @@ function HarvestChart({
 
 // ── Strength line chart (SVG) ──────────────────────────────────────────────
 
-function StrengthChart({ data }: { data: { month: number; avgScore: number | null }[] }) {
+function StrengthChart({
+  data,
+  avgLabel,
+}: {
+  data: { month: number; avgScore: number | null }[]
+  avgLabel: string
+}) {
   const W = 340
-  const H = 120
-  const PAD_L = 28
-  const PAD_R = 8
+  const H = 140
+  const PAD_L = 30
+  const PAD_R = 6
   const PAD_T = 8
-  const PAD_B = 20
+  const PAD_B = 24
   const chartW = W - PAD_L - PAD_R
   const chartH = H - PAD_T - PAD_B
-  const MONTHS = ['1','2','3','4','5','6','7','8','9','10','11','12']
   const THRESHOLD = 60
 
   const toXY = (m: number, score: number) => ({
@@ -207,14 +237,14 @@ function StrengthChart({ data }: { data: { month: number; avgScore: number | nul
 
   return (
     <div className={styles.svgWrap}>
-      <svg viewBox={`0 0 ${W} ${H}`} aria-label="群勢スコア推移">
+      <svg viewBox={`0 0 ${W} ${H}`} aria-label="強さスコア推移">
         {/* grid lines */}
         {[0, 50, 100].map(v => {
           const y = PAD_T + chartH - (v / 100) * chartH
           return (
             <g key={v}>
-              <line x1={PAD_L} x2={W - PAD_R} y1={y} y2={y} stroke="#E3E5E8" strokeWidth="0.5"/>
-              <text x={PAD_L - 2} y={y + 4} fontSize="8" textAnchor="end" fill="#66707A">{v}</text>
+              <line x1={PAD_L} x2={W - PAD_R} y1={y} y2={y} stroke="#E3E5E8" strokeWidth="0.75"/>
+              <text x={PAD_L - 3} y={y + 4} fontSize="8" textAnchor="end" fill="#9CA3AF">{v}</text>
             </g>
           )
         })}
@@ -231,18 +261,37 @@ function StrengthChart({ data }: { data: { month: number; avgScore: number | nul
         {points.map(p => {
           const { x, y } = toXY(p.month, p.avgScore)
           return (
-            <circle key={p.month} cx={x} cy={y} r="3" fill="#E39A16" stroke="#FFFFFF" strokeWidth="1.5"/>
+            <circle key={p.month} cx={x} cy={y} r="3.5" fill="#E39A16" stroke="#FFFFFF" strokeWidth="1.5"/>
           )
         })}
         {/* month labels */}
-        {MONTHS.map((m, i) => {
+        {MONTH_LABELS.map((m, i) => {
           const x = PAD_L + (i / 11) * chartW
           return (
-            <text key={m} x={x} y={H - 6} fontSize="8" textAnchor="middle" fill="#66707A">{m}</text>
+            <text key={m} x={x} y={H - 5} fontSize="8" textAnchor="middle" fill="#9CA3AF">{m}</text>
           )
         })}
+        {/* avg label top-right */}
+        {avgLabel && (
+          <text x={W - PAD_R} y={PAD_T + 10} fontSize="9" textAnchor="end" fill="#E39A16" fontWeight="600">
+            {avgLabel}
+          </text>
+        )}
       </svg>
     </div>
+  )
+}
+
+// ── Shared header component ──────────────────────────────────────────────────
+
+function ReportHeader() {
+  return (
+    <header className={styles.header}>
+      <h1 className={styles.headerTitle}>レポート</h1>
+      <button className={styles.headerBtn} aria-label="メニュー">
+        <IconMore/>
+      </button>
+    </header>
   )
 }
 
@@ -264,7 +313,7 @@ export function ReportScreen({
   onTabChange,
 }: ReportScreenProps) {
   const noop = () => {}
-  const today = new Date(2026, 8, 1) // Sep 2026 (month is 0-indexed)
+  const today = new Date(2026, 8, 1) // Sep 2026
   const [mode, setMode] = useState<ReportPeriodMode>('monthly')
   const [year, setYear] = useState(today.getFullYear())
   const [month, setMonth] = useState(today.getMonth() + 1)
@@ -272,18 +321,18 @@ export function ReportScreen({
   const [apiaryId, setApiaryId] = useState<string | null>(null)
   const selectId = useId()
 
-  // Period nav limits
   const MIN_YEAR = 2024
   const MAX_YEAR = today.getFullYear()
-  const MIN_MONTH = 1
   const MAX_MONTH = mode === 'monthly' && year === today.getFullYear()
     ? today.getMonth() + 1
     : 12
 
-  const canPrevMonth = month > MIN_MONTH || year > MIN_YEAR
-  const canNextMonth = month < MAX_MONTH || (year < MAX_YEAR)
-  const canPrevYear = year > MIN_YEAR
-  const canNextYear = year < MAX_YEAR
+  const canPrev = mode === 'monthly'
+    ? (month > 1 || year > MIN_YEAR)
+    : year > MIN_YEAR
+  const canNext = mode === 'monthly'
+    ? (month < MAX_MONTH || year < MAX_YEAR)
+    : year < MAX_YEAR
 
   function prevPeriod() {
     if (mode === 'monthly') {
@@ -303,13 +352,11 @@ export function ReportScreen({
     }
   }
 
-  const periodLabel = mode === 'monthly'
-    ? `${year}年${month}月`
-    : `${year}年`
+  const periodLabel = mode === 'monthly' ? `${year}年${month}月` : `${year}年`
 
-  // Aggregated data
+  // apiaryId applies regardless of aggUnit
   const { kpi, breakdown, monthlyHarvest, monthlyStrength } = useMemo(() => {
-    const apId = aggUnit === 'apiary' ? apiaryId : null
+    const apId = apiaryId
     const baseRecords = filterByApiary(REPORT_RECORDS, apId)
     const baseStrength = filterStrengthByApiary(STRENGTH_ENTRIES, apId)
 
@@ -332,34 +379,35 @@ export function ReportScreen({
 
     const kpi = buildKPI(current, prev, activeColonies)
     const breakdown = calcWorkBreakdown(current)
-
-    const strengthForYear = mode === 'monthly'
-      ? baseStrength.filter(e => e.month === month)
-      : baseStrength
     const monthlyHarvest = calcMonthlyHarvest(baseRecords, year)
-    const monthlyStrength = calcMonthlyStrength(
-      mode === 'monthly' ? baseStrength : baseStrength
-    )
+    const monthlyStrength = calcMonthlyStrength(baseStrength)
 
-    return { kpi, breakdown, monthlyHarvest, monthlyStrength, strengthForYear }
-  }, [mode, year, month, aggUnit, apiaryId])
+    return { kpi, breakdown, monthlyHarvest, monthlyStrength }
+  }, [mode, year, month, apiaryId])
 
-  // ── Loading state ──────────────────────────────────────────────────────────
+  // KPI change formatter: ↑/↓ style
+  function fmtChange(v: number | null, unit = '%'): string {
+    if (v == null) return '—'
+    const arrow = v >= 0 ? '↑' : '↓'
+    return `${arrow} ${Math.abs(v)}${unit}`
+  }
+
+  const bdMax = Math.max(breakdown.harvest, breakdown.feeding, breakdown.treatment, breakdown.other, 1)
+
+  // Average strength score for badge
+  const strengthPoints = monthlyStrength.filter(d => d.avgScore != null) as { month: number; avgScore: number }[]
+  const avgStrength = strengthPoints.length > 0
+    ? Math.round(strengthPoints.reduce((s, p) => s + p.avgScore, 0) / strengthPoints.length)
+    : null
+
+  // ── Loading state ────────────────────────────────────────────────────────
   if (viewState === 'loading') {
     return (
       <div className={styles.screen}>
-        <header className={styles.header}>
-          <button className={styles.headerBtn} onClick={onBack} aria-label="戻る">
-            <IconBack/>
-          </button>
-          <h1 className={styles.headerTitle}>レポート</h1>
-          <button className={styles.headerBtn} aria-label="メニュー">
-            <IconMore/>
-          </button>
-        </header>
-        <div className={styles.loadingBody}>
+        <ReportHeader/>
+        <div className={styles.loadingBody} aria-live="polite">
           <div className={styles.spinner} role="status" aria-label="読み込み中"/>
-          <p className={styles.loadingText}>レポートを生成中...</p>
+          <p className={styles.loadingText}>レポートを読み込み中…</p>
         </div>
         <div className={styles.navSpacer}/>
         <BottomNav activeTab="analytics" onTabChange={onTabChange ?? noop}/>
@@ -367,24 +415,16 @@ export function ReportScreen({
     )
   }
 
-  // ── Error state ────────────────────────────────────────────────────────────
+  // ── Error state ──────────────────────────────────────────────────────────
   if (viewState === 'error') {
     return (
       <div className={styles.screen}>
-        <header className={styles.header}>
-          <button className={styles.headerBtn} onClick={onBack} aria-label="戻る">
-            <IconBack/>
-          </button>
-          <h1 className={styles.headerTitle}>レポート</h1>
-          <button className={styles.headerBtn} aria-label="メニュー">
-            <IconMore/>
-          </button>
-        </header>
+        <ReportHeader/>
         <div className={styles.stateBody}>
-          <p className={styles.stateTitle}>データを取得できません</p>
-          <p className={styles.stateText}>ネットワーク接続を確認してから、もう一度お試しください。</p>
+          <p className={styles.stateTitle}>レポートを取得できませんでした</p>
+          <p className={styles.stateText}>ネットワーク接続を確認してから再度お試しください。</p>
           <div className={styles.stateActions}>
-            <button className={styles.primaryBtn}>再読み込み</button>
+            <button className={styles.primaryBtn}>再試行</button>
             <button className={styles.outlineBtn} onClick={onBack}>戻る</button>
           </div>
         </div>
@@ -394,24 +434,15 @@ export function ReportScreen({
     )
   }
 
-  // ── Offline-no-cache state ─────────────────────────────────────────────────
+  // ── Offline-no-cache state ───────────────────────────────────────────────
   if (viewState === 'offline-no-cache') {
     return (
       <div className={styles.screen}>
-        <header className={styles.header}>
-          <button className={styles.headerBtn} onClick={onBack} aria-label="戻る">
-            <IconBack/>
-          </button>
-          <h1 className={styles.headerTitle}>レポート</h1>
-          <button className={styles.headerBtn} aria-label="メニュー">
-            <IconMore/>
-          </button>
-        </header>
+        <ReportHeader/>
         <div className={styles.stateBody}>
-          <p className={styles.stateTitle}>オフラインです</p>
-          <p className={styles.stateText}>レポートを表示するにはインターネット接続が必要です。キャッシュデータがありません。</p>
+          <p className={styles.stateTitle}>保存済みのレポートがありません</p>
+          <p className={styles.stateText}>オンライン時にレポートを表示しておくと、オフラインでも確認できます。</p>
           <div className={styles.stateActions}>
-            <button className={styles.primaryBtn}>接続後に再試行</button>
             <button className={styles.outlineBtn} onClick={onBack}>戻る</button>
           </div>
         </div>
@@ -421,25 +452,16 @@ export function ReportScreen({
     )
   }
 
-  // ── Empty state ────────────────────────────────────────────────────────────
+  // ── Empty state ──────────────────────────────────────────────────────────
   if (viewState === 'empty') {
     return (
       <div className={styles.screen}>
-        <header className={styles.header}>
-          <button className={styles.headerBtn} onClick={onBack} aria-label="戻る">
-            <IconBack/>
-          </button>
-          <h1 className={styles.headerTitle}>レポート</h1>
-          <button className={styles.headerBtn} aria-label="メニュー">
-            <IconMore/>
-          </button>
-        </header>
+        <ReportHeader/>
         <div className={styles.stateBody}>
-          <p className={styles.stateTitle}>この期間のデータがありません</p>
-          <p className={styles.stateText}>作業記録を追加すると、レポートが表示されます。</p>
+          <p className={styles.stateTitle}>レポートデータがありません</p>
+          <p className={styles.stateText}>選択した期間の作業記録がありません。</p>
           <div className={styles.stateActions}>
-            <button className={styles.primaryBtn}>作業を記録する</button>
-            <button className={styles.outlineBtn} onClick={onBack}>戻る</button>
+            <button className={styles.primaryBtn}>作業記録を追加</button>
           </div>
         </div>
         <div className={styles.navSpacer}/>
@@ -448,38 +470,20 @@ export function ReportScreen({
     )
   }
 
-  // ── Normal / Offline states ────────────────────────────────────────────────
+  // ── Normal / Offline states ──────────────────────────────────────────────
   const isOffline = viewState === 'offline'
-
-  // KPI formatting helpers
-  function fmtChange(v: number | null, unit = '%'): string {
-    if (v == null) return '—'
-    return `${v >= 0 ? '+' : ''}${v}${unit}`
-  }
-
-  const bdTotal = breakdown.harvest + breakdown.feeding + breakdown.treatment + breakdown.other
 
   return (
     <div className={styles.screen}>
-      {/* Header */}
-      <header className={styles.header}>
-        <button className={styles.headerBtn} onClick={onBack} aria-label="戻る">
-          <IconBack/>
-        </button>
-        <h1 className={styles.headerTitle}>レポート</h1>
-        <button className={styles.headerBtn} aria-label="メニュー">
-          <IconMore/>
-        </button>
-      </header>
+      <ReportHeader/>
 
       {/* Offline banner */}
       {isOffline && (
         <div className={styles.offlineBanner} role="alert">
-          オフライン — キャッシュデータを表示中
+          オフライン — 保存済みのレポートを表示しています
         </div>
       )}
 
-      {/* Scrollable body */}
       <div className={styles.body}>
 
         {/* Segment control */}
@@ -489,16 +493,12 @@ export function ReportScreen({
               className={`${styles.segBtn} ${mode === 'monthly' ? styles.segBtnActive : ''}`}
               onClick={() => setMode('monthly')}
               aria-pressed={mode === 'monthly'}
-            >
-              月次
-            </button>
+            >月次</button>
             <button
               className={`${styles.segBtn} ${mode === 'yearly' ? styles.segBtnActive : ''}`}
               onClick={() => setMode('yearly')}
               aria-pressed={mode === 'yearly'}
-            >
-              年次
-            </button>
+            >年次</button>
           </div>
         </div>
 
@@ -507,7 +507,7 @@ export function ReportScreen({
           <button
             className={styles.chevronBtn}
             onClick={prevPeriod}
-            disabled={mode === 'monthly' ? !canPrevMonth : !canPrevYear}
+            disabled={!canPrev}
             aria-label="前の期間"
           >
             <IconChevronLeft/>
@@ -516,14 +516,14 @@ export function ReportScreen({
           <button
             className={styles.chevronBtn}
             onClick={nextPeriod}
-            disabled={mode === 'monthly' ? !canNextMonth : !canNextYear}
+            disabled={!canNext}
             aria-label="次の期間"
           >
             <IconChevronRight/>
           </button>
         </div>
 
-        {/* Filter bar */}
+        {/* Filter bar — apiary select always visible */}
         <div className={styles.filterBar}>
           {(['overall', 'apiary', 'colony'] as ReportAggUnit[]).map(u => (
             <button
@@ -535,31 +535,29 @@ export function ReportScreen({
               {u === 'overall' ? '全体' : u === 'apiary' ? '養蜂場別' : '蜂群別'}
             </button>
           ))}
-          {aggUnit === 'apiary' && (
-            <div className={styles.apiarySelectWrap}>
-              <select
-                id={selectId}
-                className={styles.apiarySelect}
-                value={apiaryId ?? ''}
-                onChange={e => setApiaryId(e.target.value || null)}
-                aria-label="養蜂場を選択"
-              >
-                <option value="">全養蜂場</option>
-                {REPORT_APIARIES.map(a => (
-                  <option key={a.id} value={a.id}>{a.name}</option>
-                ))}
-              </select>
-              <IconSelectChevron/>
-            </div>
-          )}
+          <div className={styles.apiarySelectWrap}>
+            <select
+              id={selectId}
+              className={styles.apiarySelect}
+              value={apiaryId ?? ''}
+              onChange={e => setApiaryId(e.target.value || null)}
+              aria-label="養蜂場を選択"
+            >
+              <option value="">全養蜂場</option>
+              {REPORT_APIARIES.map(a => (
+                <option key={a.id} value={a.id}>{a.name}</option>
+              ))}
+            </select>
+            <IconSelectChevron/>
+          </div>
         </div>
 
         {/* KPI grid */}
         <div className={styles.kpiGrid}>
-          {/* Harvest */}
+          {/* 採蜜量 */}
           <div className={styles.kpiCard}>
             <span className={styles.kpiIcon}><IconHoney/></span>
-            <span className={styles.kpiLabel}>収穫量</span>
+            <span className={styles.kpiLabel}>採蜜量</span>
             <span className={styles.kpiValue}>
               {kpi.harvestKg.toFixed(1)}<span className={styles.kpiUnit}> kg</span>
             </span>
@@ -570,16 +568,16 @@ export function ReportScreen({
             )}
           </div>
 
-          {/* Work count */}
+          {/* 作業 */}
           <div className={styles.kpiCard}>
             <span className={styles.kpiIcon}><IconClipboard/></span>
-            <span className={styles.kpiLabel}>作業件数</span>
+            <span className={styles.kpiLabel}>作業</span>
             <span className={styles.kpiValue}>
               {kpi.workCount}<span className={styles.kpiUnit}> 件</span>
             </span>
           </div>
 
-          {/* Inspection rate */}
+          {/* 内検実施率 */}
           <div className={styles.kpiCard}>
             <span className={styles.kpiIcon}><IconBarChart/></span>
             <span className={styles.kpiLabel}>内検実施率</span>
@@ -594,89 +592,93 @@ export function ReportScreen({
             )}
           </div>
 
-          {/* AI alerts */}
+          {/* AI異常 */}
           <div className={styles.kpiCard}>
             <span className={styles.kpiIcon}><IconAlert/></span>
-            <span className={styles.kpiLabel}>AI異常検知</span>
+            <span className={styles.kpiLabel}>AI異常</span>
             <span className={styles.kpiValue}>
               {kpi.aiAlertCount}<span className={styles.kpiUnit}> 件</span>
             </span>
           </div>
         </div>
 
-        {/* Harvest chart */}
+        {/* 採蜜量グラフ */}
         <div className={styles.chartCard}>
           <div className={styles.chartHeader}>
-            <h2 className={styles.chartTitle}>月別収穫量</h2>
+            <h2 className={styles.chartTitle}>採蜜量の推移</h2>
             <span className={styles.chartBadge}>{year}年</span>
           </div>
           <div className={styles.chartLegend}>
             <span className={styles.legendItem}>
               <span className={styles.legendLine}/>
-              収穫量 (kg)
+              採蜜量（kg）
             </span>
           </div>
-          <HarvestChart data={monthlyHarvest} selectedMonth={mode === 'monthly' ? month : -1}/>
+          <HarvestChart
+            data={monthlyHarvest}
+            selectedMonth={mode === 'monthly' ? month : -1}
+          />
         </div>
 
-        {/* Strength chart */}
+        {/* 強さスコアグラフ */}
         <div className={styles.chartCard}>
           <div className={styles.chartHeader}>
-            <h2 className={styles.chartTitle}>群勢スコア推移</h2>
+            <h2 className={styles.chartTitle}>強さスコア推移</h2>
             <span className={styles.chartBadge}>{year}年</span>
           </div>
           <div className={styles.chartLegend}>
             <span className={styles.legendItem}>
               <span className={styles.legendLine}/>
-              平均群勢
+              平均
             </span>
             <span className={styles.legendItem}>
               <span className={styles.legendLineDashed}/>
-              警告閾値 (60)
+              注意基準（60）
             </span>
           </div>
-          <StrengthChart data={monthlyStrength}/>
+          <StrengthChart
+            data={monthlyStrength}
+            avgLabel={avgStrength != null ? `平均 ${avgStrength}` : ''}
+          />
         </div>
 
-        {/* Work breakdown */}
-        {bdTotal > 0 && (
-          <div className={styles.breakdownCard}>
-            <h2 className={styles.breakdownTitle}>作業内訳</h2>
-            {[
-              { key: 'harvest', label: '採蜜', count: breakdown.harvest },
-              { key: 'feeding', label: '給餌', count: breakdown.feeding },
-              { key: 'treatment', label: '処置', count: breakdown.treatment },
-              { key: 'other', label: 'その他', count: breakdown.other },
-            ].map(({ key, label, count }) => (
-              <div key={key} className={styles.breakdownRow}>
-                <span className={styles.breakdownLabel}>{label}</span>
-                <span className={styles.breakdownCount}>{count}</span>
-                <div className={styles.breakdownBarWrap}>
-                  <div
-                    className={styles.breakdownBar}
-                    style={{ width: bdTotal > 0 ? `${(count / bdTotal) * 100}%` : '0%' }}
-                    role="progressbar"
-                    aria-valuenow={count}
-                    aria-valuemax={bdTotal}
-                  />
-                </div>
+        {/* 作業内訳 — 常時表示 */}
+        <div className={styles.breakdownCard}>
+          <h2 className={styles.breakdownTitle}>作業内訳</h2>
+          {[
+            { key: 'harvest',   label: '採蜜',   count: breakdown.harvest },
+            { key: 'feeding',   label: '給餌',   count: breakdown.feeding },
+            { key: 'treatment', label: '治療',   count: breakdown.treatment },
+            { key: 'other',     label: 'その他', count: breakdown.other },
+          ].map(({ key, label, count }) => (
+            <div key={key} className={styles.breakdownRow}>
+              <span className={styles.breakdownLabel}>{label}</span>
+              <span className={styles.breakdownCount}>{count}件</span>
+              <div className={styles.breakdownBarWrap}>
+                <div
+                  className={styles.breakdownBar}
+                  style={{ width: `${(count / bdMax) * 100}%` }}
+                  role="progressbar"
+                  aria-valuenow={count}
+                  aria-valuemax={bdMax}
+                />
               </div>
-            ))}
-          </div>
-        )}
+            </div>
+          ))}
+        </div>
 
-        {/* Bottom actions */}
+        {/* 最下部操作 */}
         <div className={styles.bottomActions}>
           <button className={styles.historyBtn} onClick={onViewHistory}>
             <IconHistory/>
-            履歴を見る
+            履歴を見る ›
           </button>
-          <button className={styles.exportBtn} disabled aria-label="PDFエクスポート（準備中）">
-            <IconDownload/>
+          <button className={styles.exportBtn} disabled aria-label="PDFエクスポート（未実装）">
+            <IconFilePdf/>
             PDF
           </button>
-          <button className={styles.exportBtn} disabled aria-label="CSVエクスポート（準備中）">
-            <IconDownload/>
+          <button className={styles.exportBtn} disabled aria-label="CSVエクスポート（未実装）">
+            <IconFileCsv/>
             CSV
           </button>
           <span className={styles.versionBadge}>v2.0</span>

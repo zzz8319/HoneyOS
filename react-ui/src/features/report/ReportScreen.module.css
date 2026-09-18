@@ -13,7 +13,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 56px;
+  height: 54px;
   padding: 0 8px 0 16px;
   background: #FFFFFF;
   border-bottom: 1px solid var(--color-border, #E3E5E8);
@@ -29,6 +29,7 @@
   border: none;
   text-decoration: none;
   line-height: 1.2;
+  flex: 1;
 }
 
 .headerBtn {
@@ -360,7 +361,7 @@
 .breakdownLabel {
   font-size: 13px;
   color: var(--color-text, #17212B);
-  width: 36px;
+  width: 40px;
   flex-shrink: 0;
 }
 
@@ -368,7 +369,7 @@
   font-size: 13px;
   font-weight: 600;
   color: var(--color-text, #17212B);
-  width: 24px;
+  width: 32px;
   text-align: right;
   flex-shrink: 0;
 }
