@@ -8,7 +8,7 @@ import type { TabId } from '../../components'
 import { TrendLineChart } from './TrendLineChart'
 import { RadarChart } from './RadarChart'
 import {
-  TREND_DATA, DEFAULT_COLONY_IDS, METRIC_LABELS, PERIOD_LABELS,
+  TREND_DATA, DEFAULT_COLONY_IDS, METRIC_LABELS, METRIC_SHORT_LABELS, PERIOD_LABELS,
   SERIES_COLORS, filterByPeriod,
 } from './mockData'
 import type { ColonyTrendViewState, Metric, Period, CompareMode, YearMode } from './mockData'
@@ -23,7 +23,7 @@ interface ColonyTrendScreenProps {
 }
 
 export function ColonyTrendScreen({
-  viewState, activeTab, onTabChange, onColonyDetail, onInspectionHistory,
+  viewState, onTabChange, onColonyDetail, onInspectionHistory,
 }: ColonyTrendScreenProps) {
 
   // ── Local state ──────────────────────────────────────────────────────────
@@ -115,10 +115,10 @@ export function ColonyTrendScreen({
   const displayPrev   = compareMode === 'average' ? undefined : prevSeries
 
   // ── Render states ────────────────────────────────────────────────────────
-  if (viewState === 'loading') return <LoadingScreen activeTab={activeTab} onTabChange={onTabChange} />
-  if (viewState === 'error')   return <ErrorScreen   activeTab={activeTab} onTabChange={onTabChange} />
-  if (viewState === 'offline') return <OfflineScreen  activeTab={activeTab} onTabChange={onTabChange} />
-  if (viewState === 'empty')   return <EmptyTrendScreen activeTab={activeTab} onTabChange={onTabChange} />
+  if (viewState === 'loading') return <LoadingScreen onTabChange={onTabChange} />
+  if (viewState === 'error')   return <ErrorScreen   onTabChange={onTabChange} />
+  if (viewState === 'offline') return <OfflineScreen  onTabChange={onTabChange} />
+  if (viewState === 'empty')   return <EmptyTrendScreen onTabChange={onTabChange} />
 
   // ── Normal state ─────────────────────────────────────────────────────────
   return (
@@ -293,6 +293,7 @@ export function ColonyTrendScreen({
             prevSeries={displayPrev as Parameters<typeof TrendLineChart>[0]['prevSeries']}
             metric={metric}
             metricLabel={METRIC_LABELS[metric]}
+            metricShortLabel={METRIC_SHORT_LABELS[metric]}
             alertThreshold={TREND_DATA.alertThreshold}
             minDate={periodMin}
             maxDate={periodMax}
@@ -355,7 +356,7 @@ export function ColonyTrendScreen({
       </main>
 
       {/* 9. BottomNav */}
-      <BottomNav activeTab={activeTab} onTabChange={onTabChange} />
+      <BottomNav activeTab="analytics" onTabChange={onTabChange} />
     </div>
   )
 }
@@ -364,27 +365,36 @@ export function ColonyTrendScreen({
 function Shell({ children }: { children: React.ReactNode }) {
   return <div className={styles.screen}>{children}</div>
 }
-function LoadingScreen({ activeTab, onTabChange }: { activeTab: TabId; onTabChange: (t: TabId) => void }) {
+
+/** 全状態共通ヘッダー: タイトル + 縦三点メニュー */
+function TrendHeader() {
+  return (
+    <header className={styles.header}>
+      <h1 className={styles.title}>蜂群トレンド</h1>
+      <button className={styles.headerBtn} aria-label="メニューを開く">
+        <MoreVertical size={20} aria-hidden />
+      </button>
+    </header>
+  )
+}
+
+function LoadingScreen({ onTabChange }: { onTabChange: (t: TabId) => void }) {
   return (
     <Shell>
-      <header className={styles.header}>
-        <h1 className={styles.title}>蜂群トレンド</h1>
-      </header>
+      <TrendHeader />
       <main className={styles.main} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
         <div className={styles.spinner} role="status" aria-live="polite" aria-label="読み込み中" />
         <p className={styles.loadingText}>蜂群トレンドを読み込み中…</p>
       </main>
-      <BottomNav activeTab={activeTab} onTabChange={onTabChange} />
+      <BottomNav activeTab="analytics" onTabChange={onTabChange} />
     </Shell>
   )
 }
 
-function ErrorScreen({ activeTab, onTabChange }: { activeTab: TabId; onTabChange: (t: TabId) => void }) {
+function ErrorScreen({ onTabChange }: { onTabChange: (t: TabId) => void }) {
   return (
     <Shell>
-      <header className={styles.header}>
-        <h1 className={styles.title}>蜂群トレンド</h1>
-      </header>
+      <TrendHeader />
       <main className={styles.stateMain}>
         <AlertCircle size={40} color="var(--color-danger)" aria-hidden />
         <h2 className={styles.stateTitle}>蜂群トレンドを取得できませんでした</h2>
@@ -394,19 +404,17 @@ function ErrorScreen({ activeTab, onTabChange }: { activeTab: TabId; onTabChange
         </button>
         <button className={styles.subBtn} onClick={() => history.back()}>戻る</button>
       </main>
-      <BottomNav activeTab={activeTab} onTabChange={onTabChange} />
+      <BottomNav activeTab="analytics" onTabChange={onTabChange} />
     </Shell>
   )
 }
 
-function OfflineScreen({ activeTab, onTabChange }: { activeTab: TabId; onTabChange: (t: TabId) => void }) {
+function OfflineScreen({ onTabChange }: { onTabChange: (t: TabId) => void }) {
   // In a real app, check for cached data here
   const hasCachedData = false
   return (
     <Shell>
-      <header className={styles.header}>
-        <h1 className={styles.title}>蜂群トレンド</h1>
-      </header>
+      <TrendHeader />
       <main className={styles.stateMain}>
         <WifiOff size={40} color="var(--color-text-secondary)" aria-hidden />
         {hasCachedData ? (
@@ -419,23 +427,21 @@ function OfflineScreen({ activeTab, onTabChange }: { activeTab: TabId; onTabChan
           </>
         )}
       </main>
-      <BottomNav activeTab={activeTab} onTabChange={onTabChange} />
+      <BottomNav activeTab="analytics" onTabChange={onTabChange} />
     </Shell>
   )
 }
 
-function EmptyTrendScreen({ activeTab, onTabChange }: { activeTab: TabId; onTabChange: (t: TabId) => void }) {
+function EmptyTrendScreen({ onTabChange }: { onTabChange: (t: TabId) => void }) {
   return (
     <Shell>
-      <header className={styles.header}>
-        <h1 className={styles.title}>蜂群トレンド</h1>
-      </header>
+      <TrendHeader />
       <main className={styles.stateMain}>
         <h2 className={styles.stateTitle}>トレンドデータがありません</h2>
         <p className={styles.stateDesc}>比較できる蜂群の記録がありません。</p>
         <button className={styles.primaryBtn}>内検記録を追加</button>
       </main>
-      <BottomNav activeTab={activeTab} onTabChange={onTabChange} />
+      <BottomNav activeTab="analytics" onTabChange={onTabChange} />
     </Shell>
   )
 }

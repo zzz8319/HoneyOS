@@ -181,6 +181,13 @@ export const METRIC_LABELS: Record<Metric, string> = {
   honey:    '貯蜜量',
 }
 
+export const METRIC_SHORT_LABELS: Record<Metric, string> = {
+  strength: 'スコア',
+  bee:      '蜂量',
+  brood:    '育児量',
+  honey:    '貯蜜量',
+}
+
 export const PERIOD_LABELS: Record<Period, string> = {
   '3m':  '3ヶ月',
   '1y':  '1年',

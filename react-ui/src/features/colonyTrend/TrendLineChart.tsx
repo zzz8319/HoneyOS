@@ -24,17 +24,19 @@ function xAt(date: string, minMs: number, maxMs: number): number {
 // ── Month label positions ─────────────────────────────────────────────────
 function monthLabels(minMs: number, maxMs: number): { label: string; x: number }[] {
   const labels: { label: string; x: number }[] = []
-  const start = new Date(minMs)
-  const end   = new Date(maxMs)
-  let cur = new Date(start.getFullYear(), start.getMonth(), 1)
+  const end = new Date(maxMs)
+  // Start at the first day of the month that contains minMs (may be before minMs)
+  const d = new Date(minMs)
+  let cur = new Date(d.getFullYear(), d.getMonth(), 1)
   while (cur <= end) {
     const ms = cur.getTime()
-    if (ms >= minMs && ms <= maxMs) {
-      labels.push({
-        label: `${cur.getMonth() + 1}月`,
-        x: xAt(cur.toISOString().slice(0, 10), minMs, maxMs),
-      })
-    }
+    // Position the label at max(month start, domain start) so partial months
+    // still show at the left edge rather than being clipped
+    const posMs = Math.max(ms, minMs)
+    labels.push({
+      label: `${cur.getMonth() + 1}月`,
+      x: xAt(new Date(posMs).toISOString().slice(0, 10), minMs, maxMs),
+    })
     cur = new Date(cur.getFullYear(), cur.getMonth() + 1, 1)
   }
   return labels
@@ -67,13 +69,14 @@ interface TrendLineChartProps {
   prevSeries?: ColonySeries[]  // for year-compare mode
   metric:    keyof ColonySeries['points']
   metricLabel: string
+  metricShortLabel: string
   alertThreshold: number
   minDate: string
   maxDate: string
 }
 
 export function TrendLineChart({
-  series, prevSeries, metric, metricLabel, alertThreshold, minDate, maxDate,
+  series, prevSeries, metric, metricLabel, metricShortLabel, alertThreshold, minDate, maxDate,
 }: TrendLineChartProps) {
   const [selected, setSelected] = useState<SelectedPoint | null>(null)
   const minMs = new Date(minDate).getTime()
@@ -183,8 +186,8 @@ export function TrendLineChart({
         />
 
         {/* X axis month labels */}
-        {mLabels.map(({ label, x }) => (
-          <text key={label} x={x} y={H - 6} textAnchor="middle" fontSize={10} fill="#66707A">
+        {mLabels.map(({ label, x }, i) => (
+          <text key={`${i}-${label}`} x={x} y={H - 6} textAnchor="middle" fontSize={10} fill="#66707A">
             {label}
           </text>
         ))}
@@ -216,7 +219,7 @@ export function TrendLineChart({
               {selected.date}
             </text>
             <text x={8} y={47} fontSize={10} fill="#66707A">
-              {selected.metricLabel}
+              {metricShortLabel}
             </text>
             <text x={80} y={47} fontSize={12} fontWeight="700" fill="#17212B" textAnchor="end">
               {selected.value}
