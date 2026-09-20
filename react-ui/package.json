@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit --pretty false",
     "lint": "eslint src tests --max-warnings=0",
     "test:visual": "playwright test",
-    "test:visual:update": "playwright test --update-snapshots"
+    "test:visual:update": "playwright test --update-snapshots",
+    "test:unit": "vitest run"
   },
   "dependencies": {
     "@vitejs/plugin-react": "latest",
@@ -24,10 +25,12 @@
     "@playwright/test": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
+    "@vitest/ui": "^5.0.1",
     "eslint": "latest",
     "eslint-plugin-react-hooks": "latest",
     "eslint-plugin-react-refresh": "latest",
     "typescript": "latest",
-    "typescript-eslint": "latest"
+    "typescript-eslint": "latest",
+    "vitest": "^5.0.1"
   }
 }

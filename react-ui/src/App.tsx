@@ -33,10 +33,12 @@ import { WorkRecordScreen } from './features/workRecord'
 import type { WorkRecordViewState } from './features/workRecord'
 import { WorkHistoryScreen } from './features/workHistory'
 import type { WorkHistoryViewState } from './features/workHistory'
+import { ReportScreen } from './features/report'
+import type { ReportViewState } from './features/report'
 import type { TabId } from './components'
 import styles from './App.module.css'
 
-type ViewState = DashboardViewState | ColonyListViewState | ColonyDetailViewState | InspectionStartViewState | RecordViewState | ViewerViewState | ApiaryMapViewState | CompleteViewState | CameraViewState | AiAnalysisViewState | DiagnosisViewState | RecommendedWorkState | WorkListViewState | TaskCreateViewState | WorkRecordViewState | WorkHistoryViewState
+type ViewState = DashboardViewState | ColonyListViewState | ColonyDetailViewState | InspectionStartViewState | RecordViewState | ViewerViewState | ApiaryMapViewState | CompleteViewState | CameraViewState | AiAnalysisViewState | DiagnosisViewState | RecommendedWorkState | WorkListViewState | TaskCreateViewState | WorkRecordViewState | WorkHistoryViewState | ReportViewState
 
 const STATES: { id: ViewState; label: string }[] = [
   { id: 'normal',  label: '通常' },
@@ -57,7 +59,7 @@ function readParam<T extends string>(key: string, valid: T[], fallback: T): T {
   return (valid.includes(p as T) ? p : fallback) as T
 }
 
-const VALID_SCREENS = ['home', 'farms', 'colony-detail', 'inspection-start', 'inspection-record', 'frame-viewer', 'add-stage', 'apiary-map', 'inspection-complete', 'camera-images', 'ai-analysis', 'ai-diagnosis', 'recommended-work', 'work', 'task-create', 'work-record', 'work-history'] as const
+const VALID_SCREENS = ['home', 'farms', 'colony-detail', 'inspection-start', 'inspection-record', 'frame-viewer', 'add-stage', 'apiary-map', 'inspection-complete', 'camera-images', 'ai-analysis', 'ai-diagnosis', 'recommended-work', 'work', 'task-create', 'work-record', 'work-history', 'report'] as const
 type Screen = typeof VALID_SCREENS[number]
 
 export default function App() {
@@ -91,6 +93,7 @@ export default function App() {
   const mapState      = viewState as ApiaryMapViewState
   const completeState    = viewState as CompleteViewState
   const workHistoryState = viewState as WorkHistoryViewState
+  const reportState      = viewState as ReportViewState
 
   return (
     <>
@@ -108,7 +111,14 @@ export default function App() {
         </div>
       )}
 
-      {screen === 'work-history' ? (
+      {screen === 'report' ? (
+        <ReportScreen
+          viewState={reportState}
+          onBack={() => setScreen('home')}
+          onViewHistory={() => setScreen('work-history')}
+          onTabChange={setActiveTab}
+        />
+      ) : screen === 'work-history' ? (
         <WorkHistoryScreen
           viewState={workHistoryState}
           onBack={() => setScreen('home')}
@@ -242,7 +252,16 @@ export default function App() {
             />
           )}
 
-          {(activeTab === 'work' || activeTab === 'analytics' || activeTab === 'settings') && (
+          {activeTab === 'analytics' && (
+            <ReportScreen
+              viewState={reportState}
+              onBack={() => setActiveTab('home')}
+              onViewHistory={() => setScreen('work-history')}
+              onTabChange={setActiveTab}
+            />
+          )}
+
+          {(activeTab === 'work' || activeTab === 'settings') && (
             <DashboardScreen
               viewState="empty"
               activeTab={activeTab}

@@ -1,0 +1,560 @@
+/* ── Screen shell ── */
+.screen {
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--color-bg, #F8F7F4);
+}
+
+/* ── Header (sticky) ── */
+.header {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 54px;
+  padding: 0 8px 0 16px;
+  background: #FFFFFF;
+  border-bottom: 1px solid var(--color-border, #E3E5E8);
+  z-index: 20;
+}
+
+.headerTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-text, #17212B);
+  margin: 0;
+  padding: 0;
+  border: none;
+  text-decoration: none;
+  line-height: 1.2;
+  flex: 1;
+}
+
+.headerBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text, #17212B);
+  border-radius: var(--radius-sm, 8px);
+  flex-shrink: 0;
+}
+
+.headerBtn:active {
+  background: var(--color-border, #E3E5E8);
+}
+
+/* ── Scrollable body ── */
+.body {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  background: var(--color-bg, #F8F7F4);
+}
+
+/* ── Offline banner ── */
+.offlineBanner {
+  padding: 8px 16px;
+  background: #FEF3C7;
+  font-size: 13px;
+  color: #92400E;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+/* ── Segment control (月次/年次) ── */
+.segmentWrap {
+  padding: 10px 16px 0;
+  background: #FFFFFF;
+}
+
+.segment {
+  display: flex;
+  background: #F3F4F6;
+  border-radius: 8px;
+  padding: 3px;
+  gap: 0;
+}
+
+.segBtn {
+  flex: 1;
+  padding: 7px 0;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  background: transparent;
+  color: var(--color-text-secondary, #66707A);
+  transition: none;
+}
+
+.segBtnActive {
+  background: var(--color-primary, #E39A16);
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+/* ── Period navigation ── */
+.periodNav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px 12px;
+  background: #FFFFFF;
+  border-bottom: 1px solid var(--color-border, #E3E5E8);
+}
+
+.periodLabel {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text, #17212B);
+  min-width: 120px;
+  text-align: center;
+}
+
+.chevronBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-secondary, #66707A);
+  border-radius: 8px;
+}
+
+.chevronBtn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.chevronBtn:not(:disabled):active {
+  background: var(--color-border, #E3E5E8);
+}
+
+/* ── Agg unit tabs + apiary select ── */
+.filterBar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: #FFFFFF;
+  border-bottom: 1px solid var(--color-border, #E3E5E8);
+}
+
+.aggTab {
+  padding: 6px 12px;
+  border: 1px solid var(--color-border, #E3E5E8);
+  border-radius: var(--radius-full, 9999px);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-secondary, #66707A);
+  background: #FFFFFF;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.aggTabActive {
+  background: var(--color-primary, #E39A16);
+  color: #FFFFFF;
+  border-color: var(--color-primary, #E39A16);
+  font-weight: 600;
+}
+
+.apiarySelectWrap {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: #FFFFFF;
+  border: 1px solid var(--color-border, #E3E5E8);
+  border-radius: var(--radius-sm, 8px);
+  min-width: 0;
+  overflow: hidden;
+}
+
+.apiarySelect {
+  flex: 1;
+  appearance: none;
+  background: none;
+  border: none;
+  outline: none;
+  font-size: 12px;
+  color: var(--color-text, #17212B);
+  padding: 7px 24px 7px 8px;
+  cursor: pointer;
+  width: 100%;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.apiarySelectWrap > svg {
+  position: absolute;
+  right: 6px;
+  pointer-events: none;
+  color: var(--color-text-secondary, #66707A);
+  flex-shrink: 0;
+}
+
+/* ── Section padding ── */
+.section {
+  padding: 12px 12px 0;
+}
+
+/* ── KPI grid ── */
+.kpiGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 12px 12px 0;
+}
+
+.kpiCard {
+  background: #FFFFFF;
+  border: 1px solid var(--color-border, #E3E5E8);
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  position: relative;
+}
+
+.kpiIcon {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  flex-shrink: 0;
+}
+
+.kpiLabel {
+  font-size: 11px;
+  color: var(--color-text-secondary, #66707A);
+  font-weight: 500;
+}
+
+.kpiValue {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-text, #17212B);
+  line-height: 1.1;
+  padding-right: 28px;
+}
+
+.kpiUnit {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.kpiChange {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-ok, #16A34A);
+  margin-top: 2px;
+}
+
+.kpiChangeMinus {
+  color: var(--color-danger, #DC2626);
+}
+
+/* ── Chart cards ── */
+.chartCard {
+  background: #FFFFFF;
+  border: 1px solid var(--color-border, #E3E5E8);
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  padding: 14px 12px 10px;
+  margin: 12px 12px 0;
+}
+
+.chartHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.chartTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text, #17212B);
+  margin: 0;
+}
+
+.chartBadge {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-secondary, #66707A);
+}
+
+.chartLegend {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--color-text-secondary, #66707A);
+}
+
+.legendLine {
+  width: 16px;
+  height: 2px;
+  background: var(--color-primary, #E39A16);
+  border-radius: 1px;
+}
+
+.legendLineDashed {
+  width: 16px;
+  height: 2px;
+  background: repeating-linear-gradient(90deg, #DC2626 0 4px, transparent 4px 6px);
+}
+
+/* ── Work breakdown card ── */
+.breakdownCard {
+  background: #FFFFFF;
+  border: 1px solid var(--color-border, #E3E5E8);
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  padding: 14px 12px;
+  margin: 12px 12px 0;
+}
+
+.breakdownTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text, #17212B);
+  margin: 0 0 12px;
+}
+
+.breakdownRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.breakdownRow:last-child {
+  margin-bottom: 0;
+}
+
+.breakdownLabel {
+  font-size: 13px;
+  color: var(--color-text, #17212B);
+  width: 40px;
+  flex-shrink: 0;
+}
+
+.breakdownCount {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text, #17212B);
+  width: 32px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.breakdownBarWrap {
+  flex: 1;
+  height: 8px;
+  background: #F3F4F6;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.breakdownBar {
+  height: 100%;
+  background: var(--color-primary, #E39A16);
+  border-radius: 4px;
+  min-width: 0;
+}
+
+/* ── Bottom actions ── */
+.bottomActions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 12px;
+  margin: 12px 12px 0;
+  background: #FFFFFF;
+  border: 1px solid var(--color-border, #E3E5E8);
+  border-radius: 12px;
+}
+
+.historyBtn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 10px;
+  background: #FFFFFF;
+  border: 1px solid var(--color-border, #E3E5E8);
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text, #17212B);
+  cursor: pointer;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.historyBtn:active {
+  background: var(--color-bg, #F8F7F4);
+}
+
+.exportBtn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 10px;
+  background: #FFFFFF;
+  border: 1px solid var(--color-border, #E3E5E8);
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-secondary, #66707A);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.exportBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.versionBadge {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-primary, #E39A16);
+  background: var(--color-primary-soft, #FFF3D8);
+  padding: 3px 7px;
+  border-radius: 99px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── Empty / Error states ── */
+.stateBody {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 32px;
+  gap: 10px;
+  text-align: center;
+}
+
+.stateTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text, #17212B);
+  margin: 0;
+}
+
+.stateText {
+  font-size: 14px;
+  color: var(--color-text-secondary, #66707A);
+  margin: 0;
+  line-height: 1.55;
+}
+
+.stateActions {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.primaryBtn {
+  padding: 10px 24px;
+  background: var(--color-primary, #E39A16);
+  color: #FFFFFF;
+  border: none;
+  border-radius: var(--radius-full, 9999px);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.outlineBtn {
+  padding: 10px 24px;
+  background: none;
+  border: 1.5px solid var(--color-border, #E3E5E8);
+  border-radius: var(--radius-full, 9999px);
+  font-size: 15px;
+  color: var(--color-text-secondary, #66707A);
+  cursor: pointer;
+}
+
+/* ── Loading ── */
+.loadingBody {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.loadingText {
+  font-size: 14px;
+  color: var(--color-text-secondary, #66707A);
+  margin: 0;
+}
+
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--color-border, #E3E5E8);
+  border-top-color: var(--color-primary, #E39A16);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner { animation: none; border-top-color: var(--color-primary, #E39A16); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Nav spacer ── */
+.navSpacer {
+  flex: 0 0 72px;
+  height: 72px;
+}
+
+/* ── SVG chart wrapper (no horizontal scroll) ── */
+.svgWrap {
+  width: 100%;
+  overflow: hidden;
+}
+
+.svgWrap svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
