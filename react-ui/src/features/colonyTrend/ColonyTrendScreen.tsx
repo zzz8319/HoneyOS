@@ -20,10 +20,11 @@ interface ColonyTrendScreenProps {
   onTabChange: (tab: TabId) => void
   onColonyDetail: (colonyId: string) => void
   onInspectionHistory: (colonyId: string) => void
+  onColonyComparison?: () => void
 }
 
 export function ColonyTrendScreen({
-  viewState, onTabChange, onColonyDetail, onInspectionHistory,
+  viewState, onTabChange, onColonyDetail, onInspectionHistory, onColonyComparison,
 }: ColonyTrendScreenProps) {
 
   // ── Local state ──────────────────────────────────────────────────────────
@@ -116,10 +117,10 @@ export function ColonyTrendScreen({
   const displayPrev   = compareMode === 'average' ? undefined : prevSeries
 
   // ── Render states ────────────────────────────────────────────────────────
-  if (viewState === 'loading') return <LoadingScreen onTabChange={onTabChange} />
-  if (viewState === 'error')   return <ErrorScreen   onTabChange={onTabChange} />
-  if (viewState === 'offline') return <OfflineScreen  onTabChange={onTabChange} />
-  if (viewState === 'empty')   return <EmptyTrendScreen onTabChange={onTabChange} />
+  if (viewState === 'loading') return <LoadingScreen onTabChange={onTabChange} onColonyComparison={onColonyComparison} />
+  if (viewState === 'error')   return <ErrorScreen   onTabChange={onTabChange} onColonyComparison={onColonyComparison} />
+  if (viewState === 'offline') return <OfflineScreen  onTabChange={onTabChange} onColonyComparison={onColonyComparison} />
+  if (viewState === 'empty')   return <EmptyTrendScreen onTabChange={onTabChange} onColonyComparison={onColonyComparison} />
 
   // ── Normal state ─────────────────────────────────────────────────────────
   return (
@@ -127,7 +128,7 @@ export function ColonyTrendScreen({
       {/* 1. Header */}
       <header className={styles.header}>
         <h1 className={styles.title}>蜂群トレンド</h1>
-        <button className={styles.headerBtn} aria-label="メニューを開く">
+        <button className={styles.headerBtn} aria-label="メニューを開く" onClick={() => onColonyComparison?.()}>
           <MoreVertical size={20} aria-hidden />
         </button>
       </header>
@@ -368,21 +369,21 @@ function Shell({ children }: { children: React.ReactNode }) {
 }
 
 /** 全状態共通ヘッダー: タイトル + 縦三点メニュー */
-function TrendHeader() {
+function TrendHeader({ onColonyComparison }: { onColonyComparison?: () => void }) {
   return (
     <header className={styles.header}>
       <h1 className={styles.title}>蜂群トレンド</h1>
-      <button className={styles.headerBtn} aria-label="メニューを開く">
+      <button className={styles.headerBtn} aria-label="メニューを開く" onClick={() => onColonyComparison?.()}>
         <MoreVertical size={20} aria-hidden />
       </button>
     </header>
   )
 }
 
-function LoadingScreen({ onTabChange }: { onTabChange: (t: TabId) => void }) {
+function LoadingScreen({ onTabChange, onColonyComparison }: { onTabChange: (t: TabId) => void; onColonyComparison?: () => void }) {
   return (
     <Shell>
-      <TrendHeader />
+      <TrendHeader onColonyComparison={onColonyComparison} />
       <main className={styles.main} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
         <div className={styles.spinner} role="status" aria-live="polite" aria-label="読み込み中" />
         <p className={styles.loadingText}>蜂群トレンドを読み込み中…</p>
@@ -392,10 +393,10 @@ function LoadingScreen({ onTabChange }: { onTabChange: (t: TabId) => void }) {
   )
 }
 
-function ErrorScreen({ onTabChange }: { onTabChange: (t: TabId) => void }) {
+function ErrorScreen({ onTabChange, onColonyComparison }: { onTabChange: (t: TabId) => void; onColonyComparison?: () => void }) {
   return (
     <Shell>
-      <TrendHeader />
+      <TrendHeader onColonyComparison={onColonyComparison} />
       <main className={styles.stateMain}>
         <AlertCircle size={40} color="var(--color-danger)" aria-hidden />
         <h2 className={styles.stateTitle}>蜂群トレンドを取得できませんでした</h2>
@@ -410,12 +411,12 @@ function ErrorScreen({ onTabChange }: { onTabChange: (t: TabId) => void }) {
   )
 }
 
-function OfflineScreen({ onTabChange }: { onTabChange: (t: TabId) => void }) {
+function OfflineScreen({ onTabChange, onColonyComparison }: { onTabChange: (t: TabId) => void; onColonyComparison?: () => void }) {
   // In a real app, check for cached data here
   const hasCachedData = false
   return (
     <Shell>
-      <TrendHeader />
+      <TrendHeader onColonyComparison={onColonyComparison} />
       <main className={styles.stateMain}>
         <WifiOff size={40} color="var(--color-text-secondary)" aria-hidden />
         {hasCachedData ? (
@@ -433,10 +434,10 @@ function OfflineScreen({ onTabChange }: { onTabChange: (t: TabId) => void }) {
   )
 }
 
-function EmptyTrendScreen({ onTabChange }: { onTabChange: (t: TabId) => void }) {
+function EmptyTrendScreen({ onTabChange, onColonyComparison }: { onTabChange: (t: TabId) => void; onColonyComparison?: () => void }) {
   return (
     <Shell>
-      <TrendHeader />
+      <TrendHeader onColonyComparison={onColonyComparison} />
       <main className={styles.stateMain}>
         <h2 className={styles.stateTitle}>トレンドデータがありません</h2>
         <p className={styles.stateDesc}>比較できる蜂群の記録がありません。</p>

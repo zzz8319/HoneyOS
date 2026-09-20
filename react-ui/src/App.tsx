@@ -37,10 +37,12 @@ import { ReportScreen } from './features/report'
 import type { ReportViewState } from './features/report'
 import { ColonyTrendScreen } from './features/colonyTrend'
 import type { ColonyTrendViewState } from './features/colonyTrend'
+import { ColonyComparisonScreen } from './features/colonyComparison'
+import type { ColonyComparisonViewState } from './features/colonyComparison'
 import type { TabId } from './components'
 import styles from './App.module.css'
 
-type ViewState = DashboardViewState | ColonyListViewState | ColonyDetailViewState | InspectionStartViewState | RecordViewState | ViewerViewState | ApiaryMapViewState | CompleteViewState | CameraViewState | AiAnalysisViewState | DiagnosisViewState | RecommendedWorkState | WorkListViewState | TaskCreateViewState | WorkRecordViewState | WorkHistoryViewState | ReportViewState | ColonyTrendViewState
+type ViewState = DashboardViewState | ColonyListViewState | ColonyDetailViewState | InspectionStartViewState | RecordViewState | ViewerViewState | ApiaryMapViewState | CompleteViewState | CameraViewState | AiAnalysisViewState | DiagnosisViewState | RecommendedWorkState | WorkListViewState | TaskCreateViewState | WorkRecordViewState | WorkHistoryViewState | ReportViewState | ColonyTrendViewState | ColonyComparisonViewState
 
 const STATES: { id: ViewState; label: string }[] = [
   { id: 'normal',  label: '通常' },
@@ -61,7 +63,7 @@ function readParam<T extends string>(key: string, valid: T[], fallback: T): T {
   return (valid.includes(p as T) ? p : fallback) as T
 }
 
-const VALID_SCREENS = ['home', 'farms', 'colony-detail', 'inspection-start', 'inspection-record', 'frame-viewer', 'add-stage', 'apiary-map', 'inspection-complete', 'camera-images', 'ai-analysis', 'ai-diagnosis', 'recommended-work', 'work', 'task-create', 'work-record', 'work-history', 'report', 'colony-trend'] as const
+const VALID_SCREENS = ['home', 'farms', 'colony-detail', 'inspection-start', 'inspection-record', 'frame-viewer', 'add-stage', 'apiary-map', 'inspection-complete', 'camera-images', 'ai-analysis', 'ai-diagnosis', 'recommended-work', 'work', 'task-create', 'work-record', 'work-history', 'report', 'colony-trend', 'colony-comparison'] as const
 type Screen = typeof VALID_SCREENS[number]
 
 export default function App() {
@@ -97,6 +99,7 @@ export default function App() {
   const workHistoryState = viewState as WorkHistoryViewState
   const reportState      = viewState as ReportViewState
   const trendState       = viewState as ColonyTrendViewState
+  const compState        = viewState as ColonyComparisonViewState
 
   return (
     <>
@@ -114,13 +117,21 @@ export default function App() {
         </div>
       )}
 
-      {screen === 'colony-trend' ? (
+      {screen === 'colony-comparison' ? (
+        <ColonyComparisonScreen
+          viewState={compState}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          onColonyDetail={(id) => { setSelectedColonyId(id); setScreen('colony-detail') }}
+        />
+      ) : screen === 'colony-trend' ? (
         <ColonyTrendScreen
           viewState={trendState}
           activeTab={activeTab}
           onTabChange={setActiveTab}
           onColonyDetail={(id) => { setSelectedColonyId(id); setScreen('colony-detail') }}
           onInspectionHistory={(id) => { setSelectedColonyId(id); setScreen('colony-detail') }}
+          onColonyComparison={() => setScreen('colony-comparison')}
         />
       ) : screen === 'report' ? (
         <ReportScreen
