@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useMemo } from 'react'
 import {
   Calendar, MapPin, ChevronRight, ChevronUp,
   AlertCircle, Info, WifiOff, RefreshCw, AlertTriangle,
@@ -9,8 +9,8 @@ import type {
   ColonyComparisonViewState, ComparisonTab, SortKey, SortDir,
 } from './types'
 import {
-  COMPARISON_APIARIES, COMPARISON_ROWS_FIXTURE,
-  buildWarnings, filterRows, sortRows,
+  COMPARISON_APIARIES, COLONY_HISTORIES,
+  selectRowsForDate, buildWarnings, filterRows, sortRows,
 } from './mockData'
 import styles from './ColonyComparisonScreen.module.css'
 
@@ -43,7 +43,6 @@ interface ColonyComparisonScreenProps {
 
 // ── Helpers ───────────────────────────────────────────────────────────────
 const APIARIES = COMPARISON_APIARIES
-const ALL_ROWS  = COMPARISON_ROWS_FIXTURE
 
 // ── Sort header cell (module-level to avoid react-hooks/static-components) ──
 function SortTh({
@@ -110,10 +109,12 @@ export function ColonyComparisonScreen({
 
   const rankingRef = useRef<HTMLDivElement>(null)
 
-  // ── Derived data ──────────────────────────────────────────────────────────
+  // ── Derived data (all re-computed when refDate changes) ──────────────────
+  const allRows = useMemo(() => selectRowsForDate(COLONY_HISTORIES, refDate), [refDate])
+
   const topApiaryRows = topApiary
-    ? ALL_ROWS.filter(r => r.apiaryId === topApiary)
-    : ALL_ROWS
+    ? allRows.filter(r => r.apiaryId === topApiary)
+    : allRows
 
   const resolvedApiaryFilter = topApiary
     ? (apiaryFilter !== 'all' ? apiaryFilter : topApiary)
@@ -150,7 +151,7 @@ export function ColonyComparisonScreen({
   // ── Header ────────────────────────────────────────────────────────────────
   const header = (
     <header className={styles.header}>
-      <span className={styles.headerTitle}>蜂群比較</span>
+      <h1 className={styles.headerTitle}>蜂群比較</h1>
       <button
         className={styles.iconBtn}
         aria-label="その他のメニュー"
@@ -568,7 +569,7 @@ export function ColonyComparisonScreen({
   }
 
   if (viewState === 'empty') {
-    const hasAnyColonies = ALL_ROWS.length > 0
+    const hasAnyColonies = COLONY_HISTORIES.length > 0
     return (
       <div className={styles.screen}>
         {header}
