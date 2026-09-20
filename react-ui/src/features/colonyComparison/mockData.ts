@@ -1,95 +1,143 @@
 // [DEV FIXTURE] — replace with window.HoneyDB calls before production
-import type { ComparisonApiary, ComparisonColonyRow } from './types'
+import type { ComparisonApiary, ComparisonColonyRow, ColonyStatus, WarningKind } from './types'
 
 export const COMPARISON_APIARIES: ComparisonApiary[] = [
-  { id: 'apiary-miyata', name: '宮田養蜂場' },
+  { id: 'apiary-miyata',      name: '宮田養蜂場' },
   { id: 'apiary-kawahigashi', name: '川東養蜂場' },
 ]
 
-// Reference date: 2026-09-08
-// Last inspection dates (≤ reference date):
-//   A-01: 2026-09-05  (3日前)
-//   B-01: 2026-09-03  (5日前)
-//   A-05: 2026-08-23  (16日前)
-//   A-03: 2026-08-28  (11日前)
-export const COMPARISON_ROWS_FIXTURE: ComparisonColonyRow[] = [
+// ── Per-colony inspection history ─────────────────────────────────────────
+interface InspRecord {
+  inspectedAt: string  // 'YYYY-MM-DD' (JST date)
+  strength: number
+  bee: number
+  brood: number
+  honey: number
+}
+
+interface ColonyHistoryEntry {
+  colonyId: string
+  colonyName: string
+  apiaryId: string
+  apiaryName: string
+  color: string
+  prevStrength: number  // used for strengthDelta (baseline before the history window)
+  records: InspRecord[] // must be sorted ascending by inspectedAt
+}
+
+const COLONY_HISTORIES: ColonyHistoryEntry[] = [
   {
-    colonyId: 'a1',
-    colonyName: 'A-01',
-    apiaryId: 'apiary-miyata',
-    apiaryName: '宮田養蜂場',
-    color: '#3B82F6',
-    strength: 79,
-    bee: 85,
-    brood: 72,
-    honey: 64,
-    lastInspectionDate: '2026-09-05',
-    daysSinceInspection: 3,
-    status: 'good',
-    warningKind: null,
-    prevStrength: 75,
-    strengthDelta: 4,
+    colonyId: 'a1', colonyName: 'A-01',
+    apiaryId: 'apiary-miyata', apiaryName: '宮田養蜂場',
+    color: '#3B82F6', prevStrength: 75,
+    records: [
+      { inspectedAt: '2026-08-27', strength: 73, bee: 80, brood: 68, honey: 58 },
+      { inspectedAt: '2026-09-05', strength: 79, bee: 85, brood: 72, honey: 64 },
+    ],
   },
   {
-    colonyId: 'b1',
-    colonyName: 'B-01',
-    apiaryId: 'apiary-kawahigashi',
-    apiaryName: '川東養蜂場',
-    color: '#22C55E',
-    strength: 70,
-    bee: 65,
-    brood: 78,
-    honey: 52,
-    lastInspectionDate: '2026-09-03',
-    daysSinceInspection: 5,
-    status: 'good',
-    warningKind: null,
-    prevStrength: 68,
-    strengthDelta: 2,
+    colonyId: 'b1', colonyName: 'B-01',
+    apiaryId: 'apiary-kawahigashi', apiaryName: '川東養蜂場',
+    color: '#22C55E', prevStrength: 68,
+    records: [
+      { inspectedAt: '2026-08-22', strength: 63, bee: 58, brood: 68, honey: 44 },
+      { inspectedAt: '2026-09-03', strength: 70, bee: 65, brood: 78, honey: 52 },
+    ],
   },
   {
-    colonyId: 'a5',
-    colonyName: 'A-05',
-    apiaryId: 'apiary-miyata',
-    apiaryName: '宮田養蜂場',
-    color: '#F59E0B',
-    strength: 65,
-    bee: 60,
-    brood: 58,
-    honey: 70,
-    lastInspectionDate: '2026-08-23',
-    daysSinceInspection: 16,
-    status: 'caution',
-    warningKind: null,
-    prevStrength: 66,
-    strengthDelta: -1,
+    colonyId: 'a5', colonyName: 'A-05',
+    apiaryId: 'apiary-miyata', apiaryName: '宮田養蜂場',
+    color: '#F59E0B', prevStrength: 66,
+    records: [
+      { inspectedAt: '2026-08-10', strength: 55, bee: 50, brood: 48, honey: 65 },
+      { inspectedAt: '2026-08-23', strength: 65, bee: 60, brood: 58, honey: 70 },
+    ],
   },
   {
-    colonyId: 'a3',
-    colonyName: 'A-03',
-    apiaryId: 'apiary-miyata',
-    apiaryName: '宮田養蜂場',
-    color: '#EF4444',
-    strength: 35,
-    bee: 40,
-    brood: 28,
-    honey: 55,
-    lastInspectionDate: '2026-08-28',
-    daysSinceInspection: 11,
-    status: 'alert',
-    warningKind: 'strength-low',
-    prevStrength: 45,
-    strengthDelta: -10,
+    colonyId: 'a3', colonyName: 'A-03',
+    apiaryId: 'apiary-miyata', apiaryName: '宮田養蜂場',
+    color: '#EF4444', prevStrength: 45,
+    records: [
+      { inspectedAt: '2026-08-15', strength: 42, bee: 44, brood: 26, honey: 52 },
+      { inspectedAt: '2026-08-28', strength: 35, bee: 40, brood: 28, honey: 55 },
+    ],
   },
 ]
 
-export const COMPARISON_ROWS_MIYATA: ComparisonColonyRow[] = COMPARISON_ROWS_FIXTURE.filter(
-  r => r.apiaryId === 'apiary-miyata',
-)
+// ── Helpers ───────────────────────────────────────────────────────────────
 
-export const COMPARISON_ROWS_KAWAHIGASHI: ComparisonColonyRow[] = COMPARISON_ROWS_FIXTURE.filter(
-  r => r.apiaryId === 'apiary-kawahigashi',
-)
+function computeStatus(strength: number): ColonyStatus {
+  if (strength >= 70) return 'good'
+  if (strength >= 45) return 'caution'
+  return 'alert'
+}
+
+/** Days between two 'YYYY-MM-DD' strings using local calendar arithmetic. */
+function daysBetweenDates(from: string, to: string): number {
+  const [fy, fm, fd] = from.split('-').map(Number)
+  const [ty, tm, td] = to.split('-').map(Number)
+  const a = Date.UTC(fy, fm - 1, fd)
+  const b = Date.UTC(ty, tm - 1, td)
+  return Math.round((b - a) / 86400000)
+}
+
+/**
+ * For each colony, pick the most recent inspection record ≤ refDateStr,
+ * then compute strength / daysSinceInspection / status relative to that date.
+ */
+export function selectRowsForDate(
+  histories: ColonyHistoryEntry[],
+  refDateStr: string,
+): ComparisonColonyRow[] {
+  return histories.map(h => {
+    const eligible = h.records.filter(r => r.inspectedAt <= refDateStr)
+    const latest = eligible.length > 0
+      ? eligible.reduce((best, r) => r.inspectedAt > best.inspectedAt ? r : best)
+      : null
+
+    if (!latest) {
+      return {
+        colonyId: h.colonyId, colonyName: h.colonyName,
+        apiaryId: h.apiaryId, apiaryName: h.apiaryName,
+        color: h.color,
+        strength: null, bee: null, brood: null, honey: null,
+        lastInspectionDate: null, daysSinceInspection: null,
+        status: 'good' as const, warningKind: null,
+        prevStrength: null, strengthDelta: null,
+      }
+    }
+
+    const days = daysBetweenDates(latest.inspectedAt, refDateStr)
+    const status = computeStatus(latest.strength)
+    const warningKind: WarningKind | null =
+      latest.strength < 45 ? 'strength-low'
+      : (h.prevStrength - latest.strength) > 10 ? 'strength-drop'
+      : null
+
+    return {
+      colonyId: h.colonyId, colonyName: h.colonyName,
+      apiaryId: h.apiaryId, apiaryName: h.apiaryName,
+      color: h.color,
+      strength: latest.strength,
+      bee: latest.bee,
+      brood: latest.brood,
+      honey: latest.honey,
+      lastInspectionDate: latest.inspectedAt,
+      daysSinceInspection: days,
+      status,
+      warningKind,
+      prevStrength: h.prevStrength,
+      strengthDelta: latest.strength - h.prevStrength,
+    }
+  })
+}
+
+// ── Stable fixture for 2026-09-08 (used by unit tests and as initial state) ──
+// Values: A-01=79, B-01=70, A-05=65, A-03=35 (days: 3, 5, 16, 11)
+export const COMPARISON_ROWS_FIXTURE: ComparisonColonyRow[] =
+  selectRowsForDate(COLONY_HISTORIES, '2026-09-08')
+
+export { COLONY_HISTORIES }
 
 // ── Selectors ─────────────────────────────────────────────────────────────
 
@@ -154,12 +202,10 @@ export function sortRows(
     else if (key === 'honey')     { aVal = a.honey;          bVal = b.honey }
     else                          { aVal = a.daysSinceInspection; bVal = b.daysSinceInspection }
 
-    // nulls always go last
     if (aVal === null && bVal === null) return a.colonyName.localeCompare(b.colonyName)
     if (aVal === null) return 1
     if (bVal === null) return -1
 
-    // For lastInspection asc = most recent first (smallest days)
     const cmp = aVal - bVal
     const dirMul = dir === 'asc' ? 1 : -1
     return cmp !== 0 ? cmp * dirMul : a.colonyName.localeCompare(b.colonyName)

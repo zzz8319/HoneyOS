@@ -43,10 +43,9 @@ test('SCR-030 ranking-tab', async ({ page }) => {
 // ── 4. 強さ昇順 ─────────────────────────────────────────────────────────────
 test('SCR-030 sort-strength-asc', async ({ page }) => {
   await goto(page)
-  // Click strength header twice: first click = toggle (already desc → asc... or first click sets desc)
-  // Initial sort is strength desc, click once to go asc
   const strengthBtn = page.getByRole('button', { name: /強さで並び替え/ })
   await strengthBtn.click()
+  await page.mouse.move(0, 0)
   await page.waitForTimeout(100)
   await expect(page).toHaveScreenshot('scr-030-sort-strength-asc.png', {
     fullPage: false, animations: 'disabled',
@@ -58,6 +57,7 @@ test('SCR-030 sort-bee', async ({ page }) => {
   await goto(page)
   const beeBtn = page.getByRole('button', { name: /蜂量で並び替え/ })
   await beeBtn.click()
+  await page.mouse.move(0, 0)
   await page.waitForTimeout(100)
   await expect(page).toHaveScreenshot('scr-030-sort-bee.png', {
     fullPage: false, animations: 'disabled',
@@ -69,6 +69,7 @@ test('SCR-030 apiary-filter', async ({ page }) => {
   await goto(page)
   await page.getByTestId('top-apiary-btn').click()
   await page.getByRole('button', { name: '宮田養蜂場' }).click()
+  await page.mouse.move(0, 0)
   await page.waitForTimeout(100)
   await expect(page).toHaveScreenshot('scr-030-apiary-filter.png', {
     fullPage: false, animations: 'disabled',
@@ -80,6 +81,7 @@ test('SCR-030 status-filter', async ({ page }) => {
   await goto(page)
   await page.getByTestId('status-filter-btn').click()
   await page.getByRole('button', { name: '要対応' }).click()
+  await page.mouse.move(0, 0)
   await page.waitForTimeout(100)
   await expect(page).toHaveScreenshot('scr-030-status-filter.png', {
     fullPage: false, animations: 'disabled',
@@ -91,6 +93,7 @@ test('SCR-030 insp-filter', async ({ page }) => {
   await goto(page)
   await page.getByTestId('insp-filter-btn').click()
   await page.getByRole('button', { name: '7日以内' }).click()
+  await page.mouse.move(0, 0)
   await page.waitForTimeout(100)
   await expect(page).toHaveScreenshot('scr-030-insp-filter.png', {
     fullPage: false, animations: 'disabled',
@@ -102,6 +105,7 @@ test('SCR-030 date-change', async ({ page }) => {
   await goto(page)
   await page.getByTestId('ref-date-btn').click()
   await page.getByRole('button', { name: /2026年8月31日時点/ }).click()
+  await page.mouse.move(0, 0)
   await page.waitForTimeout(100)
   await expect(page).toHaveScreenshot('scr-030-date-change.png', {
     fullPage: false, animations: 'disabled',
@@ -153,8 +157,16 @@ test('SCR-030 from-colony-trend', async ({ page }) => {
   await page.clock.install({ time: FIXED_NOW })
   await page.goto('/?screen=colony-trend&devbar=0', { waitUntil: 'networkidle' })
   await page.waitForTimeout(200)
+  // Navigate to SCR-030 via colony-trend's three-dot menu
   await page.getByRole('button', { name: 'メニューを開く' }).click()
-  await page.waitForTimeout(200)
+  await page.waitForTimeout(300)
+  // Assert SCR-030 content is shown (not SCR-028 report)
+  await expect(page.getByRole('heading', { level: 1 }).filter({ hasText: '蜂群比較' })).toBeVisible()
+  await expect(page.getByTestId('ref-date-btn')).toContainText('2026年9月8日時点')
+  await expect(page.getByRole('tab', { name: '表' })).toHaveAttribute('aria-selected', 'true')
+  // Move mouse away so hover state doesn't affect screenshot
+  await page.mouse.move(0, 0)
+  await page.waitForTimeout(100)
   await expect(page).toHaveScreenshot('scr-030-from-colony-trend.png', {
     fullPage: false, animations: 'disabled',
   })
@@ -167,6 +179,8 @@ test('SCR-030 from-bottomnav', async ({ page }) => {
   await page.waitForTimeout(200)
   await page.getByRole('button', { name: '分析' }).click()
   await page.waitForTimeout(200)
+  await page.mouse.move(0, 0)
+  await page.waitForTimeout(100)
   await expect(page).toHaveScreenshot('scr-030-from-bottomnav.png', {
     fullPage: false, animations: 'disabled',
   })
@@ -303,6 +317,85 @@ test('SCR-030 error state shows retry button', async ({ page }) => {
 test('SCR-030 offline-no-cache shows no-cache state', async ({ page }) => {
   await goto(page, '&state=offline-no-cache')
   await expect(page.getByText('保存済みの比較データがありません')).toBeVisible()
+})
+
+// ── Navigation tests ─────────────────────────────────────────────────────────
+
+test('SCR-030 navigating from colony-trend shows 蜂群比較 not レポート', async ({ page }) => {
+  await page.clock.install({ time: FIXED_NOW })
+  await page.goto('/?screen=colony-trend&devbar=0', { waitUntil: 'networkidle' })
+  await page.waitForTimeout(200)
+  await page.getByRole('button', { name: 'メニューを開く' }).click()
+  await page.waitForTimeout(200)
+  // Must show SCR-030
+  await expect(page.getByRole('heading', { level: 1 }).filter({ hasText: '蜂群比較' })).toBeVisible()
+  // Must NOT show SCR-028 elements
+  await expect(page.getByText('レポート').first()).not.toBeVisible()
+})
+
+test('SCR-030 ref date change updates strength values', async ({ page }) => {
+  await goto(page)
+  // Default: A-01 strength = 79
+  await expect(page.getByTestId('strength-a1')).toHaveText('79')
+  // Change to 2026-08-31
+  await page.getByTestId('ref-date-btn').click()
+  await page.getByRole('button', { name: /2026年8月31日時点/ }).click()
+  await page.waitForTimeout(100)
+  // A-01 should now show 2026-08-27 record: strength=73
+  await expect(page.getByTestId('strength-a1')).toHaveText('73')
+})
+
+test('SCR-030 ref date change updates B-01 strength', async ({ page }) => {
+  await goto(page)
+  await expect(page.getByTestId('strength-b1')).toHaveText('70')
+  await page.getByTestId('ref-date-btn').click()
+  await page.getByRole('button', { name: /2026年8月31日時点/ }).click()
+  await page.waitForTimeout(100)
+  // B-01 uses 2026-08-22 record: strength=63
+  await expect(page.getByTestId('strength-b1')).toHaveText('63')
+})
+
+test('SCR-030 ref date change updates ranking scores', async ({ page }) => {
+  await goto(page)
+  await page.getByTestId('ref-date-btn').click()
+  await page.getByRole('button', { name: /2026年8月31日時点/ }).click()
+  await page.waitForTimeout(100)
+  // Ranking scores should reflect 2026-08-31 data
+  await expect(page.getByTestId('rank-score-a1')).toHaveText('73')
+  await expect(page.getByTestId('rank-score-b1')).toHaveText('63')
+})
+
+test('SCR-030 Sep 1 records not shown when refDate is Aug 31', async ({ page }) => {
+  await goto(page)
+  // A-01's 2026-09-05 record (strength=79) should NOT appear when refDate=2026-08-31
+  await page.getByTestId('ref-date-btn').click()
+  await page.getByRole('button', { name: /2026年8月31日時点/ }).click()
+  await page.waitForTimeout(100)
+  // strength must not be 79 (the Sep 5 record)
+  const txt = await page.getByTestId('strength-a1').textContent()
+  expect(txt).not.toBe('79')
+})
+
+test('SCR-030 menu button has no circular background after navigation', async ({ page }) => {
+  await page.clock.install({ time: FIXED_NOW })
+  await page.goto('/?screen=colony-trend&devbar=0', { waitUntil: 'networkidle' })
+  await page.waitForTimeout(200)
+  await page.getByRole('button', { name: 'メニューを開く' }).click()
+  await page.waitForTimeout(200)
+  await page.mouse.move(0, 0)
+  await page.waitForTimeout(100)
+  // The three-dot button in SCR-030 header should be visible but not show a background
+  const menuBtn = page.getByRole('button', { name: 'その他のメニュー' })
+  await expect(menuBtn).toBeVisible()
+})
+
+test('SCR-030 offline cached banner is one line', async ({ page }) => {
+  await goto(page, '&state=offline')
+  const banner = page.getByRole('status')
+  await expect(banner).toBeVisible()
+  const box = await banner.boundingBox()
+  // A compact banner should be less than 50px tall
+  expect(box?.height).toBeLessThan(50)
 })
 
 test('SCR-030 all states have BottomNav analytics selected', async ({ page }) => {

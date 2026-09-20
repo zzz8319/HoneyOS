@@ -41,13 +41,10 @@
   border: none;
   background: transparent;
   color: var(--color-text);
-  border-radius: var(--radius-full);
   cursor: pointer;
-  transition: background 0.15s;
 }
 
-.iconBtn:hover { background: var(--color-bg); }
-.iconBtn:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+.iconBtn:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; border-radius: var(--radius-full); }
 
 /* ── Controls row ─────────────────────────────────────────────────────────── */
 .controlsRow {
@@ -610,17 +607,18 @@
 @keyframes spin { to { transform: rotate(360deg); } }
 
 .offlineBanner {
-  margin: var(--space-3) var(--space-4) 0;
-  padding: 10px var(--space-3);
-  background: var(--color-warn-soft);
-  border: 1px solid var(--color-warn);
-  border-radius: var(--radius-sm);
+  padding: 8px var(--space-4);
+  background: #FFFBEB;
+  border-bottom: 1px solid #FCD34D;
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  gap: 6px;
   font-size: 13px;
-  color: var(--color-warn);
-  font-weight: 600;
+  color: #92400E;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 /* ── Section spacing ──────────────────────────────────────────────────────── */
