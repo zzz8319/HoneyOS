@@ -164,12 +164,38 @@ export const TREND_DATA: ColonyTrendData = {
   },
 }
 
+// ── 1年表示の期間計算 ──────────────────────────────────────────────────────
+
+/** 1年表示の開始月初日: 終了月の11か月前の月初 (Sep 2026 → Oct 1, 2025) */
+export function get1yStartDate(endDate: Date): Date {
+  return new Date(endDate.getFullYear(), endDate.getMonth() - 11, 1)
+}
+
+/**
+ * 1年表示に含まれる12か月の 'YYYY-MM' 配列
+ * 例: endDate=2026-09-20 → ['2025-10','2025-11',...,'2026-09']
+ */
+export function get1yMonths(endDate: Date): string[] {
+  const start = get1yStartDate(endDate)
+  const months: string[] = []
+  const cur = new Date(start.getFullYear(), start.getMonth(), 1)
+  const endYM = endDate.getFullYear() * 12 + endDate.getMonth()
+  while (cur.getFullYear() * 12 + cur.getMonth() <= endYM) {
+    months.push(
+      `${cur.getFullYear()}-${String(cur.getMonth() + 1).padStart(2, '0')}`
+    )
+    cur.setMonth(cur.getMonth() + 1)
+  }
+  return months
+}
+
 // ── 期間フィルター ─────────────────────────────────────────────────────────
 export function filterByPeriod(points: TrendPoint[], period: Period): TrendPoint[] {
   const now = new Date('2026-09-20')
   if (period === 'all') return points
-  const msBack = period === '3m' ? 90 * 86400000 : 365 * 86400000
-  const cutoff = new Date(now.getTime() - msBack)
+  const cutoff = period === '3m'
+    ? new Date(now.getTime() - 90 * 86400000)
+    : get1yStartDate(now)  // Oct 1, 2025 when now = Sep 20, 2026
   return points.filter(p => new Date(p.date) >= cutoff)
 }
 

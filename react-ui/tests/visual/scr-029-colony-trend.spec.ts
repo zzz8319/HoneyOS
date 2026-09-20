@@ -278,16 +278,73 @@ test('SCR-029 x-axis 3m shows June through September', async ({ page }) => {
   await expect(chart.locator('text').filter({ hasText: '9月' })).toBeVisible()
 })
 
-// X軸: 1年表示で複数月が表示される
+// X軸: 1年表示で12か月（10月〜翌9月）が表示される
 test('SCR-029 x-axis 1y shows month labels', async ({ page }) => {
   await goto(page)
   await page.getByRole('button', { name: '1年', exact: true }).click()
   await page.waitForTimeout(100)
   const chart = page.getByTestId('trend-chart-card')
-  // 10月〜9月が含まれるので最低でも複数の月テキストがある
   const textEls = chart.locator('text')
   const count = await textEls.count()
   expect(count).toBeGreaterThan(3)
+})
+
+// 1年表示: 終了月=2026年9月、開始月=2025年10月、計12か月
+test('SCR-029 x-axis 1y has exactly 12 month labels Oct→Sep', async ({ page }) => {
+  await goto(page)
+  await page.getByRole('button', { name: '1年', exact: true }).click()
+  await page.waitForTimeout(100)
+  const chart = page.getByTestId('trend-chart-card')
+
+  // Y軸ラベル (0,20,40,60,80,100) が6個あるので、month ラベル数 = total text - 6
+  const allText = chart.locator('text')
+  const allCount = await allText.count()
+  const monthCount = allCount - 6  // subtract Y-axis labels
+  expect(monthCount).toBe(12)
+})
+
+// 1年表示: 前年9月が含まれない
+test('SCR-029 x-axis 1y does not show previous Sep', async ({ page }) => {
+  await goto(page)
+  await page.getByRole('button', { name: '1年', exact: true }).click()
+  await page.waitForTimeout(100)
+  const chart = page.getByTestId('trend-chart-card')
+  // 最初に現れる「9月」テキストは1つだけ（2026年9月）
+  const septTexts = chart.locator('text').filter({ hasText: /^9月$/ })
+  await expect(septTexts).toHaveCount(1)
+})
+
+// 1年表示: 最初のラベルが10月
+test('SCR-029 x-axis 1y first label is October', async ({ page }) => {
+  await goto(page)
+  await page.getByRole('button', { name: '1年', exact: true }).click()
+  await page.waitForTimeout(100)
+  const chart = page.getByTestId('trend-chart-card')
+  await expect(chart.locator('text').filter({ hasText: '10月' })).toBeVisible()
+})
+
+// 1年表示: 隣接月ラベルが重ならない
+test('SCR-029 x-axis 1y labels do not overlap', async ({ page }) => {
+  await goto(page)
+  await page.getByRole('button', { name: '1年', exact: true }).click()
+  await page.waitForTimeout(100)
+  const chart = page.getByTestId('trend-chart-card')
+  const oct = chart.locator('text').filter({ hasText: '10月' })
+  const nov = chart.locator('text').filter({ hasText: '11月' })
+  const octBB = await oct.boundingBox()
+  const novBB = await nov.boundingBox()
+  expect(octBB).not.toBeNull()
+  expect(novBB).not.toBeNull()
+  // 10月の右端 <= 11月の左端 (2px以内の誤差を許容)
+  expect(octBB!.x + octBB!.width).toBeLessThanOrEqual(novBB!.x + 2)
+})
+
+// 3ヶ月表示が変わっていない (6月〜9月)
+test('SCR-029 x-axis 3m still shows Jun–Sep after 1y fix', async ({ page }) => {
+  await goto(page)
+  const chart = page.getByTestId('trend-chart-card')
+  await expect(chart.locator('text').filter({ hasText: '6月' })).toBeVisible()
+  await expect(chart.locator('text').filter({ hasText: '9月' })).toBeVisible()
 })
 
 // X軸: 全期間表示でも月ラベルがある

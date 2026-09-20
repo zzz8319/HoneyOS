@@ -9,7 +9,7 @@ import { TrendLineChart } from './TrendLineChart'
 import { RadarChart } from './RadarChart'
 import {
   TREND_DATA, DEFAULT_COLONY_IDS, METRIC_LABELS, METRIC_SHORT_LABELS, PERIOD_LABELS,
-  SERIES_COLORS, filterByPeriod,
+  SERIES_COLORS, filterByPeriod, get1yStartDate,
 } from './mockData'
 import type { ColonyTrendViewState, Metric, Period, CompareMode, YearMode } from './mockData'
 import styles from './ColonyTrendScreen.module.css'
@@ -55,8 +55,9 @@ export function ColonyTrendScreen({
 
   // Period range
   const periodMax = '2026-09-20'
+  const _1yStart  = get1yStartDate(new Date(periodMax))  // Oct 1, 2025
   const periodMin = period === 'all' ? '2026-01-01'
-    : period === '1y'  ? '2025-09-20'
+    : period === '1y'  ? _1yStart.toISOString().slice(0, 10)
     : '2026-06-20'
 
   // Filter points by period

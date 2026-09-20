@@ -186,11 +186,15 @@ export function TrendLineChart({
         />
 
         {/* X axis month labels */}
-        {mLabels.map(({ label, x }, i) => (
-          <text key={`${i}-${label}`} x={x} y={H - 6} textAnchor="middle" fontSize={10} fill="#66707A">
-            {label}
-          </text>
-        ))}
+        {mLabels.map(({ label, x }, i) => {
+          // Reduce font when many labels to prevent overlaps (1y: 12 labels)
+          const fs = mLabels.length >= 10 ? 8 : 10
+          return (
+            <text key={`${i}-${label}`} x={x} y={H - 6} textAnchor="middle" fontSize={fs} fill="#66707A">
+              {label}
+            </text>
+          )
+        })}
 
         {/* Selected vertical guide */}
         {selected && (
