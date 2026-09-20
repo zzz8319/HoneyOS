@@ -35,10 +35,12 @@ import { WorkHistoryScreen } from './features/workHistory'
 import type { WorkHistoryViewState } from './features/workHistory'
 import { ReportScreen } from './features/report'
 import type { ReportViewState } from './features/report'
+import { ColonyTrendScreen } from './features/colonyTrend'
+import type { ColonyTrendViewState } from './features/colonyTrend'
 import type { TabId } from './components'
 import styles from './App.module.css'
 
-type ViewState = DashboardViewState | ColonyListViewState | ColonyDetailViewState | InspectionStartViewState | RecordViewState | ViewerViewState | ApiaryMapViewState | CompleteViewState | CameraViewState | AiAnalysisViewState | DiagnosisViewState | RecommendedWorkState | WorkListViewState | TaskCreateViewState | WorkRecordViewState | WorkHistoryViewState | ReportViewState
+type ViewState = DashboardViewState | ColonyListViewState | ColonyDetailViewState | InspectionStartViewState | RecordViewState | ViewerViewState | ApiaryMapViewState | CompleteViewState | CameraViewState | AiAnalysisViewState | DiagnosisViewState | RecommendedWorkState | WorkListViewState | TaskCreateViewState | WorkRecordViewState | WorkHistoryViewState | ReportViewState | ColonyTrendViewState
 
 const STATES: { id: ViewState; label: string }[] = [
   { id: 'normal',  label: '通常' },
@@ -59,7 +61,7 @@ function readParam<T extends string>(key: string, valid: T[], fallback: T): T {
   return (valid.includes(p as T) ? p : fallback) as T
 }
 
-const VALID_SCREENS = ['home', 'farms', 'colony-detail', 'inspection-start', 'inspection-record', 'frame-viewer', 'add-stage', 'apiary-map', 'inspection-complete', 'camera-images', 'ai-analysis', 'ai-diagnosis', 'recommended-work', 'work', 'task-create', 'work-record', 'work-history', 'report'] as const
+const VALID_SCREENS = ['home', 'farms', 'colony-detail', 'inspection-start', 'inspection-record', 'frame-viewer', 'add-stage', 'apiary-map', 'inspection-complete', 'camera-images', 'ai-analysis', 'ai-diagnosis', 'recommended-work', 'work', 'task-create', 'work-record', 'work-history', 'report', 'colony-trend'] as const
 type Screen = typeof VALID_SCREENS[number]
 
 export default function App() {
@@ -94,6 +96,7 @@ export default function App() {
   const completeState    = viewState as CompleteViewState
   const workHistoryState = viewState as WorkHistoryViewState
   const reportState      = viewState as ReportViewState
+  const trendState       = viewState as ColonyTrendViewState
 
   return (
     <>
@@ -111,7 +114,15 @@ export default function App() {
         </div>
       )}
 
-      {screen === 'report' ? (
+      {screen === 'colony-trend' ? (
+        <ColonyTrendScreen
+          viewState={trendState}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          onColonyDetail={(id) => { setSelectedColonyId(id); setScreen('colony-detail') }}
+          onInspectionHistory={(id) => { setSelectedColonyId(id); setScreen('colony-detail') }}
+        />
+      ) : screen === 'report' ? (
         <ReportScreen
           viewState={reportState}
           onBack={() => setScreen('home')}
