@@ -164,8 +164,9 @@ test('SCR-030 from-colony-trend', async ({ page }) => {
   await expect(page.getByRole('heading', { level: 1 }).filter({ hasText: '蜂群比較' })).toBeVisible()
   await expect(page.getByTestId('ref-date-btn')).toContainText('2026年9月8日時点')
   await expect(page.getByRole('tab', { name: '表' })).toHaveAttribute('aria-selected', 'true')
-  // Move mouse away so hover state doesn't affect screenshot
+  // Clear focus and hover state before screenshot
   await page.mouse.move(0, 0)
+  await page.evaluate(() => (document.activeElement as HTMLElement)?.blur())
   await page.waitForTimeout(100)
   await expect(page).toHaveScreenshot('scr-030-from-colony-trend.png', {
     fullPage: false, animations: 'disabled',
@@ -179,6 +180,12 @@ test('SCR-030 from-bottomnav', async ({ page }) => {
   await page.waitForTimeout(200)
   await page.getByRole('button', { name: '分析' }).click()
   await page.waitForTimeout(200)
+  // Assert SCR-030 is shown (not SCR-028 report)
+  await expect(page.getByRole('heading', { level: 1 }).filter({ hasText: '蜂群比較' })).toBeVisible()
+  await expect(page.getByRole('tab', { name: '表' })).toBeVisible()
+  await expect(page.getByRole('tab', { name: 'ランキング' })).toBeVisible()
+  await expect(page.getByRole('button', { name: '分析' })).toHaveAttribute('aria-current', 'page')
+  await expect(page.getByText('レポート').first()).not.toBeVisible()
   await page.mouse.move(0, 0)
   await page.waitForTimeout(100)
   await expect(page).toHaveScreenshot('scr-030-from-bottomnav.png', {
