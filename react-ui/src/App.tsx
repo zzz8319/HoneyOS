@@ -275,11 +275,11 @@ export default function App() {
           )}
 
           {activeTab === 'analytics' && (
-            <ReportScreen
-              viewState={reportState}
-              onBack={() => setActiveTab('home')}
-              onViewHistory={() => setScreen('work-history')}
+            <ColonyComparisonScreen
+              viewState={compState}
+              activeTab={activeTab}
               onTabChange={setActiveTab}
+              onColonyDetail={(id) => { setSelectedColonyId(id); setScreen('colony-detail') }}
             />
           )}
 
