@@ -164,9 +164,13 @@ test('SCR-030 from-colony-trend', async ({ page }) => {
   await expect(page.getByRole('heading', { level: 1 }).filter({ hasText: '蜂群比較' })).toBeVisible()
   await expect(page.getByTestId('ref-date-btn')).toContainText('2026年9月8日時点')
   await expect(page.getByRole('tab', { name: '表' })).toHaveAttribute('aria-selected', 'true')
-  // Move mouse away so hover state does not affect screenshot
-  await page.mouse.move(0, 0)
-  await page.waitForTimeout(100)
+  // Move mouse to an empty area (left edge, mid-screen) away from any button
+  await page.mouse.move(2, 400)
+  // Wait until the ⋮ button is confirmed not hovered before taking screenshot
+  await page.waitForFunction(() => {
+    const btn = document.querySelector('button[aria-label="その他のメニュー"]') as HTMLElement | null
+    return btn ? !btn.matches(':hover') : true
+  })
   await expect(page).toHaveScreenshot('scr-030-from-colony-trend.png', {
     fullPage: false, animations: 'disabled',
   })
