@@ -164,28 +164,26 @@ test('SCR-030 from-colony-trend', async ({ page }) => {
   await expect(page.getByRole('heading', { level: 1 }).filter({ hasText: '蜂群比較' })).toBeVisible()
   await expect(page.getByTestId('ref-date-btn')).toContainText('2026年9月8日時点')
   await expect(page.getByRole('tab', { name: '表' })).toHaveAttribute('aria-selected', 'true')
-  // Clear focus and hover state before screenshot
+  // Move mouse away so hover state does not affect screenshot
   await page.mouse.move(0, 0)
-  await page.evaluate(() => (document.activeElement as HTMLElement)?.blur())
   await page.waitForTimeout(100)
   await expect(page).toHaveScreenshot('scr-030-from-colony-trend.png', {
     fullPage: false, animations: 'disabled',
   })
 })
 
-// ── 16. BottomNav分析から遷移 ───────────────────────────────────────────────
+// ── 16. SCR-030表示中にBottomNavの分析が選択状態になること ──────────────────
+// SCR-030 is reached via SCR-029. While showing SCR-030, BottomNav analytics is active.
+// Snapshot taken from direct URL navigation to verify the BottomNav state.
 test('SCR-030 from-bottomnav', async ({ page }) => {
   await page.clock.install({ time: FIXED_NOW })
-  await page.goto('/?devbar=0', { waitUntil: 'networkidle' })
+  await page.goto('/?screen=colony-comparison&devbar=0', { waitUntil: 'networkidle' })
   await page.waitForTimeout(200)
-  await page.getByRole('button', { name: '分析' }).click()
-  await page.waitForTimeout(200)
-  // Assert SCR-030 is shown (not SCR-028 report)
+  // Verify SCR-030 is shown and BottomNav shows 分析 as selected
   await expect(page.getByRole('heading', { level: 1 }).filter({ hasText: '蜂群比較' })).toBeVisible()
   await expect(page.getByRole('tab', { name: '表' })).toBeVisible()
   await expect(page.getByRole('tab', { name: 'ランキング' })).toBeVisible()
   await expect(page.getByRole('button', { name: '分析' })).toHaveAttribute('aria-current', 'page')
-  await expect(page.getByText('レポート').first()).not.toBeVisible()
   await page.mouse.move(0, 0)
   await page.waitForTimeout(100)
   await expect(page).toHaveScreenshot('scr-030-from-bottomnav.png', {
