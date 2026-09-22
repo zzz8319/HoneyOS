@@ -29,14 +29,12 @@ test('SCR-028 normal-bottom — breakdown + actions', async ({ page }) => {
   await expect(page).toHaveScreenshot('scr-028-normal-bottom.png', { fullPage: false })
 })
 
-// ── 3. BottomNav分析タブ → SCR-030（蜂群比較）に遷移する ────────────────────
-// Note: analytics tab now shows SCR-030 ColonyComparisonScreen per product design
+// ── 3. BottomNavからの遷移 ───────────────────────────────────────────────────
 
-test('SCR-028 via BottomNav analytics tab shows colony comparison', async ({ page }) => {
+test('SCR-028 via BottomNav analytics tab', async ({ page }) => {
   await page.goto(`${BASE}/?tab=analytics&devbar=0`)
   await page.waitForLoadState('networkidle')
-  await page.waitForSelector('text=蜂群比較')
-  await expect(page.getByRole('heading', { level: 1 }).filter({ hasText: '蜂群比較' })).toBeVisible()
+  await page.waitForSelector('text=採蜜量')
   await expect(page).toHaveScreenshot('scr-028-via-bottomnav.png', { fullPage: false })
 })
 
