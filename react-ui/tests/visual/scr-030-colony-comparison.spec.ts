@@ -164,13 +164,31 @@ test('SCR-030 from-colony-trend', async ({ page }) => {
   await expect(page.getByRole('heading', { level: 1 }).filter({ hasText: '蜂群比較' })).toBeVisible()
   await expect(page.getByTestId('ref-date-btn')).toContainText('2026年9月8日時点')
   await expect(page.getByRole('tab', { name: '表' })).toHaveAttribute('aria-selected', 'true')
-  // Move mouse to an empty area (left edge, mid-screen) away from any button
-  await page.mouse.move(2, 400)
-  // Wait until the ⋮ button is confirmed not hovered before taking screenshot
-  await page.waitForFunction(() => {
-    const btn = document.querySelector('button[aria-label="その他のメニュー"]') as HTMLElement | null
-    return btn ? !btn.matches(':hover') : true
+  // Ensure content is fully rendered before checking button state
+  await expect(page.getByText('強さランキング')).toBeVisible()
+  // Promote the sticky header to a GPU layer so Chromium recomposites it before screenshot.
+  // After a React state-change re-render, Chromium defers sticky-header compositing;
+  // applying will-change:transform flushes the GPU layer synchronously on the next rAF.
+  // This is applied only in the test (not in app CSS) to avoid affecting other snapshots.
+  await page.evaluate(() => {
+    const header = document.querySelector('header') as HTMLElement | null
+    if (header) header.style.willChange = 'transform'
   })
+  // Clear touch-induced sticky hover by tapping an empty area
+  await page.mouse.move(2, 400)
+  await page.touchscreen.tap(2, 400)
+  // Confirm ⋮ button is not hovered/focused before screenshot
+  const dotBtn = page.getByRole('button', { name: 'その他のメニュー' })
+  await expect.poll(() =>
+    dotBtn.evaluate((el: HTMLElement) => ({
+      hovered: el.matches(':hover'),
+      focused: el.matches(':focus'),
+      focusVisible: el.matches(':focus-visible'),
+      backgroundColor: getComputedStyle(el).backgroundColor,
+    }))
+  ).toMatchObject({ hovered: false })
+  // Two rAFs: let GPU layer flush before screenshot
+  await page.evaluate(() => new Promise<void>(r => requestAnimationFrame(() => requestAnimationFrame(() => r()))))
   await expect(page).toHaveScreenshot('scr-030-from-colony-trend.png', {
     fullPage: false, animations: 'disabled',
   })
