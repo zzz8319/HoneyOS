@@ -38,6 +38,8 @@
   height: 44px;
   display: grid;
   place-items: center;
+  appearance: none;
+  -webkit-appearance: none;
   border: none;
   background: transparent;
   -webkit-tap-highlight-color: transparent;
@@ -45,8 +47,9 @@
   cursor: pointer;
 }
 
-.iconBtn:focus, .iconBtn:active { outline: none; background: transparent; box-shadow: none; }
-.iconBtn:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; border-radius: var(--radius-full); }
+.iconBtn:focus:not(:focus-visible) { outline: none; background: transparent; box-shadow: none; }
+.iconBtn:active { background: transparent; }
+.iconBtn:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; border-radius: var(--radius-full); background: transparent; }
 
 /* ── Controls row ─────────────────────────────────────────────────────────── */
 .controlsRow {
