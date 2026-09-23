@@ -226,25 +226,30 @@
 }
 
 /* ── Preview card ───────────────────────────────────────────── */
-.previewSection {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.previewLabel {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--color-text-secondary, #66707A);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
 .previewCard {
   border: 1px solid var(--color-border, #E3E5E8);
   border-radius: var(--radius-md, 12px);
-  padding: 14px 14px 12px;
   background: #FFFFFF;
+  overflow: hidden;
+}
+
+.previewCardHeader {
+  padding: 10px 14px;
+}
+
+.previewCardHeaderText {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text, #17212B);
+}
+
+.previewCardDivider {
+  height: 1px;
+  background: var(--color-border, #E3E5E8);
+}
+
+.previewCardBody {
+  padding: 14px 14px 12px;
 }
 
 .previewTop {
@@ -254,15 +259,14 @@
 }
 
 .previewIconWrap {
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
   border-radius: var(--radius-sm, 8px);
   background: #F3F4F6;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  color: #9CA3AF;
 }
 
 .previewRight {
@@ -278,7 +282,7 @@
 }
 
 .previewName {
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 700;
   color: var(--color-text, #17212B);
   white-space: nowrap;
@@ -287,7 +291,7 @@
 }
 
 .previewNameEmpty {
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 700;
   color: #D1D5DB;
 }
@@ -295,9 +299,9 @@
 .previewBadge {
   display: inline-flex;
   align-items: center;
-  padding: 2px 8px;
+  padding: 3px 8px;
   background: #F3F4F6;
-  border-radius: var(--radius-full, 9999px);
+  border-radius: 6px;
   font-size: 11px;
   font-weight: 600;
   color: #9CA3AF;
@@ -307,38 +311,38 @@
 
 .previewBar {
   display: flex;
-  gap: 3px;
-  margin-top: 8px;
+  gap: 4px;
+  margin-top: 12px;
 }
 
 .previewBarSegment {
   flex: 1;
-  height: 6px;
+  height: 7px;
   background: #E5E7EB;
-  border-radius: 3px;
+  border-radius: 2px;
 }
 
 .previewDesc {
   font-size: 12px;
   color: #9CA3AF;
-  margin-top: 8px;
+  margin-top: 10px;
   line-height: 1.5;
+  margin-bottom: 0;
 }
 
 /* ── Buttons ────────────────────────────────────────────────── */
 .actions {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding-top: 4px;
+  gap: 8px;
 }
 
 .cancelBtn {
   width: 100%;
-  height: 52px;
+  height: 48px;
   background: #FFFFFF;
   border: 1px solid var(--color-border, #E3E5E8);
-  border-radius: var(--radius-full, 9999px);
+  border-radius: 10px;
   font-size: 16px;
   font-weight: 600;
   color: var(--color-text, #17212B);
@@ -347,6 +351,7 @@
   align-items: center;
   justify-content: center;
   -webkit-tap-highlight-color: transparent;
+  min-height: 44px;
 }
 
 .cancelBtn:focus-visible {
@@ -382,8 +387,8 @@
   flex: 0 0 auto;
   display: flex;
   align-items: flex-start;
-  gap: 8px;
-  padding: 10px 16px;
+  gap: 6px;
+  padding: 10px 12px;
   background: #FEE2E2;
   border-bottom: 1px solid #FECACA;
 }
@@ -391,13 +396,15 @@
 .errorBannerIcon {
   color: var(--color-danger, #DC2626);
   flex-shrink: 0;
-  margin-top: 1px;
+  margin-top: 2px;
 }
 
 .errorBannerText {
   font-size: 13px;
   color: var(--color-danger, #DC2626);
-  line-height: 1.45;
+  line-height: 1.5;
+  word-break: keep-all;
+  overflow-wrap: break-word;
 }
 
 .offlineBanner {

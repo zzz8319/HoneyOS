@@ -9,7 +9,7 @@ import {
   RefreshCw,
 } from 'lucide-react'
 import { PrimaryButton } from '../../components'
-import { BeeIcon } from '../../components/icons'
+import { ApiaryFarmIcon } from '../../components/icons'
 import type { ColonyCreateViewState, Apiary } from './types'
 import { MOCK_APIARIES } from './mockData'
 import styles from './ColonyCreateScreen.module.css'
@@ -328,7 +328,7 @@ export function ColonyCreateScreen({
           </div>
 
           {/* Add apiary link */}
-          <div style={{ marginTop: 10 }}>
+          <div style={{ marginTop: 8 }}>
             <button
               type="button"
               className={styles.addApiaryLink}
@@ -341,7 +341,7 @@ export function ColonyCreateScreen({
           </div>
 
           {/* Info box 2 */}
-          <div className={styles.infoBox} style={{ marginTop: 20 }}>
+          <div className={styles.infoBox} style={{ marginTop: 12 }}>
             <Info size={16} className={styles.infoIcon} aria-hidden />
             <span className={styles.infoText}>
               巣箱タイプと段構成は、最初の内検時に記録方式から自動設定されます。
@@ -349,33 +349,40 @@ export function ColonyCreateScreen({
           </div>
 
           {/* Preview card */}
-          <div className={styles.previewSection} style={{ marginTop: 4 }}>
-            <span className={styles.previewLabel}>登録後の表示</span>
+          <div style={{ marginTop: 8 }}>
             <div className={styles.previewCard} aria-live="polite" aria-label="登録後の表示プレビュー">
-              <div className={styles.previewTop}>
-                <div className={styles.previewIconWrap} aria-hidden>
-                  <BeeIcon size={24} />
-                </div>
-                <div className={styles.previewRight}>
-                  <div className={styles.previewNameRow}>
-                    {previewName ? (
-                      <span className={styles.previewName}>{previewName}</span>
-                    ) : (
-                      <span className={styles.previewNameEmpty}>—</span>
-                    )}
-                    <span className={styles.previewBadge}>内検未実施</span>
-                  </div>
-                  <div className={styles.previewBar} aria-hidden>
-                    <div className={styles.previewBarSegment} />
-                    <div className={styles.previewBarSegment} />
-                    <div className={styles.previewBarSegment} />
-                    <div className={styles.previewBarSegment} />
-                  </div>
-                </div>
+              {/* Card header */}
+              <div className={styles.previewCardHeader}>
+                <span className={styles.previewCardHeaderText}>登録後の表示</span>
               </div>
-              <p className={styles.previewDesc}>
-                最初の内検を記録すると状態が表示されます。
-              </p>
+              <div className={styles.previewCardDivider} />
+              {/* Card body */}
+              <div className={styles.previewCardBody}>
+                <div className={styles.previewTop}>
+                  <div className={styles.previewIconWrap} aria-hidden>
+                    <ApiaryFarmIcon size={28} color="#9CA3AF" />
+                  </div>
+                  <div className={styles.previewRight}>
+                    <div className={styles.previewNameRow}>
+                      {previewName ? (
+                        <span className={styles.previewName}>{previewName}</span>
+                      ) : (
+                        <span className={styles.previewNameEmpty}>—</span>
+                      )}
+                      <span className={styles.previewBadge}>内検未実施</span>
+                    </div>
+                  </div>
+                </div>
+                <div className={styles.previewBar} aria-hidden>
+                  <div className={styles.previewBarSegment} />
+                  <div className={styles.previewBarSegment} />
+                  <div className={styles.previewBarSegment} />
+                  <div className={styles.previewBarSegment} />
+                </div>
+                <p className={styles.previewDesc}>
+                  最初の内検を記録すると状態が表示されます。
+                </p>
+              </div>
             </div>
           </div>
 
@@ -385,7 +392,7 @@ export function ColonyCreateScreen({
           </span>
 
           {/* Buttons */}
-          <div className={styles.actions} style={{ marginTop: 24 }}>
+          <div className={styles.actions} style={{ marginTop: 20 }}>
             <PrimaryButton
               type="submit"
               size="lg"
