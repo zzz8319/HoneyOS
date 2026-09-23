@@ -21,10 +21,11 @@ interface ColonyTrendScreenProps {
   onColonyDetail: (colonyId: string) => void
   onInspectionHistory: (colonyId: string) => void
   onColonyComparison?: () => void
+  onCreateColony?: () => void
 }
 
 export function ColonyTrendScreen({
-  viewState, onTabChange, onColonyDetail, onInspectionHistory, onColonyComparison,
+  viewState, onTabChange, onColonyDetail, onInspectionHistory, onColonyComparison, onCreateColony,
 }: ColonyTrendScreenProps) {
 
   // ── Local state ──────────────────────────────────────────────────────────
@@ -232,6 +233,17 @@ export function ColonyTrendScreen({
               >
                 <Plus size={12} aria-hidden />
                 <span>群を追加</span>
+              </button>
+            )}
+            {onCreateColony && (
+              <button
+                className={styles.chipAdd}
+                aria-label="新しい蜂群を追加"
+                data-testid="create-colony-btn"
+                onClick={() => onCreateColony()}
+              >
+                <Plus size={12} aria-hidden />
+                <span>新しい群を追加</span>
               </button>
             )}
           </div>

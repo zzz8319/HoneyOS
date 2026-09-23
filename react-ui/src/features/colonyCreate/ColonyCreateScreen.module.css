@@ -1,0 +1,466 @@
+/* ── Shell ─────────────────────────────────────────────────── */
+.screen {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: #FFFFFF;
+  overflow-x: hidden;
+}
+
+/* ── Header ────────────────────────────────────────────────── */
+.header {
+  flex: 0 0 auto;
+  z-index: 20;
+  background: #FFFFFF;
+  border-bottom: 1px solid var(--color-border, #E3E5E8);
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  height: 52px;
+  padding: 0 4px;
+}
+
+.headerSide {
+  width: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.backBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text, #17212B);
+  border-radius: var(--radius-sm, 8px);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.backBtn:focus-visible {
+  outline: 2px solid var(--color-primary, #E39A16);
+  outline-offset: 2px;
+}
+
+.backBtn:active {
+  background: var(--color-border, #E3E5E8);
+}
+
+.headerTitle {
+  flex: 1;
+  text-align: center;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--color-text, #17212B);
+  margin: 0;
+  padding: 0;
+}
+
+/* ── Body ───────────────────────────────────────────────────── */
+.body {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 16px 16px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ── Info box ───────────────────────────────────────────────── */
+.infoBox {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: #F3F4F6;
+  border-radius: var(--radius-sm, 8px);
+  padding: 10px 12px;
+}
+
+.infoIcon {
+  flex-shrink: 0;
+  color: #4B5563;
+  margin-top: 1px;
+}
+
+.infoText {
+  font-size: 13px;
+  color: #4B5563;
+  line-height: 1.55;
+}
+
+/* ── Form fields ────────────────────────────────────────────── */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.labelRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.label {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text, #17212B);
+}
+
+.required {
+  font-size: 12px;
+  color: var(--color-danger, #DC2626);
+  font-weight: 600;
+}
+
+.input {
+  width: 100%;
+  box-sizing: border-box;
+  height: 48px;
+  padding: 0 12px;
+  background: #FFFFFF;
+  border: 1px solid var(--color-border, #E3E5E8);
+  border-radius: var(--radius-sm, 8px);
+  font-size: 16px;
+  color: var(--color-text, #17212B);
+  outline: none;
+  appearance: none;
+}
+
+.input::placeholder {
+  color: #9CA3AF;
+}
+
+.input:focus {
+  border-color: var(--color-primary, #E39A16);
+  box-shadow: 0 0 0 3px rgba(227, 154, 22, 0.15);
+}
+
+.input.inputError {
+  border-color: var(--color-danger, #DC2626);
+}
+
+.input.inputError:focus {
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
+}
+
+/* ── Select wrapper ─────────────────────────────────────────── */
+.selectWrap {
+  position: relative;
+}
+
+.selectNative {
+  width: 100%;
+  box-sizing: border-box;
+  height: 48px;
+  padding: 0 40px 0 12px;
+  background: #FFFFFF;
+  border: 1px solid var(--color-border, #E3E5E8);
+  border-radius: var(--radius-sm, 8px);
+  font-size: 16px;
+  color: var(--color-text, #17212B);
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+
+.selectNative:focus {
+  border-color: var(--color-primary, #E39A16);
+  box-shadow: 0 0 0 3px rgba(227, 154, 22, 0.15);
+}
+
+.selectNative.selectError {
+  border-color: var(--color-danger, #DC2626);
+}
+
+.selectNative.selectError:focus {
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
+}
+
+.selectChevron {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: #6B7280;
+}
+
+/* ── Add apiary link ────────────────────────────────────────── */
+.addApiaryLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #2563EB;
+  font-size: 14px;
+  font-weight: 500;
+  -webkit-tap-highlight-color: transparent;
+  min-height: 44px;
+  text-decoration: none;
+}
+
+.addApiaryLink:focus-visible {
+  outline: 2px solid #2563EB;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ── Error text ─────────────────────────────────────────────── */
+.errorText {
+  font-size: 12px;
+  color: var(--color-danger, #DC2626);
+  margin-top: 2px;
+}
+
+/* ── Preview card ───────────────────────────────────────────── */
+.previewSection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.previewLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-secondary, #66707A);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.previewCard {
+  border: 1px solid var(--color-border, #E3E5E8);
+  border-radius: var(--radius-md, 12px);
+  padding: 14px 14px 12px;
+  background: #FFFFFF;
+}
+
+.previewTop {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.previewIconWrap {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-sm, 8px);
+  background: #F3F4F6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #9CA3AF;
+}
+
+.previewRight {
+  flex: 1;
+  min-width: 0;
+}
+
+.previewNameRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.previewName {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text, #17212B);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.previewNameEmpty {
+  font-size: 16px;
+  font-weight: 700;
+  color: #D1D5DB;
+}
+
+.previewBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  background: #F3F4F6;
+  border-radius: var(--radius-full, 9999px);
+  font-size: 11px;
+  font-weight: 600;
+  color: #9CA3AF;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.previewBar {
+  display: flex;
+  gap: 3px;
+  margin-top: 8px;
+}
+
+.previewBarSegment {
+  flex: 1;
+  height: 6px;
+  background: #E5E7EB;
+  border-radius: 3px;
+}
+
+.previewDesc {
+  font-size: 12px;
+  color: #9CA3AF;
+  margin-top: 8px;
+  line-height: 1.5;
+}
+
+/* ── Buttons ────────────────────────────────────────────────── */
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 4px;
+}
+
+.cancelBtn {
+  width: 100%;
+  height: 52px;
+  background: #FFFFFF;
+  border: 1px solid var(--color-border, #E3E5E8);
+  border-radius: var(--radius-full, 9999px);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text, #17212B);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.cancelBtn:focus-visible {
+  outline: 2px solid var(--color-primary, #E39A16);
+  outline-offset: 2px;
+}
+
+.cancelBtn:active {
+  background: #F9FAFB;
+}
+
+/* ── Bottom hint ─────────────────────────────────────────────── */
+.bottomHint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 2px;
+}
+
+.bottomHintIcon {
+  flex-shrink: 0;
+  color: #9CA3AF;
+}
+
+.bottomHintText {
+  font-size: 12px;
+  color: #9CA3AF;
+  line-height: 1.5;
+}
+
+/* ── Banner ─────────────────────────────────────────────────── */
+.errorBanner {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 16px;
+  background: #FEE2E2;
+  border-bottom: 1px solid #FECACA;
+}
+
+.errorBannerIcon {
+  color: var(--color-danger, #DC2626);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.errorBannerText {
+  font-size: 13px;
+  color: var(--color-danger, #DC2626);
+  line-height: 1.45;
+}
+
+.offlineBanner {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: #FEF3C7;
+  border-bottom: 1px solid #FDE68A;
+}
+
+.offlineBannerIcon {
+  color: var(--color-warn, #D97706);
+  flex-shrink: 0;
+}
+
+.offlineBannerText {
+  font-size: 13px;
+  color: #92400E;
+  line-height: 1.45;
+}
+
+/* ── Apiary error / no-apiary notice ────────────────────────── */
+.apiaryNotice {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 12px;
+  background: #FEF3C7;
+  border-radius: var(--radius-sm, 8px);
+  border: 1px solid #FDE68A;
+}
+
+.apiaryNoticeText {
+  font-size: 13px;
+  color: #92400E;
+  line-height: 1.5;
+}
+
+/* ── Retry button ───────────────────────────────────────────── */
+.retryBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: #2563EB;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 0;
+  font-weight: 500;
+}
+
+/* ── sr-only ─────────────────────────────────────────────────── */
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border-width: 0;
+}

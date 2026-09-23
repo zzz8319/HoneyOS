@@ -39,10 +39,12 @@ import { ColonyTrendScreen } from './features/colonyTrend'
 import type { ColonyTrendViewState } from './features/colonyTrend'
 import { ColonyComparisonScreen } from './features/colonyComparison'
 import type { ColonyComparisonViewState } from './features/colonyComparison'
+import { ColonyCreateScreen } from './features/colonyCreate'
+import type { ColonyCreateViewState } from './features/colonyCreate'
 import type { TabId } from './components'
 import styles from './App.module.css'
 
-type ViewState = DashboardViewState | ColonyListViewState | ColonyDetailViewState | InspectionStartViewState | RecordViewState | ViewerViewState | ApiaryMapViewState | CompleteViewState | CameraViewState | AiAnalysisViewState | DiagnosisViewState | RecommendedWorkState | WorkListViewState | TaskCreateViewState | WorkRecordViewState | WorkHistoryViewState | ReportViewState | ColonyTrendViewState | ColonyComparisonViewState
+type ViewState = DashboardViewState | ColonyListViewState | ColonyDetailViewState | InspectionStartViewState | RecordViewState | ViewerViewState | ApiaryMapViewState | CompleteViewState | CameraViewState | AiAnalysisViewState | DiagnosisViewState | RecommendedWorkState | WorkListViewState | TaskCreateViewState | WorkRecordViewState | WorkHistoryViewState | ReportViewState | ColonyTrendViewState | ColonyComparisonViewState | ColonyCreateViewState
 
 const STATES: { id: ViewState; label: string }[] = [
   { id: 'normal',  label: '通常' },
@@ -52,7 +54,7 @@ const STATES: { id: ViewState; label: string }[] = [
   { id: 'offline', label: 'オフライン' },
 ]
 
-const VALID_STATES: ViewState[] = ['normal', 'selected', 'empty', 'loading', 'error', 'offline', 'multi-stage', 'unsaved', 'saved', 'draft-restore', 'save-error', 'frame-selected', 'deselected', 'other-stage', 'history', 'other-apiary', 'nectar', 'alert', 'no-results', 'no-location', 'healthy', 'first-inspection', 'ai-analyzed', 'reminder-off', 'missing-record', 'none-selected', 'inspection-tab', 'auto-capture-tab', 'upload-error', 'camera-permission-denied', 'context-missing', 'no-images', 'max-images', 'targets-empty', 'loading-inspection', 'data-missing', 'request-pending', 'request-error', 'saving', 'offline-no-cache', 'multi-selected', 'creating-tasks', 'calendar-view', 'completed-expanded', 'overdue-filtered', 'updating-completion', 'normal-ai', 'normal-manual', 'validation-error', 'submitting', 'submit-error', 'colony-picker', 'date-picker', 'discard-dialog', 'normal-linked-top', 'normal-linked-bottom', 'normal-new', 'saving-draft', 'save-error', 'photo-upload-error', 'photo-added', 'discard-confirm', 'colony-selector', 'time-picker', 'filtered-feeding', 'filtered-apiary', 'filtered-colony', 'filtered-period', 'search-results', 'filter-menu', 'search-open']
+const VALID_STATES: ViewState[] = ['normal', 'selected', 'empty', 'loading', 'error', 'offline', 'multi-stage', 'unsaved', 'saved', 'draft-restore', 'save-error', 'frame-selected', 'deselected', 'other-stage', 'history', 'other-apiary', 'nectar', 'alert', 'no-results', 'no-location', 'healthy', 'first-inspection', 'ai-analyzed', 'reminder-off', 'missing-record', 'none-selected', 'inspection-tab', 'auto-capture-tab', 'upload-error', 'camera-permission-denied', 'context-missing', 'no-images', 'max-images', 'targets-empty', 'loading-inspection', 'data-missing', 'request-pending', 'request-error', 'saving', 'offline-no-cache', 'multi-selected', 'creating-tasks', 'calendar-view', 'completed-expanded', 'overdue-filtered', 'updating-completion', 'normal-ai', 'normal-manual', 'validation-error', 'submitting', 'submit-error', 'colony-picker', 'date-picker', 'discard-dialog', 'normal-linked-top', 'normal-linked-bottom', 'normal-new', 'saving-draft', 'save-error', 'photo-upload-error', 'photo-added', 'discard-confirm', 'colony-selector', 'time-picker', 'filtered-feeding', 'filtered-apiary', 'filtered-colony', 'filtered-period', 'search-results', 'filter-menu', 'search-open', 'no-apiary', 'apiary-load-error']
 const VALID_TABS: TabId[] = ['home', 'farms', 'work', 'analytics', 'settings']
 
 const IS_DEV = import.meta.env.DEV &&
@@ -63,7 +65,7 @@ function readParam<T extends string>(key: string, valid: T[], fallback: T): T {
   return (valid.includes(p as T) ? p : fallback) as T
 }
 
-const VALID_SCREENS = ['home', 'farms', 'colony-detail', 'inspection-start', 'inspection-record', 'frame-viewer', 'add-stage', 'apiary-map', 'inspection-complete', 'camera-images', 'ai-analysis', 'ai-diagnosis', 'recommended-work', 'work', 'task-create', 'work-record', 'work-history', 'report', 'colony-trend', 'colony-comparison'] as const
+const VALID_SCREENS = ['home', 'farms', 'colony-detail', 'inspection-start', 'inspection-record', 'frame-viewer', 'add-stage', 'apiary-map', 'inspection-complete', 'camera-images', 'ai-analysis', 'ai-diagnosis', 'recommended-work', 'work', 'task-create', 'work-record', 'work-history', 'report', 'colony-trend', 'colony-comparison', 'colony-create'] as const
 type Screen = typeof VALID_SCREENS[number]
 
 export default function App() {
@@ -80,6 +82,12 @@ export default function App() {
     new URLSearchParams(window.location.search).get('colonyId'),
   )
   const [addStageRecord, setAddStageRecord] = useState<InspectionRecord | null>(null)
+  const [previousScreen, setPreviousScreen] = useState<Screen>('home')
+
+  function navigateTo(next: Screen) {
+    setPreviousScreen(screen)
+    setScreen(next)
+  }
 
   const taskCreateState = viewState as TaskCreateViewState
   const workRecordState = viewState as WorkRecordViewState
@@ -100,6 +108,7 @@ export default function App() {
   const reportState      = viewState as ReportViewState
   const trendState       = viewState as ColonyTrendViewState
   const compState        = viewState as ColonyComparisonViewState
+  const createState      = viewState as ColonyCreateViewState
 
   return (
     <>
@@ -117,7 +126,14 @@ export default function App() {
         </div>
       )}
 
-      {screen === 'colony-comparison' ? (
+      {screen === 'colony-create' ? (
+        <ColonyCreateScreen
+          viewState={createState}
+          onBack={() => setScreen(previousScreen)}
+          onSuccess={(id) => { setSelectedColonyId(id); setScreen('colony-detail') }}
+          onAddApiary={() => alert('養蜂場追加 → SCR-033（未実装）')}
+        />
+      ) : screen === 'colony-comparison' ? (
         <ColonyComparisonScreen
           viewState={compState}
           activeTab={activeTab}
@@ -132,6 +148,7 @@ export default function App() {
           onColonyDetail={(id) => { setSelectedColonyId(id); setScreen('colony-detail') }}
           onInspectionHistory={(id) => { setSelectedColonyId(id); setScreen('colony-detail') }}
           onColonyComparison={() => setScreen('colony-comparison')}
+          onCreateColony={() => navigateTo('colony-create')}
         />
       ) : screen === 'report' ? (
         <ReportScreen
@@ -271,6 +288,7 @@ export default function App() {
               onTabChange={setActiveTab}
               onNotifClick={() => alert('通知 → SCR-007（未実装）')}
               onColonyClick={(id) => { setSelectedColonyId(id); setScreen('colony-detail') }}
+              onAddColony={() => { navigateTo('colony-create') }}
             />
           )}
 
