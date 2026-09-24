@@ -28,7 +28,8 @@ test('SCR-032 normal', async ({ page }) => {
 // ── 2. 入力済み（A-07 / 宮田養蜂場）────────────────────────────────────────
 test('SCR-032 filled', async ({ page }) => {
   await goto(page)
-  await page.getByLabel('蜂群名').fill('A-07')
+  const nameInput = page.getByLabel('蜂群名')
+  await nameInput.fill('A-07')
   await page.waitForTimeout(100)
   // Select 宮田養蜂場
   const apiary = page.getByRole('combobox', { name: '所属養蜂場' })
@@ -36,6 +37,10 @@ test('SCR-032 filled', async ({ page }) => {
   await page.waitForTimeout(100)
   // Preview reflects name
   await expect(page.getByText('A-07').first()).toBeVisible()
+  // Blur input so no focus ring in screenshot
+  await nameInput.blur()
+  await page.mouse.move(2, 400)
+  await expect.poll(() => nameInput.evaluate((el) => el.matches(':focus'))).toBe(false)
   await expect(page).toHaveScreenshot('scr-032-filled.png', {
     fullPage: false, animations: 'disabled',
   })
@@ -56,11 +61,16 @@ test('SCR-032 validation-error', async ({ page }) => {
 // ── 4. プレビュー同期 ────────────────────────────────────────────────────────
 test('SCR-032 preview-sync', async ({ page }) => {
   await goto(page)
-  await page.getByLabel('蜂群名').fill('B-05')
+  const nameInput = page.getByLabel('蜂群名')
+  await nameInput.fill('B-05')
   await page.waitForTimeout(100)
   // Preview should show B-05
   const previewCard = page.getByLabel('登録後の表示プレビュー')
   await expect(previewCard.getByText('B-05')).toBeVisible()
+  // Blur input so no focus ring in screenshot
+  await nameInput.blur()
+  await page.mouse.move(2, 400)
+  await expect.poll(() => nameInput.evaluate((el) => el.matches(':focus'))).toBe(false)
   await expect(page).toHaveScreenshot('scr-032-preview-sync.png', {
     fullPage: false, animations: 'disabled',
   })

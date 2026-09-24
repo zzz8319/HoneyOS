@@ -249,19 +249,20 @@
 }
 
 .previewCardBody {
-  padding: 14px 14px 12px;
+  padding: 12px 14px 14px;
 }
 
-.previewTop {
+/* 2-column row: icon | content */
+.previewRow {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
 }
 
 .previewIconWrap {
-  width: 48px;
-  height: 48px;
-  border-radius: var(--radius-sm, 8px);
+  width: 54px;
+  height: 54px;
+  border-radius: 7px;
   background: #F3F4F6;
   display: flex;
   align-items: center;
@@ -269,9 +270,13 @@
   flex-shrink: 0;
 }
 
-.previewRight {
+/* Right content column */
+.previewContent {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
 }
 
 .previewNameRow {
@@ -282,7 +287,7 @@
 }
 
 .previewName {
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 700;
   color: var(--color-text, #17212B);
   white-space: nowrap;
@@ -291,7 +296,7 @@
 }
 
 .previewNameEmpty {
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 700;
   color: #D1D5DB;
 }
@@ -312,12 +317,11 @@
 .previewBar {
   display: flex;
   gap: 4px;
-  margin-top: 12px;
 }
 
 .previewBarSegment {
   flex: 1;
-  height: 7px;
+  height: 6px;
   background: #E5E7EB;
   border-radius: 2px;
 }
@@ -325,9 +329,11 @@
 .previewDesc {
   font-size: 12px;
   color: #9CA3AF;
-  margin-top: 10px;
-  line-height: 1.5;
-  margin-bottom: 0;
+  line-height: 1.45;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* ── Buttons ────────────────────────────────────────────────── */

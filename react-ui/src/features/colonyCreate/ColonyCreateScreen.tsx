@@ -356,13 +356,13 @@ export function ColonyCreateScreen({
                 <span className={styles.previewCardHeaderText}>登録後の表示</span>
               </div>
               <div className={styles.previewCardDivider} />
-              {/* Card body */}
+              {/* Card body: icon column | content column */}
               <div className={styles.previewCardBody}>
-                <div className={styles.previewTop}>
+                <div className={styles.previewRow}>
                   <div className={styles.previewIconWrap} aria-hidden>
                     <HiveStackIcon size={30} color="#9CA3AF" />
                   </div>
-                  <div className={styles.previewRight}>
+                  <div className={styles.previewContent}>
                     <div className={styles.previewNameRow}>
                       {previewName ? (
                         <span className={styles.previewName}>{previewName}</span>
@@ -371,17 +371,17 @@ export function ColonyCreateScreen({
                       )}
                       <span className={styles.previewBadge}>内検未実施</span>
                     </div>
+                    <div className={styles.previewBar} aria-hidden>
+                      <div className={styles.previewBarSegment} />
+                      <div className={styles.previewBarSegment} />
+                      <div className={styles.previewBarSegment} />
+                      <div className={styles.previewBarSegment} />
+                    </div>
+                    <p className={styles.previewDesc}>
+                      最初の内検を記録すると状態が表示されます。
+                    </p>
                   </div>
                 </div>
-                <div className={styles.previewBar} aria-hidden>
-                  <div className={styles.previewBarSegment} />
-                  <div className={styles.previewBarSegment} />
-                  <div className={styles.previewBarSegment} />
-                  <div className={styles.previewBarSegment} />
-                </div>
-                <p className={styles.previewDesc}>
-                  最初の内検を記録すると状態が表示されます。
-                </p>
               </div>
             </div>
           </div>
