@@ -9,7 +9,7 @@ import {
   RefreshCw,
 } from 'lucide-react'
 import { PrimaryButton } from '../../components'
-import { ApiaryFarmIcon } from '../../components/icons'
+import { HiveStackIcon } from '../../components/icons'
 import type { ColonyCreateViewState, Apiary } from './types'
 import { MOCK_APIARIES } from './mockData'
 import styles from './ColonyCreateScreen.module.css'
@@ -360,7 +360,7 @@ export function ColonyCreateScreen({
               <div className={styles.previewCardBody}>
                 <div className={styles.previewTop}>
                   <div className={styles.previewIconWrap} aria-hidden>
-                    <ApiaryFarmIcon size={28} color="#9CA3AF" />
+                    <HiveStackIcon size={30} color="#9CA3AF" />
                   </div>
                   <div className={styles.previewRight}>
                     <div className={styles.previewNameRow}>
