@@ -7,6 +7,7 @@ import {
   Info,
   Check,
   Mail,
+  Lock,
   Eye,
   EyeOff,
   RefreshCw,
@@ -33,30 +34,27 @@ function getInitialStep(vs: PasswordResetViewState): Step {
   return 1
 }
 
-/** 封筒＋鍵の線画アイコン */
+/** 封筒＋南京錠バッジアイコン */
 function MailKeyIllustration() {
   return (
-    <svg
-      width="96"
-      height="88"
-      viewBox="0 0 96 88"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden="true"
-    >
-      {/* envelope body */}
-      <rect x="4" y="12" width="60" height="44" rx="6" stroke="#E39A16" strokeWidth="2.5" />
-      {/* envelope flap */}
-      <path d="M4 18 L34 40 L64 18" stroke="#E39A16" strokeWidth="2.5" strokeLinejoin="round" />
-      {/* key ring */}
-      <circle cx="75" cy="50" r="14" stroke="#E39A16" strokeWidth="2.5" />
-      <circle cx="75" cy="50" r="6" stroke="#E39A16" strokeWidth="2" />
-      {/* key shaft */}
-      <line x1="75" y1="64" x2="75" y2="82" stroke="#E39A16" strokeWidth="2.5" strokeLinecap="round" />
-      {/* key teeth */}
-      <line x1="71" y1="72" x2="75" y2="72" stroke="#E39A16" strokeWidth="2.5" strokeLinecap="round" />
-      <line x1="71" y1="78" x2="75" y2="78" stroke="#E39A16" strokeWidth="2.5" strokeLinecap="round" />
-    </svg>
+    <div style={{ position: 'relative', width: 72, height: 72 }} aria-hidden="true">
+      <Mail size={72} strokeWidth={1.5} color="#1E293B" />
+      <div style={{
+        position: 'absolute',
+        bottom: -4,
+        right: -4,
+        width: 28,
+        height: 28,
+        borderRadius: '50%',
+        background: '#E39A16',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        border: '2px solid #FFFFFF',
+      }}>
+        <Lock size={14} strokeWidth={2.5} color="#FFFFFF" />
+      </div>
+    </div>
   )
 }
 
@@ -382,8 +380,15 @@ export function PasswordResetScreen({ viewState = 'normal', onBack, onSuccess }:
             </span>
           </div>
 
+          {/* divider */}
+          <div className={styles.previewDivider} style={{ marginTop: 16 }}>
+            <span className={styles.previewDividerLine} />
+            <span className={styles.previewDividerText}>送信後の表示例</span>
+            <span className={styles.previewDividerLine} />
+          </div>
+
           {/* success preview card (design example) */}
-          <div className={styles.previewCard} style={{ marginTop: 16 }}>
+          <div className={styles.previewCard} style={{ marginTop: 10 }}>
             <div className={styles.previewIconWrap}>
               <Check size={18} color="#FFFFFF" aria-hidden />
             </div>
