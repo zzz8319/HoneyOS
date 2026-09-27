@@ -305,7 +305,7 @@ export function ApiaryCreateScreen({ viewState = 'normal', onBack, onSuccess }: 
         </div>
 
         {/* 所在地 */}
-        <div className={styles.field} style={{ marginTop: 20 }}>
+        <div className={styles.field} style={{ marginTop: 16 }}>
           <div className={styles.labelRow}>
             <label className={styles.label} htmlFor={searchId}>所在地</label>
             <span className={styles.required} aria-hidden="true">必須</span>
@@ -370,7 +370,7 @@ export function ApiaryCreateScreen({ viewState = 'normal', onBack, onSuccess }: 
         </div>
 
         {/* Map */}
-        <div className={styles.mapSection} style={{ marginTop: 12 }}>
+        <div className={styles.mapSection} style={{ marginTop: 10 }}>
           {mapLoadError ? (
             <div className={styles.mapError} role="alert">
               <MapPin size={28} className={styles.mapErrorIcon} aria-hidden />
@@ -409,7 +409,7 @@ export function ApiaryCreateScreen({ viewState = 'normal', onBack, onSuccess }: 
           className={`${styles.locationCard}${locationError ? ` ${styles.locationCardError}` : ''}`}
           onClick={() => { if (location && leafletMap.current) leafletMap.current.setView([location.lat, location.lng], DEFAULT_ZOOM) }}
           aria-label="選択地点の詳細"
-          style={{ marginTop: 10 }}
+          style={{ marginTop: 8 }}
         >
           <div className={styles.locationIconWrap}>
             <MapPin size={20} color="#E39A16" aria-hidden />
@@ -432,13 +432,13 @@ export function ApiaryCreateScreen({ viewState = 'normal', onBack, onSuccess }: 
         )}
 
         {/* Info box */}
-        <div className={styles.infoBox} style={{ marginTop: 14 }}>
+        <div className={styles.infoBox} style={{ marginTop: 10 }}>
           <Info size={15} className={styles.infoIcon} aria-hidden />
           <span className={styles.infoText}>位置情報は天気の自動取得と移動案内に使用します。</span>
         </div>
 
         {/* Hint chip */}
-        <div style={{ marginTop: 8 }}>
+        <div style={{ marginTop: 6 }}>
           <span className={styles.hintChip}>所在地は後から変更できます。</span>
         </div>
 
@@ -448,7 +448,7 @@ export function ApiaryCreateScreen({ viewState = 'normal', onBack, onSuccess }: 
         </span>
 
         {/* Bottom buttons */}
-        <div className={styles.actions} style={{ marginTop: 24 }}>
+        <div className={styles.actions} style={{ marginTop: 16 }}>
           <button
             type="button"
             className={styles.cancelBtn}

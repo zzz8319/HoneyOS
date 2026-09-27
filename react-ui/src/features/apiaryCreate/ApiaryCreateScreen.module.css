@@ -61,7 +61,7 @@
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding: 16px 16px calc(32px + env(safe-area-inset-bottom));
+  padding: 12px 16px calc(20px + env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
 }
@@ -207,7 +207,7 @@
  */
 .mapContainer {
   width: 100%;
-  height: 260px;
+  height: 240px;
   /* Stylised map: green land / blue sea / white roads / city labels */
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='260' viewBox='0 0 400 260'%3E%3Crect width='400' height='260' fill='%23d4e8c2'/%3E%3Crect y='185' width='400' height='75' fill='%23a8d5e2'/%3E%3Cpath d='M0 182 Q60 172 130 178 Q200 185 280 175 Q340 168 400 175 L400 185 Q340 178 280 185 Q200 195 130 188 Q60 182 0 192Z' fill='%23a8d5e2'/%3E%3Cpath d='M0 110 Q80 105 160 112 Q230 118 310 108 Q360 103 400 108' stroke='%23fff' stroke-width='3' fill='none'/%3E%3Cpath d='M0 145 Q90 138 180 145 Q270 152 360 142 Q380 139 400 140' stroke='%23fff' stroke-width='2.5' fill='none'/%3E%3Cpath d='M60 0 L55 260' stroke='%23e0e0e0' stroke-width='1.5' fill='none'/%3E%3Cpath d='M180 0 L175 260' stroke='%23e0e0e0' stroke-width='1.5' fill='none'/%3E%3Cpath d='M310 0 L305 260' stroke='%23e0e0e0' stroke-width='1.5' fill='none'/%3E%3Cpath d='M20 80 Q45 105 55 130 Q62 150 58 180' stroke='%2390c4d0' stroke-width='5' fill='none'/%3E%3Cpath d='M148 0 Q152 55 155 100 Q158 135 150 175' stroke='%2390c4d0' stroke-width='3.5' fill='none'/%3E%3Cpath d='M240 30 Q250 80 248 120 Q245 155 240 178' stroke='%2390c4d0' stroke-width='3' fill='none'/%3E%3Ctext x='72' y='64' font-size='12' fill='%23555' font-family='sans-serif' font-weight='600'%3E磐田市%3C/text%3E%3Ctext x='195' y='48' font-size='12' fill='%23555' font-family='sans-serif' font-weight='600'%3E浜松市%3C/text%3E%3Ctext x='290' y='85' font-size='11' fill='%23777' font-family='sans-serif'%3E湖西市%3C/text%3E%3Ctext x='30' y='140' font-size='10' fill='%23888' font-family='sans-serif'%3E掛川市%3C/text%3E%3Ctext x='140' y='215' font-size='11' fill='%23fff' font-family='sans-serif' font-weight='600'%3E遠州灘%3C/text%3E%3Ccircle cx='105' cy='95' r='4' fill='%23E39A16'/%3E%3C/svg%3E");
   background-size: cover;
@@ -217,7 +217,7 @@
 /* Leaflet container rendered on top — must be transparent to show SVG bg */
 .mapContainer :global(.leaflet-container) {
   background: transparent;
-  height: 260px;
+  height: 240px;
 }
 
 /* Hide the default Leaflet zoom control (per design spec) */
@@ -260,7 +260,7 @@
 /* ── Map error ──────────────────────────────────────────────── */
 .mapError {
   width: 100%;
-  height: 260px;
+  height: 240px;
   background: #F3F4F6;
   border-radius: var(--radius-md, 12px);
   border: 1px solid var(--color-border, #E3E5E8);
