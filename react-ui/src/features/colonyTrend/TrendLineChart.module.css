@@ -1,0 +1,5 @@
+.wrap {
+  width: 100%;
+  /* 16:9 ish aspect ratio for chart */
+  aspect-ratio: 340 / 200;
+}

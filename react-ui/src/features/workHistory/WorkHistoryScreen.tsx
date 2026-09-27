@@ -218,20 +218,23 @@ function formatAmount(amount: number, unit: string): string {
   return `${amount % 1 === 0 ? amount.toFixed(1) : amount} ${unit}`
 }
 
+// Full-width space (U+3000) separator used between work type and detail text
+const FS = String.fromCharCode(0x3000)
+
 function buildSubtitle(rec: WorkHistoryRecord): string {
   const d = rec.details
   if (!d) return rec.title
   if (rec.workType === 'harvest' && d.harvestAmount != null) {
-    return `${rec.title} ${formatAmount(d.harvestAmount, d.harvestUnit ?? '')}`
+    return rec.title + FS + formatAmount(d.harvestAmount, d.harvestUnit ?? '')
   }
   if (rec.workType === 'feeding') {
     const parts: string[] = []
     if (d.feedType) parts.push(d.feedType)
     if (d.feedAmount != null) parts.push(formatAmount(d.feedAmount, d.feedUnit ?? ''))
-    return parts.length > 0 ? `${rec.title} ${parts.join(' ')}` : rec.title
+    return parts.length > 0 ? rec.title + FS + parts.join(' ') : rec.title
   }
   if (rec.workType === 'treatment' && d.treatmentName) {
-    return `${rec.title} ${d.treatmentName}`
+    return rec.title + FS + d.treatmentName
   }
   return rec.title
 }
@@ -418,7 +421,7 @@ export function WorkHistoryScreen({
       <div className={styles.screen}>
         <header className={styles.header}>
           <button className={styles.headerBtn} onClick={onBack} aria-label="戻る"><BackIcon /></button>
-          <span className={styles.headerTitle}>作業履歴</span>
+          <h1 className={styles.headerTitle}>作業履歴</h1>
           <div className={styles.headerRight}>
             <button className={styles.headerBtn} aria-label="検索"><SearchIcon /></button>
             <button className={styles.headerBtn} aria-label="メニュー"><MoreIcon /></button>
@@ -438,7 +441,7 @@ export function WorkHistoryScreen({
       <div className={styles.screen}>
         <header className={styles.header}>
           <button className={styles.headerBtn} onClick={onBack} aria-label="戻る"><BackIcon /></button>
-          <span className={styles.headerTitle}>作業履歴</span>
+          <h1 className={styles.headerTitle}>作業履歴</h1>
           <div className={styles.headerRight}>
             <button className={styles.headerBtn} aria-label="検索"><SearchIcon /></button>
             <button className={styles.headerBtn} aria-label="メニュー"><MoreIcon /></button>
@@ -462,7 +465,7 @@ export function WorkHistoryScreen({
       <div className={styles.screen}>
         <header className={styles.header}>
           <button className={styles.headerBtn} onClick={onBack} aria-label="戻る"><BackIcon /></button>
-          <span className={styles.headerTitle}>作業履歴</span>
+          <h1 className={styles.headerTitle}>作業履歴</h1>
           <div className={styles.headerRight}>
             <button className={styles.headerBtn} aria-label="検索"><SearchIcon /></button>
             <button className={styles.headerBtn} aria-label="メニュー"><MoreIcon /></button>
@@ -488,7 +491,7 @@ export function WorkHistoryScreen({
       {/* Header */}
       <header className={styles.header}>
         <button className={styles.headerBtn} onClick={onBack} aria-label="戻る"><BackIcon /></button>
-        <span className={styles.headerTitle}>作業履歴</span>
+        <h1 className={styles.headerTitle}>作業履歴</h1>
         <div className={styles.headerRight}>
           <button
             className={`${styles.headerBtn} ${searchOpen ? styles.headerBtnActive : ''}`}

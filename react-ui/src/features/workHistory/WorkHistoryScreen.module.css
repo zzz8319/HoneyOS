@@ -43,12 +43,20 @@
 }
 
 .headerTitle {
-  font-size: 17px;
-  font-weight: 600;
+  font-size: 18px;
+  font-weight: 700;
   color: var(--color-text, #17212B);
   flex: 1;
   text-align: center;
   white-space: nowrap;
+  text-decoration: none;
+  line-height: 1.2;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .headerRight {

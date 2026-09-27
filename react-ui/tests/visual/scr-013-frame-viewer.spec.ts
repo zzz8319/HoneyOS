@@ -1,6 +1,5 @@
 import { test, expect } from '@playwright/test'
 
-const BASE = 'http://localhost:5174'
 const SCREEN = 'frame-viewer'
 
 const STATES = [
@@ -17,7 +16,7 @@ const STATES = [
 
 for (const state of STATES) {
   test(`SCR-013 ${state}`, async ({ page }) => {
-    await page.goto(`${BASE}/?screen=${SCREEN}&state=${state}&devbar=0`)
+    await page.goto(`/?screen=${SCREEN}&state=${state}&devbar=0`)
     await page.waitForLoadState('networkidle')
 
     await page.waitForTimeout(state === 'loading' ? 50 : 200)
