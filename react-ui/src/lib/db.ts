@@ -9,6 +9,8 @@ export interface HoneyDBClient {
   login(email: string, password: string): Promise<void>
   logout(): Promise<void>
   getSession(): Promise<{ user: { id: string; email: string } | null }>
+  resetPassword(email: string): Promise<void>
+  updatePassword(newPassword: string): Promise<void>
 
   // プロフィール
   getProfile(): Promise<{ name: string; farm_name: string } | null>
@@ -20,6 +22,8 @@ export interface HoneyDBClient {
 
   // 養蜂場
   getFarms(): Promise<Array<{ id: number; name: string }>>
+  saveFarm(data: { name: string; address: string; lat: number; lng: number }): Promise<{ id: number }>
+  searchAddress?(query: string): Promise<Array<{ address: string; lat: number; lng: number }>>
 
   // 内検記録
   getInspRecords(): Promise<unknown[]>
