@@ -1,0 +1,464 @@
+/* ── Shell ─────────────────────────────────────────────────── */
+.screen {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: #FFFFFF;
+  overflow-x: hidden;
+}
+
+/* ── Header ────────────────────────────────────────────────── */
+.header {
+  flex: 0 0 auto;
+  z-index: 20;
+  background: #FFFFFF;
+  border-bottom: 1px solid var(--color-border, #E3E5E8);
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  height: 52px;
+  padding: 0 4px;
+}
+
+.headerSide {
+  width: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.backBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text, #17212B);
+  border-radius: var(--radius-sm, 8px);
+  -webkit-tap-highlight-color: transparent;
+}
+.backBtn:focus-visible { outline: 2px solid var(--color-primary, #E39A16); outline-offset: 2px; }
+.backBtn:active { background: var(--color-border, #E3E5E8); }
+
+.headerTitle {
+  flex: 1;
+  text-align: center;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--color-text, #17212B);
+  margin: 0;
+  padding: 0;
+}
+
+/* ── Body ───────────────────────────────────────────────────── */
+.body {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 16px 16px calc(32px + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Form fields ────────────────────────────────────────────── */
+.field { display: flex; flex-direction: column; gap: 6px; }
+
+.labelRow { display: flex; align-items: center; gap: 6px; }
+
+.label { font-size: 14px; font-weight: 700; color: var(--color-text, #17212B); }
+
+.required { font-size: 12px; color: var(--color-danger, #DC2626); font-weight: 600; }
+
+.input {
+  width: 100%;
+  box-sizing: border-box;
+  height: 48px;
+  padding: 0 12px;
+  background: #FFFFFF;
+  border: 1px solid var(--color-border, #E3E5E8);
+  border-radius: var(--radius-sm, 8px);
+  font-size: 16px;
+  color: var(--color-text, #17212B);
+  outline: none;
+  appearance: none;
+}
+.input::placeholder { color: #9CA3AF; }
+.input:focus { border-color: var(--color-primary, #E39A16); box-shadow: 0 0 0 3px rgba(227,154,22,0.15); }
+.input.inputError { border-color: var(--color-danger, #DC2626); }
+.input.inputError:focus { box-shadow: 0 0 0 3px rgba(220,38,38,0.12); }
+
+/* ── Search ─────────────────────────────────────────────────── */
+/* position:relative so the overlay anchors here */
+.searchWrap { position: relative; }
+
+.searchIcon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6B7280;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.searchInput {
+  width: 100%;
+  box-sizing: border-box;
+  height: 48px;
+  padding: 0 40px 0 36px;
+  background: #FFFFFF;
+  border: 1px solid var(--color-border, #E3E5E8);
+  border-radius: var(--radius-sm, 8px);
+  font-size: 16px;
+  color: var(--color-text, #17212B);
+  outline: none;
+  appearance: none;
+}
+.searchInput::placeholder { color: #9CA3AF; }
+.searchInput:focus { border-color: var(--color-primary, #E39A16); box-shadow: 0 0 0 3px rgba(227,154,22,0.15); }
+
+.searchingIndicator {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--color-border, #E3E5E8);
+  border-top-color: var(--color-primary, #E39A16);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+/* ── Search results overlay ────────────────────────────────── */
+/* absolute so it does NOT push content below */
+.resultsOverlay {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 200;
+  background: #FFFFFF;
+  border: 1px solid var(--color-border, #E3E5E8);
+  border-radius: var(--radius-sm, 8px);
+  box-shadow: var(--shadow-float, 0 8px 24px rgba(23,33,43,.12));
+  overflow: hidden;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.resultItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--color-border, #E3E5E8);
+  cursor: pointer;
+  text-align: left;
+  min-height: 44px;
+  -webkit-tap-highlight-color: transparent;
+}
+.resultItem:last-child { border-bottom: none; }
+.resultItem:focus-visible { outline: 2px solid var(--color-primary, #E39A16); outline-offset: -2px; }
+.resultItem:hover { background: #F9FAFB; }
+
+.resultIcon { color: #9CA3AF; flex-shrink: 0; }
+.resultText { font-size: 14px; color: var(--color-text, #17212B); line-height: 1.4; }
+
+.resultsMessage { padding: 12px; font-size: 13px; color: #6B7280; }
+
+/* ── Geo denied notice ──────────────────────────────────────── */
+.geoNotice {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 8px 10px;
+  background: #FEF3C7;
+  border-radius: var(--radius-sm, 8px);
+  border: 1px solid #FDE68A;
+}
+.geoNoticeIcon { color: #D97706; flex-shrink: 0; margin-top: 2px; }
+.geoNoticeText { font-size: 12px; color: #92400E; line-height: 1.5; }
+
+/* ── Map section ────────────────────────────────────────────── */
+.mapSection { position: relative; }
+
+.mapWrap {
+  position: relative;
+  border-radius: var(--radius-md, 12px);
+  overflow: hidden;
+  border: 1px solid var(--color-border, #E3E5E8);
+}
+
+/*
+ * SVG map-style background so the area looks geographic
+ * even when OSM tiles are blocked (tests / offline).
+ * Real tiles rendered by Leaflet overlay on top (transparent bg).
+ */
+.mapContainer {
+  width: 100%;
+  height: 260px;
+  /* Stylised map: green land / blue sea / white roads / city labels */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='260' viewBox='0 0 400 260'%3E%3Crect width='400' height='260' fill='%23d4e8c2'/%3E%3Crect y='185' width='400' height='75' fill='%23a8d5e2'/%3E%3Cpath d='M0 182 Q60 172 130 178 Q200 185 280 175 Q340 168 400 175 L400 185 Q340 178 280 185 Q200 195 130 188 Q60 182 0 192Z' fill='%23a8d5e2'/%3E%3Cpath d='M0 110 Q80 105 160 112 Q230 118 310 108 Q360 103 400 108' stroke='%23fff' stroke-width='3' fill='none'/%3E%3Cpath d='M0 145 Q90 138 180 145 Q270 152 360 142 Q380 139 400 140' stroke='%23fff' stroke-width='2.5' fill='none'/%3E%3Cpath d='M60 0 L55 260' stroke='%23e0e0e0' stroke-width='1.5' fill='none'/%3E%3Cpath d='M180 0 L175 260' stroke='%23e0e0e0' stroke-width='1.5' fill='none'/%3E%3Cpath d='M310 0 L305 260' stroke='%23e0e0e0' stroke-width='1.5' fill='none'/%3E%3Cpath d='M20 80 Q45 105 55 130 Q62 150 58 180' stroke='%2390c4d0' stroke-width='5' fill='none'/%3E%3Cpath d='M148 0 Q152 55 155 100 Q158 135 150 175' stroke='%2390c4d0' stroke-width='3.5' fill='none'/%3E%3Cpath d='M240 30 Q250 80 248 120 Q245 155 240 178' stroke='%2390c4d0' stroke-width='3' fill='none'/%3E%3Ctext x='72' y='64' font-size='12' fill='%23555' font-family='sans-serif' font-weight='600'%3E磐田市%3C/text%3E%3Ctext x='195' y='48' font-size='12' fill='%23555' font-family='sans-serif' font-weight='600'%3E浜松市%3C/text%3E%3Ctext x='290' y='85' font-size='11' fill='%23777' font-family='sans-serif'%3E湖西市%3C/text%3E%3Ctext x='30' y='140' font-size='10' fill='%23888' font-family='sans-serif'%3E掛川市%3C/text%3E%3Ctext x='140' y='215' font-size='11' fill='%23fff' font-family='sans-serif' font-weight='600'%3E遠州灘%3C/text%3E%3Ccircle cx='105' cy='95' r='4' fill='%23E39A16'/%3E%3C/svg%3E");
+  background-size: cover;
+  background-position: center;
+}
+
+/* Leaflet container rendered on top — must be transparent to show SVG bg */
+.mapContainer :global(.leaflet-container) {
+  background: transparent;
+  height: 260px;
+}
+
+/* Hide the default Leaflet zoom control (per design spec) */
+.mapContainer :global(.leaflet-control-zoom) {
+  display: none;
+}
+
+/* Current location button */
+.geoBtn {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  width: 40px;
+  height: 40px;
+  background: #FFFFFF;
+  border: 1px solid var(--color-border, #E3E5E8);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--color-text, #17212B);
+  box-shadow: var(--shadow-sm, 0 1px 4px rgba(23,33,43,.08));
+  z-index: 400;
+  -webkit-tap-highlight-color: transparent;
+}
+.geoBtn:focus-visible { outline: 2px solid var(--color-primary, #E39A16); outline-offset: 2px; }
+.geoBtn:disabled { opacity: 0.6; cursor: default; }
+
+.geoBtnSpinner {
+  display: block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--color-border, #E3E5E8);
+  border-top-color: var(--color-primary, #E39A16);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+/* ── Map error ──────────────────────────────────────────────── */
+.mapError {
+  width: 100%;
+  height: 260px;
+  background: #F3F4F6;
+  border-radius: var(--radius-md, 12px);
+  border: 1px solid var(--color-border, #E3E5E8);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.mapErrorIcon { color: #9CA3AF; }
+.mapErrorText { font-size: 14px; color: #6B7280; }
+.retryBtn { font-size: 13px; color: #2563EB; background: none; border: none; cursor: pointer; padding: 4px 0; font-weight: 500; min-height: 44px; }
+
+/* ── Location card ──────────────────────────────────────────── */
+.locationCard {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 14px;
+  background: #FFFFFF;
+  border: 1px solid var(--color-border, #E3E5E8);
+  border-radius: var(--radius-md, 12px);
+  width: 100%;
+  box-sizing: border-box;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  box-shadow: var(--shadow-sm, 0 1px 4px rgba(23,33,43,.08));
+  min-height: 100px;
+}
+.locationCard:focus-visible { outline: 2px solid var(--color-primary, #E39A16); outline-offset: 2px; }
+.locationCardError { border-color: var(--color-danger, #DC2626); }
+
+.locationIconWrap {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--color-primary-soft, #FFF3D8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.locationCardBody {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.locationAddress {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text, #17212B);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.locationCoords {
+  font-size: 13px;
+  color: #6B7280;
+  font-variant-numeric: tabular-nums;
+}
+
+.locationHint {
+  font-size: 11px;
+  color: #9CA3AF;
+  margin-top: 2px;
+}
+
+.locationPlaceholder {
+  font-size: 14px;
+  color: #9CA3AF;
+}
+
+.locationChevron { color: #9CA3AF; flex-shrink: 0; }
+
+/* ── Info box ───────────────────────────────────────────────── */
+.infoBox {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: #F3F4F6;
+  border-radius: var(--radius-sm, 8px);
+  padding: 10px 12px;
+}
+.infoIcon { flex-shrink: 0; color: #4B5563; margin-top: 1px; }
+.infoText { font-size: 13px; color: #4B5563; line-height: 1.55; }
+
+/* ── Hint chip ──────────────────────────────────────────────── */
+.hintChip {
+  display: inline-block;
+  font-size: 11px;
+  color: #6B7280;
+  background: #F3F4F6;
+  border-radius: 20px;
+  padding: 3px 10px;
+  line-height: 1.5;
+}
+
+/* ── Error text ─────────────────────────────────────────────── */
+.errorText { font-size: 12px; color: var(--color-danger, #DC2626); }
+
+/* ── Bottom buttons ─────────────────────────────────────────── */
+.actions { display: flex; gap: 10px; align-items: stretch; }
+
+.cancelBtn {
+  flex: 2;
+  height: 52px;
+  background: #FFFFFF;
+  border: 1px solid var(--color-border, #E3E5E8);
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text, #17212B);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+  min-height: 44px;
+}
+.cancelBtn:focus-visible { outline: 2px solid var(--color-primary, #E39A16); outline-offset: 2px; }
+.cancelBtn:active { background: #F9FAFB; }
+.cancelBtn:disabled { opacity: 0.6; cursor: default; }
+
+.submitBtn {
+  flex: 3;
+  height: 52px;
+  background: var(--color-primary, #E39A16);
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #FFFFFF;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  -webkit-tap-highlight-color: transparent;
+  min-height: 44px;
+}
+.submitBtn:focus-visible { outline: 2px solid var(--color-primary, #E39A16); outline-offset: 2px; }
+.submitBtnLoading { background: rgba(227,154,22,0.65); }
+.submitBtn:disabled { opacity: 0.6; cursor: default; }
+
+.submitSpinner {
+  display: block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255,255,255,0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+/* ── Banners ────────────────────────────────────────────────── */
+.errorBanner {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 10px 12px;
+  background: #FEE2E2;
+  border-bottom: 1px solid #FECACA;
+}
+.errorBannerIcon { color: var(--color-danger, #DC2626); flex-shrink: 0; margin-top: 2px; }
+.errorBannerText { font-size: 13px; color: var(--color-danger, #DC2626); line-height: 1.5; word-break: keep-all; overflow-wrap: break-word; }
+
+.offlineBanner {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: #FEF3C7;
+  border-bottom: 1px solid #FDE68A;
+}
+.offlineBannerIcon { color: var(--color-warn, #D97706); flex-shrink: 0; }
+.offlineBannerText { font-size: 13px; color: #92400E; line-height: 1.45; }
+
+/* ── sr-only ────────────────────────────────────────────────── */
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* ── Animations ─────────────────────────────────────────────── */
+@keyframes spin { to { transform: rotate(360deg); } }

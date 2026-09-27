@@ -20,6 +20,8 @@ export interface HoneyDBClient {
 
   // 養蜂場
   getFarms(): Promise<Array<{ id: number; name: string }>>
+  saveFarm(data: { name: string; address: string; lat: number; lng: number }): Promise<{ id: number }>
+  searchAddress?(query: string): Promise<Array<{ address: string; lat: number; lng: number }>>
 
   // 内検記録
   getInspRecords(): Promise<unknown[]>
