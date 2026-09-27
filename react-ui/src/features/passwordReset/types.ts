@@ -1,0 +1,13 @@
+export type PasswordResetViewState =
+  | 'normal'
+  | 'filled'
+  | 'validation-error'
+  | 'submitting'
+  | 'sent'
+  | 'resend-cooldown'
+  | 'send-error'
+  | 'offline'
+  | 'new-password'
+  | 'password-validation-error'
+  | 'password-updating'
+  | 'password-updated'

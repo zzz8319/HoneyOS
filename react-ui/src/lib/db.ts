@@ -9,6 +9,8 @@ export interface HoneyDBClient {
   login(email: string, password: string): Promise<void>
   logout(): Promise<void>
   getSession(): Promise<{ user: { id: string; email: string } | null }>
+  resetPassword(email: string): Promise<void>
+  updatePassword(newPassword: string): Promise<void>
 
   // プロフィール
   getProfile(): Promise<{ name: string; farm_name: string } | null>
