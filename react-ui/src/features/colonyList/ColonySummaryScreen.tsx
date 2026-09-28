@@ -24,6 +24,7 @@ interface ColonySummaryScreenProps {
   onTabChange?: (tab: TabId) => void
   onNotifClick?: () => void
   onColonyClick?: (colonyId: string) => void
+  onAddColony?: () => void
 }
 
 function sortByOldestInspection(a: ColonyListItem, b: ColonyListItem) {
@@ -63,6 +64,7 @@ export function ColonySummaryScreen({
   onTabChange,
   onNotifClick,
   onColonyClick,
+  onAddColony,
 }: ColonySummaryScreenProps) {
   const [apiaryTab, setApiaryTab] = useState<ApiaryTab>('all')
   const [query, setQuery] = useState('')
@@ -131,7 +133,7 @@ export function ColonySummaryScreen({
               <button className={styles.iconBtn} aria-label="養蜂場配置・地図">
                 <Map size={18} aria-hidden />
               </button>
-              <button className={styles.addBtn} aria-label="蜂群を追加">
+              <button className={styles.addBtn} aria-label="蜂群を追加" onClick={() => onAddColony?.()}>
                 <Plus size={16} aria-hidden />
               </button>
             </div>
