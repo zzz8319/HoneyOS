@@ -49,10 +49,12 @@ import { LoginScreen } from './features/login'
 import type { LoginViewState } from './features/login'
 import { SignupScreen } from './features/signup'
 import type { SignupViewState } from './features/signup'
+import { OnboardingStep1Screen } from './features/onboarding'
+import type { OnboardingStep1ViewState } from './features/onboarding'
 import type { TabId } from './components'
 import styles from './App.module.css'
 
-type ViewState = DashboardViewState | ColonyListViewState | ColonyDetailViewState | InspectionStartViewState | RecordViewState | ViewerViewState | ApiaryMapViewState | CompleteViewState | CameraViewState | AiAnalysisViewState | DiagnosisViewState | RecommendedWorkState | WorkListViewState | TaskCreateViewState | WorkRecordViewState | WorkHistoryViewState | ReportViewState | ColonyTrendViewState | ColonyComparisonViewState | ColonyCreateViewState | ApiaryCreateViewState | PasswordResetViewState | LoginViewState | SignupViewState
+type ViewState = DashboardViewState | ColonyListViewState | ColonyDetailViewState | InspectionStartViewState | RecordViewState | ViewerViewState | ApiaryMapViewState | CompleteViewState | CameraViewState | AiAnalysisViewState | DiagnosisViewState | RecommendedWorkState | WorkListViewState | TaskCreateViewState | WorkRecordViewState | WorkHistoryViewState | ReportViewState | ColonyTrendViewState | ColonyComparisonViewState | ColonyCreateViewState | ApiaryCreateViewState | PasswordResetViewState | LoginViewState | SignupViewState | OnboardingStep1ViewState
 
 const STATES: { id: ViewState; label: string }[] = [
   { id: 'normal',  label: '通常' },
@@ -73,7 +75,7 @@ function readParam<T extends string>(key: string, valid: T[], fallback: T): T {
   return (valid.includes(p as T) ? p : fallback) as T
 }
 
-const VALID_SCREENS = ['home', 'farms', 'colony-detail', 'inspection-start', 'inspection-record', 'frame-viewer', 'add-stage', 'apiary-map', 'inspection-complete', 'camera-images', 'ai-analysis', 'ai-diagnosis', 'recommended-work', 'work', 'task-create', 'work-record', 'work-history', 'report', 'colony-trend', 'colony-comparison', 'colony-create', 'apiary-create', 'password-reset', 'login', 'signup'] as const
+const VALID_SCREENS = ['home', 'farms', 'colony-detail', 'inspection-start', 'inspection-record', 'frame-viewer', 'add-stage', 'apiary-map', 'inspection-complete', 'camera-images', 'ai-analysis', 'ai-diagnosis', 'recommended-work', 'work', 'task-create', 'work-record', 'work-history', 'report', 'colony-trend', 'colony-comparison', 'colony-create', 'apiary-create', 'password-reset', 'login', 'signup', 'onboarding-1'] as const
 type Screen = typeof VALID_SCREENS[number]
 
 export default function App() {
@@ -121,6 +123,7 @@ export default function App() {
   const passwordResetState  = viewState as PasswordResetViewState
   const loginState          = viewState as LoginViewState
   const signupState         = viewState as SignupViewState
+  const onboarding1State    = viewState as OnboardingStep1ViewState
 
   return (
     <>
@@ -138,7 +141,14 @@ export default function App() {
         </div>
       )}
 
-      {screen === 'signup' ? (
+      {screen === 'onboarding-1' ? (
+        <OnboardingStep1Screen
+          viewState={onboarding1State}
+          onBack={() => setScreen('signup')}
+          onNext={() => setScreen('home')}
+          onSkip={() => setScreen('home')}
+        />
+      ) : screen === 'signup' ? (
         <SignupScreen
           viewState={signupState}
           onBack={() => setScreen('login')}
