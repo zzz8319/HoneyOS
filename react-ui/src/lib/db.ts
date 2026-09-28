@@ -7,6 +7,7 @@
 export interface HoneyDBClient {
   // 認証
   login(email: string, password: string): Promise<void>
+  signUp(email: string, password: string, name: string): Promise<void>
   logout(): Promise<void>
   getSession(): Promise<{ user: { id: string; email: string } | null }>
   resetPassword(email: string): Promise<void>
