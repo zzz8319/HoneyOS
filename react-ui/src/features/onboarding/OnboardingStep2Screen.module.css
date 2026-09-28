@@ -1,0 +1,405 @@
+/* ── Shell ──────────────────────────────────────────────────── */
+.screen {
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: #FFFFFF;
+  overflow: hidden;
+}
+
+/* ── Header ─────────────────────────────────────────────────── */
+.header {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  height: 52px;
+  padding: 0 4px;
+  background: #FFFFFF;
+}
+
+.backBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text, #17212B);
+  border-radius: var(--radius-sm, 8px);
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+.backBtn:focus-visible { outline: 2px solid var(--color-primary, #E39A16); outline-offset: 2px; }
+.backBtn:active { background: var(--color-border, #E3E5E8); }
+
+.stepLabel {
+  flex: 1;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-secondary, #66707A);
+}
+
+.skipBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  height: 44px;
+  padding: 0 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: #2563EB;
+  border-radius: var(--radius-sm, 8px);
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+.skipBtn:focus-visible { outline: 2px solid var(--color-primary, #E39A16); outline-offset: 2px; }
+
+/* ── Progress indicator ──────────────────────────────────────── */
+.progress {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 4px;
+  padding: 0 16px;
+  height: 4px;
+}
+
+.progressBar {
+  flex: 1;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--color-border, #E3E5E8);
+}
+
+.progressBarActive {
+  background: var(--color-primary, #E39A16);
+}
+
+/* ── Body (scrollable) ───────────────────────────────────────── */
+.body {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 16px 20px 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.heading {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--color-text, #17212B);
+  margin: 0 0 4px;
+  letter-spacing: -0.3px;
+}
+
+.subheading {
+  font-size: 13px;
+  color: var(--color-text-secondary, #66707A);
+  margin: 0 0 20px;
+  line-height: 1.5;
+}
+
+/* ── Form fields ─────────────────────────────────────────────── */
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.fieldLabel {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-secondary, #66707A);
+  margin-bottom: 6px;
+  letter-spacing: 0.3px;
+}
+
+.inputWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input {
+  width: 100%;
+  height: 46px;
+  padding: 0 40px 0 12px;
+  border: 1.5px solid var(--color-border, #E3E5E8);
+  border-radius: var(--radius-sm, 8px);
+  font-size: 15px;
+  color: var(--color-text, #17212B);
+  background: #FFFFFF;
+  outline: none;
+  box-sizing: border-box;
+  -webkit-appearance: none;
+}
+.input::placeholder { color: #A8B0B8; }
+.input:focus { border-color: var(--color-primary, #E39A16); }
+.input.inputError { border-color: #DC2626; }
+
+.inputIcon {
+  position: absolute;
+  left: 12px;
+  color: var(--color-text-secondary, #66707A);
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+}
+
+.inputWithIcon {
+  padding-left: 38px;
+}
+
+.clearBtn {
+  position: absolute;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-secondary, #66707A);
+  border-radius: 50%;
+  -webkit-tap-highlight-color: transparent;
+  padding: 0;
+}
+.clearBtn:focus-visible { outline: 2px solid var(--color-primary, #E39A16); }
+.clearBtn:active { background: var(--color-border, #E3E5E8); }
+
+.fieldError {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #DC2626;
+}
+
+/* ── Location suggestions ────────────────────────────────────── */
+.suggestions {
+  margin-top: 4px;
+  border: 1.5px solid var(--color-border, #E3E5E8);
+  border-radius: var(--radius-sm, 8px);
+  background: #FFFFFF;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(23, 33, 43, 0.08);
+}
+
+.suggestionItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 12px;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--color-border, #E3E5E8);
+  cursor: pointer;
+  text-align: left;
+  font-size: 13px;
+  color: var(--color-text, #17212B);
+  -webkit-tap-highlight-color: transparent;
+}
+.suggestionItem:last-child { border-bottom: none; }
+.suggestionItem:active { background: var(--color-primary-soft, #FFF3D8); }
+
+.suggestionIcon {
+  color: var(--color-primary, #E39A16);
+  flex-shrink: 0;
+}
+
+/* ── Map preview ─────────────────────────────────────────────── */
+.mapPreview {
+  width: 100%;
+  border-radius: var(--radius-sm, 8px);
+  border: 1.5px solid var(--color-border, #E3E5E8);
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.mapLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: var(--color-primary-soft, #FFF3D8);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-primary, #E39A16);
+}
+
+/* ── Stepper ─────────────────────────────────────────────────── */
+.stepperGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.stepperRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.stepperLabel {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text, #17212B);
+}
+
+.stepperLabelSub {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--color-text-secondary, #66707A);
+  margin-left: 4px;
+}
+
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border: 1.5px solid var(--color-border, #E3E5E8);
+  border-radius: var(--radius-sm, 8px);
+  overflow: hidden;
+}
+
+.stepperBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text, #17212B);
+  -webkit-tap-highlight-color: transparent;
+}
+.stepperBtn:disabled { color: var(--color-border, #E3E5E8); cursor: default; }
+.stepperBtn:not(:disabled):active { background: var(--color-primary-soft, #FFF3D8); }
+.stepperBtn:focus-visible { outline: 2px solid var(--color-primary, #E39A16); outline-offset: -2px; }
+
+.stepperVal {
+  width: 44px;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text, #17212B);
+  border-left: 1px solid var(--color-border, #E3E5E8);
+  border-right: 1px solid var(--color-border, #E3E5E8);
+  line-height: 40px;
+}
+
+/* ── Colony names expansion ──────────────────────────────────── */
+.expandBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: #2563EB;
+  padding: 0;
+  margin-bottom: 12px;
+  -webkit-tap-highlight-color: transparent;
+}
+.expandBtn:focus-visible { outline: 2px solid var(--color-primary, #E39A16); border-radius: 4px; }
+
+.colonyNamesWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.colonyNameRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.colonyNameLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-secondary, #66707A);
+  flex-shrink: 0;
+  width: 36px;
+}
+
+/* ── Status banner ───────────────────────────────────────────── */
+.statusBanner {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm, 8px);
+  margin-bottom: 12px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.statusBannerError {
+  background: #FEF2F2;
+  color: #DC2626;
+  border: 1px solid #FECACA;
+}
+
+.statusBannerOffline {
+  background: #F3F4F6;
+  color: #374151;
+  border: 1px solid #D1D5DB;
+}
+
+/* ── Footer (flow element inside body) ──────────────────────── */
+.footer {
+  width: 100%;
+  padding: 16px 0 calc(16px + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: auto;
+}
+
+.saveBtn {
+  width: 100%;
+  height: 50px;
+  background: var(--color-primary, #E39A16);
+  border: none;
+  border-radius: var(--radius-sm, 8px);
+  font-size: 16px;
+  font-weight: 700;
+  color: #FFFFFF;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.saveBtn:focus-visible { outline: 2px solid var(--color-primary, #E39A16); outline-offset: 2px; }
+.saveBtn:disabled { opacity: 0.55; cursor: default; }
+
+.skipLinkBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: #2563EB;
+  padding: 8px 0;
+  -webkit-tap-highlight-color: transparent;
+}
+.skipLinkBtn:focus-visible { outline: 2px solid var(--color-primary, #E39A16); border-radius: 4px; }
