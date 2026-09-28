@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 
-const BASE = 'http://localhost:5173/?screen=signup'
+const BASE = 'http://localhost:5173/?screen=signup&devbar=0'
 
 const states = [
   'normal',
@@ -22,7 +22,7 @@ for (const state of states) {
 }
 
 test('SCR-002 signup — header title is 新規登録', async ({ page }) => {
-  await page.goto(BASE)
+  await page.goto(`http://localhost:5173/?screen=signup&devbar=0`)
   await expect(page.getByRole('heading', { name: '新規登録' })).toBeVisible()
 })
 
