@@ -46,7 +46,7 @@ export function OnboardingStep1Screen({ onBack, onNext, onSkip }: Props) {
             <div className={`${styles.floatCardIcon} ${styles.floatCardIconAmber}`}>
               <ClipboardList size={16} strokeWidth={2} />
             </div>
-            <span className={styles.floatCardLabel}>内検記録</span>
+            <span className={styles.floatCardLabel}>内検<br />記録</span>
           </div>
 
           {/* 右上カード：センサーデータ */}
@@ -97,7 +97,7 @@ export function OnboardingStep1Screen({ onBack, onNext, onSkip }: Props) {
             <div className={`${styles.floatCardIcon} ${styles.floatCardIconGreen}`}>
               <CalendarDays size={16} strokeWidth={2} />
             </div>
-            <span className={styles.floatCardLabel}>作業・予定</span>
+            <span className={styles.floatCardLabel}>作業・<br />予定</span>
           </div>
         </div>
 
@@ -132,14 +132,15 @@ export function OnboardingStep1Screen({ onBack, onNext, onSkip }: Props) {
           </li>
         </ul>
 
-        {/* ── 下部操作（フロー内配置） ── */}
-        <div className={styles.footer}>
-          <button className={styles.nextBtn} onClick={onNext}>次へ</button>
-          <div className={styles.dots} aria-hidden>
-            <span className={`${styles.dot} ${styles.dotActive}`} />
-            <span className={styles.dot} />
-            <span className={styles.dot} />
-          </div>
+      </div>
+
+      {/* ── 下部操作 ── */}
+      <div className={styles.footer}>
+        <button className={styles.nextBtn} onClick={onNext}>次へ</button>
+        <div className={styles.dots} aria-hidden>
+          <span className={`${styles.dot} ${styles.dotActive}`} />
+          <span className={styles.dot} />
+          <span className={styles.dot} />
         </div>
       </div>
     </div>
