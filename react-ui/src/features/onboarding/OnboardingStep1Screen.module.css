@@ -378,15 +378,14 @@
   line-height: 1.55;
 }
 
-/* ── Footer (sibling of body, pinned at bottom of flex column) ── */
+/* ── Footer (flow inside body) ──────────────────────────────── */
 .footer {
-  flex: 0 0 auto;
-  padding: 12px 20px calc(16px + env(safe-area-inset-bottom));
+  width: 100%;
+  padding: 16px 0 calc(16px + env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 10px;
-  background: #FFFFFF;
 }
 
 .nextBtn {

@@ -132,15 +132,14 @@ export function OnboardingStep1Screen({ onBack, onNext, onSkip }: Props) {
           </li>
         </ul>
 
-      </div>
-
-      {/* ── 下部操作 ── */}
-      <div className={styles.footer}>
-        <button className={styles.nextBtn} onClick={onNext}>次へ</button>
-        <div className={styles.dots} aria-hidden>
-          <span className={`${styles.dot} ${styles.dotActive}`} />
-          <span className={styles.dot} />
-          <span className={styles.dot} />
+        {/* ── 下部操作 ── */}
+        <div className={styles.footer}>
+          <button className={styles.nextBtn} onClick={onNext}>次へ</button>
+          <div className={styles.dots} aria-hidden>
+            <span className={`${styles.dot} ${styles.dotActive}`} />
+            <span className={styles.dot} />
+            <span className={styles.dot} />
+          </div>
         </div>
       </div>
     </div>
