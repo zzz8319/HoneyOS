@@ -17,7 +17,23 @@ for (const state of states) {
   test(`SCR-002 signup — ${state}`, async ({ page }) => {
     await page.goto(`${BASE}&state=${state}`)
     await page.waitForLoadState('networkidle')
-    await page.evaluate(() => window.scrollTo(0, 0))
+    // フォーカスを外し、自動スクロールをリセット
+    await page.evaluate(() => {
+      if (document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur()
+      }
+      window.scrollTo(0, 0)
+      document.documentElement.scrollTop = 0
+      document.body.scrollTop = 0
+    })
+    // スクロール位置が 0 になるまで待機
+    await page.waitForFunction(() => window.scrollY === 0)
+    // スクロール可能なフォーム要素も先頭へ
+    await page.evaluate(() => {
+      document.querySelectorAll('form, [class*="form"]').forEach(el => {
+        el.scrollTop = 0
+      })
+    })
     await expect(page).toHaveScreenshot(`scr-002-${state}.png`)
   })
 }
