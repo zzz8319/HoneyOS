@@ -12,50 +12,10 @@ const states = [
   'confirmation-sent',
 ] as const
 
-async function resetScroll(page: import('@playwright/test').Page) {
-  if (document.activeElement instanceof HTMLElement) {
-    document.activeElement.blur()
-  }
-  window.scrollTo(0, 0)
-  document.documentElement.scrollTop = 0
-  document.body.scrollTop = 0
-  document.querySelectorAll('form, [class*="form"]').forEach(el => {
-    (el as HTMLElement).scrollTop = 0
-  })
-}
-
-for (const state of states) {
-  test(`SCR-002 signup — ${state}`, async ({ page }) => {
-    await page.goto(`${BASE}&state=${state}`)
-    await page.waitForLoadState('networkidle')
-    await page.evaluate(resetScroll)
-    await page.waitForFunction(() => window.scrollY === 0)
-    await expect(page).toHaveScreenshot(`scr-002-${state}.png`)
-  })
-}
-
-test('SCR-002 signup — submitting', async ({ page }) => {
-  await page.goto(`${BASE}&state=submitting`)
-  await page.waitForLoadState('networkidle')
-
-  // 1. activeElement が入力欄またはボタンなら blur
+async function scrollToTop(page: import('@playwright/test').Page) {
   await page.evaluate(() => {
-    if (document.activeElement instanceof HTMLElement) {
-      document.activeElement.blur()
-    }
-  })
-  // 2. スムーススクロールを無効化
-  await page.evaluate(() => {
+    if (document.activeElement instanceof HTMLElement) document.activeElement.blur()
     document.documentElement.style.scrollBehavior = 'auto'
-  })
-  // 3. 先頭へスクロール
-  await page.evaluate(() => { window.scrollTo(0, 0) })
-  // 4. requestAnimationFrame を2回待つ
-  await page.evaluate(() => new Promise<void>(resolve => {
-    requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
-  }))
-  // 5. もう一度スクロールリセット
-  await page.evaluate(() => {
     window.scrollTo(0, 0)
     document.documentElement.scrollTop = 0
     document.body.scrollTop = 0
@@ -63,11 +23,29 @@ test('SCR-002 signup — submitting', async ({ page }) => {
       (el as HTMLElement).scrollTop = 0
     })
   })
-  // 6. scrollY === 0 をアサート（失敗時は撮影しない）
+  await page.waitForFunction(() => window.scrollY === 0)
+}
+
+for (const state of states) {
+  test(`SCR-002 signup — ${state}`, async ({ page }) => {
+    await page.goto(`${BASE}&state=${state}`)
+    await page.waitForLoadState('networkidle')
+    await scrollToTop(page)
+    await expect(page).toHaveScreenshot(`scr-002-${state}.png`)
+  })
+}
+
+test('SCR-002 signup — submitting', async ({ page }) => {
+  await page.goto(`${BASE}&state=submitting`)
+  await page.waitForLoadState('networkidle')
+  // rAF×2 後に再リセット（入力済み状態の自動スクロール対策）
+  await page.evaluate(() => new Promise<void>(resolve => {
+    requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
+  }))
+  await scrollToTop(page)
+  // scrollY === 0 をアサート（失敗時は撮影しない）
   const scrollY = await page.evaluate(() => window.scrollY)
   expect(scrollY, `window.scrollY must be 0 before screenshot, got ${scrollY}`).toBe(0)
-
-  // 7. 撮影
   await expect(page).toHaveScreenshot('scr-002-submitting.png')
 })
 
