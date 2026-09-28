@@ -257,16 +257,16 @@ export function SignupScreen({ viewState = 'normal', onBack, onLogin }: Props) {
           アカウントを作成
         </button>
         <p className={styles.submitNote}>登録後、確認メールをお送りします。</p>
-      </form>
 
-      {/* ── 下部導線 ── */}
-      <div className={styles.footer}>
-        <div className={styles.footerDivider} />
-        <p className={styles.footerRow}>
-          すでにアカウントをお持ちの方
-          <button type="button" className={styles.loginLink} onClick={onLogin}>ログイン</button>
-        </p>
-      </div>
+        {/* ── 下部導線 ── */}
+        <div className={styles.footer}>
+          <div className={styles.footerDivider} />
+          <p className={styles.footerRow}>
+            すでにアカウントをお持ちの方
+            <button type="button" className={styles.loginLink} onClick={onLogin}>ログイン</button>
+          </p>
+        </div>
+      </form>
     </div>
   )
 }

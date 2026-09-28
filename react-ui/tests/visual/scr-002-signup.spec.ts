@@ -17,6 +17,7 @@ for (const state of states) {
   test(`SCR-002 signup — ${state}`, async ({ page }) => {
     await page.goto(`${BASE}&state=${state}`)
     await page.waitForLoadState('networkidle')
+    await page.evaluate(() => window.scrollTo(0, 0))
     await expect(page).toHaveScreenshot(`scr-002-${state}.png`)
   })
 }
