@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useId } from 'react'
-import { ChevronLeft, MapPin, X, Plus, Minus, Crosshair } from 'lucide-react'
+import { ChevronLeft, MapPin, X, Plus, Minus, Crosshair, AlertTriangle, WifiOff } from 'lucide-react'
 import type { OnboardingStep2ViewState } from './types'
 import styles from './OnboardingStep2Screen.module.css'
 
@@ -16,21 +16,23 @@ interface Props {
   onSkip: () => void
 }
 
-// Preset location used in pre-filled view states
 const PRESET_LOCATION: GeoResult = {
   address: '静岡県磐田市宮田',
   lat: 34.7156,
   lng: 137.852,
 }
 
+const COLONY_MAX = 20
+const HIVE_MAX = 100
+
 function genId(): string {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
 }
 
 export function OnboardingStep2Screen({ viewState = 'normal', onBack, onNext, onSkip }: Props) {
-  const farmNameId = useId()
-  const locationId = useId()
-  const farmNameErrorId = useId()
+  const farmNameId    = useId()
+  const locationId    = useId()
+  const farmErrId     = useId()
   const submitStatusId = useId()
 
   const isPrefilled =
@@ -41,57 +43,36 @@ export function OnboardingStep2Screen({ viewState = 'normal', onBack, onNext, on
     viewState === 'submitting' ||
     viewState === 'error'
 
-  const [farmName, setFarmName] = useState(() => (isPrefilled ? '宮田養蜂場' : ''))
-  const [locationQuery, setLocationQuery] = useState(() =>
+  const hasLocation =
     viewState === 'location-selected' ||
     viewState === 'quantity-adjusted' ||
     viewState === 'colony-names-expanded' ||
     viewState === 'submitting' ||
     viewState === 'error'
-      ? PRESET_LOCATION.address
-      : '',
-  )
-  const [location, setLocation] = useState<GeoResult | null>(() =>
-    viewState === 'location-selected' ||
-    viewState === 'quantity-adjusted' ||
-    viewState === 'colony-names-expanded' ||
-    viewState === 'submitting' ||
-    viewState === 'error'
-      ? PRESET_LOCATION
-      : null,
-  )
-  const [searchResults, setSearchResults] = useState<GeoResult[]>([])
-  const [searching, setSearching] = useState(false)
-  const [showResults, setShowResults] = useState(false)
 
-  const [colonyCount, setColonyCount] = useState(() =>
+  const hasQuantity =
     viewState === 'quantity-adjusted' ||
     viewState === 'colony-names-expanded' ||
     viewState === 'submitting' ||
     viewState === 'error'
-      ? 3
-      : 0,
-  )
-  const [hiveCount, setHiveCount] = useState(() =>
-    viewState === 'quantity-adjusted' ||
-    viewState === 'colony-names-expanded' ||
-    viewState === 'submitting' ||
-    viewState === 'error'
-      ? 5
-      : 0,
-  )
-  const [showColonyNames, setShowColonyNames] = useState(
-    viewState === 'colony-names-expanded',
-  )
+
+  const [farmName, setFarmName]           = useState(() => isPrefilled ? '宮田養蜂場' : '')
+  const [locationQuery, setLocationQuery] = useState(() => hasLocation ? PRESET_LOCATION.address : '')
+  const [location, setLocation]           = useState<GeoResult | null>(() => hasLocation ? PRESET_LOCATION : null)
+  const [searchResults, setSearchResults] = useState<GeoResult[]>([])
+  const [searching, setSearching]         = useState(false)
+  const [showResults, setShowResults]     = useState(false)
+
+  const [colonyCount, setColonyCount] = useState(() => hasQuantity ? 3 : 0)
+  const [hiveCount, setHiveCount]     = useState(() => hasQuantity ? 5 : 0)
+  const [showColonyNames, setShowColonyNames] = useState(viewState === 'colony-names-expanded')
   const [colonyNames, setColonyNames] = useState<string[]>(() =>
     Array.from({ length: viewState === 'colony-names-expanded' ? 3 : 0 }, () => ''),
   )
 
-  const [submitting, setSubmitting] = useState(false)
+  const [submitting, setSubmitting]   = useState(false)
   const [submitError, setSubmitError] = useState(() =>
-    viewState === 'error'
-      ? '保存できませんでした。もう一度お試しください。'
-      : '',
+    viewState === 'error' ? '保存できませんでした。もう一度お試しください。' : '',
   )
   const [farmNameError, setFarmNameError] = useState('')
 
@@ -110,7 +91,7 @@ export function OnboardingStep2Screen({ viewState = 'normal', onBack, onNext, on
         results = await window.HoneyDB.searchAddress(q)
       } else {
         const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=5&accept-language=ja&countrycodes=jp`
-        const res = await fetch(url, { headers: { 'Accept-Language': 'ja' } })
+        const res  = await fetch(url, { headers: { 'Accept-Language': 'ja' } })
         const data = await res.json() as Array<{ display_name: string; lat: string; lon: string }>
         results = data.map(d => ({ address: d.display_name, lat: parseFloat(d.lat), lng: parseFloat(d.lon) }))
       }
@@ -145,23 +126,18 @@ export function OnboardingStep2Screen({ viewState = 'normal', onBack, onNext, on
     setShowResults(false)
   }
 
-  // ── Colony names sync ─────────────────────────────────────────
-  function handleShowColonyNames() {
-    setShowColonyNames(true)
-    setColonyNames(prev => {
-      const next = Array.from({ length: colonyCount }, (_, i) => prev[i] ?? '')
-      return next
-    })
-  }
-
   function handleColonyCountChange(delta: number) {
-    const next = Math.max(0, colonyCount + delta)
+    const next = Math.max(0, Math.min(COLONY_MAX, colonyCount + delta))
     setColonyCount(next)
     if (showColonyNames) {
       setColonyNames(prev => Array.from({ length: next }, (_, i) => prev[i] ?? ''))
     }
-    // Clear error if count drops to 0
     if (next === 0) setFarmNameError('')
+  }
+
+  function handleShowColonyNames() {
+    setShowColonyNames(true)
+    setColonyNames(prev => Array.from({ length: colonyCount }, (_, i) => prev[i] ?? ''))
   }
 
   // ── Submit ────────────────────────────────────────────────────
@@ -169,7 +145,6 @@ export function OnboardingStep2Screen({ viewState = 'normal', onBack, onNext, on
     if (isSubmitting || isOffline) return
     setSubmitError('')
 
-    // Validate: colonies without farm name
     if (colonyCount > 0 && !farmName.trim()) {
       setFarmNameError('蜂群を登録するには養蜂場名を入力してください')
       return
@@ -177,11 +152,7 @@ export function OnboardingStep2Screen({ viewState = 'normal', onBack, onNext, on
     setFarmNameError('')
 
     const hasData = farmName.trim() || location || colonyCount > 0 || hiveCount > 0
-    if (!hasData) {
-      // Nothing to save — treat same as skip
-      onNext()
-      return
-    }
+    if (!hasData) { onNext(); return }
 
     if (!navigator.onLine) {
       setSubmitError('オフラインのため保存できません。接続を確認してください。')
@@ -192,20 +163,17 @@ export function OnboardingStep2Screen({ viewState = 'normal', onBack, onNext, on
     try {
       if (farmName.trim() || location) {
         await window.HoneyDB?.saveFarm?.({
-          name: farmName.trim() || '養蜂場',
+          name:    farmName.trim() || '養蜂場',
           address: location?.address ?? '',
-          lat: location?.lat ?? 0,
-          lng: location?.lng ?? 0,
+          lat:     location?.lat ?? 0,
+          lng:     location?.lng ?? 0,
         })
       }
-
       if (colonyCount > 0) {
         for (let i = 0; i < colonyCount; i++) {
-          const name = colonyNames[i]?.trim() || `群 ${i + 1}`
-          await window.HoneyDB?.saveColony?.(genId(), name, i)
+          await window.HoneyDB?.saveColony?.(genId(), colonyNames[i]?.trim() || `群 ${i + 1}`, i)
         }
       }
-
       onNext()
     } catch {
       setSubmitError('保存できませんでした。もう一度お試しください。')
@@ -232,6 +200,20 @@ export function OnboardingStep2Screen({ viewState = 'normal', onBack, onNext, on
         <div className={styles.progressBar} />
       </div>
 
+      {/* ── オフライン / エラーバナー (ヘッダー直下) ── */}
+      {isOffline && (
+        <div className={`${styles.banner} ${styles.bannerOffline}`} role="alert">
+          <WifiOff size={16} className={styles.bannerIcon} aria-hidden />
+          <span>オフライン中です。接続を確認してから再度お試しください。</span>
+        </div>
+      )}
+      {submitError && !isOffline && (
+        <div className={`${styles.banner} ${styles.bannerError}`} role="alert" id={submitStatusId}>
+          <AlertTriangle size={16} className={styles.bannerIcon} aria-hidden />
+          <span>{submitError}</span>
+        </div>
+      )}
+
       {/* ── 本文 (スクロール) ── */}
       <div className={styles.body}>
         {/* 見出し */}
@@ -239,10 +221,9 @@ export function OnboardingStep2Screen({ viewState = 'normal', onBack, onNext, on
         <p className={styles.subheading}>すべて後から設定できます。</p>
 
         {/* ── 養蜂場名 ── */}
-        <div className={styles.fieldGroup}>
-          <label htmlFor={farmNameId} className={styles.label}>
-            養蜂場名
-            <span className={styles.optionalBadge}>任意</span>
+        <div className={styles.fieldBlock}>
+          <label htmlFor={farmNameId} className={styles.fieldLabel}>
+            養蜂場名<span className={styles.optionalText}>（任意）</span>
           </label>
           <div className={styles.inputWrap}>
             <input
@@ -252,85 +233,68 @@ export function OnboardingStep2Screen({ viewState = 'normal', onBack, onNext, on
               placeholder="宮田養蜂場"
               value={farmName}
               onChange={e => { setFarmName(e.target.value); if (farmNameError) setFarmNameError('') }}
-              aria-describedby={farmNameError ? farmNameErrorId : undefined}
+              aria-describedby={farmNameError ? farmErrId : undefined}
               disabled={isSubmitting}
             />
             {farmName && (
-              <button
-                type="button"
-                className={styles.clearBtn}
-                onClick={() => { setFarmName(''); setFarmNameError('') }}
-                aria-label="養蜂場名をクリア"
-                tabIndex={-1}
-              >
+              <button type="button" className={styles.clearBtn} onClick={() => { setFarmName(''); setFarmNameError('') }} aria-label="養蜂場名をクリア" tabIndex={-1}>
                 <X size={16} aria-hidden />
               </button>
             )}
           </div>
           {farmNameError && (
-            <p id={farmNameErrorId} className={styles.fieldError} role="alert">
-              {farmNameError}
-            </p>
+            <p id={farmErrId} className={styles.fieldError} role="alert">{farmNameError}</p>
           )}
         </div>
 
         {/* ── 所在地 ── */}
-        <div className={styles.fieldGroup}>
-          <label htmlFor={locationId} className={styles.label}>
-            所在地
-            <span className={styles.optionalBadge}>任意</span>
+        <div className={styles.fieldBlock}>
+          <label htmlFor={locationId} className={styles.fieldLabel}>
+            所在地<span className={styles.optionalText}>（任意）</span>
           </label>
-          <div className={styles.locationWrap}>
-            <div className={styles.inputWrap}>
-              <MapPin size={18} className={styles.locationPin} aria-hidden />
-              <input
-                id={locationId}
-                type="text"
-                className={`${styles.input} ${styles.inputWithPin}`}
-                placeholder="静岡県磐田市宮田"
-                value={locationQuery}
-                onChange={e => handleLocationInput(e.target.value)}
-                disabled={isSubmitting}
-                autoComplete="off"
-              />
-              {locationQuery && (
-                <button
-                  type="button"
-                  className={styles.clearBtn}
-                  onClick={clearLocation}
-                  aria-label="所在地をクリア"
-                  tabIndex={-1}
-                >
-                  <X size={16} aria-hidden />
-                </button>
-              )}
-            </div>
-
-            {/* 検索結果ドロップダウン */}
-            {showResults && searchResults.length > 0 && (
-              <ul className={styles.resultsList} role="listbox" aria-label="所在地候補">
-                {searchResults.map((r, i) => (
-                  <li key={i}>
-                    <button
-                      type="button"
-                      className={styles.resultItem}
-                      role="option"
-                      aria-selected={false}
-                      onClick={() => selectLocation(r)}
-                    >
-                      <MapPin size={14} className={styles.resultPin} aria-hidden />
-                      <span className={styles.resultText}>{r.address}</span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
+          <div className={styles.inputWrap}>
+            <MapPin size={16} className={styles.inputPrefixIcon} aria-hidden />
+            <input
+              id={locationId}
+              type="text"
+              className={`${styles.input} ${styles.inputWithIcon}`}
+              placeholder="静岡県磐田市宮田"
+              value={locationQuery}
+              onChange={e => handleLocationInput(e.target.value)}
+              disabled={isSubmitting}
+              autoComplete="off"
+            />
+            {locationQuery && (
+              <button type="button" className={styles.clearBtn} onClick={clearLocation} aria-label="所在地をクリア" tabIndex={-1}>
+                <X size={16} aria-hidden />
+              </button>
             )}
-            {searching && <p className={styles.searching}>検索中…</p>}
           </div>
 
-          {/* 地図プレビュー (所在地選択済みのみ表示) */}
+          {/* 検索候補 */}
+          {showResults && searchResults.length > 0 && (
+            <ul className={styles.resultsList} role="listbox" aria-label="所在地候補">
+              {searchResults.map((r, i) => (
+                <li key={i}>
+                  <button
+                    type="button"
+                    className={styles.resultItem}
+                    role="option"
+                    aria-selected={false}
+                    onClick={() => selectLocation(r)}
+                  >
+                    <MapPin size={14} className={styles.resultIcon} aria-hidden />
+                    <span>{r.address}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+          {searching && <p className={styles.searchingText}>検索中…</p>}
+
+          {/* 地図プレビュー */}
           {location && (
-            <div className={styles.mapPreview} aria-hidden>
+            <div className={styles.mapWrap} aria-hidden>
               <MapPreviewSvg />
               <button
                 type="button"
@@ -338,19 +302,18 @@ export function OnboardingStep2Screen({ viewState = 'normal', onBack, onNext, on
                 tabIndex={-1}
                 aria-hidden
               >
-                <Crosshair size={14} />
+                <Crosshair size={16} />
               </button>
             </div>
           )}
         </div>
 
-        {/* ── 蜂群ステッパー ── */}
-        <div className={styles.fieldGroup}>
-          <p className={styles.label}>
-            蜂群を初期登録
-            <span className={styles.optionalBadge}>任意</span>
-          </p>
-          <div className={styles.stepper}>
+        {/* ── ステッパー行: 蜂群 ── */}
+        <div className={styles.stepperRow}>
+          <span className={styles.stepperLabel}>
+            蜂群を初期登録<span className={styles.optionalText}>（任意）</span>
+          </span>
+          <div className={styles.stepperControls}>
             <button
               type="button"
               className={styles.stepperBtn}
@@ -358,29 +321,28 @@ export function OnboardingStep2Screen({ viewState = 'normal', onBack, onNext, on
               disabled={colonyCount === 0 || isSubmitting}
               aria-label="蜂群数を減らす"
             >
-              <Minus size={18} aria-hidden />
+              <Minus size={16} aria-hidden />
             </button>
-            <span className={styles.stepperCount}>{colonyCount}</span>
+            <span className={styles.stepperValue}>{colonyCount}</span>
             <button
               type="button"
               className={styles.stepperBtn}
               onClick={() => handleColonyCountChange(1)}
-              disabled={isSubmitting}
+              disabled={colonyCount >= COLONY_MAX || isSubmitting}
               aria-label="蜂群数を増やす"
             >
-              <Plus size={18} aria-hidden />
+              <Plus size={16} aria-hidden />
             </button>
             <span className={styles.stepperUnit}>群</span>
           </div>
         </div>
 
-        {/* ── 巣箱ステッパー ── */}
-        <div className={styles.fieldGroup}>
-          <p className={styles.label}>
-            巣箱数
-            <span className={styles.optionalBadge}>任意</span>
-          </p>
-          <div className={styles.stepper}>
+        {/* ── ステッパー行: 巣箱 ── */}
+        <div className={styles.stepperRow}>
+          <span className={styles.stepperLabel}>
+            巣箱数<span className={styles.optionalText}>（任意）</span>
+          </span>
+          <div className={styles.stepperControls}>
             <button
               type="button"
               className={styles.stepperBtn}
@@ -388,23 +350,23 @@ export function OnboardingStep2Screen({ viewState = 'normal', onBack, onNext, on
               disabled={hiveCount === 0 || isSubmitting}
               aria-label="巣箱数を減らす"
             >
-              <Minus size={18} aria-hidden />
+              <Minus size={16} aria-hidden />
             </button>
-            <span className={styles.stepperCount}>{hiveCount}</span>
+            <span className={styles.stepperValue}>{hiveCount}</span>
             <button
               type="button"
               className={styles.stepperBtn}
-              onClick={() => setHiveCount(c => c + 1)}
-              disabled={isSubmitting}
+              onClick={() => setHiveCount(c => Math.min(HIVE_MAX, c + 1))}
+              disabled={hiveCount >= HIVE_MAX || isSubmitting}
               aria-label="巣箱数を増やす"
             >
-              <Plus size={18} aria-hidden />
+              <Plus size={16} aria-hidden />
             </button>
             <span className={styles.stepperUnit}>箱</span>
           </div>
         </div>
 
-        {/* ── 蜂群名設定ボタン ── */}
+        {/* ── 蜂群名設定 ── */}
         {!showColonyNames ? (
           <button
             type="button"
@@ -416,41 +378,29 @@ export function OnboardingStep2Screen({ viewState = 'normal', onBack, onNext, on
             蜂群名を設定（任意）
           </button>
         ) : (
-          <div className={styles.colonyNamesExpanded}>
+          <div className={styles.colonyNamesBlock}>
             <p className={styles.colonyNamesTitle}>蜂群名（任意）</p>
             {colonyCount === 0 && (
               <p className={styles.colonyNamesHint}>蜂群数を1以上に設定してください</p>
             )}
             {Array.from({ length: colonyCount }, (_, i) => (
               <div key={i} className={styles.colonyNameRow}>
-                <label className={styles.colonyNameLabel}>群 {i + 1}</label>
-                <input
-                  type="text"
-                  className={styles.input}
-                  placeholder={`群 ${i + 1}`}
-                  value={colonyNames[i] ?? ''}
-                  onChange={e => {
-                    const next = [...colonyNames]
-                    next[i] = e.target.value
-                    setColonyNames(next)
-                  }}
-                  disabled={isSubmitting}
-                />
+                <label className={styles.colonyNameIndex}>群 {i + 1}</label>
+                <div className={styles.inputWrap} style={{ flex: 1 }}>
+                  <input
+                    type="text"
+                    className={styles.input}
+                    placeholder={`群 ${i + 1}`}
+                    value={colonyNames[i] ?? ''}
+                    onChange={e => {
+                      const next = [...colonyNames]; next[i] = e.target.value; setColonyNames(next)
+                    }}
+                    disabled={isSubmitting}
+                  />
+                </div>
               </div>
             ))}
           </div>
-        )}
-
-        {/* ── エラー ── */}
-        {submitError && (
-          <p id={submitStatusId} className={styles.submitError} role="alert">
-            {submitError}
-          </p>
-        )}
-        {isOffline && (
-          <p className={styles.submitError} role="alert">
-            オフライン中です。接続を確認してから再度お試しください。
-          </p>
         )}
 
         {/* ── フッター ── */}
@@ -462,9 +412,9 @@ export function OnboardingStep2Screen({ viewState = 'normal', onBack, onNext, on
             disabled={isSubmitting || isOffline}
             aria-describedby={submitError ? submitStatusId : undefined}
           >
-            {isSubmitting ? (
-              <span className={styles.spinner} aria-hidden />
-            ) : null}
+            {isSubmitting
+              ? <span className={styles.spinner} aria-hidden />
+              : null}
             設定して次へ
           </button>
           <button
@@ -485,63 +435,57 @@ export function OnboardingStep2Screen({ viewState = 'normal', onBack, onNext, on
 function MapPreviewSvg() {
   return (
     <svg
-      viewBox="0 0 350 160"
+      viewBox="0 0 350 140"
       xmlns="http://www.w3.org/2000/svg"
       className={styles.mapSvg}
       aria-hidden
     >
       {/* 背景 */}
-      <rect width="350" height="160" fill="#E8EAED" />
+      <rect width="350" height="140" fill="#E8EAED" />
 
-      {/* 公園・緑地 */}
-      <rect x="10" y="20" width="60" height="40" rx="4" fill="#C8DFC8" />
-      <rect x="240" y="90" width="50" height="45" rx="4" fill="#C8DFC8" />
+      {/* 緑地 */}
+      <rect x="10" y="15" width="55" height="36" rx="4" fill="#C8DFC8" />
+      <rect x="245" y="80" width="48" height="38" rx="4" fill="#C8DFC8" />
 
-      {/* 区画 (建物ブロック) */}
-      <rect x="10" y="72" width="55" height="24" rx="2" fill="#D4D6D8" />
-      <rect x="10" y="100" width="35" height="22" rx="2" fill="#D4D6D8" />
-      <rect x="50" y="100" width="30" height="22" rx="2" fill="#D4D6D8" />
-      <rect x="90" y="20" width="40" height="28" rx="2" fill="#D4D6D8" />
-      <rect x="136" y="20" width="50" height="28" rx="2" fill="#D4D6D8" />
-      <rect x="90" y="55" width="32" height="20" rx="2" fill="#D4D6D8" />
-      <rect x="200" y="20" width="45" height="28" rx="2" fill="#D4D6D8" />
-      <rect x="255" y="20" width="40" height="28" rx="2" fill="#D4D6D8" />
-      <rect x="300" y="55" width="40" height="24" rx="2" fill="#D4D6D8" />
-      <rect x="300" y="84" width="40" height="20" rx="2" fill="#D4D6D8" />
-      <rect x="200" y="55" width="35" height="28" rx="2" fill="#D4D6D8" />
-      <rect x="136" y="90" width="50" height="26" rx="2" fill="#D4D6D8" />
-      <rect x="90" y="112" width="40" height="24" rx="2" fill="#D4D6D8" />
-      <rect x="136" y="122" width="35" height="22" rx="2" fill="#D4D6D8" />
-      <rect x="10" y="128" width="70" height="22" rx="2" fill="#D4D6D8" />
+      {/* 建物ブロック */}
+      <rect x="10" y="60" width="52" height="22" rx="2" fill="#D4D6D8" />
+      <rect x="10" y="87" width="32" height="20" rx="2" fill="#D4D6D8" />
+      <rect x="47" y="87" width="28" height="20" rx="2" fill="#D4D6D8" />
+      <rect x="88" y="15" width="38" height="24" rx="2" fill="#D4D6D8" />
+      <rect x="132" y="15" width="48" height="24" rx="2" fill="#D4D6D8" />
+      <rect x="88" y="46" width="30" height="18" rx="2" fill="#D4D6D8" />
+      <rect x="196" y="15" width="42" height="24" rx="2" fill="#D4D6D8" />
+      <rect x="248" y="15" width="38" height="24" rx="2" fill="#D4D6D8" />
+      <rect x="298" y="46" width="38" height="22" rx="2" fill="#D4D6D8" />
+      <rect x="298" y="73" width="38" height="18" rx="2" fill="#D4D6D8" />
+      <rect x="196" y="46" width="33" height="26" rx="2" fill="#D4D6D8" />
+      <rect x="134" y="80" width="48" height="24" rx="2" fill="#D4D6D8" />
+      <rect x="88" y="100" width="38" height="22" rx="2" fill="#D4D6D8" />
+      <rect x="10" y="113" width="66" height="20" rx="2" fill="#D4D6D8" />
 
-      {/* 道路 (横) */}
-      <rect x="0" y="10" width="350" height="8" fill="#F8F8F8" />
-      <rect x="0" y="66" width="350" height="7" fill="#F8F8F8" />
-      <rect x="0" y="106" width="350" height="7" fill="#F8F8F8" />
-      <rect x="0" y="146" width="350" height="8" fill="#F8F8F8" />
+      {/* 道路 横 */}
+      <rect x="0" y="6" width="350" height="7" fill="#F5F5F5" />
+      <rect x="0" y="56" width="350" height="7" fill="#F5F5F5" />
+      <rect x="0" y="94" width="350" height="7" fill="#F5F5F5" />
+      <rect x="0" y="130" width="350" height="7" fill="#F5F5F5" />
 
-      {/* 道路 (縦) */}
-      <rect x="0" y="0" width="8" height="160" fill="#F8F8F8" />
-      <rect x="80" y="0" width="8" height="160" fill="#F8F8F8" />
-      <rect x="128" y="0" width="7" height="160" fill="#F8F8F8" />
-      <rect x="190" y="0" width="8" height="160" fill="#F8F8F8" />
-      <rect x="250" y="0" width="7" height="160" fill="#F8F8F8" />
-      <rect x="298" y="0" width="7" height="160" fill="#F8F8F8" />
-      <rect x="342" y="0" width="8" height="160" fill="#F8F8F8" />
+      {/* 道路 縦 */}
+      <rect x="0"   y="0" width="7"  height="140" fill="#F5F5F5" />
+      <rect x="78"  y="0" width="7"  height="140" fill="#F5F5F5" />
+      <rect x="126" y="0" width="6"  height="140" fill="#F5F5F5" />
+      <rect x="186" y="0" width="7"  height="140" fill="#F5F5F5" />
+      <rect x="244" y="0" width="6"  height="140" fill="#F5F5F5" />
+      <rect x="294" y="0" width="6"  height="140" fill="#F5F5F5" />
+      <rect x="344" y="0" width="6"  height="140" fill="#F5F5F5" />
 
-      {/* 青いクラスタマーカー (左上) */}
-      <circle cx="36" cy="36" r="12" fill="#2563EB" />
-      <text x="36" y="40" textAnchor="middle" fontSize="11" fontWeight="bold" fill="#fff">2</text>
+      {/* 青クラスタ (左上) */}
+      <circle cx="34" cy="32" r="12" fill="#2563EB" />
+      <text x="34" y="36" textAnchor="middle" fontSize="11" fontWeight="bold" fill="#fff">2</text>
 
-      {/* アンバーのピン (中央) */}
-      <g transform="translate(175, 62)">
-        <path
-          d="M0-22C-8-22-14-16-14-8c0 11 14 30 14 30S14 3 14-8C14-16 8-22 0-22z"
-          fill="#E39A16"
-          stroke="#C07800"
-          strokeWidth="1"
-        />
-        <circle cx="0" cy="-8" r="5" fill="#fff" />
+      {/* アンバーピン (中央やや右) */}
+      <g transform="translate(175, 55)">
+        <path d="M0-20C-7-20-13-14-13-7c0 10 13 27 13 27S13 3 13-7C13-14 7-20 0-20z" fill="#E39A16" stroke="#C07800" strokeWidth="1" />
+        <circle cx="0" cy="-7" r="5" fill="#fff" />
       </g>
     </svg>
   )
