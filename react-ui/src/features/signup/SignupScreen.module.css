@@ -1,0 +1,311 @@
+/* ── Shell ──────────────────────────────────────────────────── */
+.screen {
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: #FFFFFF;
+  overflow: hidden;
+}
+
+/* ── Header ─────────────────────────────────────────────────── */
+.header {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  height: 52px;
+  padding: 0 4px;
+  background: #FFFFFF;
+  border-bottom: 1px solid var(--color-border, #E3E5E8);
+}
+
+.headerSide {
+  width: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.headerTitle {
+  flex: 1;
+  text-align: center;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--color-text, #17212B);
+  margin: 0;
+}
+
+.backBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text, #17212B);
+  border-radius: var(--radius-sm, 8px);
+  -webkit-tap-highlight-color: transparent;
+}
+.backBtn:focus-visible { outline: 2px solid var(--color-primary, #E39A16); outline-offset: 2px; }
+.backBtn:active { background: var(--color-border, #E3E5E8); }
+
+/* ── Banners ─────────────────────────────────────────────────── */
+.errorBanner,
+.offlineBanner {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 9px 16px;
+}
+.errorBanner  { background: var(--color-danger-soft, #FEE2E2); border-bottom: 1px solid #FECACA; }
+.offlineBanner { background: var(--color-warn-soft, #FEF3C7); border-bottom: 1px solid #FDE68A; }
+.bannerIcon { flex-shrink: 0; margin-top: 1px; }
+.errorBanner  .bannerIcon { color: var(--color-danger, #DC2626); }
+.offlineBanner .bannerIcon { color: var(--color-warn, #D97706); }
+.bannerText { font-size: 13px; line-height: 1.5; }
+.errorBanner  .bannerText { color: var(--color-danger, #DC2626); }
+.offlineBanner .bannerText { color: #92400E; }
+
+/* ── Logo area ───────────────────────────────────────────────── */
+.logoArea {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 0 8px;
+  gap: 4px;
+}
+.logoText {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  line-height: 1;
+}
+.logoHoney { color: var(--color-text, #17212B); }
+.logoOS    { color: var(--color-primary, #E39A16); }
+.catchCopy {
+  font-size: 12px;
+  color: var(--color-text-secondary, #66707A);
+  margin: 0;
+}
+
+/* ── Form ────────────────────────────────────────────────────── */
+.form {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 4px 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  /* フォーム内容が短くても引き伸ばさない */
+  align-items: stretch;
+  justify-content: flex-start;
+}
+
+/* ── Fields ─────────────────────────────────────────────────── */
+.field { display: flex; flex-direction: column; gap: 5px; }
+
+.labelRow { display: flex; align-items: center; gap: 6px; }
+
+.label { font-size: 13px; font-weight: 700; color: var(--color-text, #17212B); }
+
+.required { font-size: 11px; color: var(--color-danger, #DC2626); font-weight: 600; }
+
+.optional { font-size: 11px; color: var(--color-text-secondary, #66707A); font-weight: 400; margin-left: 4px; }
+
+.input {
+  width: 100%;
+  box-sizing: border-box;
+  height: 44px;
+  padding: 0 12px;
+  background: #FFFFFF;
+  border: 1px solid var(--color-border, #E3E5E8);
+  border-radius: var(--radius-sm, 8px);
+  font-size: 16px;
+  color: var(--color-text, #17212B);
+  outline: none;
+  appearance: none;
+}
+.input::placeholder { color: #9CA3AF; }
+.input:focus { border-color: var(--color-primary, #E39A16); box-shadow: 0 0 0 3px rgba(227,154,22,0.15); }
+.inputError { border-color: var(--color-danger, #DC2626) !important; }
+.inputError:focus { box-shadow: 0 0 0 3px rgba(220,38,38,0.12) !important; }
+.input:disabled { background: #F9FAFB; color: #9CA3AF; cursor: not-allowed; }
+
+.pwWrap { position: relative; }
+.pwWrap .input { padding-right: 48px; }
+.eyeBtn {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #6B7280;
+  border-radius: var(--radius-sm, 8px);
+  -webkit-tap-highlight-color: transparent;
+}
+.eyeBtn:focus-visible { outline: 2px solid var(--color-primary, #E39A16); outline-offset: 2px; }
+
+.errorText { font-size: 12px; color: var(--color-danger, #DC2626); }
+
+/* ── Submit button ───────────────────────────────────────────── */
+.submitBtn {
+  width: 100%;
+  height: 50px;
+  background: var(--color-primary, #E39A16);
+  border: none;
+  border-radius: var(--radius-sm, 8px);
+  font-size: 16px;
+  font-weight: 700;
+  color: #FFFFFF;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 4px;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+.submitBtn:focus-visible { outline: 2px solid var(--color-primary, #E39A16); outline-offset: 2px; }
+.submitBtn:disabled { opacity: 0.55; cursor: default; }
+.submitBtnLoading { opacity: 0.75; }
+
+.submitSpinner {
+  display: block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255,255,255,0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+.submitNote {
+  font-size: 12px;
+  color: var(--color-text-secondary, #66707A);
+  text-align: center;
+  margin: 4px 0 0;
+  flex-shrink: 0;
+}
+
+/* ── Footer (フォーム内フロー末尾) ───────────────────────────── */
+.footer {
+  /* フォーム内の通常フロー要素。margin-top: auto や fixed は使わない */
+  padding-bottom: calc(8px + env(safe-area-inset-bottom));
+  flex-shrink: 0;
+}
+.footerDivider {
+  height: 1px;
+  background: var(--color-border, #E3E5E8);
+  margin: 18px 0 0;
+}
+.footerRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--color-text-secondary, #66707A);
+  margin: 0;
+  padding: 2px 0 0;
+}
+.loginLink {
+  background: none;
+  border: none;
+  padding: 4px 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #2563EB;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  -webkit-tap-highlight-color: transparent;
+}
+.loginLink:focus-visible { outline: 2px solid var(--color-primary, #E39A16); outline-offset: 2px; border-radius: 4px; }
+
+/* ── Confirmation sent ───────────────────────────────────────── */
+.confirmWrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 24px;
+  gap: 10px;
+  text-align: center;
+}
+.confirmCircle {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--color-primary-soft, #FFF3D8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+.confirmTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text, #17212B);
+  margin: 0;
+}
+.confirmEmail {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-primary, #E39A16);
+  word-break: break-all;
+  margin: 0;
+}
+.confirmDesc {
+  font-size: 13px;
+  color: var(--color-text-secondary, #66707A);
+  line-height: 1.65;
+  margin: 0;
+  white-space: pre-line;
+}
+.confirmNote {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  background: #F0FDF4;
+  border: 1px solid #BBF7D0;
+  border-radius: var(--radius-sm, 8px);
+  padding: 8px 12px;
+  font-size: 12px;
+  color: #166534;
+  text-align: left;
+  line-height: 1.5;
+  width: 100%;
+  box-sizing: border-box;
+}
+.loginBtn {
+  width: 100%;
+  height: 50px;
+  background: var(--color-primary, #E39A16);
+  border: none;
+  border-radius: var(--radius-sm, 8px);
+  font-size: 16px;
+  font-weight: 700;
+  color: #FFFFFF;
+  cursor: pointer;
+  margin-top: 8px;
+  -webkit-tap-highlight-color: transparent;
+}
+.loginBtn:focus-visible { outline: 2px solid var(--color-primary, #E39A16); outline-offset: 2px; }
+
+/* ── Animations ─────────────────────────────────────────────── */
+@keyframes spin { to { transform: rotate(360deg); } }
