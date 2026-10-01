@@ -1,3 +1,5 @@
+export type OnboardingStep1ViewState = 'normal'
+
 export type OnboardingStep2ViewState =
   | 'normal'
   | 'filled'
