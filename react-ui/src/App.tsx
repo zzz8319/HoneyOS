@@ -49,12 +49,12 @@ import { LoginScreen } from './features/login'
 import type { LoginViewState } from './features/login'
 import { SignupScreen } from './features/signup'
 import type { SignupViewState } from './features/signup'
-import { OnboardingStep1Screen } from './features/onboarding'
-import type { OnboardingStep1ViewState } from './features/onboarding'
+import { OnboardingStep1Screen, OnboardingStep2Screen } from './features/onboarding'
+import type { OnboardingStep1ViewState, OnboardingStep2ViewState } from './features/onboarding'
 import type { TabId } from './components'
 import styles from './App.module.css'
 
-type ViewState = DashboardViewState | ColonyListViewState | ColonyDetailViewState | InspectionStartViewState | RecordViewState | ViewerViewState | ApiaryMapViewState | CompleteViewState | CameraViewState | AiAnalysisViewState | DiagnosisViewState | RecommendedWorkState | WorkListViewState | TaskCreateViewState | WorkRecordViewState | WorkHistoryViewState | ReportViewState | ColonyTrendViewState | ColonyComparisonViewState | ColonyCreateViewState | ApiaryCreateViewState | PasswordResetViewState | LoginViewState | SignupViewState | OnboardingStep1ViewState
+type ViewState = DashboardViewState | ColonyListViewState | ColonyDetailViewState | InspectionStartViewState | RecordViewState | ViewerViewState | ApiaryMapViewState | CompleteViewState | CameraViewState | AiAnalysisViewState | DiagnosisViewState | RecommendedWorkState | WorkListViewState | TaskCreateViewState | WorkRecordViewState | WorkHistoryViewState | ReportViewState | ColonyTrendViewState | ColonyComparisonViewState | ColonyCreateViewState | ApiaryCreateViewState | PasswordResetViewState | LoginViewState | SignupViewState | OnboardingStep1ViewState | OnboardingStep2ViewState
 
 const STATES: { id: ViewState; label: string }[] = [
   { id: 'normal',  label: '通常' },
@@ -64,7 +64,7 @@ const STATES: { id: ViewState; label: string }[] = [
   { id: 'offline', label: 'オフライン' },
 ]
 
-const VALID_STATES: ViewState[] = ['normal', 'selected', 'empty', 'loading', 'error', 'offline', 'multi-stage', 'unsaved', 'saved', 'draft-restore', 'save-error', 'frame-selected', 'deselected', 'other-stage', 'history', 'other-apiary', 'nectar', 'alert', 'no-results', 'no-location', 'healthy', 'first-inspection', 'ai-analyzed', 'reminder-off', 'missing-record', 'none-selected', 'inspection-tab', 'auto-capture-tab', 'upload-error', 'camera-permission-denied', 'context-missing', 'no-images', 'max-images', 'targets-empty', 'loading-inspection', 'data-missing', 'request-pending', 'request-error', 'saving', 'offline-no-cache', 'multi-selected', 'creating-tasks', 'calendar-view', 'completed-expanded', 'overdue-filtered', 'updating-completion', 'normal-ai', 'normal-manual', 'validation-error', 'submitting', 'submit-error', 'colony-picker', 'date-picker', 'discard-dialog', 'normal-linked-top', 'normal-linked-bottom', 'normal-new', 'saving-draft', 'save-error', 'photo-upload-error', 'photo-added', 'discard-confirm', 'colony-selector', 'time-picker', 'filtered-feeding', 'filtered-apiary', 'filtered-colony', 'filtered-period', 'search-results', 'filter-menu', 'search-open', 'no-apiary', 'apiary-load-error', 'geolocation-denied', 'map-error', 'filled', 'sent', 'resend-cooldown', 'send-error', 'new-password', 'password-validation-error', 'password-updating', 'password-updated', 'password-visible', 'auth-error', 'remember-me-off', 'signup-error', 'confirmation-sent']
+const VALID_STATES: ViewState[] = ['normal', 'selected', 'empty', 'loading', 'error', 'offline', 'multi-stage', 'unsaved', 'saved', 'draft-restore', 'save-error', 'frame-selected', 'deselected', 'other-stage', 'history', 'other-apiary', 'nectar', 'alert', 'no-results', 'no-location', 'healthy', 'first-inspection', 'ai-analyzed', 'reminder-off', 'missing-record', 'none-selected', 'inspection-tab', 'auto-capture-tab', 'upload-error', 'camera-permission-denied', 'context-missing', 'no-images', 'max-images', 'targets-empty', 'loading-inspection', 'data-missing', 'request-pending', 'request-error', 'saving', 'offline-no-cache', 'multi-selected', 'creating-tasks', 'calendar-view', 'completed-expanded', 'overdue-filtered', 'updating-completion', 'normal-ai', 'normal-manual', 'validation-error', 'submitting', 'submit-error', 'colony-picker', 'date-picker', 'discard-dialog', 'normal-linked-top', 'normal-linked-bottom', 'normal-new', 'saving-draft', 'save-error', 'photo-upload-error', 'photo-added', 'discard-confirm', 'colony-selector', 'time-picker', 'filtered-feeding', 'filtered-apiary', 'filtered-colony', 'filtered-period', 'search-results', 'filter-menu', 'search-open', 'no-apiary', 'apiary-load-error', 'geolocation-denied', 'map-error', 'filled', 'sent', 'resend-cooldown', 'send-error', 'new-password', 'password-validation-error', 'password-updating', 'password-updated', 'password-visible', 'auth-error', 'remember-me-off', 'signup-error', 'confirmation-sent', 'location-selected', 'quantity-adjusted', 'colony-names-expanded']
 const VALID_TABS: TabId[] = ['home', 'farms', 'work', 'analytics', 'settings']
 
 const IS_DEV = import.meta.env.DEV &&
@@ -75,7 +75,7 @@ function readParam<T extends string>(key: string, valid: T[], fallback: T): T {
   return (valid.includes(p as T) ? p : fallback) as T
 }
 
-const VALID_SCREENS = ['home', 'farms', 'colony-detail', 'inspection-start', 'inspection-record', 'frame-viewer', 'add-stage', 'apiary-map', 'inspection-complete', 'camera-images', 'ai-analysis', 'ai-diagnosis', 'recommended-work', 'work', 'task-create', 'work-record', 'work-history', 'report', 'colony-trend', 'colony-comparison', 'colony-create', 'apiary-create', 'password-reset', 'login', 'signup', 'onboarding-1'] as const
+const VALID_SCREENS = ['home', 'farms', 'colony-detail', 'inspection-start', 'inspection-record', 'frame-viewer', 'add-stage', 'apiary-map', 'inspection-complete', 'camera-images', 'ai-analysis', 'ai-diagnosis', 'recommended-work', 'work', 'task-create', 'work-record', 'work-history', 'report', 'colony-trend', 'colony-comparison', 'colony-create', 'apiary-create', 'password-reset', 'login', 'signup', 'onboarding-1', 'onboarding-2'] as const
 type Screen = typeof VALID_SCREENS[number]
 
 export default function App() {
@@ -124,6 +124,7 @@ export default function App() {
   const loginState          = viewState as LoginViewState
   const signupState         = viewState as SignupViewState
   const onboarding1State    = viewState as OnboardingStep1ViewState
+  const onboarding2State    = viewState as OnboardingStep2ViewState
 
   return (
     <>
@@ -141,11 +142,18 @@ export default function App() {
         </div>
       )}
 
-      {screen === 'onboarding-1' ? (
+      {screen === 'onboarding-2' ? (
+        <OnboardingStep2Screen
+          viewState={onboarding2State}
+          onBack={() => setScreen('onboarding-1')}
+          onNext={() => setScreen('home')}
+          onSkip={() => setScreen('home')}
+        />
+      ) : screen === 'onboarding-1' ? (
         <OnboardingStep1Screen
           viewState={onboarding1State}
           onBack={() => setScreen('signup')}
-          onNext={() => setScreen('home')}
+          onNext={() => setScreen('onboarding-2')}
           onSkip={() => setScreen('home')}
         />
       ) : screen === 'signup' ? (

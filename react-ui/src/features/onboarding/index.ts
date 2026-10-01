@@ -1,2 +1,3 @@
 export { OnboardingStep1Screen } from './OnboardingStep1Screen'
-export type { OnboardingStep1ViewState } from './types'
+export { OnboardingStep2Screen } from './OnboardingStep2Screen'
+export type { OnboardingStep1ViewState, OnboardingStep2ViewState } from './types'
