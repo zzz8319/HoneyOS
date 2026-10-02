@@ -17,6 +17,7 @@ interface Props {
   initialPopover?: boolean
   onBack?: () => void
   onStartInspection?: (colonyId: string) => void
+  onSensorDetail?: (colonyId: string) => void
 }
 
 const STATUS_STYLE: Record<string, string> = {
@@ -47,6 +48,7 @@ export function ColonyDetailScreen({
   initialPopover = false,
   onBack,
   onStartInspection,
+  onSensorDetail,
 }: Props) {
   const colony = mockColonyDetail
   const defaultActive = colony.inspections.find(i => i.date === '2026-08-28') ?? null
@@ -202,7 +204,7 @@ export function ColonyDetailScreen({
         ) : (
           <SensorSummary
             sensor={colony.sensor}
-            onDetailClick={() => alert('センサー詳細 → SCR-017（未実装）')}
+            onDetailClick={() => onSensorDetail?.(colonyId ?? colony.id)}
           />
         )}
 
