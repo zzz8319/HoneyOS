@@ -9,3 +9,13 @@ export type OnboardingStep2ViewState =
   | 'submitting'
   | 'error'
   | 'offline'
+
+export type OnboardingStep3ViewState =
+  | 'normal'
+  | 'no-apiary'
+  | 'no-colony'
+  | 'long-content'
+  | 'loading'
+  | 'error'
+  | 'offline-cached'
+  | 'offline-no-cache'
