@@ -369,12 +369,10 @@ export default function App() {
       ) : screen === 'sensor-detail' ? (
         <SensorDetailScreen
           viewState={sensorState}
-          colonyId={selectedColonyId ?? undefined}
           onBack={() => setScreen(previousScreen)}
-          onNavigateToGraph={(_payload: SensorNavigateToGraphPayload) => {
+          onNavigateToGraph={() => {
             // SCR-018 (グラフ画面) 未実装
           }}
-          onNavigateToNotifications={() => navigateTo('home')}
         />
       ) : (
         <>
