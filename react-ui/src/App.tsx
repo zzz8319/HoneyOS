@@ -364,6 +364,15 @@ export default function App() {
           initialPopover={new URLSearchParams(window.location.search).get('popover') === '1'}
           onBack={() => { setScreen('home'); setActiveTab('farms') }}
           onStartInspection={(id) => { setSelectedColonyId(id); setScreen('inspection-start') }}
+          onSensorDetail={(id) => { setSelectedColonyId(id); navigateTo('sensor-detail') }}
+        />
+      ) : screen === 'sensor-detail' ? (
+        <SensorDetailScreen
+          viewState={sensorState}
+          onBack={() => setScreen(previousScreen)}
+          onNavigateToGraph={() => {
+            // SCR-018 (グラフ画面) 未実装
+          }}
         />
       ) : (
         <>
