@@ -53,12 +53,12 @@ import { OnboardingStep1Screen, OnboardingStep2Screen, OnboardingStep3Screen } f
 import type { OnboardingStep1ViewState, OnboardingStep2ViewState, OnboardingStep3ViewState } from './features/onboarding'
 import { NotificationCenterScreen } from './features/notifications'
 import type { NotificationCenterViewState, NotificationItem } from './features/notifications'
-import { SensorDetailScreen } from './features/sensors'
-import type { SensorDetailViewState } from './features/sensors'
+import { SensorDetailScreen, SensorGraphScreen } from './features/sensors'
+import type { SensorDetailViewState, SensorGraphViewState, GraphColony } from './features/sensors'
 import type { TabId } from './components'
 import styles from './App.module.css'
 
-type ViewState = DashboardViewState | ColonyListViewState | ColonyDetailViewState | InspectionStartViewState | RecordViewState | ViewerViewState | ApiaryMapViewState | CompleteViewState | CameraViewState | AiAnalysisViewState | DiagnosisViewState | RecommendedWorkState | WorkListViewState | TaskCreateViewState | WorkRecordViewState | WorkHistoryViewState | ReportViewState | ColonyTrendViewState | ColonyComparisonViewState | ColonyCreateViewState | ApiaryCreateViewState | PasswordResetViewState | LoginViewState | SignupViewState | OnboardingStep1ViewState | OnboardingStep2ViewState | OnboardingStep3ViewState | NotificationCenterViewState | SensorDetailViewState
+type ViewState = DashboardViewState | ColonyListViewState | ColonyDetailViewState | InspectionStartViewState | RecordViewState | ViewerViewState | ApiaryMapViewState | CompleteViewState | CameraViewState | AiAnalysisViewState | DiagnosisViewState | RecommendedWorkState | WorkListViewState | TaskCreateViewState | WorkRecordViewState | WorkHistoryViewState | ReportViewState | ColonyTrendViewState | ColonyComparisonViewState | ColonyCreateViewState | ApiaryCreateViewState | PasswordResetViewState | LoginViewState | SignupViewState | OnboardingStep1ViewState | OnboardingStep2ViewState | OnboardingStep3ViewState | NotificationCenterViewState | SensorDetailViewState | SensorGraphViewState
 
 const STATES: { id: ViewState; label: string }[] = [
   { id: 'normal',  label: '通常' },
@@ -79,7 +79,7 @@ function readParam<T extends string>(key: string, valid: T[], fallback: T): T {
   return (valid.includes(p as T) ? p : fallback) as T
 }
 
-const VALID_SCREENS = ['home', 'farms', 'colony-detail', 'inspection-start', 'inspection-record', 'frame-viewer', 'add-stage', 'apiary-map', 'inspection-complete', 'camera-images', 'ai-analysis', 'ai-diagnosis', 'recommended-work', 'work', 'task-create', 'work-record', 'work-history', 'report', 'colony-trend', 'colony-comparison', 'colony-create', 'apiary-create', 'password-reset', 'login', 'signup', 'onboarding-1', 'onboarding-2', 'onboarding-3', 'notification-center', 'sensor-detail'] as const
+const VALID_SCREENS = ['home', 'farms', 'colony-detail', 'inspection-start', 'inspection-record', 'frame-viewer', 'add-stage', 'apiary-map', 'inspection-complete', 'camera-images', 'ai-analysis', 'ai-diagnosis', 'recommended-work', 'work', 'task-create', 'work-record', 'work-history', 'report', 'colony-trend', 'colony-comparison', 'colony-create', 'apiary-create', 'password-reset', 'login', 'signup', 'onboarding-1', 'onboarding-2', 'onboarding-3', 'notification-center', 'sensor-detail', 'sensor-graph'] as const
 type Screen = typeof VALID_SCREENS[number]
 
 export default function App() {
@@ -132,6 +132,8 @@ export default function App() {
   const onboarding3State    = viewState as OnboardingStep3ViewState
   const notifState          = viewState as NotificationCenterViewState
   const sensorState         = viewState as SensorDetailViewState
+  const sensorGraphState    = viewState as SensorGraphViewState
+  const [sensorGraphColony, setSensorGraphColony] = useState<GraphColony | null>(null)
 
   function handleNotifNavigate(target: NotificationItem['navigateTo'], colonyId?: string) {
     if (target === 'inspection-start') {
@@ -162,12 +164,19 @@ export default function App() {
         </div>
       )}
 
-      {screen === 'sensor-detail' ? (
+      {screen === 'sensor-graph' ? (
+        <SensorGraphScreen
+          viewState={sensorGraphState}
+          colony={sensorGraphColony ?? undefined}
+          onBack={() => setScreen(previousScreen)}
+        />
+      ) : screen === 'sensor-detail' ? (
         <SensorDetailScreen
           viewState={sensorState}
           onBack={() => setScreen(previousScreen)}
-          onNavigateToGraph={() => {
-            // SCR-018 未実装
+          onNavigateToGraph={(payload) => {
+            setSensorGraphColony({ id: payload.colonyId, name: '', apiaryName: '' })
+            navigateTo('sensor-graph')
           }}
         />
       ) : screen === 'notification-center' ? (
@@ -365,14 +374,6 @@ export default function App() {
           onBack={() => { setScreen('home'); setActiveTab('farms') }}
           onStartInspection={(id) => { setSelectedColonyId(id); setScreen('inspection-start') }}
           onSensorDetail={(id) => { setSelectedColonyId(id); navigateTo('sensor-detail') }}
-        />
-      ) : screen === 'sensor-detail' ? (
-        <SensorDetailScreen
-          viewState={sensorState}
-          onBack={() => setScreen(previousScreen)}
-          onNavigateToGraph={() => {
-            // SCR-018 (グラフ画面) 未実装
-          }}
         />
       ) : (
         <>
