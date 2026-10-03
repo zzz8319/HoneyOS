@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback } from 'react'
 import { ChevronLeft, RefreshCw, SlidersHorizontal, Info, AlertTriangle, WifiOff, MoreVertical, Clock } from 'lucide-react'
+// onNavigateToNotifications prop is retained for future use but not exposed in the UI per spec
 import type {
   SensorMetric, SensorKind, SensorDetailViewState,
   SensorDetailColony, SensorNavigateToGraphPayload,
@@ -18,11 +19,8 @@ const ALL_KINDS: SensorKind[] = ['temperature', 'humidity', 'weight', 'sound', '
 
 interface Props {
   viewState?: SensorDetailViewState
-  colonyId?: string
-  highlightKind?: SensorKind
   onBack: () => void
   onNavigateToGraph?: (payload: SensorNavigateToGraphPayload) => void
-  onNavigateToNotifications?: () => void
   returnTo?: string
 }
 
@@ -52,11 +50,8 @@ function buildLastUpdate(vs: SensorDetailViewState): string {
 
 export function SensorDetailScreen({
   viewState = 'normal',
-  colonyId: _colonyId,
-  highlightKind: _highlightKind,
   onBack,
   onNavigateToGraph,
-  onNavigateToNotifications,
   returnTo = 'sensor-detail',
 }: Props) {
   const isLoading   = viewState === 'loading'
@@ -150,7 +145,7 @@ export function SensorDetailScreen({
           <button
             className={styles.refreshBtn}
             onClick={handleRefresh}
-            disabled={refreshing || isOffline || hasNoCache}
+            disabled={refreshing}
             aria-label={refreshing ? '更新中' : 'センサーデータを更新'}
             aria-busy={refreshing}
           >
@@ -231,18 +226,8 @@ export function SensorDetailScreen({
 
           {/* ── 下部案内 ── */}
           <div className={styles.infoBanner} role="note">
-            <Info size={16} aria-hidden />
-            <span>
-              異常値は通知センターにも届きます
-              {onNavigateToNotifications && (
-                <>
-                  {'　'}
-                  <button className={styles.notifLink} onClick={onNavigateToNotifications}>
-                    通知を確認
-                  </button>
-                </>
-              )}
-            </span>
+            <Info size={15} aria-hidden />
+            <span>異常値は通知センターにも届きます</span>
           </div>
         </div>
       )}
@@ -271,11 +256,15 @@ function renderSkeleton() {
         <div key={i} className={styles.skeletonCard}>
           <div className={styles.skeletonIcon} />
           <div className={styles.skeletonContent}>
-            <div className={styles.skeletonLine} style={{ width: '40%', height: 11 }} />
-            <div className={styles.skeletonLine} style={{ width: '55%', height: 22 }} />
-            <div className={styles.skeletonLine} style={{ width: '30%', height: 11 }} />
+            <div className={styles.skeletonLine} style={{ width: '35%', height: 11 }} />
+            <div className={styles.skeletonLine} style={{ width: '60%', height: 26 }} />
+            <div className={styles.skeletonLine} style={{ width: '50%', height: 12 }} />
           </div>
-          <div className={styles.skeletonSpark} />
+          <div className={styles.skeletonRight}>
+            <div className={styles.skeletonBadge} />
+            <div className={styles.skeletonSpark} />
+          </div>
+          <div className={styles.skeletonChevron} />
         </div>
       ))}
     </div>

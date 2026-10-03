@@ -1,62 +1,59 @@
+/* ── Card ── */
 .card {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 14px 12px 14px 14px;
+  padding: 14px 10px 14px 14px;
   background: var(--color-surface, #fff);
   border: 1px solid var(--color-border, #E3E5E8);
   border-radius: var(--radius-md, 12px);
   cursor: pointer;
   text-align: left;
   width: 100%;
-  min-height: 44px;
+  min-height: 126px;
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
   transition: background 0.12s;
-  position: relative;
 }
 .card:focus-visible { outline: 2px solid var(--color-primary, #E39A16); outline-offset: 1px; }
 .card:active { background: #F5F4F1; }
 
-.cardWarning {
-  background: var(--color-danger-soft, #FEE2E2);
-  border-color: #FCA5A5;
-}
-.cardWarning:active { background: #FECACA; }
-
+/* 警告・異常でもカード背景は白のまま */
 .cardUninstalled {
   cursor: default;
   background: var(--color-surface, #fff);
+  min-height: 90px;
 }
 
 .cardError {
   background: #FAFAFA;
   border-style: dashed;
+  min-height: 90px;
 }
 
-/* ── Icon circle ── */
+/* ── Left column: icon (no background circle) ── */
 .iconWrap {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
+  width: 40px;
   flex-shrink: 0;
+  align-self: center;
 }
 
-.iconRed     { background: var(--color-danger-soft, #FEE2E2); color: var(--color-danger, #DC2626); }
-.iconBlue    { background: #DBEAFE; color: #2563EB; }
-.iconGreen   { background: var(--color-ok-soft, #DCFCE7); color: var(--color-ok, #16A34A); }
-.iconGray    { background: #F1F3F5; color: #525E6A; }
-.iconNeutral { background: #F1F3F5; color: #66707A; }
+/* Icon colors — applied directly to SVG via className */
+.iconRed     { color: var(--color-danger, #DC2626); }
+.iconOrange  { color: var(--color-warn, #D97706); }
+.iconBlue    { color: #2563EB; }
+.iconGray    { color: #525E6A; }
+.iconNeutral { color: #66707A; }
 
-/* ── Body ── */
+/* ── Center column: label / value / delta ── */
 .body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
   min-width: 0;
 }
 
@@ -66,56 +63,63 @@
   color: var(--color-text-secondary, #66707A);
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  line-height: 1.3;
 }
 
 .valueRow {
   display: flex;
   align-items: baseline;
-  gap: 4px;
-  flex-wrap: wrap;
+  gap: 3px;
 }
 
 .value {
-  font-size: 22px;
+  font-size: 26px;
   font-weight: 700;
   color: var(--color-text, #17212B);
-  line-height: 1.2;
+  line-height: 1.1;
   font-variant-numeric: tabular-nums;
 }
 
 .unit {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   color: var(--color-text-secondary, #66707A);
 }
 
-.deltaPositive { font-size: 12px; color: var(--color-ok, #16A34A); font-weight: 600; }
-.deltaNegative { font-size: 12px; color: var(--color-danger, #DC2626); font-weight: 600; }
-.deltaNeutral  { font-size: 12px; color: var(--color-text-secondary, #66707A); font-weight: 500; }
+/* 前回比は独立した行 */
+.delta {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+.deltaPositive { color: var(--color-ok, #16A34A); }
+.deltaNegative { color: var(--color-danger, #DC2626); }
+.deltaNeutral  { color: var(--color-text-secondary, #66707A); }
+
+/* ── Right column: badge + sparkline ── */
+.rightCol {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+}
 
 /* ── Status badge ── */
 .badge {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
   font-size: 11px;
   font-weight: 600;
   padding: 2px 8px;
   border-radius: var(--radius-full, 9999px);
-  margin-top: 2px;
-  width: fit-content;
+  white-space: nowrap;
 }
 .badgeCritical { background: var(--color-danger, #DC2626); color: #fff; }
 .badgeWarning  { background: var(--color-warn-soft, #FEF3C7); color: var(--color-warn, #D97706); border: 1px solid #FDE68A; }
 .badgeNormal   { background: var(--color-ok-soft, #DCFCE7); color: var(--color-ok, #16A34A); }
 .badgeNeutral  { background: #F1F3F5; color: var(--color-text-secondary, #66707A); }
-
-/* ── Sparkline ── */
-.sparklineWrap {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-}
 
 /* ── Chevron ── */
 .chevron {
@@ -124,18 +128,23 @@
   align-self: center;
   flex-shrink: 0;
   color: var(--color-text-secondary, #66707A);
-  padding-left: 4px;
+  padding: 0 2px;
+  min-width: 24px;
+  min-height: 44px;
+  justify-content: center;
 }
 
 /* ── Uninstalled / error states ── */
 .uninstalledText {
   font-size: 14px;
   color: var(--color-text-secondary, #66707A);
+  margin-top: 2px;
 }
 
 .errorText {
   font-size: 13px;
   color: var(--color-text-secondary, #66707A);
+  margin-top: 2px;
 }
 
 .setupBtn {

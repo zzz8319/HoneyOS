@@ -80,14 +80,12 @@ export const ALL_NORMAL_METRICS: SensorMetric[] = NORMAL_METRICS.map(m =>
 export const HIGH_TEMP_METRICS: SensorMetric[] = NORMAL_METRICS.map(m =>
   m.kind === 'temperature'
     ? { ...m, value: 38.5, previousDelta: 2.7, status: 'critical', statusLabel: '要注意' }
-    : { ...m, status: 'normal' }
+    : m
 )
 
 export const LONG_CONTENT_METRICS: SensorMetric[] = NORMAL_METRICS.map(m => ({
   ...m,
   colonyId: 'b99',
-  statusLabel: m.status === 'warning' ? '通常範囲を超過しています' :
-               m.status === 'uninstalled' ? 'センサーが未設置の状態です' : m.statusLabel,
   value: m.kind === 'weight' ? 142.6 : m.kind === 'sound' ? 9846 : m.value,
   unit: m.kind === 'weight' ? 'kg' : m.unit,
 }))
