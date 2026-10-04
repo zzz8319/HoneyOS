@@ -289,10 +289,10 @@ export const SCREEN_REGISTRY: ScreenEntry[] = [
   {
     id: 'SCR-031',
     canonicalName: '設定',
-    status: 'migration-pending',
-    route: null,
-    implementation: 'legacy',
-    notes: 'ルートindex.htmlに実装済み。React移植待ち。新規設計・新規実装対象ではない',
+    status: 'active',
+    route: 'settings',
+    implementation: 'react',
+    notes: 'React移植完了。旧実装: ルートindex.html (migration-pending → active 2026-10-04)',
   },
   {
     id: 'SCR-032',
