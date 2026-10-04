@@ -263,17 +263,17 @@ export default function App() {
       ) : screen === 'report' ? (
         <ReportScreen
           viewState={reportState}
-          onBack={() => setScreen('home')}
-          onViewHistory={() => setScreen('work-history')}
+          onBack={() => setScreen(previousScreen)}
+          onViewHistory={() => navigateTo('work-history')}
           onTabChange={setActiveTab}
         />
       ) : screen === 'work-history' ? (
         <WorkHistoryScreen
           viewState={workHistoryState}
-          onBack={() => setScreen('home')}
-          onAddRecord={() => setScreen('work-record')}
-          onRecordTap={() => alert('作業履歴詳細 → 未実装')}
-          onAnalyze={() => alert('詳しく分析する → SCR-028（未実装）')}
+          onBack={() => setScreen(previousScreen)}
+          onAddRecord={() => navigateTo('work-record')}
+          onRecordTap={() => navigateTo('work-record')}
+          onAnalyze={() => navigateTo('report')}
           onTabChange={setActiveTab}
         />
       ) : screen === 'work-record' ? (
@@ -298,9 +298,9 @@ export default function App() {
         <RecommendedWorkScreen
           viewState={recWorkState}
           onBack={() => setScreen('ai-diagnosis')}
-          onAddToTask={(id) => alert(`タスクに追加: ${id} → SCR-025（未実装）`)}
-          onRecord={(id) => alert(`作業記録: ${id} → SCR-026（未実装）`)}
-          onCreateTasks={(ids) => alert(`タスク作成: ${ids.join(', ')} → SCR-025（未実装）`)}
+          onAddToTask={() => navigateTo('task-create')}
+          onRecord={() => navigateTo('work-record')}
+          onCreateTasks={() => navigateTo('task-create')}
         />
       ) : screen === 'ai-diagnosis' ? (
         <AiDiagnosisScreen
@@ -326,10 +326,10 @@ export default function App() {
         <InspectionCompleteScreen
           viewState={completeState}
           onNextColony={() => { setSelectedColonyId(null); setScreen('inspection-start') }}
-          onAddNote={() => alert('作業記録追加 → SCR-026（未実装）')}
+          onAddNote={() => navigateTo('work-record')}
           onDashboard={() => { setScreen('home'); setActiveTab('home') }}
           onEdit={() => setScreen('inspection-record')}
-          onAiAnalyze={() => alert('AI解析 → SCR-014（未実装）')}
+          onAiAnalyze={() => navigateTo('ai-analysis')}
         />
       ) : screen === 'apiary-map' ? (
         <ApiaryMapScreen
@@ -375,6 +375,11 @@ export default function App() {
           onBack={() => { setScreen('home'); setActiveTab('farms') }}
           onStartInspection={(id) => { setSelectedColonyId(id); setScreen('inspection-start') }}
           onSensorDetail={(id) => { setSelectedColonyId(id); navigateTo('sensor-detail') }}
+          onFrameViewer={(id) => { setSelectedColonyId(id); navigateTo('frame-viewer') }}
+          onInspectionHistory={(id) => { setSelectedColonyId(id); navigateTo('frame-viewer') }}
+          onWorkHistory={(id) => { setSelectedColonyId(id); navigateTo('work-history') }}
+          onCameraImages={(id) => { setSelectedColonyId(id); navigateTo('camera-images') }}
+          onAiDiagnosis={(id) => { setSelectedColonyId(id); navigateTo('ai-diagnosis') }}
         />
       ) : (
         <>
@@ -412,7 +417,15 @@ export default function App() {
             />
           )}
 
-          {(activeTab === 'work' || activeTab === 'settings') && (
+          {activeTab === 'work' && (
+            <WorkListScreen
+              viewState={workListState}
+              onTabChange={setActiveTab}
+              onAddTask={() => { navigateTo('task-create'); setViewState('normal-manual') }}
+            />
+          )}
+
+          {activeTab === 'settings' && (
             <DashboardScreen
               viewState="empty"
               activeTab={activeTab}
