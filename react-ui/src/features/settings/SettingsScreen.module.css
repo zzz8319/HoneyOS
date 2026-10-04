@@ -639,3 +639,54 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* ── API connection additions ────────────────────────────────────────────── */
+
+.deleteConfirmInput {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 var(--space-3, 12px);
+  font-size: 15px;
+  font-family: inherit;
+  color: var(--color-text, #17212B);
+  background: var(--color-bg, #F8F7F4);
+  border: 1px solid var(--color-border, #E3E5E8);
+  border-radius: var(--radius-md, 12px);
+  box-sizing: border-box;
+  outline: none;
+  text-align: center;
+}
+
+.deleteConfirmInput:focus {
+  border-color: var(--color-danger, #DC2626);
+}
+
+.pushReadyNote {
+  font-size: 12px;
+  color: var(--color-text-secondary, #66707A);
+  margin: 0 0 var(--space-2, 8px);
+  padding: var(--space-2, 8px) var(--space-3, 12px);
+  background: var(--color-bg, #F8F7F4);
+  border-radius: var(--radius-sm, 8px);
+  line-height: 1.4;
+}
+
+.localSavedNote {
+  font-size: 12px;
+  color: var(--color-text-secondary, #66707A);
+  margin-top: var(--space-1, 4px);
+  padding: var(--space-1, 4px) var(--space-3, 12px);
+  background: var(--color-bg, #F8F7F4);
+  border-radius: var(--radius-sm, 8px);
+  text-align: center;
+}
+
+.actionError {
+  font-size: 13px;
+  color: var(--color-danger, #DC2626);
+  text-align: center;
+  margin: 0;
+  padding: var(--space-2, 8px) var(--space-3, 12px);
+  background: color-mix(in srgb, var(--color-danger, #DC2626) 8%, transparent);
+  border-radius: var(--radius-sm, 8px);
+}

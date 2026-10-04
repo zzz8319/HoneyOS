@@ -484,6 +484,40 @@
   }
 
   // ==================
+  // 通知設定
+  // ==================
+  async function getNotificationSettings() {
+    const session = await getSession();
+    if (!session) return null;
+    const { data, error } = await sb
+      .from('notification_settings')
+      .select('*')
+      .eq('user_id', session.user.id)
+      .single();
+    if (error) return null;
+    return {
+      inspectionReminder: !!data.inspection,
+      aiDiagnosisComplete: !!data.ai_complete,
+      sensorAlert: !!data.sensor_alert,
+      systemAnnouncement: !!data.system_notice,
+    };
+  }
+
+  async function updateNotificationSettings(settings) {
+    const session = await getSession();
+    if (!session) throw new Error('ログインが必要です');
+    const { error } = await sb.from('notification_settings').upsert({
+      user_id: session.user.id,
+      inspection: settings.inspectionReminder,
+      ai_complete: settings.aiDiagnosisComplete,
+      sensor_alert: settings.sensorAlert,
+      system_notice: settings.systemAnnouncement,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: 'user_id' });
+    if (error) throw error;
+  }
+
+  // ==================
   // データエクスポート
   // ==================
   async function exportAllData() {
@@ -571,6 +605,9 @@
     // Push
     savePushSubscription,
     deletePushSubscription,
+    // Notification settings
+    getNotificationSettings,
+    updateNotificationSettings,
     // Realtime
     subscribeRealtime,
     unsubscribeRealtime,
