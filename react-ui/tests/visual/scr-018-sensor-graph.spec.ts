@@ -196,12 +196,25 @@ test('SCR-018 partial-data — 欠損データ', async ({ page }) => {
   await assertCommonSCR018(page)
   // 「日」tab selected
   await expect(page.locator('[aria-pressed="true"]')).toContainText('日')
-  // missing count must be > 0
-  const missingText = await page.locator('span').filter({ hasText: /件/ }).last().textContent()
-  const missingCount = parseInt(missingText ?? '0')
+  // missing count: evaluate directly to avoid any scroll side-effects from locator actions
+  const missingCount = await page.evaluate(() => {
+    const spans = Array.from(document.querySelectorAll('span'))
+    const last = spans.filter(s => s.textContent?.includes('件')).pop()
+    return last ? parseInt(last.textContent ?? '0') : 0
+  })
   expect(missingCount).toBeGreaterThan(0)
-  // chart still visible
-  await expect(page.locator('section[aria-label="センサーグラフ"] [data-testid="chart-point-0"]')).toBeVisible()
+  // chart still visible (chart-point-0 is near top — no scroll needed)
+  const chartPointVisible = await page.evaluate(() => {
+    return !!document.querySelector('section[aria-label="センサーグラフ"] [data-testid="chart-point-0"]')
+  })
+  expect(chartPointVisible).toBe(true)
+  // Assert title is in viewport top before screenshot
+  const titleBox = await page.getByRole('heading', { name: '温度', exact: true }).boundingBox()
+  expect(titleBox).not.toBeNull()
+  expect(titleBox!.y).toBeGreaterThanOrEqual(0)
+  expect(titleBox!.y).toBeLessThan(60)
+  // Final scroll reset before screenshot
+  await resetScroll(page)
   await expect(page).toHaveScreenshot('scr-018-partial-data.png', { fullPage: false })
 })
 
