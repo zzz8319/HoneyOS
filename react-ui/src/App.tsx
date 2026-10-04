@@ -390,7 +390,7 @@ export default function App() {
       ) : screen === 'settings' ? (
         <SettingsScreen
           viewState={settingsState}
-          activeTab={activeTab}
+          activeTab="settings"
           onTabChange={(tab) => {
             setActiveTab(tab)
             if (tab !== 'settings') setScreen('home')

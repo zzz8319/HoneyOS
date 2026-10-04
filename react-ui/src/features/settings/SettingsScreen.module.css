@@ -47,6 +47,45 @@
   padding: var(--space-2, 8px) var(--space-4, 16px);
 }
 
+/* ── Sync-error banner ── */
+.syncErrorBanner {
+  flex: 0 0 auto;
+  background: var(--color-danger-soft, #FEE2E2);
+  color: var(--color-danger, #DC2626);
+  padding: var(--space-3, 12px) var(--space-4, 16px);
+}
+
+/* ── Unsynced-data banner ── */
+.unsyncedBanner {
+  flex: 0 0 auto;
+  background: var(--color-warn-soft, #FEF3C7);
+  color: var(--color-warn-dark, #92400E);
+  padding: var(--space-3, 12px) var(--space-4, 16px);
+}
+
+.syncBannerTitle {
+  font-size: 13px;
+  font-weight: 700;
+  margin: 0 0 2px;
+}
+
+.syncBannerDesc {
+  font-size: 12px;
+  margin: 0 0 var(--space-2, 8px);
+  opacity: 0.85;
+}
+
+.syncBannerRetryBtn {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-danger, #DC2626);
+  background: none;
+  border: 1px solid currentColor;
+  border-radius: 6px;
+  padding: 3px 10px;
+  cursor: pointer;
+}
+
 /* ── Body ── */
 .body {
   flex: 1 1 auto;

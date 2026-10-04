@@ -274,6 +274,17 @@ export function SettingsScreen({
     return false
   })
 
+  // Scroll to top on initial render when profile edit starts open
+  useEffect(() => {
+    if (localEditOpen) {
+      requestAnimationFrame(() => {
+        bodyRef.current?.scrollTo({ top: 0 })
+      })
+    }
+    // Run only once on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   // ── On-mount: load data from HoneyDB ─────────────────────────────────────
 
   useEffect(() => {
@@ -372,11 +383,17 @@ export function SettingsScreen({
 
   // ── Handlers ──────────────────────────────────────────────────────────────
 
+  const bodyRef = useRef<HTMLDivElement>(null)
+
   function handleEditOpen() {
     setEditUsername(profile.username)
     setEditApiaryName(profile.primaryApiaryName)
     setLocalSaveError(null)
     setLocalEditOpen(true)
+    // Scroll back to top so the header and profile remain visible
+    requestAnimationFrame(() => {
+      bodyRef.current?.scrollTo({ top: 0 })
+    })
   }
 
   function handleEditCancel() {
@@ -628,8 +645,25 @@ export function SettingsScreen({
         </div>
       )}
 
+      {/* Sync-error banner */}
+      {viewState === 'sync-error' && (
+        <div className={styles.syncErrorBanner} role="alert">
+          <p className={styles.syncBannerTitle}>設定を同期できませんでした</p>
+          <p className={styles.syncBannerDesc}>変更内容はこの端末に保存されています。通信状況を確認して再試行してください。</p>
+          <button className={styles.syncBannerRetryBtn}>再試行</button>
+        </div>
+      )}
+
+      {/* Unsynced-data banner */}
+      {viewState === 'unsynced-data' && (
+        <div className={styles.unsyncedBanner} role="status" aria-live="polite">
+          <p className={styles.syncBannerTitle}>設定の変更が同期待ちです</p>
+          <p className={styles.syncBannerDesc}>この端末には保存済みです。オンラインに戻ると自動で同期します。</p>
+        </div>
+      )}
+
       {/* Scrollable content */}
-      <div className={styles.body}>
+      <div className={styles.body} ref={bodyRef}>
 
         {/* ── Profile section ── */}
         <section className={styles.section} aria-label="プロフィール">
