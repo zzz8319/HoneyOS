@@ -690,3 +690,11 @@
   background: color-mix(in srgb, var(--color-danger, #DC2626) 8%, transparent);
   border-radius: var(--radius-sm, 8px);
 }
+
+.prefSyncNote {
+  font-size: 11px;
+  color: var(--color-text-secondary, #66707A);
+  margin-top: var(--space-1, 4px);
+  padding: 2px var(--space-3, 12px);
+  opacity: 0.85;
+}

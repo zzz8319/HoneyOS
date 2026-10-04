@@ -304,3 +304,7 @@ alter table public.notification_settings enable row level security;
 drop policy if exists "users manage own notification_settings" on public.notification_settings;
 create policy "users manage own notification_settings"
   on public.notification_settings for all using (auth.uid() = user_id);
+
+-- [MIGRATION: 20261004_user_preferences] Added in feature/user-preferences-sync
+-- See supabase/migrations/20261004_user_preferences.sql for full migration
+-- TABLE: user_preferences (user_id PK, theme, language, default_inspection_mode, created_at, updated_at)

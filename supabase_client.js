@@ -518,6 +518,59 @@
   }
 
   // ==================
+  // ユーザー設定
+  // ==================
+  const VALID_THEMES = ['light', 'dark', 'system'];
+  const VALID_LANGUAGES = ['ja', 'en'];
+  const VALID_INSPECTION_MODES = ['frame', 'ratio'];
+  const DEFAULT_PREFS = { theme: 'system', language: 'ja', default_inspection_mode: 'frame' };
+
+  async function getUserPreferences() {
+    const session = await getSession();
+    if (!session) return { ...DEFAULT_PREFS };
+    const { data, error } = await sb
+      .from('user_preferences')
+      .select('theme, language, default_inspection_mode')
+      .eq('user_id', session.user.id)
+      .single();
+    if (error || !data) return { ...DEFAULT_PREFS };
+    return {
+      theme: VALID_THEMES.includes(data.theme) ? data.theme : DEFAULT_PREFS.theme,
+      language: VALID_LANGUAGES.includes(data.language) ? data.language : DEFAULT_PREFS.language,
+      default_inspection_mode: VALID_INSPECTION_MODES.includes(data.default_inspection_mode)
+        ? data.default_inspection_mode
+        : DEFAULT_PREFS.default_inspection_mode,
+    };
+  }
+
+  async function updateUserPreferences(partialPrefs) {
+    if (partialPrefs.theme !== undefined && !VALID_THEMES.includes(partialPrefs.theme)) {
+      throw new Error('テーマの値が無効です: ' + partialPrefs.theme);
+    }
+    if (partialPrefs.language !== undefined && !VALID_LANGUAGES.includes(partialPrefs.language)) {
+      throw new Error('言語の値が無効です: ' + partialPrefs.language);
+    }
+    if (partialPrefs.default_inspection_mode !== undefined && !VALID_INSPECTION_MODES.includes(partialPrefs.default_inspection_mode)) {
+      throw new Error('記録方式の値が無効です: ' + partialPrefs.default_inspection_mode);
+    }
+    const { data: { user }, error: userError } = await sb.auth.getUser();
+    if (userError || !user) throw new Error('ログインが必要です');
+    const upsertData = {
+      user_id: user.id,
+      ...DEFAULT_PREFS,
+      ...partialPrefs,
+      updated_at: new Date().toISOString(),
+    };
+    const { data, error } = await sb
+      .from('user_preferences')
+      .upsert(upsertData, { onConflict: 'user_id' })
+      .select('theme, language, default_inspection_mode')
+      .single();
+    if (error) throw error;
+    return data;
+  }
+
+  // ==================
   // データエクスポート
   // ==================
   async function exportAllData() {
@@ -608,6 +661,9 @@
     // Notification settings
     getNotificationSettings,
     updateNotificationSettings,
+    // User preferences
+    getUserPreferences,
+    updateUserPreferences,
     // Realtime
     subscribeRealtime,
     unsubscribeRealtime,

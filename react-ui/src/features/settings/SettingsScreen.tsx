@@ -1,8 +1,8 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { BottomNav } from '../../components'
 import type { TabId } from '../../components'
 import { getDB } from '../../lib/db'
-import type { NotificationSettings } from '../../lib/db'
+import type { NotificationSettings, UserPreferences } from '../../lib/db'
 import {
   MOCK_PROFILE,
   MOCK_NOTIFICATIONS,
@@ -39,9 +39,19 @@ export type SettingsViewState =
   | 'offline'
 
 // ── localStorage keys ─────────────────────────────────────────────────────────
-const LS_THEME    = 'honeyos_react_theme'
-const LS_LANGUAGE = 'honeyos_react_language'
+const LS_THEME         = 'honeyos_react_theme'
+const LS_LANGUAGE      = 'honeyos_react_language'
+const LS_PREFS_KEY     = 'honeyos_user_prefs'
+const LS_PREFS_USER_KEY = 'honeyos_prefs_user_id'
+const LS_PREFS_SYNC_PENDING = 'honeyos_prefs_sync_pending'
 
+// ── Pref sync status per field ────────────────────────────────────────────────
+type PrefSyncStatus = '' | 'local' | 'pending' | 'failed'
+
+// These init-time readers only use the legacy per-key localStorage entries,
+// NOT the LS_PREFS_KEY blob, because at init time we don't yet know the
+// current user ID and cannot safely apply another user's cached prefs.
+// The useEffect on mount performs the user-ID-aware lookup from DB / LS_PREFS_KEY.
 function readLSTheme(): AppTheme {
   try {
     const v = localStorage.getItem(LS_THEME)
@@ -58,13 +68,41 @@ function readLSLanguage(): AppLanguage {
   return MOCK_APP_SETTINGS.language
 }
 
+function readLSInspectionMode(): DefaultRecordType {
+  return MOCK_APP_SETTINGS.defaultRecordType
+}
+
+/** Map UI DefaultRecordType to DB default_inspection_mode */
+function toDbMode(t: DefaultRecordType): 'frame' | 'ratio' {
+  return t === 'percentage' ? 'ratio' : 'frame'
+}
+/** Map DB default_inspection_mode to UI DefaultRecordType */
+function fromDbMode(m: 'frame' | 'ratio'): DefaultRecordType {
+  return m === 'ratio' ? 'percentage' : 'frame'
+}
+
+function resolveTheme(theme: AppTheme): 'light' | 'dark' {
+  if (theme === 'light') return 'light'
+  if (theme === 'dark') return 'dark'
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+}
+
 function applyTheme(theme: AppTheme) {
   if (typeof document === 'undefined') return
-  if (theme === 'system') {
-    document.documentElement.removeAttribute('data-theme')
-  } else {
-    document.documentElement.setAttribute('data-theme', theme)
-  }
+  const resolved = resolveTheme(theme)
+  document.documentElement.setAttribute('data-theme', resolved)
+}
+
+function writeLSPrefs(prefs: Partial<UserPreferences>, userId: string) {
+  try {
+    const existing = localStorage.getItem(LS_PREFS_KEY)
+    const current = existing ? (JSON.parse(existing) as Partial<UserPreferences>) : {}
+    localStorage.setItem(LS_PREFS_KEY, JSON.stringify({ ...current, ...prefs }))
+    localStorage.setItem(LS_PREFS_USER_KEY, userId)
+    // Also keep legacy keys in sync
+    if (prefs.theme) localStorage.setItem(LS_THEME, prefs.theme)
+    if (prefs.language) localStorage.setItem(LS_LANGUAGE, prefs.language)
+  } catch { /* ignore */ }
 }
 
 // ── Props ─────────────────────────────────────────────────────────────────────
@@ -136,6 +174,17 @@ function Toggle({ checked, onChange, label, disabled }: ToggleProps) {
   )
 }
 
+// ── Pref sync status label ────────────────────────────────────────────────────
+function PrefSyncLabel({ status }: { status: PrefSyncStatus }) {
+  if (!status) return null
+  const text =
+    status === 'local'   ? 'この端末に保存' :
+    status === 'pending' ? '同期待ち' :
+    status === 'failed'  ? '同期失敗' : ''
+  if (!text) return null
+  return <span className={styles.prefSyncNote} role="status">{text}</span>
+}
+
 // ── Main component ────────────────────────────────────────────────────────────
 export function SettingsScreen({
   viewState,
@@ -194,12 +243,21 @@ export function SettingsScreen({
   const [appSettings, setAppSettings] = useState<AppSettings>(() => ({
     theme: readLSTheme(),
     language: readLSLanguage(),
-    defaultRecordType: MOCK_APP_SETTINGS.defaultRecordType,
+    defaultRecordType: readLSInspectionMode(),
   }))
 
-  // "Saved locally" confirmation note
+  // Per-field sync status indicator
+  const [themeSyncStatus, setThemeSyncStatus] = useState<PrefSyncStatus>('')
+  const [langSyncStatus, setLangSyncStatus] = useState<PrefSyncStatus>('')
+  const [modeSyncStatus, setModeSyncStatus] = useState<PrefSyncStatus>('')
+
+  // "Saved locally" confirmation note (brief transient feedback)
   const [themeSavedLocal, setThemeSavedLocal] = useState(false)
   const [langSavedLocal, setLangSavedLocal] = useState(false)
+
+  // pref sync feedback messages
+  const [prefFeedback, setPrefFeedback] = useState<string | null>(null)
+  const prefFeedbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Data status
   const dataStatus: DataStatus =
@@ -237,12 +295,80 @@ export function SettingsScreen({
     db.getNotificationSettings().then(ns => {
       if (ns) setNotifs(ns)
     }).catch(() => { /* silent: keep mock */ })
+
+    // Load user preferences
+    ;(async () => {
+      let currentUserId: string | null = null
+      try {
+        const session = await db.getSession() as unknown as { user?: { id: string } } | null
+        currentUserId = session?.user?.id ?? null
+      } catch { /* ignore */ }
+
+      if (currentUserId) {
+        try {
+          const prefs = await db.getUserPreferences()
+          setAppSettings(prev => ({
+            ...prev,
+            theme: prefs.theme,
+            language: prefs.language,
+            defaultRecordType: fromDbMode(prefs.default_inspection_mode),
+          }))
+          writeLSPrefs(prefs, currentUserId!)
+          setThemeSyncStatus('')
+          setLangSyncStatus('')
+          setModeSyncStatus('')
+          // Attempt pending sync if needed
+          const isSyncPending = localStorage.getItem(LS_PREFS_SYNC_PENDING) === 'true'
+          const cachedUserId = localStorage.getItem(LS_PREFS_USER_KEY)
+          if (isSyncPending && cachedUserId === currentUserId) {
+            try {
+              const cachedRaw = localStorage.getItem(LS_PREFS_KEY)
+              if (cachedRaw) {
+                const cached = JSON.parse(cachedRaw) as Partial<UserPreferences>
+                await db.updateUserPreferences(cached)
+                localStorage.removeItem(LS_PREFS_SYNC_PENDING)
+                showPrefFeedback('同期完了')
+              }
+            } catch { /* keep pending */ }
+          }
+        } catch {
+          // DB failed — fall back to localStorage if same user
+          try {
+            const cachedUserId = localStorage.getItem(LS_PREFS_USER_KEY)
+            if (cachedUserId === currentUserId) {
+              const cachedRaw = localStorage.getItem(LS_PREFS_KEY)
+              if (cachedRaw) {
+                const cached = JSON.parse(cachedRaw) as Partial<UserPreferences>
+                if (cached.theme) setAppSettings(prev => ({ ...prev, theme: cached.theme as AppTheme }))
+                if (cached.language) setAppSettings(prev => ({ ...prev, language: cached.language as AppLanguage }))
+                if (cached.default_inspection_mode) setAppSettings(prev => ({ ...prev, defaultRecordType: fromDbMode(cached.default_inspection_mode as 'frame' | 'ratio') }))
+              }
+            }
+          } catch { /* ignore */ }
+        }
+      }
+    })()
   }, [])
 
   // Apply theme on mount and whenever it changes
   useEffect(() => {
     applyTheme(appSettings.theme)
   }, [appSettings.theme])
+
+  // OS theme detection when theme === 'system'
+  useEffect(() => {
+    if (appSettings.theme !== 'system') return
+    const mq = window.matchMedia('(prefers-color-scheme: dark)')
+    const handler = () => applyTheme('system')
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [appSettings.theme])
+
+  function showPrefFeedback(msg: string) {
+    setPrefFeedback(msg)
+    if (prefFeedbackTimer.current) clearTimeout(prefFeedbackTimer.current)
+    prefFeedbackTimer.current = setTimeout(() => setPrefFeedback(null), 2000)
+  }
 
   // ── Handlers ──────────────────────────────────────────────────────────────
 
@@ -300,28 +426,82 @@ export function SettingsScreen({
     }
   }, [notifs])
 
-  function handleThemeChange(theme: AppTheme) {
+  async function handleThemeChange(theme: AppTheme) {
+    // Apply immediately to UI — do NOT wait for DB
     setAppSettings(prev => ({ ...prev, theme }))
     setThemeSavedLocal(false)
+    const db = getDB()
+    if (!db) {
+      try { localStorage.setItem(LS_THEME, theme) } catch { /* ignore */ }
+      return
+    }
     try {
-      localStorage.setItem(LS_THEME, theme)
-      setThemeSavedLocal(true)
-      setTimeout(() => setThemeSavedLocal(false), 2500)
-    } catch { /* ignore */ }
+      await db.updateUserPreferences({ theme })
+      const session = await db.getSession() as unknown as { user?: { id: string } } | null
+      const uid = session?.user?.id
+      if (uid) writeLSPrefs({ theme }, uid)
+      setThemeSyncStatus('')
+      showPrefFeedback('サーバーに保存しました')
+    } catch {
+      try {
+        const uid = localStorage.getItem(LS_PREFS_USER_KEY) ?? ''
+        writeLSPrefs({ theme }, uid)
+        localStorage.setItem(LS_PREFS_SYNC_PENDING, 'true')
+      } catch { /* ignore */ }
+      setThemeSyncStatus('pending')
+      showPrefFeedback('この端末に保存しました（同期待ち）')
+    }
   }
 
-  function handleLanguageChange(language: AppLanguage) {
+  async function handleLanguageChange(language: AppLanguage) {
+    // Apply immediately to UI — do NOT wait for DB
     setAppSettings(prev => ({ ...prev, language }))
     setLangSavedLocal(false)
+    const db = getDB()
+    if (!db) {
+      try { localStorage.setItem(LS_LANGUAGE, language) } catch { /* ignore */ }
+      return
+    }
     try {
-      localStorage.setItem(LS_LANGUAGE, language)
-      setLangSavedLocal(true)
-      setTimeout(() => setLangSavedLocal(false), 2500)
-    } catch { /* ignore */ }
+      await db.updateUserPreferences({ language })
+      const session = await db.getSession() as unknown as { user?: { id: string } } | null
+      const uid = session?.user?.id
+      if (uid) writeLSPrefs({ language }, uid)
+      setLangSyncStatus('')
+      showPrefFeedback('サーバーに保存しました')
+    } catch {
+      try {
+        const uid = localStorage.getItem(LS_PREFS_USER_KEY) ?? ''
+        writeLSPrefs({ language }, uid)
+        localStorage.setItem(LS_PREFS_SYNC_PENDING, 'true')
+      } catch { /* ignore */ }
+      setLangSyncStatus('pending')
+      showPrefFeedback('この端末に保存しました（同期待ち）')
+    }
   }
 
-  function handleDefaultRecordTypeChange(defaultRecordType: DefaultRecordType) {
+  async function handleDefaultRecordTypeChange(defaultRecordType: DefaultRecordType) {
+    // Apply immediately to UI — do NOT wait for DB
     setAppSettings(prev => ({ ...prev, defaultRecordType }))
+    const db = getDB()
+    const dbMode = toDbMode(defaultRecordType)
+    if (!db) return
+    try {
+      await db.updateUserPreferences({ default_inspection_mode: dbMode })
+      const session = await db.getSession() as unknown as { user?: { id: string } } | null
+      const uid = session?.user?.id
+      if (uid) writeLSPrefs({ default_inspection_mode: dbMode }, uid)
+      setModeSyncStatus('')
+      showPrefFeedback('サーバーに保存しました')
+    } catch {
+      try {
+        const uid = localStorage.getItem(LS_PREFS_USER_KEY) ?? ''
+        writeLSPrefs({ default_inspection_mode: dbMode }, uid)
+        localStorage.setItem(LS_PREFS_SYNC_PENDING, 'true')
+      } catch { /* ignore */ }
+      setModeSyncStatus('pending')
+      showPrefFeedback('この端末に保存しました（同期待ち）')
+    }
   }
 
   async function handleLogout() {
@@ -626,6 +806,9 @@ export function SettingsScreen({
         {/* ── App settings section ── */}
         <section className={styles.section} aria-label="アプリ設定">
           <p className={styles.sectionLabel}>アプリ設定</p>
+          {prefFeedback && (
+            <p className={styles.localSavedNote} role="status">{prefFeedback}</p>
+          )}
           <div className={styles.rowList}>
             <div className={styles.settingRow}>
               <span className={styles.rowText}>テーマ</span>
@@ -642,6 +825,7 @@ export function SettingsScreen({
                 ))}
               </div>
             </div>
+            <PrefSyncLabel status={themeSyncStatus} />
             {themeSavedLocal && (
               <p className={styles.localSavedNote} role="status">この端末に保存しました</p>
             )}
@@ -663,6 +847,7 @@ export function SettingsScreen({
                 ))}
               </div>
             </div>
+            <PrefSyncLabel status={langSyncStatus} />
             {appSettings.language === 'en' && (
               <p className={styles.localSavedNote} role="note">
                 一部の画面はまだ日本語のみ対応しています
@@ -693,6 +878,7 @@ export function SettingsScreen({
                 ))}
               </div>
             </div>
+            <PrefSyncLabel status={modeSyncStatus} />
             <div className={styles.infoRow}>
               <span className={styles.rowText}>蜂群の強さ指標</span>
               <span className={styles.infoRowValue}>現在：簡易指標β</span>
