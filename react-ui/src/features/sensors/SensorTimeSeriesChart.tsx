@@ -284,14 +284,17 @@ export function SensorTimeSeriesChart({
           ))}
 
           {/* X axis labels */}
-          {xTicks.map(i => {
+          {xTicks.map((i, tickIdx) => {
             if (i >= data.length) return null
             const label = periodMode === 'day'
               ? `${new Date(data[i].measuredAt).getHours()}時`
               : formatXLabel(data[i].measuredAt, periodMode)
+            const isFirst = tickIdx === 0
+            const isLast = tickIdx === xTicks.length - 1
             return (
               <text key={i} x={xPct(i)} y={CHART_H - PAD_BTM + 14}
-                textAnchor="middle" fontSize="9" fill="#66707A">{label}</text>
+                textAnchor={isFirst ? 'start' : isLast ? 'end' : 'middle'}
+                fontSize="9" fill="#66707A">{label}</text>
             )
           })}
 
@@ -341,11 +344,17 @@ export function SensorTimeSeriesChart({
             const isSelected = i === selectedIdx
             const isThresholdExceeded = threshold?.max !== undefined && p.value > threshold.max
             const dotColor = isThresholdExceeded ? '#DC2626' : color
+            const timeKey = new Date(p.measuredAt).toTimeString().slice(0,5).replace(':', '')
             return (
-              <circle key={i} cx={xPct(i)} cy={yPct(p.value)} r={isSelected ? 5 : 2.5}
+              <circle key={i}
+                cx={xPct(i)} cy={yPct(p.value)}
+                r={isSelected ? 5 : 2.5}
                 fill={isSelected ? '#DC2626' : dotColor}
                 stroke={isSelected ? '#fff' : 'none'}
                 strokeWidth={isSelected ? 1.5 : 0}
+                data-testid={`chart-point-${i}`}
+                data-time={timeKey}
+                data-value={p.value}
               />
             )
           })}

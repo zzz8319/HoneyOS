@@ -71,20 +71,29 @@ function comparisonLabel(mode: PeriodMode): string {
   return '前日との比較'
 }
 
-function todayLabel(date: Date): string {
+function todayLabel(date: Date, mode: PeriodMode): string {
   const m = date.getMonth()+1, d = date.getDate(), y = date.getFullYear()
+  if (mode === 'week') {
+    const end = new Date(date); end.setDate(end.getDate() + 6)
+    return `${m}/${d}〜${end.getMonth()+1}/${end.getDate()}（今週）`
+  }
+  if (mode === 'month') return `${y}年${m}月（今月）`
   return `${y}/${m}/${d}（今日）`
 }
 
 function prevLabel(date: Date, mode: PeriodMode): string {
-  const prev = new Date(date)
-  if (mode === 'week') prev.setDate(prev.getDate() - 7)
-  else if (mode === 'month') prev.setMonth(prev.getMonth() - 1)
-  else prev.setDate(prev.getDate() - 1)
+  if (mode === 'week') {
+    const start = new Date(date); start.setDate(start.getDate() - 7)
+    const end = new Date(date); end.setDate(end.getDate() - 1)
+    return `${start.getMonth()+1}/${start.getDate()}〜${end.getMonth()+1}/${end.getDate()}（前週）`
+  }
+  if (mode === 'month') {
+    const prev = new Date(date); prev.setMonth(prev.getMonth() - 1)
+    return `${prev.getFullYear()}年${prev.getMonth()+1}月（前月）`
+  }
+  const prev = new Date(date); prev.setDate(prev.getDate() - 1)
   const m = prev.getMonth()+1, d = prev.getDate(), y = prev.getFullYear()
-  if (mode === 'day')  return `${y}/${m}/${d}（前日）`
-  if (mode === 'week') return '前週'
-  return '前月'
+  return `${y}/${m}/${d}（前日）`
 }
 
 function graphTitle(mode: PeriodMode, kind: SensorGraphKind): string {
@@ -120,11 +129,18 @@ export function SensorGraphScreen({
     if (viewState === 'custom-range') return 'custom'
     return 'day'
   })
-  const [navDate, setNavDate] = useState<Date>(() => new Date('2026-09-08'))
+  const [navDate, setNavDate] = useState<Date>(() => {
+    if (viewState === 'month') return new Date('2026-09-01')
+    return new Date('2026-09-08')
+  })
   const [selectorOpen, setSelectorOpen] = useState(viewState === 'metric-selector-open')
   const [customRangeOpen, setCustomRangeOpen] = useState(viewState === 'custom-range')
-  const [customStart, setCustomStart] = useState('')
-  const [customEnd, setCustomEnd]     = useState('')
+  const [customStart, setCustomStart] = useState(() =>
+    viewState === 'custom-range' ? '2026-09-01' : '',
+  )
+  const [customEnd, setCustomEnd] = useState(() =>
+    viewState === 'custom-range' ? '2026-09-07' : '',
+  )
   const [eventSheetEvent, setEventSheetEvent] = useState<SensorEvent | null>(null)
   const [retried, setRetried] = useState(false)
   const [liveMsg, setLiveMsg] = useState('')
@@ -155,8 +171,13 @@ export function SensorGraphScreen({
   }
 
   function handlePeriodChange(p: PeriodMode) {
-    if (p === 'custom') { setCustomRangeOpen(true); return }
+    if (p === 'custom') {
+      setCustomRangeOpen(true)
+      setPeriod('custom')
+      return
+    }
     setPeriod(p)
+    setCustomRangeOpen(false)
   }
 
   function handleCustomApply(start: string, end: string) {
@@ -408,8 +429,24 @@ export function SensorGraphScreen({
                 <AlertTriangle size={18} className={styles.eventIcon} aria-hidden />
                 <span className={styles.eventBody}>
                   <span className={styles.eventTime}>
-                    {new Date(ev.startedAt).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })}
-                    {ev.endedAt && ` 〜 ${new Date(ev.endedAt).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })}`}
+                    {(period === 'week' || period === 'month')
+                      ? (() => {
+                          const s = new Date(ev.startedAt)
+                          const prefix = `${s.getMonth()+1}/${s.getDate()} `
+                          const startT = s.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })
+                          const endT = ev.endedAt
+                            ? new Date(ev.endedAt).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })
+                            : null
+                          return `${prefix}${startT}${endT ? `〜${endT}` : ''}`
+                        })()
+                      : (() => {
+                          const startT = new Date(ev.startedAt).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })
+                          const endT = ev.endedAt
+                            ? new Date(ev.endedAt).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })
+                            : null
+                          return `${startT}${endT ? ` 〜 ${endT}` : ''}`
+                        })()
+                    }
                   </span>
                   <span className={styles.eventMsg}>{ev.message}</span>
                 </span>
@@ -426,7 +463,7 @@ export function SensorGraphScreen({
             <div className={styles.legend}>
               <span className={styles.legendItem}>
                 <span className={styles.legendLine} style={{ background: cfg.color }} />
-                {todayLabel(navDate)}
+                {todayLabel(navDate, period)}
               </span>
               <span className={styles.legendItem}>
                 <span className={styles.legendDash} style={{ borderColor: cfg.compColor }} />

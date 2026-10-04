@@ -3,19 +3,26 @@ import { X } from 'lucide-react'
 import styles from './CustomRangeSheet.module.css'
 
 interface Props {
-  initialStart?: string
-  initialEnd?: string
+  initialStart?: string  // YYYY-MM-DD
+  initialEnd?: string    // YYYY-MM-DD
   onApply: (start: string, end: string) => void
   onCancel: () => void
 }
 
-function today(): string {
+// Internal: YYYY-MM-DD  Display: YYYY/MM/DD
+function toDisplay(iso: string): string {
+  return iso ? iso.replace(/-/g, '/') : ''
+}
+function toIso(display: string): string {
+  return display ? display.replace(/\//g, '-') : ''
+}
+function todayIso(): string {
   return new Date().toISOString().slice(0, 10)
 }
 
 export function CustomRangeSheet({ initialStart, initialEnd, onApply, onCancel }: Props) {
-  const [start, setStart] = useState(initialStart ?? '')
-  const [end, setEnd]     = useState(initialEnd ?? today())
+  const [startDisplay, setStartDisplay] = useState(toDisplay(initialStart ?? ''))
+  const [endDisplay, setEndDisplay]     = useState(toDisplay(initialEnd ?? todayIso()))
   const [error, setError] = useState('')
   const closeRef = useRef<HTMLButtonElement>(null)
 
@@ -26,17 +33,23 @@ export function CustomRangeSheet({ initialStart, initialEnd, onApply, onCancel }
     return () => window.removeEventListener('keydown', onKey)
   }, [onCancel])
 
+  const startIso = toIso(startDisplay)
+  const endIso   = toIso(endDisplay)
+
   function validate(): boolean {
-    if (!start || !end) { setError('開始日と終了日を選択してください'); return false }
-    if (start > end)    { setError('開始日は終了日より前にしてください'); return false }
-    const days = (new Date(end).getTime() - new Date(start).getTime()) / 86400000
-    if (days > 365)     { setError('期間は最大1年です'); return false }
+    if (!startIso || !endIso) { setError('開始日と終了日を入力してください'); return false }
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(startIso) || !/^\d{4}-\d{2}-\d{2}$/.test(endIso)) {
+      setError('YYYY/MM/DD の形式で入力してください'); return false
+    }
+    if (startIso > endIso) { setError('開始日は終了日より前にしてください'); return false }
+    const days = (new Date(endIso).getTime() - new Date(startIso).getTime()) / 86400000
+    if (days > 365) { setError('期間は最大1年です'); return false }
     setError('')
     return true
   }
 
   function handleApply() {
-    if (validate()) onApply(start, end)
+    if (validate()) onApply(startIso, endIso)
   }
 
   return (
@@ -55,23 +68,24 @@ export function CustomRangeSheet({ initialStart, initialEnd, onApply, onCancel }
             <label htmlFor="rangeStart" className={styles.label}>開始日</label>
             <input
               id="rangeStart"
-              type="date"
+              type="text"
+              inputMode="numeric"
+              placeholder="YYYY/MM/DD"
               className={styles.input}
-              value={start}
-              max={end || today()}
-              onChange={e => { setStart(e.target.value); setError('') }}
+              value={startDisplay}
+              onChange={e => { setStartDisplay(e.target.value); setError('') }}
             />
           </div>
           <div className={styles.field}>
             <label htmlFor="rangeEnd" className={styles.label}>終了日</label>
             <input
               id="rangeEnd"
-              type="date"
+              type="text"
+              inputMode="numeric"
+              placeholder="YYYY/MM/DD"
               className={styles.input}
-              value={end}
-              min={start}
-              max={today()}
-              onChange={e => { setEnd(e.target.value); setError('') }}
+              value={endDisplay}
+              onChange={e => { setEndDisplay(e.target.value); setError('') }}
             />
           </div>
         </div>

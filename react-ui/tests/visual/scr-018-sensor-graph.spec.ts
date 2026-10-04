@@ -6,161 +6,257 @@ async function prepare(page: Page, url: string) {
   await page.goto(url)
   await page.waitForLoadState('networkidle')
   await page.evaluate(() => document.fonts.ready)
-  // disable CSS animations/transitions for deterministic screenshots
-  await page.addStyleTag({ content: '*, *::before, *::after { animation-duration: 0s !important; transition-duration: 0s !important; }' })
+  // Reset scroll and disable animations
+  await page.evaluate(() => window.scrollTo(0, 0))
+  await page.addStyleTag({
+    content: '*, *::before, *::after { animation-duration: 0s !important; transition-duration: 0s !important; caret-color: transparent !important; }',
+  })
+  await page.evaluate(() => window.scrollTo(0, 0))
 }
 
-// ── URL-param states ──────────────────────────────────────────────────────────
+async function assertCommonSCR018(page: Page) {
+  // must stay on SCR-018
+  await expect(page.locator('h1')).toBeVisible()
+  await expect(page.locator('h1')).toContainText('温度')
+  // subtitle
+  await expect(page.locator('p').filter({ hasText: /A-03/ }).first()).toBeVisible()
+  // no BottomNav
+  await expect(page.locator('nav[aria-label*="タブ"]')).toHaveCount(0)
+  // scroll at 0
+  const scrollY = await page.evaluate(() => window.scrollY)
+  expect(scrollY).toBe(0)
+}
+
+// ── normal-day ─────────────────────────────────────────────────────────────
 
 test('SCR-018 normal-day — 通常(日)', async ({ page }) => {
   await prepare(page, `${BASE}&state=normal-day`)
-  // shared controls
-  await expect(page.locator('button[aria-label="戻る"]')).toBeVisible()
-  await expect(page.locator('h1')).toBeVisible()
-  await expect(page.locator('[aria-haspopup="listbox"]')).toBeVisible()
-  await expect(page.getByRole('button', { name: '日' })).toBeVisible()
-  // day period tab is active
+  await assertCommonSCR018(page)
   await expect(page.locator('[aria-pressed="true"]')).toContainText('日')
-  // SVG chart present
-  await expect(page.locator('svg').first()).toBeVisible()
+  await expect(page.locator('[aria-haspopup="listbox"]')).toBeVisible()
+  const mainChart = page.locator('section[aria-label="センサーグラフ"]')
+  await expect(mainChart.locator('[data-testid="chart-point-0"]')).toBeVisible()
+  // no tooltip visible
+  await expect(mainChart.locator('[data-testid="chart-point-14"]')).toBeVisible()
   await expect(page).toHaveScreenshot('scr-018-normal-day.png', { fullPage: false })
 })
 
+// ── tooltip-active ─────────────────────────────────────────────────────────
+
+test('SCR-018 tooltip-active — ツールチップ表示', async ({ page }) => {
+  await prepare(page, `${BASE}&state=normal-day`)
+  await assertCommonSCR018(page)
+
+  // Click the specific data point at index 14 (14:20, 35.8℃) — scope to main chart
+  const mainChart = page.locator('section[aria-label="センサーグラフ"]')
+  const point = mainChart.locator('[data-testid="chart-point-14"]')
+  await expect(point).toBeVisible()
+  await point.click()
+  await page.waitForTimeout(150)
+
+  // Assert still on SCR-018
+  await expect(page.locator('h1')).toContainText('温度')
+  await expect(page.locator('nav[aria-label*="タブ"]')).toHaveCount(0)
+
+  // Tooltip must show 14:20 and 35.8℃
+  // Tooltip is rendered in SVG text elements; check via page.evaluate
+  const tooltipText = await page.evaluate(() => {
+    const svg = document.querySelector('svg[role="img"]')
+    if (!svg) return ''
+    return svg.textContent ?? ''
+  })
+  expect(tooltipText).toMatch(/14:20/)
+  expect(tooltipText).toMatch(/35\.8/)
+
+  // vertical guide line exists in DOM (SVG lines have no area so toBeVisible doesn't apply)
+  const vlineCount = await page.locator('svg[role="img"] line[stroke="#DC2626"][stroke-dasharray="3 2"]').count()
+  expect(vlineCount).toBeGreaterThan(0)
+
+  await expect(page).toHaveScreenshot('scr-018-tooltip-active.png', { fullPage: false })
+})
+
+// ── metric-selector-open ───────────────────────────────────────────────────
+
+test('SCR-018 metric-selector-open — センサー切替', async ({ page }) => {
+  await prepare(page, `${BASE}&state=normal-day`)
+  await assertCommonSCR018(page)
+
+  const kindBtn = page.locator('[aria-haspopup="listbox"]')
+  await kindBtn.click()
+  await page.waitForTimeout(150)
+
+  // Dropdown must be visible
+  await expect(page.locator('[role="listbox"]')).toBeVisible()
+  // Selected option is 温度
+  await expect(page.locator('[aria-selected="true"]')).toContainText('温度')
+
+  await expect(page).toHaveScreenshot('scr-018-metric-selector-open.png', { fullPage: false })
+})
+
+// ── week ───────────────────────────────────────────────────────────────────
+
 test('SCR-018 week — 週表示', async ({ page }) => {
   await prepare(page, `${BASE}&state=week`)
+  await assertCommonSCR018(page)
   await expect(page.locator('[aria-pressed="true"]')).toContainText('週')
-  await expect(page.locator('svg').first()).toBeVisible()
+  // date label shows a week range
+  const dateLabel = page.locator('span').filter({ hasText: /〜/ }).first()
+  await expect(dateLabel).toBeVisible()
+  const labelText = await dateLabel.textContent()
+  // must contain 9/8 as start
+  expect(labelText).toMatch(/9月8日/)
+  // must contain 9/14 as end
+  expect(labelText).toMatch(/9月14日/)
+  await expect(page.locator('section[aria-label="センサーグラフ"] [data-testid="chart-point-0"]')).toBeVisible()
   await expect(page).toHaveScreenshot('scr-018-week.png', { fullPage: false })
 })
 
+// ── month ──────────────────────────────────────────────────────────────────
+
 test('SCR-018 month — 月表示', async ({ page }) => {
   await prepare(page, `${BASE}&state=month`)
+  await assertCommonSCR018(page)
   await expect(page.locator('[aria-pressed="true"]')).toContainText('月')
-  await expect(page.locator('svg').first()).toBeVisible()
+  // date label shows 2026年9月
+  const dateLabel = page.locator('span').filter({ hasText: /2026年9月/ }).first()
+  await expect(dateLabel).toBeVisible()
+  await expect(page.locator('section[aria-label="センサーグラフ"] [data-testid="chart-point-0"]')).toBeVisible()
   await expect(page).toHaveScreenshot('scr-018-month.png', { fullPage: false })
 })
 
-test('SCR-018 partial-data — 欠損データ', async ({ page }) => {
-  await prepare(page, `${BASE}&state=partial-data`)
-  await expect(page.locator('svg').first()).toBeVisible()
-  await expect(page).toHaveScreenshot('scr-018-partial-data.png', { fullPage: false })
+// ── custom-range ───────────────────────────────────────────────────────────
+
+test('SCR-018 custom-range — カスタム期間', async ({ page }) => {
+  await prepare(page, `${BASE}&state=normal-day`)
+  await assertCommonSCR018(page)
+
+  const customBtn = page.getByRole('button', { name: 'カスタム' })
+  await customBtn.click()
+  await page.waitForTimeout(200)
+
+  // Sheet must be open
+  await expect(page.getByRole('dialog', { name: '期間を選択' })).toBeVisible()
+  // カスタム tab must appear selected
+  await expect(page.locator('[aria-pressed="true"]')).toContainText('カスタム')
+  // Date fields must show Japanese format (YYYY/MM/DD)
+  const startInput = page.locator('#rangeStart')
+  await expect(startInput).toBeVisible()
+  const startVal = await startInput.inputValue()
+  expect(startVal).not.toMatch(/^\d{2}\/\d{2}\/\d{4}$/) // must NOT be mm/dd/yyyy
+
+  await expect(page).toHaveScreenshot('scr-018-custom-range.png', { fullPage: false })
 })
+
+// ── loading ────────────────────────────────────────────────────────────────
 
 test('SCR-018 loading — 読込中', async ({ page }) => {
   await prepare(page, `${BASE}&state=loading`)
-  // skeleton or spinner present
-  await expect(page.locator('body')).toBeVisible()
+  await assertCommonSCR018(page)
+  await expect(page.locator('[aria-busy="true"]')).toBeVisible()
   await expect(page).toHaveScreenshot('scr-018-loading.png', { fullPage: false })
 })
 
+// ── empty ──────────────────────────────────────────────────────────────────
+
 test('SCR-018 empty — データなし', async ({ page }) => {
   await prepare(page, `${BASE}&state=empty`)
-  await expect(page.getByText(/データがありません/)).toBeVisible()
+  await assertCommonSCR018(page)
+  // common controls must be visible
+  await expect(page.locator('[aria-haspopup="listbox"]')).toBeVisible()
+  await expect(page.locator('[role="group"][aria-label="表示期間"]')).toBeVisible()
+  await expect(page.getByText(/この期間のデータがありません/)).toBeVisible()
   await expect(page).toHaveScreenshot('scr-018-empty.png', { fullPage: false })
 })
 
+// ── partial-data ───────────────────────────────────────────────────────────
+
+test('SCR-018 partial-data — 欠損データ', async ({ page }) => {
+  await prepare(page, `${BASE}&state=partial-data`)
+  await assertCommonSCR018(page)
+  // scroll must be 0
+  await page.evaluate(() => window.scrollTo(0, 0))
+  const scrollY = await page.evaluate(() => window.scrollY)
+  expect(scrollY).toBe(0)
+  // missing count must be > 0
+  const missingText = await page.locator('span').filter({ hasText: /件/ }).last().textContent()
+  const missingCount = parseInt(missingText ?? '0')
+  expect(missingCount).toBeGreaterThan(0)
+  // chart still visible
+  await expect(page.locator('section[aria-label="センサーグラフ"] [data-testid="chart-point-0"]')).toBeVisible()
+  await expect(page).toHaveScreenshot('scr-018-partial-data.png', { fullPage: false })
+})
+
+// ── error ──────────────────────────────────────────────────────────────────
+
 test('SCR-018 error — エラー', async ({ page }) => {
   await prepare(page, `${BASE}&state=error`)
+  await assertCommonSCR018(page)
+  await expect(page.getByText('センサーデータの取得に失敗しました。')).toBeVisible()
   await expect(page.getByText('再読み込み')).toBeVisible()
   await expect(page).toHaveScreenshot('scr-018-error.png', { fullPage: false })
 })
 
+// ── offline-cached ─────────────────────────────────────────────────────────
+
 test('SCR-018 offline-cached — オフライン(キャッシュあり)', async ({ page }) => {
   await prepare(page, `${BASE}&state=offline-cached`)
-  await expect(page.getByText(/オフライン/).first()).toBeVisible()
+  await assertCommonSCR018(page)
+  await expect(page.getByText(/オフラインです/).first()).toBeVisible()
+  await expect(page.getByText(/キャッシュ取得時刻/).first()).toBeVisible()
   await expect(page).toHaveScreenshot('scr-018-offline-cached.png', { fullPage: false })
 })
 
+// ── offline-no-cache ───────────────────────────────────────────────────────
+
 test('SCR-018 offline-no-cache — オフライン(キャッシュなし)', async ({ page }) => {
   await prepare(page, `${BASE}&state=offline-no-cache`)
-  await expect(page.getByText(/オフライン/).first()).toBeVisible()
+  await assertCommonSCR018(page)
+  await expect(page.getByText(/オフラインのためセンサーデータを表示できません/).first()).toBeVisible()
   await expect(page).toHaveScreenshot('scr-018-offline-no-cache.png', { fullPage: false })
 })
 
-// ── UI interaction states ─────────────────────────────────────────────────────
+// ── SHA-256 uniqueness check ───────────────────────────────────────────────
 
-test('SCR-018 tooltip-active — ツールチップ表示', async ({ page }) => {
-  await prepare(page, `${BASE}&state=normal-day`)
-  // click a point near the center of the SVG chart
-  const svg = page.locator('svg').first()
-  const box = await svg.boundingBox()
-  expect(box).toBeTruthy()
-  if (box) {
-    await page.mouse.click(box.x + box.width * 0.55, box.y + box.height * 0.4)
-  }
-  await page.waitForTimeout(200)
-  // tooltip should be visible (dark rect in SVG)
-  await expect(svg).toBeVisible()
-  await expect(page).toHaveScreenshot('scr-018-tooltip-active.png', { fullPage: false })
-})
-
-test('SCR-018 metric-selector-open — センサー切替', async ({ page }) => {
-  await prepare(page, `${BASE}&state=normal-day`)
-  const kindBtn = page.locator('[aria-haspopup="listbox"]')
-  await kindBtn.click()
-  await page.waitForTimeout(200)
-  // dropdown list should be visible
-  await expect(page.locator('[role="listbox"]')).toBeVisible()
-  await expect(page).toHaveScreenshot('scr-018-metric-selector-open.png', { fullPage: false })
-})
-
-test('SCR-018 custom-range — カスタム期間', async ({ page }) => {
-  await prepare(page, `${BASE}&state=normal-day`)
-  const customBtn = page.getByRole('button', { name: 'カスタム' })
-  await customBtn.click()
-  await page.waitForTimeout(300)
-  await expect(page).toHaveScreenshot('scr-018-custom-range.png', { fullPage: false })
-})
-
-// ── SHA-256 uniqueness check ──────────────────────────────────────────────────
-// Captures all 12 states in one test and verifies no two screenshots are identical
-
-const SCREENSHOT_STATES = [
-  { id: 'normal-day',           url: `${BASE}&state=normal-day`,           interact: null },
-  { id: 'week',                 url: `${BASE}&state=week`,                 interact: null },
-  { id: 'month',                url: `${BASE}&state=month`,                interact: null },
-  { id: 'partial-data',         url: `${BASE}&state=partial-data`,         interact: null },
-  { id: 'loading',              url: `${BASE}&state=loading`,              interact: null },
-  { id: 'empty',                url: `${BASE}&state=empty`,                interact: null },
-  { id: 'error',                url: `${BASE}&state=error`,                interact: null },
-  { id: 'offline-cached',       url: `${BASE}&state=offline-cached`,       interact: null },
-  { id: 'offline-no-cache',     url: `${BASE}&state=offline-no-cache`,     interact: null },
-  { id: 'tooltip-active',       url: `${BASE}&state=normal-day`,           interact: 'click-chart' },
-  { id: 'metric-selector-open', url: `${BASE}&state=normal-day`,           interact: 'click-kind' },
-  { id: 'custom-range',         url: `${BASE}&state=normal-day`,           interact: 'click-custom' },
-] as const
+const CAPTURE_STATES: { id: string; url: string; interact?: string }[] = [
+  { id: 'normal-day',           url: `${BASE}&state=normal-day` },
+  { id: 'week',                 url: `${BASE}&state=week` },
+  { id: 'month',                url: `${BASE}&state=month` },
+  { id: 'partial-data',         url: `${BASE}&state=partial-data` },
+  { id: 'loading',              url: `${BASE}&state=loading` },
+  { id: 'empty',                url: `${BASE}&state=empty` },
+  { id: 'error',                url: `${BASE}&state=error` },
+  { id: 'offline-cached',       url: `${BASE}&state=offline-cached` },
+  { id: 'offline-no-cache',     url: `${BASE}&state=offline-no-cache` },
+  { id: 'tooltip-active',       url: `${BASE}&state=normal-day`, interact: 'click-point-14' },
+  { id: 'metric-selector-open', url: `${BASE}&state=normal-day`, interact: 'click-kind' },
+  { id: 'custom-range',         url: `${BASE}&state=normal-day`, interact: 'click-custom' },
+]
 
 test('SCR-018 all 12 screenshots are distinct', async ({ page }) => {
   const buffers: { id: string; data: Uint8Array }[] = []
 
-  for (const state of SCREENSHOT_STATES) {
-    await page.goto(state.url)
-    await page.waitForLoadState('networkidle')
-    await page.evaluate(() => document.fonts.ready)
-    await page.addStyleTag({ content: '*, *::before, *::after { animation-duration: 0s !important; transition-duration: 0s !important; }' })
+  for (const state of CAPTURE_STATES) {
+    await prepare(page, state.url)
 
-    if (state.interact === 'click-chart') {
-      const svg = page.locator('svg').first()
-      const box = await svg.boundingBox()
-      if (box) await page.mouse.click(box.x + box.width * 0.55, box.y + box.height * 0.4)
-      await page.waitForTimeout(200)
+    if (state.interact === 'click-point-14') {
+      await page.locator('section[aria-label="センサーグラフ"] [data-testid="chart-point-14"]').click()
+      await page.waitForTimeout(150)
     } else if (state.interact === 'click-kind') {
       await page.locator('[aria-haspopup="listbox"]').click()
-      await page.waitForTimeout(200)
+      await page.waitForTimeout(150)
     } else if (state.interact === 'click-custom') {
       await page.getByRole('button', { name: 'カスタム' }).click()
-      await page.waitForTimeout(300)
+      await page.waitForTimeout(200)
     }
 
     const buf = await page.screenshot({ fullPage: false })
     buffers.push({ id: state.id, data: buf })
   }
 
-  // Check uniqueness by comparing raw byte lengths + first 1024 bytes as a proxy
+  // Uniqueness check: use size + first 512 bytes as fingerprint
   const seen = new Map<string, string>()
   const dupes: string[] = []
   for (const { id, data } of buffers) {
-    // Use size + first 512 bytes as fingerprint (good enough without crypto)
     const fp = `${data.length}:${btoa(String.fromCharCode(...Array.from(data.slice(0, 512))))}`
     if (seen.has(fp)) {
       dupes.push(`${id} == ${seen.get(fp)}`)
@@ -174,7 +270,7 @@ test('SCR-018 all 12 screenshots are distinct', async ({ page }) => {
   console.log(`✓ All ${buffers.length} screenshots are distinct`)
 })
 
-// ── Additional DOM assertions ─────────────────────────────────────────────────
+// ── Additional DOM assertions ──────────────────────────────────────────────
 
 test('SCR-018 header renders back button', async ({ page }) => {
   await prepare(page, `${BASE}&state=normal-day`)
@@ -196,7 +292,7 @@ test('SCR-018 normal-day — kind selector button visible', async ({ page }) => 
 
 test('SCR-018 loading — skeleton visible', async ({ page }) => {
   await prepare(page, `${BASE}&state=loading`)
-  await expect(page.locator('body')).toBeVisible()
+  await expect(page.locator('[aria-busy="true"]')).toBeVisible()
 })
 
 test('SCR-018 error — retry button visible', async ({ page }) => {
@@ -206,7 +302,7 @@ test('SCR-018 error — retry button visible', async ({ page }) => {
 
 test('SCR-018 empty — empty state message visible', async ({ page }) => {
   await prepare(page, `${BASE}&state=empty`)
-  await expect(page.getByText(/データがありません/)).toBeVisible()
+  await expect(page.getByText(/この期間のデータがありません/)).toBeVisible()
 })
 
 test('SCR-018 offline-no-cache — offline message visible', async ({ page }) => {
@@ -216,5 +312,5 @@ test('SCR-018 offline-no-cache — offline message visible', async ({ page }) =>
 
 test('SCR-018 normal-day — SVG chart rendered', async ({ page }) => {
   await prepare(page, `${BASE}&state=normal-day`)
-  await expect(page.locator('svg').first()).toBeVisible()
+  await expect(page.locator('svg[role="img"]').first()).toBeVisible()
 })

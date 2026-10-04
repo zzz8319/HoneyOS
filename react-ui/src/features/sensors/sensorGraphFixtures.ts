@@ -2,10 +2,13 @@
 
 import type { SensorGraphData, SensorSeriesPoint, SensorEvent, SensorGraphKind } from './sensorGraphTypes'
 
-// 2026-09-08 の時刻ラベル（0〜23時、10分間隔ではなく1時間ごと）
+// 2026-09-08 の時刻ラベル（0〜23時、1時間ごと）
+// index 14 だけ :20 にしてツールチップ仕様（14:20 / 35.8℃）に合わせる
 function makeHourlyPoints(values: (number | null)[]): SensorSeriesPoint[] {
   return values.map((v, i) => ({
-    measuredAt: `2026-09-08T${String(i).padStart(2, '0')}:00:00`,
+    measuredAt: i === 14
+      ? `2026-09-08T14:20:00`
+      : `2026-09-08T${String(i).padStart(2, '0')}:00:00`,
     value: v,
     status: (v === null ? 'missing' : v > 35 ? 'warning' : 'normal') as SensorSeriesPoint['status'],
   }))
@@ -101,15 +104,17 @@ function makeWeeklyPoints(values: number[], endDate = '2026-09-08'): SensorSerie
   })
 }
 
-const TEMP_WEEK_CURRENT = makeWeeklyPoints([33.8, 34.2, 34.5, 33.9, 34.8, 35.2, 35.8])
-const TEMP_WEEK_PREV    = makeWeeklyPoints([32.5, 33.0, 33.3, 32.8, 33.5, 33.8, 34.1], '2026-09-01')
+// 週間データは navDate=2026-09-08 を週の先頭として 9/8〜9/14 に合わせる
+const TEMP_WEEK_CURRENT = makeWeeklyPoints([33.8, 34.2, 34.5, 33.9, 34.8, 35.2, 35.8], '2026-09-14')
+const TEMP_WEEK_PREV    = makeWeeklyPoints([32.5, 33.0, 33.3, 32.8, 33.5, 33.8, 34.1], '2026-09-07')
 
 // 月間データ（30日×1点/日）
-function makeMonthlyPoints(seed: number, endDate = '2026-09-08'): SensorSeriesPoint[] {
-  const end = new Date(endDate)
+// startDate を指定してカレンダー月と一致させる
+function makeMonthlyPoints(seed: number, startDate = '2026-09-01'): SensorSeriesPoint[] {
+  const start = new Date(startDate)
   return Array.from({ length: 30 }, (_, i) => {
-    const d = new Date(end)
-    d.setDate(d.getDate() - (29 - i))
+    const d = new Date(start)
+    d.setDate(d.getDate() + i)
     return {
       measuredAt: d.toISOString().slice(0, 10) + 'T12:00:00',
       value: parseFloat((seed + Math.sin(i * 0.3) * 1.5 + i * 0.05).toFixed(1)),
@@ -173,11 +178,12 @@ export const GRAPH_FIXTURE_WEEK: SensorGraphData = {
   intervalMinutes: 1440,
 }
 
+// 2026年9月1日〜30日（今月）/ 2026年8月1日〜30日（前月）
 export const GRAPH_FIXTURE_MONTH: SensorGraphData = {
   ...buildData(
     'temperature',
-    makeMonthlyPoints(33),
-    makeMonthlyPoints(32, '2026-08-09'),
+    makeMonthlyPoints(33, '2026-09-01'),
+    makeMonthlyPoints(32, '2026-08-01'),
     TEMP_EVENTS,
     { max: 35 },
   ),
@@ -196,6 +202,7 @@ export function getFixtureForKind(kind: SensorGraphKind, period: 'day' | 'week' 
     humidity:    { min: 40, max: 80 },
   }
   if (period === 'week') {
+    // 今週: 9/8〜9/14  前週: 9/1〜9/7
     const vals: Record<SensorGraphKind, number[]> = {
       temperature: [33.8, 34.2, 34.5, 33.9, 34.8, 35.2, 35.8],
       humidity:    [68, 67, 66, 65, 64, 63, 64],
@@ -211,23 +218,24 @@ export function getFixtureForKind(kind: SensorGraphKind, period: 'day' | 'week' 
     return {
       colonyId: 'a3', sensorKind: kind, unit: units[kind], intervalMinutes: 1440,
       threshold: thresholds[kind],
-      current: makeWeeklyPoints(vals[kind]),
-      comparison: makeWeeklyPoints(prevVals[kind], '2026-09-01'),
+      current: makeWeeklyPoints(vals[kind], '2026-09-14'),
+      comparison: makeWeeklyPoints(prevVals[kind], '2026-09-07'),
       events: kind === 'temperature' ? TEMP_EVENTS : [],
-      fetchedAt: '2026-09-08T15:30:00',
+      fetchedAt: '2026-09-14T15:30:00',
     }
   }
   if (period === 'month') {
+    // 今月: 2026-09-01〜09-30  前月: 2026-08-01〜08-30
     const seeds: Record<SensorGraphKind, number> = {
       temperature: 33, humidity: 67, weight: 41, sound: 45,
     }
     return {
       colonyId: 'a3', sensorKind: kind, unit: units[kind], intervalMinutes: 1440,
       threshold: thresholds[kind],
-      current: makeMonthlyPoints(seeds[kind]),
-      comparison: makeMonthlyPoints(seeds[kind] - 1, '2026-08-09'),
+      current: makeMonthlyPoints(seeds[kind], '2026-09-01'),
+      comparison: makeMonthlyPoints(seeds[kind] - 1, '2026-08-01'),
       events: kind === 'temperature' ? TEMP_EVENTS : [],
-      fetchedAt: '2026-09-08T15:30:00',
+      fetchedAt: '2026-09-30T15:30:00',
     }
   }
   const currentVals: Record<SensorGraphKind, (number | null)[]> = {
