@@ -382,6 +382,7 @@ export default function App() {
           onColonyCreate={() => navigateTo('colony-create')}
           onApiaryCreate={() => navigateTo('apiary-create')}
           onPasswordReset={() => navigateTo('password-reset')}
+          onLogout={() => setScreen('login')}
         />
       ) : screen === 'colony-detail' ? (
         <ColonyDetailScreen
@@ -452,6 +453,7 @@ export default function App() {
               onColonyCreate={() => navigateTo('colony-create')}
               onApiaryCreate={() => navigateTo('apiary-create')}
               onPasswordReset={() => navigateTo('password-reset')}
+              onLogout={() => setScreen('login')}
             />
           )}
         </>

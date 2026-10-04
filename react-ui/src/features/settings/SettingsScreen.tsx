@@ -1,6 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { BottomNav } from '../../components'
 import type { TabId } from '../../components'
+import { getDB } from '../../lib/db'
+import type { NotificationSettings } from '../../lib/db'
 import {
   MOCK_PROFILE,
   MOCK_NOTIFICATIONS,
@@ -12,7 +14,6 @@ import {
 } from './mockData'
 import type {
   SettingsProfile,
-  SettingsNotifications,
   AppSettings,
   AppTheme,
   AppLanguage,
@@ -37,6 +38,35 @@ export type SettingsViewState =
   | 'error'
   | 'offline'
 
+// ── localStorage keys ─────────────────────────────────────────────────────────
+const LS_THEME    = 'honeyos_react_theme'
+const LS_LANGUAGE = 'honeyos_react_language'
+
+function readLSTheme(): AppTheme {
+  try {
+    const v = localStorage.getItem(LS_THEME)
+    if (v === 'light' || v === 'dark' || v === 'system') return v
+  } catch { /* ignore */ }
+  return MOCK_APP_SETTINGS.theme
+}
+
+function readLSLanguage(): AppLanguage {
+  try {
+    const v = localStorage.getItem(LS_LANGUAGE)
+    if (v === 'ja' || v === 'en') return v
+  } catch { /* ignore */ }
+  return MOCK_APP_SETTINGS.language
+}
+
+function applyTheme(theme: AppTheme) {
+  if (typeof document === 'undefined') return
+  if (theme === 'system') {
+    document.documentElement.removeAttribute('data-theme')
+  } else {
+    document.documentElement.setAttribute('data-theme', theme)
+  }
+}
+
 // ── Props ─────────────────────────────────────────────────────────────────────
 interface SettingsScreenProps {
   viewState: SettingsViewState
@@ -45,6 +75,7 @@ interface SettingsScreenProps {
   onColonyCreate: () => void
   onApiaryCreate: () => void
   onPasswordReset: () => void
+  onLogout?: () => void
 }
 
 // ── Icons ────────────────────────────────────────────────────────────────────
@@ -113,6 +144,7 @@ export function SettingsScreen({
   onColonyCreate,
   onApiaryCreate,
   onPasswordReset,
+  onLogout,
 }: SettingsScreenProps) {
   const isOffline = viewState === 'offline'
 
@@ -143,11 +175,31 @@ export function SettingsScreen({
     viewState === 'delete-confirm',
   )
 
-  // Notification state
-  const [notifs, setNotifs] = useState<SettingsNotifications>(MOCK_NOTIFICATIONS)
+  // Delete confirmation text input
+  const [deleteConfirmText, setDeleteConfirmText] = useState('')
 
-  // App settings state
-  const [appSettings, setAppSettings] = useState<AppSettings>(MOCK_APP_SETTINGS)
+  // Logout in-flight state
+  const [logoutLoading, setLogoutLoading] = useState(false)
+  const [logoutError, setLogoutError] = useState<string | null>(null)
+
+  // Export in-flight state
+  const [exportLoading, setExportLoading] = useState(false)
+  const [exportError, setExportError] = useState<string | null>(null)
+
+  // Notification state — loaded from HoneyDB on mount if available
+  const [notifs, setNotifs] = useState<NotificationSettings>(MOCK_NOTIFICATIONS)
+  const [notifSaveError, setNotifSaveError] = useState<string | null>(null)
+
+  // App settings — theme/language from localStorage, defaultRecordType from mockData
+  const [appSettings, setAppSettings] = useState<AppSettings>(() => ({
+    theme: readLSTheme(),
+    language: readLSLanguage(),
+    defaultRecordType: MOCK_APP_SETTINGS.defaultRecordType,
+  }))
+
+  // "Saved locally" confirmation note
+  const [themeSavedLocal, setThemeSavedLocal] = useState(false)
+  const [langSavedLocal, setLangSavedLocal] = useState(false)
 
   // Data status
   const dataStatus: DataStatus =
@@ -157,8 +209,40 @@ export function SettingsScreen({
         ? MOCK_DATA_STATUS_ERROR
         : { ...MOCK_DATA_STATUS_SYNCED, syncStatus: isOffline ? 'offline' : 'synced' }
 
-  // Push permission denied state
-  const pushDenied = viewState === 'notifications-disabled'
+  // Push permission denied state (from viewState or actual Notification API)
+  const [actualPushDenied] = useState(() => {
+    if (viewState === 'notifications-disabled') return true
+    if (typeof Notification !== 'undefined' && Notification.permission === 'denied') return true
+    return false
+  })
+
+  // ── On-mount: load data from HoneyDB ─────────────────────────────────────
+
+  useEffect(() => {
+    const db = getDB()
+    if (!db) return
+
+    // Load profile
+    db.getUserProfile().then(p => {
+      if (p) {
+        setProfile(prev => ({
+          ...prev,
+          username: p.name || prev.username,
+          primaryApiaryName: p.farm_name || prev.primaryApiaryName,
+        }))
+      }
+    }).catch(() => { /* silent: keep mock */ })
+
+    // Load notification settings
+    db.getNotificationSettings().then(ns => {
+      if (ns) setNotifs(ns)
+    }).catch(() => { /* silent: keep mock */ })
+  }, [])
+
+  // Apply theme on mount and whenever it changes
+  useEffect(() => {
+    applyTheme(appSettings.theme)
+  }, [appSettings.theme])
 
   // ── Handlers ──────────────────────────────────────────────────────────────
 
@@ -188,9 +272,8 @@ export function SettingsScreen({
     setLocalSaving(true)
     setLocalSaveError(null)
     try {
-      // window.HoneyDB.updateProfile exists
-      if (typeof window !== 'undefined' && (window as unknown as Record<string, unknown>).HoneyDB) {
-        const db = (window as unknown as Record<string, { updateProfile: (name: string, farmName: string) => Promise<void> }>).HoneyDB
+      const db = getDB()
+      if (db) {
         await db.updateProfile(editUsername.trim(), editApiaryName.trim())
       }
       setProfile({ ...profile, username: editUsername.trim(), primaryApiaryName: editApiaryName.trim() })
@@ -202,39 +285,108 @@ export function SettingsScreen({
     }
   }
 
-  function handleNotifToggle(key: keyof SettingsNotifications) {
-    setNotifs(prev => ({ ...prev, [key]: !prev[key] }))
-  }
+  const handleNotifToggle = useCallback(async (key: keyof NotificationSettings) => {
+    const next = { ...notifs, [key]: !notifs[key] }
+    setNotifs(next)
+    setNotifSaveError(null)
+    const db = getDB()
+    if (!db) return
+    try {
+      await db.updateNotificationSettings(next)
+    } catch {
+      // Revert on failure
+      setNotifs(notifs)
+      setNotifSaveError('通知設定の保存に失敗しました')
+    }
+  }, [notifs])
 
   function handleThemeChange(theme: AppTheme) {
     setAppSettings(prev => ({ ...prev, theme }))
+    setThemeSavedLocal(false)
+    try {
+      localStorage.setItem(LS_THEME, theme)
+      setThemeSavedLocal(true)
+      setTimeout(() => setThemeSavedLocal(false), 2500)
+    } catch { /* ignore */ }
   }
 
   function handleLanguageChange(language: AppLanguage) {
     setAppSettings(prev => ({ ...prev, language }))
+    setLangSavedLocal(false)
+    try {
+      localStorage.setItem(LS_LANGUAGE, language)
+      setLangSavedLocal(true)
+      setTimeout(() => setLangSavedLocal(false), 2500)
+    } catch { /* ignore */ }
   }
 
   function handleDefaultRecordTypeChange(defaultRecordType: DefaultRecordType) {
     setAppSettings(prev => ({ ...prev, defaultRecordType }))
   }
 
-  function handleLogout() {
+  async function handleLogout() {
     if (isOffline) {
-      alert('オフラインのためログアウトできません。接続後にお試しください。')
-      setLogoutDialogOpen(false)
+      setLogoutError('オフラインのためログアウトできません。接続後にお試しください。')
       return
     }
-    // Would call window.HoneyDB.signOut() — unconnected, show pending
-    setLogoutDialogOpen(false)
+    setLogoutLoading(true)
+    setLogoutError(null)
+    try {
+      const db = getDB()
+      if (db) {
+        await db.signOut()
+      }
+      setLogoutDialogOpen(false)
+      onLogout?.()
+    } catch {
+      setLogoutError('ログアウトに失敗しました。通信状況を確認して再試行してください。')
+    } finally {
+      setLogoutLoading(false)
+    }
+  }
+
+  async function handleExport() {
+    if (isOffline) {
+      setExportError('オフラインのためエクスポートできません。接続後にお試しください。')
+      return
+    }
+    const db = getDB()
+    if (!db) {
+      setExportError('データベース接続が利用できません')
+      return
+    }
+    setExportLoading(true)
+    setExportError(null)
+    try {
+      const data = await db.exportAllData()
+      const json = JSON.stringify(
+        {
+          formatVersion: '1.0',
+          ...data,
+        },
+        null,
+        2,
+      )
+      const blob = new Blob([json], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const date = new Date().toISOString().slice(0, 10)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `honeyos-export-${date}.json`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    } catch {
+      setExportError('エクスポートに失敗しました。通信状況を確認して再試行してください。')
+    } finally {
+      setExportLoading(false)
+    }
   }
 
   function handleDeleteAccount() {
-    if (isOffline) {
-      alert('オフラインのためアカウント削除できません。接続後にお試しください。')
-      setDeleteDialogOpen(false)
-      return
-    }
-    // No delete account API in window.HoneyDB — show not-connected state
+    // No safe server-side deletion API — keep button disabled
+    // This handler is never reached because the button is always disabled
     setDeleteDialogOpen(false)
   }
 
@@ -274,6 +426,10 @@ export function SettingsScreen({
       </div>
     )
   }
+
+  const pushDenied = actualPushDenied
+  // Whether export button is available (HoneyDB must be initialized)
+  const exportAvailable = getDB() != null
 
   // ── Main layout ────────────────────────────────────────────────────────────
   return (
@@ -382,7 +538,7 @@ export function SettingsScreen({
             <button
               className={styles.row}
               aria-label="ログアウト"
-              onClick={() => setLogoutDialogOpen(true)}
+              onClick={() => { setLogoutError(null); setLogoutDialogOpen(true) }}
               disabled={isSaving}
             >
               <span className={styles.rowText}>ログアウト</span>
@@ -391,7 +547,7 @@ export function SettingsScreen({
             <button
               className={`${styles.row} ${styles.rowDanger}`}
               aria-label="アカウントを削除"
-              onClick={() => setDeleteDialogOpen(true)}
+              onClick={() => { setDeleteConfirmText(''); setDeleteDialogOpen(true) }}
               disabled={isSaving}
             >
               <span className={styles.rowText}>アカウントを削除</span>
@@ -403,10 +559,17 @@ export function SettingsScreen({
         {/* ── Notifications section ── */}
         <section className={styles.section} aria-label="通知設定">
           <p className={styles.sectionLabel}>通知設定</p>
+          {/* VAPID key not configured — push is localStorage-only placeholder */}
+          <p className={styles.pushReadyNote} role="note">
+            プッシュ通知は現在準備中です
+          </p>
           {pushDenied && (
             <p className={styles.pushDeniedNote} role="note">
               ブラウザの通知が許可されていません。端末の設定からHoneyOSの通知を許可してください。
             </p>
+          )}
+          {notifSaveError && (
+            <p className={styles.actionError} role="alert">{notifSaveError}</p>
           )}
           <div className={styles.rowList}>
             <div className={styles.toggleRow}>
@@ -479,6 +642,9 @@ export function SettingsScreen({
                 ))}
               </div>
             </div>
+            {themeSavedLocal && (
+              <p className={styles.localSavedNote} role="status">この端末に保存しました</p>
+            )}
             <div className={styles.settingRow}>
               <div>
                 <span className={styles.rowText}>言語</span>
@@ -497,6 +663,14 @@ export function SettingsScreen({
                 ))}
               </div>
             </div>
+            {appSettings.language === 'en' && (
+              <p className={styles.localSavedNote} role="note">
+                一部の画面はまだ日本語のみ対応しています
+              </p>
+            )}
+            {langSavedLocal && appSettings.language === 'ja' && (
+              <p className={styles.localSavedNote} role="status">この端末に保存しました</p>
+            )}
           </div>
         </section>
 
@@ -546,6 +720,10 @@ export function SettingsScreen({
             </div>
           )}
 
+          {exportError && (
+            <p className={styles.actionError} role="alert">{exportError}</p>
+          )}
+
           <div className={styles.rowList}>
             <button className={styles.row} onClick={onColonyCreate} aria-label="蜂群を追加">
               <span className={styles.rowText}>蜂群を追加</span>
@@ -555,14 +733,28 @@ export function SettingsScreen({
               <span className={styles.rowText}>養蜂場を追加</span>
               <ChevronRightIcon />
             </button>
-            <button
-              className={`${styles.row} ${styles.rowDisabled}`}
-              aria-label="データエクスポート（準備中）"
-              disabled
-            >
-              <span className={styles.rowText}>データエクスポート</span>
-              <span className={styles.rowBadge}>準備中</span>
-            </button>
+            {exportAvailable ? (
+              <button
+                className={styles.row}
+                aria-label="データエクスポート"
+                onClick={handleExport}
+                disabled={exportLoading || isOffline}
+              >
+                <span className={styles.rowText}>データエクスポート</span>
+                {exportLoading
+                  ? <span className={styles.rowBadge}>出力中…</span>
+                  : <ChevronRightIcon />}
+              </button>
+            ) : (
+              <button
+                className={`${styles.row} ${styles.rowDisabled}`}
+                aria-label="データエクスポート（準備中）"
+                disabled
+              >
+                <span className={styles.rowText}>データエクスポート</span>
+                <span className={styles.rowBadge}>準備中</span>
+              </button>
+            )}
             <div className={styles.infoRow}>
               <span className={styles.rowText}>同期状態</span>
               <span className={getSyncClassName(dataStatus.syncStatus, styles)}>
@@ -627,16 +819,23 @@ export function SettingsScreen({
           <div className={styles.dialog}>
             <h2 className={styles.dialogTitle}>ログアウトしますか？</h2>
             <p className={styles.dialogBody}>ログアウトすると、オフラインでのデータアクセスが無効になります。</p>
+            {logoutError && (
+              <p className={styles.actionError} role="alert">{logoutError}</p>
+            )}
             <div className={styles.dialogActions}>
-              <button className={styles.dialogCancelBtn} onClick={() => setLogoutDialogOpen(false)}>
+              <button
+                className={styles.dialogCancelBtn}
+                onClick={() => { setLogoutDialogOpen(false); setLogoutError(null) }}
+                disabled={logoutLoading}
+              >
                 キャンセル
               </button>
               <button
                 className={styles.dialogDestructiveBtn}
                 onClick={handleLogout}
-                disabled={isOffline}
+                disabled={isOffline || logoutLoading}
               >
-                {isOffline ? '接続が必要です' : 'ログアウト'}
+                {logoutLoading ? 'ログアウト中…' : isOffline ? '接続が必要です' : 'ログアウト'}
               </button>
             </div>
           </div>
@@ -652,19 +851,31 @@ export function SettingsScreen({
               この操作は取り消せません。すべてのデータが削除されます。
             </p>
             <p className={styles.dialogBodyNote}>
-              ※ アカウント削除機能は現在未接続（API未実装）です。
+              アカウント削除には管理者への連絡が必要です。
             </p>
+            <label className={styles.dialogBody} htmlFor="delete-confirm-input">
+              確認のため「削除」と入力してください
+            </label>
+            <input
+              id="delete-confirm-input"
+              type="text"
+              className={styles.deleteConfirmInput}
+              value={deleteConfirmText}
+              onChange={e => setDeleteConfirmText(e.target.value)}
+              placeholder="削除"
+              aria-label="削除確認テキスト入力"
+            />
             <div className={styles.dialogActions}>
-              <button className={styles.dialogCancelBtn} onClick={() => setDeleteDialogOpen(false)}>
+              <button className={styles.dialogCancelBtn} onClick={() => { setDeleteDialogOpen(false); setDeleteConfirmText('') }}>
                 キャンセル
               </button>
               <button
                 className={styles.dialogDestructiveBtn}
                 onClick={handleDeleteAccount}
-                disabled={isOffline || true /* API unimplemented */}
-                aria-disabled
+                disabled={deleteConfirmText !== '削除' || isOffline}
+                aria-disabled={deleteConfirmText !== '削除' || isOffline}
               >
-                削除（未接続）
+                削除（管理者へ連絡）
               </button>
             </div>
           </div>
