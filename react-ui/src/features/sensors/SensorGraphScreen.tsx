@@ -324,7 +324,7 @@ export function SensorGraphScreen({
     return (
       <div className={styles.screen}>
         {fixedControls}
-        <div className={styles.skeletonBody} aria-busy="true" aria-label="センサーデータを読み込み中">
+        <div className={styles.skeletonBody} data-testid="sensor-graph-scroll-container" aria-busy="true" aria-label="センサーデータを読み込み中">
           <div className={styles.skeletonCard}>
             <div className={styles.skeletonTitle} />
             <div className={styles.skeletonGraph} />
@@ -346,7 +346,7 @@ export function SensorGraphScreen({
     return (
       <div className={styles.screen}>
         {fixedControls}
-        <div className={styles.body}>
+        <div className={styles.body} data-testid="sensor-graph-scroll-container">
           <div className={styles.errorState}>
             <AlertTriangle size={32} aria-hidden className={styles.errorIcon} />
             <p className={styles.errorMsg}>センサーデータの取得に失敗しました。</p>
@@ -362,7 +362,7 @@ export function SensorGraphScreen({
     return (
       <div className={styles.screen}>
         {fixedControls}
-        <div className={styles.body}>
+        <div className={styles.body} data-testid="sensor-graph-scroll-container">
           <div className={styles.errorState}>
             <WifiOff size={32} aria-hidden className={styles.errorIcon} style={{ color: '#66707A' }} />
             <p className={styles.errorMsg}>オフラインのためセンサーデータを表示できません。</p>
@@ -378,7 +378,7 @@ export function SensorGraphScreen({
     return (
       <div className={styles.screen}>
         {fixedControls}
-        <div className={styles.body}>
+        <div className={styles.body} data-testid="sensor-graph-scroll-container">
           <div className={styles.emptyState}>
             <p className={styles.emptyMsg}>この期間のデータがありません。</p>
             <p className={styles.emptyHint}>日付ナビゲーションで別の期間を選択してください。</p>
@@ -393,7 +393,7 @@ export function SensorGraphScreen({
     <div className={styles.screen}>
       {fixedControls}
 
-      <div className={styles.body}>
+      <div className={styles.body} data-testid="sensor-graph-scroll-container">
         {/* Main graph card */}
         <section className={styles.card} aria-label="センサーグラフ">
           <h2 className={styles.cardTitle}>{graphTitle(period, kind)}</h2>

@@ -2,16 +2,33 @@ import { test, expect, Page } from '@playwright/test'
 
 const BASE = 'http://localhost:5175/?screen=sensor-graph&devbar=0'
 
+async function resetScroll(page: Page) {
+  await page.evaluate(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+    document.documentElement.scrollTop = 0
+    document.body.scrollTop = 0
+    const container = document.querySelector('[data-testid="sensor-graph-scroll-container"]')
+    if (container instanceof HTMLElement) {
+      container.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+      container.scrollTop = 0
+    }
+  })
+  // Wait 2 animation frames for layout to settle
+  await page.evaluate(
+    () => new Promise<void>((resolve) => {
+      requestAnimationFrame(() => { requestAnimationFrame(() => resolve()) })
+    })
+  )
+}
+
 async function prepare(page: Page, url: string) {
   await page.goto(url)
   await page.waitForLoadState('networkidle')
   await page.evaluate(() => document.fonts.ready)
-  // Reset scroll and disable animations
-  await page.evaluate(() => window.scrollTo(0, 0))
   await page.addStyleTag({
     content: '*, *::before, *::after { animation-duration: 0s !important; transition-duration: 0s !important; caret-color: transparent !important; }',
   })
-  await page.evaluate(() => window.scrollTo(0, 0))
+  await resetScroll(page)
 }
 
 async function assertCommonSCR018(page: Page) {
@@ -22,9 +39,13 @@ async function assertCommonSCR018(page: Page) {
   await expect(page.locator('p').filter({ hasText: /A-03/ }).first()).toBeVisible()
   // no BottomNav
   await expect(page.locator('nav[aria-label*="タブ"]')).toHaveCount(0)
-  // scroll at 0
-  const scrollY = await page.evaluate(() => window.scrollY)
-  expect(scrollY).toBe(0)
+  // window scroll at 0
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0)
+  // internal scroll container at 0
+  await expect.poll(() => page.evaluate(() => {
+    const c = document.querySelector('[data-testid="sensor-graph-scroll-container"]')
+    return c instanceof HTMLElement ? c.scrollTop : 0
+  })).toBe(0)
 }
 
 // ── normal-day ─────────────────────────────────────────────────────────────
@@ -173,10 +194,8 @@ test('SCR-018 empty — データなし', async ({ page }) => {
 test('SCR-018 partial-data — 欠損データ', async ({ page }) => {
   await prepare(page, `${BASE}&state=partial-data`)
   await assertCommonSCR018(page)
-  // scroll must be 0
-  await page.evaluate(() => window.scrollTo(0, 0))
-  const scrollY = await page.evaluate(() => window.scrollY)
-  expect(scrollY).toBe(0)
+  // 「日」tab selected
+  await expect(page.locator('[aria-pressed="true"]')).toContainText('日')
   // missing count must be > 0
   const missingText = await page.locator('span').filter({ hasText: /件/ }).last().textContent()
   const missingCount = parseInt(missingText ?? '0')
@@ -249,6 +268,8 @@ test('SCR-018 all 12 screenshots are distinct', async ({ page }) => {
       await page.waitForTimeout(200)
     }
 
+    // Ensure scroll is at top before each capture
+    await resetScroll(page)
     const buf = await page.screenshot({ fullPage: false })
     buffers.push({ id: state.id, data: buf })
   }
