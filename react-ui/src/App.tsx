@@ -139,6 +139,22 @@ export default function App() {
   const sensorGraphState    = viewState as SensorGraphViewState
   const settingsState       = viewState as SettingsViewState
   const [sensorGraphColony, setSensorGraphColony] = useState<GraphColony | null>(null)
+  // default_inspection_mode from user preferences — stored here for future hookup to InspectionRecordScreen.
+  // InspectionRecordScreen does not currently accept an initialMode prop, so this is stored but not yet passed.
+  // Remaining work: add initialMode prop to InspectionRecordScreen and pass defaultInspectionMode here.
+  const [defaultInspectionMode] = useState<'frame' | 'ratio'>(() => {
+    try {
+      const cached = localStorage.getItem('honeyos_user_prefs')
+      if (cached) {
+        const parsed = JSON.parse(cached) as { default_inspection_mode?: string }
+        if (parsed.default_inspection_mode === 'frame' || parsed.default_inspection_mode === 'ratio') {
+          return parsed.default_inspection_mode
+        }
+      }
+    } catch { /* ignore */ }
+    return 'frame'
+  })
+  void defaultInspectionMode // suppress unused warning until prop is added
 
   function handleNotifNavigate(target: NotificationItem['navigateTo'], colonyId?: string) {
     if (target === 'inspection-start') {
@@ -374,7 +390,7 @@ export default function App() {
       ) : screen === 'settings' ? (
         <SettingsScreen
           viewState={settingsState}
-          activeTab={activeTab}
+          activeTab="settings"
           onTabChange={(tab) => {
             setActiveTab(tab)
             if (tab !== 'settings') setScreen('home')

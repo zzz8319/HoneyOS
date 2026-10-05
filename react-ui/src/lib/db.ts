@@ -6,6 +6,12 @@
 
 // ── Settings-specific types ───────────────────────────────────────────────────
 
+export interface UserPreferences {
+  theme: 'light' | 'dark' | 'system'
+  language: 'ja' | 'en'
+  default_inspection_mode: 'frame' | 'ratio'
+}
+
 export interface NotificationSettings {
   inspectionReminder: boolean
   aiDiagnosisComplete: boolean
@@ -94,6 +100,10 @@ export interface HoneyDBClient {
   // 通知設定 (settings)
   getNotificationSettings(): Promise<NotificationSettings | null>
   updateNotificationSettings(settings: NotificationSettings): Promise<void>
+
+  // ユーザー設定 (settings)
+  getUserPreferences(): Promise<UserPreferences>
+  updateUserPreferences(prefs: Partial<UserPreferences>): Promise<UserPreferences>
 
   // データエクスポート (settings)
   exportAllData(): Promise<ExportData>
