@@ -17,6 +17,12 @@ interface Props {
   initialPopover?: boolean
   onBack?: () => void
   onStartInspection?: (colonyId: string) => void
+  onSensorDetail?: (colonyId: string) => void
+  onFrameViewer?: (colonyId: string, inspectionId: string) => void
+  onInspectionHistory?: (colonyId: string) => void
+  onWorkHistory?: (colonyId: string) => void
+  onCameraImages?: (colonyId: string) => void
+  onAiDiagnosis?: (colonyId: string) => void
 }
 
 const STATUS_STYLE: Record<string, string> = {
@@ -47,6 +53,12 @@ export function ColonyDetailScreen({
   initialPopover = false,
   onBack,
   onStartInspection,
+  onSensorDetail,
+  onFrameViewer,
+  onInspectionHistory,
+  onWorkHistory,
+  onCameraImages,
+  onAiDiagnosis,
 }: Props) {
   const colony = mockColonyDetail
   const defaultActive = colony.inspections.find(i => i.date === '2026-08-28') ?? null
@@ -145,7 +157,7 @@ export function ColonyDetailScreen({
                 <p className={styles.popoverNote}>{activeInsp.note}</p>
                 <button
                   className={styles.popoverBtn}
-                  onClick={() => alert(`枠ビューア → SCR-013 colonyId: ${colony.id} inspectionId: ${activeInsp.id}（未実装）`)}
+                  onClick={() => onFrameViewer?.(colonyId ?? colony.id, activeInsp.id)}
                 >
                   ▣ 枠ビューアで見る
                 </button>
@@ -154,7 +166,7 @@ export function ColonyDetailScreen({
           </div>
 
           <button className={styles.historyLink}
-            onClick={() => alert('内検履歴 → SCR-012（未実装）')}>
+            onClick={() => onInspectionHistory?.(colonyId ?? colony.id)}>
             内検履歴を見る ›
           </button>
         </section>
@@ -202,7 +214,7 @@ export function ColonyDetailScreen({
         ) : (
           <SensorSummary
             sensor={colony.sensor}
-            onDetailClick={() => alert('センサー詳細 → SCR-017（未実装）')}
+            onDetailClick={() => onSensorDetail?.(colonyId ?? colony.id)}
           />
         )}
 
@@ -219,19 +231,19 @@ export function ColonyDetailScreen({
               icon={<ClipboardList size={20} />}
               title="作業記録"
               subtitle={`直近 ${colony.workRecordCount}件`}
-              onClick={() => alert('作業履歴（未実装）')}
+              onClick={() => onWorkHistory?.(colonyId ?? colony.id)}
             />
             <QuickLinkCard
               icon={<Camera size={20} />}
               title="カメラ画像"
               subtitle={`最新 ${colony.latestCameraDate}`}
-              onClick={() => alert(`カメラ画像 → SCR-021 colonyId: ${colony.id}（未実装）`)}
+              onClick={() => onCameraImages?.(colonyId ?? colony.id)}
             />
             <QuickLinkCard
               icon={<Brain size={20} />}
               title="AI診断"
               subtitle={colony.aiDiagnosisLabel}
-              onClick={() => alert('AI診断（未実装）')}
+              onClick={() => onAiDiagnosis?.(colonyId ?? colony.id)}
             />
           </div>
         )}

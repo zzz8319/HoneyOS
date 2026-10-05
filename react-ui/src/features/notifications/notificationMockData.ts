@@ -1,0 +1,97 @@
+import type { NotificationItem } from './notificationTypes'
+
+export const NORMAL_NOTIFICATIONS: NotificationItem[] = [
+  {
+    id: 'n1',
+    type: 'sensor',
+    title: 'A-03　巣箱温度が高くなっています',
+    message: '35℃を50分間超えました',
+    occurredAt: '10分前',
+    read: false,
+    colonyId: 'A-03',
+    navigateTo: 'colony-detail',
+  },
+  {
+    id: 'n2',
+    type: 'inspection',
+    title: 'A-05　内検予定日です',
+    message: '前回の内検から16日経過',
+    occurredAt: '1時間前',
+    read: false,
+    colonyId: 'A-05',
+    navigateTo: 'inspection-start',
+  },
+  {
+    id: 'n3',
+    type: 'ai',
+    title: 'A-03　AI診断が完了しました',
+    message: '3件の確認事項があります',
+    occurredAt: '9:42',
+    read: false,
+    colonyId: 'A-03',
+    navigateTo: 'ai-diagnosis',
+  },
+  {
+    id: 'n4',
+    type: 'system',
+    title: 'データの同期が完了しました',
+    message: '最新のデータがサーバーに保存されました',
+    occurredAt: '昨日',
+    read: true,
+    navigateTo: null,
+  },
+  {
+    id: 'n5',
+    type: 'inspection',
+    title: 'B-01　内検リマインダー',
+    message: '内検の時期が近づいています',
+    occurredAt: '9月6日',
+    read: true,
+    colonyId: 'B-01',
+    navigateTo: 'inspection-start',
+  },
+]
+
+export const LONG_CONTENT_NOTIFICATIONS: NotificationItem[] = [
+  {
+    id: 'lc1',
+    type: 'sensor',
+    title: 'A-03-養蜂場北側第二区画　巣箱温度が非常に高い危険水準に達しています',
+    message: '35℃を連続120分間超えました。蜂群の状態を早急に確認してください。熱中症リスクが高まっています。',
+    occurredAt: '10分前',
+    read: false,
+    colonyId: 'A-03',
+    navigateTo: 'colony-detail',
+  },
+  {
+    id: 'lc2',
+    type: 'inspection',
+    title: 'A-05-第一養蜂場長い名称テスト蜂群名前　内検予定日を過ぎています',
+    message: '前回の内検から30日以上経過しています。女王蜂の産卵状況の確認および蜂群の健康チェックが必要です。',
+    occurredAt: '1時間前',
+    read: false,
+    colonyId: 'A-05',
+    navigateTo: 'inspection-start',
+  },
+  {
+    id: 'lc3',
+    type: 'ai',
+    title: 'B-02　AI診断が完了しました（高優先度）',
+    message: '12件の確認事項があります。うち3件は緊急対応が推奨されます。',
+    occurredAt: '9:42',
+    read: false,
+    colonyId: 'B-02',
+    navigateTo: 'ai-diagnosis',
+  },
+  {
+    id: 'lc4',
+    type: 'system',
+    title: 'データ同期エラーが発生しましたが自動復旧しました',
+    message: 'ネットワーク接続が一時的に切断されましたが、接続が回復したため自動的にデータを同期しました。',
+    occurredAt: '昨日',
+    read: true,
+    navigateTo: null,
+  },
+]
+
+export const EMPTY_NOTIFICATIONS: NotificationItem[] = []

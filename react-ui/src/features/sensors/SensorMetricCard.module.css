@@ -1,0 +1,184 @@
+/* ── Card ── */
+.card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 10px 14px 14px;
+  background: var(--color-surface, #fff);
+  border: 1px solid var(--color-border, #E3E5E8);
+  border-radius: var(--radius-md, 12px);
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  min-height: 126px;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.12s;
+}
+.card:focus-visible { outline: 2px solid var(--color-primary, #E39A16); outline-offset: 1px; }
+.card:active { background: #F5F4F1; }
+
+/* 警告・異常でもカード背景は白のまま */
+.cardUninstalled {
+  cursor: default;
+  background: var(--color-surface, #fff);
+  min-height: 90px;
+}
+
+.cardError {
+  background: #FAFAFA;
+  border-style: dashed;
+  min-height: 90px;
+}
+
+/* ── Left column: icon (no background circle) ── */
+.iconWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  flex-shrink: 0;
+  align-self: center;
+}
+
+/* Icon colors — applied directly to SVG via className */
+.iconRed     { color: var(--color-danger, #DC2626); }
+.iconOrange  { color: var(--color-warn, #D97706); }
+.iconBlue    { color: #2563EB; }
+.iconGray    { color: #525E6A; }
+.iconNeutral { color: #66707A; }
+
+/* ── Center column: label / value / delta ── */
+.body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.kindLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-secondary, #66707A);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  line-height: 1.3;
+}
+
+.valueRow {
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+}
+
+.value {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--color-text, #17212B);
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.unit {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-secondary, #66707A);
+}
+
+/* 前回比は独立した行 */
+.delta {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+.deltaPositive { color: var(--color-ok, #16A34A); }
+.deltaNegative { color: var(--color-danger, #DC2626); }
+.deltaNeutral  { color: var(--color-text-secondary, #66707A); }
+
+/* ── Right column: badge + sparkline ── */
+.rightCol {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/* ── Status badge ── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: var(--radius-full, 9999px);
+  white-space: nowrap;
+}
+.badgeCritical { background: var(--color-danger, #DC2626); color: #fff; }
+.badgeWarning  { background: var(--color-warn-soft, #FEF3C7); color: var(--color-warn, #D97706); border: 1px solid #FDE68A; }
+.badgeNormal   { background: var(--color-ok-soft, #DCFCE7); color: var(--color-ok, #16A34A); }
+.badgeNeutral  { background: #F1F3F5; color: var(--color-text-secondary, #66707A); }
+
+/* ── Chevron ── */
+.chevron {
+  display: flex;
+  align-items: center;
+  align-self: center;
+  flex-shrink: 0;
+  color: var(--color-text-secondary, #66707A);
+  padding: 0 2px;
+  min-width: 24px;
+  min-height: 44px;
+  justify-content: center;
+}
+
+/* ── Uninstalled / error states ── */
+.uninstalledText {
+  font-size: 14px;
+  color: var(--color-text-secondary, #66707A);
+  margin-top: 2px;
+}
+
+.errorText {
+  font-size: 13px;
+  color: var(--color-text-secondary, #66707A);
+  margin-top: 2px;
+}
+
+.setupBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  background: none;
+  border: 1px solid var(--color-border, #E3E5E8);
+  border-radius: var(--radius-sm, 8px);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-primary, #E39A16);
+  padding: 6px 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+  min-height: 36px;
+}
+.setupBtn:focus-visible { outline: 2px solid var(--color-primary, #E39A16); outline-offset: 2px; }
+.setupBtn:active { background: var(--color-primary-soft, #FFF3D8); }
+
+.retryBtn {
+  background: none;
+  border: 1px solid var(--color-border, #E3E5E8);
+  border-radius: var(--radius-sm, 8px);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-secondary, #66707A);
+  padding: 6px 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-height: 36px;
+  -webkit-tap-highlight-color: transparent;
+}
+.retryBtn:focus-visible { outline: 2px solid var(--color-primary, #E39A16); outline-offset: 2px; }

@@ -49,12 +49,18 @@ import { LoginScreen } from './features/login'
 import type { LoginViewState } from './features/login'
 import { SignupScreen } from './features/signup'
 import type { SignupViewState } from './features/signup'
-import { OnboardingStep1Screen, OnboardingStep2Screen } from './features/onboarding'
-import type { OnboardingStep1ViewState, OnboardingStep2ViewState } from './features/onboarding'
+import { OnboardingStep1Screen, OnboardingStep2Screen, OnboardingStep3Screen } from './features/onboarding'
+import type { OnboardingStep1ViewState, OnboardingStep2ViewState, OnboardingStep3ViewState } from './features/onboarding'
+import { NotificationCenterScreen } from './features/notifications'
+import type { NotificationCenterViewState, NotificationItem } from './features/notifications'
+import { SensorDetailScreen, SensorGraphScreen } from './features/sensors'
+import type { SensorDetailViewState, SensorGraphViewState, GraphColony } from './features/sensors'
+import { SettingsScreen } from './features/settings'
+import type { SettingsViewState } from './features/settings'
 import type { TabId } from './components'
 import styles from './App.module.css'
 
-type ViewState = DashboardViewState | ColonyListViewState | ColonyDetailViewState | InspectionStartViewState | RecordViewState | ViewerViewState | ApiaryMapViewState | CompleteViewState | CameraViewState | AiAnalysisViewState | DiagnosisViewState | RecommendedWorkState | WorkListViewState | TaskCreateViewState | WorkRecordViewState | WorkHistoryViewState | ReportViewState | ColonyTrendViewState | ColonyComparisonViewState | ColonyCreateViewState | ApiaryCreateViewState | PasswordResetViewState | LoginViewState | SignupViewState | OnboardingStep1ViewState | OnboardingStep2ViewState
+type ViewState = DashboardViewState | ColonyListViewState | ColonyDetailViewState | InspectionStartViewState | RecordViewState | ViewerViewState | ApiaryMapViewState | CompleteViewState | CameraViewState | AiAnalysisViewState | DiagnosisViewState | RecommendedWorkState | WorkListViewState | TaskCreateViewState | WorkRecordViewState | WorkHistoryViewState | ReportViewState | ColonyTrendViewState | ColonyComparisonViewState | ColonyCreateViewState | ApiaryCreateViewState | PasswordResetViewState | LoginViewState | SignupViewState | OnboardingStep1ViewState | OnboardingStep2ViewState | OnboardingStep3ViewState | NotificationCenterViewState | SensorDetailViewState | SensorGraphViewState | SettingsViewState
 
 const STATES: { id: ViewState; label: string }[] = [
   { id: 'normal',  label: '通常' },
@@ -64,7 +70,9 @@ const STATES: { id: ViewState; label: string }[] = [
   { id: 'offline', label: 'オフライン' },
 ]
 
-const VALID_STATES: ViewState[] = ['normal', 'selected', 'empty', 'loading', 'error', 'offline', 'multi-stage', 'unsaved', 'saved', 'draft-restore', 'save-error', 'frame-selected', 'deselected', 'other-stage', 'history', 'other-apiary', 'nectar', 'alert', 'no-results', 'no-location', 'healthy', 'first-inspection', 'ai-analyzed', 'reminder-off', 'missing-record', 'none-selected', 'inspection-tab', 'auto-capture-tab', 'upload-error', 'camera-permission-denied', 'context-missing', 'no-images', 'max-images', 'targets-empty', 'loading-inspection', 'data-missing', 'request-pending', 'request-error', 'saving', 'offline-no-cache', 'multi-selected', 'creating-tasks', 'calendar-view', 'completed-expanded', 'overdue-filtered', 'updating-completion', 'normal-ai', 'normal-manual', 'validation-error', 'submitting', 'submit-error', 'colony-picker', 'date-picker', 'discard-dialog', 'normal-linked-top', 'normal-linked-bottom', 'normal-new', 'saving-draft', 'save-error', 'photo-upload-error', 'photo-added', 'discard-confirm', 'colony-selector', 'time-picker', 'filtered-feeding', 'filtered-apiary', 'filtered-colony', 'filtered-period', 'search-results', 'filter-menu', 'search-open', 'no-apiary', 'apiary-load-error', 'geolocation-denied', 'map-error', 'filled', 'sent', 'resend-cooldown', 'send-error', 'new-password', 'password-validation-error', 'password-updating', 'password-updated', 'password-visible', 'auth-error', 'remember-me-off', 'signup-error', 'confirmation-sent', 'location-selected', 'quantity-adjusted', 'colony-names-expanded']
+const VALID_STATES: ViewState[] = ['normal', 'selected', 'empty', 'loading', 'error', 'offline', 'multi-stage', 'unsaved', 'saved', 'draft-restore', 'save-error', 'frame-selected', 'deselected', 'other-stage', 'history', 'other-apiary', 'nectar', 'alert', 'no-results', 'no-location', 'healthy', 'first-inspection', 'ai-analyzed', 'reminder-off', 'missing-record', 'none-selected', 'inspection-tab', 'auto-capture-tab', 'upload-error', 'camera-permission-denied', 'context-missing', 'no-images', 'max-images', 'targets-empty', 'loading-inspection', 'data-missing', 'request-pending', 'request-error', 'saving', 'offline-no-cache', 'multi-selected', 'creating-tasks', 'calendar-view', 'completed-expanded', 'overdue-filtered', 'updating-completion', 'normal-ai', 'normal-manual', 'validation-error', 'submitting', 'submit-error', 'colony-picker', 'date-picker', 'discard-dialog', 'normal-linked-top', 'normal-linked-bottom', 'normal-new', 'saving-draft', 'save-error', 'photo-upload-error', 'photo-added', 'discard-confirm', 'colony-selector', 'time-picker', 'filtered-feeding', 'filtered-apiary', 'filtered-colony', 'filtered-period', 'search-results', 'filter-menu', 'search-open', 'no-apiary', 'apiary-load-error', 'geolocation-denied', 'map-error', 'filled', 'sent', 'resend-cooldown', 'send-error', 'new-password', 'password-validation-error', 'password-updating', 'password-updated', 'password-visible', 'auth-error', 'remember-me-off', 'signup-error', 'confirmation-sent', 'location-selected', 'quantity-adjusted', 'colony-names-expanded', 'no-colony', 'unread-filter', 'inspection-filter', 'ai-filter', 'sensor-filter', 'all-read', 'long-content', 'offline-cached', 'high-temperature', 'all-normal', 'filter-open', 'refreshing', 'partial-error', 'stale-data',
+  'normal-day', 'tooltip-active', 'metric-selector-open', 'week', 'month', 'custom-range', 'partial-data',
+  'profile-edit', 'profile-saving', 'profile-error', 'notifications-disabled', 'unsynced-data', 'sync-error', 'logout-confirm', 'delete-confirm']
 const VALID_TABS: TabId[] = ['home', 'farms', 'work', 'analytics', 'settings']
 
 const IS_DEV = import.meta.env.DEV &&
@@ -75,7 +83,7 @@ function readParam<T extends string>(key: string, valid: T[], fallback: T): T {
   return (valid.includes(p as T) ? p : fallback) as T
 }
 
-const VALID_SCREENS = ['home', 'farms', 'colony-detail', 'inspection-start', 'inspection-record', 'frame-viewer', 'add-stage', 'apiary-map', 'inspection-complete', 'camera-images', 'ai-analysis', 'ai-diagnosis', 'recommended-work', 'work', 'task-create', 'work-record', 'work-history', 'report', 'colony-trend', 'colony-comparison', 'colony-create', 'apiary-create', 'password-reset', 'login', 'signup', 'onboarding-1', 'onboarding-2'] as const
+const VALID_SCREENS = ['home', 'farms', 'colony-detail', 'inspection-start', 'inspection-record', 'frame-viewer', 'add-stage', 'apiary-map', 'inspection-complete', 'camera-images', 'ai-analysis', 'ai-diagnosis', 'recommended-work', 'work', 'task-create', 'work-record', 'work-history', 'report', 'colony-trend', 'colony-comparison', 'colony-create', 'apiary-create', 'password-reset', 'login', 'signup', 'onboarding-1', 'onboarding-2', 'onboarding-3', 'notification-center', 'sensor-detail', 'sensor-graph', 'settings'] as const
 type Screen = typeof VALID_SCREENS[number]
 
 export default function App() {
@@ -125,6 +133,43 @@ export default function App() {
   const signupState         = viewState as SignupViewState
   const onboarding1State    = viewState as OnboardingStep1ViewState
   const onboarding2State    = viewState as OnboardingStep2ViewState
+  const onboarding3State    = viewState as OnboardingStep3ViewState
+  const notifState          = viewState as NotificationCenterViewState
+  const sensorState         = viewState as SensorDetailViewState
+  const sensorGraphState    = viewState as SensorGraphViewState
+  const settingsState       = viewState as SettingsViewState
+  const [sensorGraphColony, setSensorGraphColony] = useState<GraphColony | null>(null)
+  // default_inspection_mode from user preferences — passed to InspectionRecordScreen as initialMode.
+  // init-time read from localStorage (same-user cache); SettingsScreen updates the cache on DB sync.
+  // In dev/test, the `initialMode` URL param overrides the cache for easy testing.
+  const [defaultInspectionMode] = useState<'frame' | 'ratio'>(() => {
+    const urlOverride = new URLSearchParams(window.location.search).get('initialMode')
+    if (urlOverride === 'frame' || urlOverride === 'ratio') return urlOverride
+    try {
+      const cachedUserId = localStorage.getItem('honeyos_prefs_user_id')
+      const cached = localStorage.getItem('honeyos_user_prefs')
+      if (cached && cachedUserId) {
+        const parsed = JSON.parse(cached) as { default_inspection_mode?: string }
+        if (parsed.default_inspection_mode === 'frame' || parsed.default_inspection_mode === 'ratio') {
+          return parsed.default_inspection_mode
+        }
+      }
+    } catch { /* ignore */ }
+    return 'frame'
+  })
+
+  function handleNotifNavigate(target: NotificationItem['navigateTo'], colonyId?: string) {
+    if (target === 'inspection-start') {
+      if (colonyId) setSelectedColonyId(colonyId)
+      setScreen('inspection-start')
+    } else if (target === 'ai-diagnosis') {
+      setScreen('ai-diagnosis')
+    } else if (target === 'colony-detail') {
+      if (colonyId) setSelectedColonyId(colonyId)
+      setScreen('colony-detail')
+    }
+    // system notifications stay on notification-center; null target stays too
+  }
 
   return (
     <>
@@ -142,12 +187,42 @@ export default function App() {
         </div>
       )}
 
-      {screen === 'onboarding-2' ? (
+      {screen === 'sensor-graph' ? (
+        <SensorGraphScreen
+          viewState={sensorGraphState}
+          colony={sensorGraphColony ?? undefined}
+          onBack={() => setScreen(previousScreen)}
+        />
+      ) : screen === 'sensor-detail' ? (
+        <SensorDetailScreen
+          viewState={sensorState}
+          onBack={() => setScreen(previousScreen)}
+          onNavigateToGraph={(payload) => {
+            setSensorGraphColony({ id: payload.colonyId, name: '', apiaryName: '' })
+            navigateTo('sensor-graph')
+          }}
+        />
+      ) : screen === 'notification-center' ? (
+        <NotificationCenterScreen
+          viewState={notifState}
+          onBack={() => setScreen(previousScreen)}
+          onNavigate={handleNotifNavigate}
+        />
+      ) : screen === 'onboarding-3' ? (
+        <OnboardingStep3Screen
+          viewState={onboarding3State}
+          onBack={() => setScreen('onboarding-2')}
+          onStartInspection={() => { setSelectedColonyId(null); setScreen('inspection-start') }}
+          onDashboard={() => { setScreen('home'); setActiveTab('home') }}
+          onAddApiary={() => navigateTo('apiary-create')}
+          onAddColony={() => navigateTo('colony-create')}
+        />
+      ) : screen === 'onboarding-2' ? (
         <OnboardingStep2Screen
           viewState={onboarding2State}
           onBack={() => setScreen('onboarding-1')}
-          onNext={() => setScreen('home')}
-          onSkip={() => setScreen('home')}
+          onNext={() => setScreen('onboarding-3')}
+          onSkip={() => setScreen('onboarding-3')}
         />
       ) : screen === 'onboarding-1' ? (
         <OnboardingStep1Screen
@@ -210,17 +285,17 @@ export default function App() {
       ) : screen === 'report' ? (
         <ReportScreen
           viewState={reportState}
-          onBack={() => setScreen('home')}
-          onViewHistory={() => setScreen('work-history')}
+          onBack={() => setScreen(previousScreen)}
+          onViewHistory={() => navigateTo('work-history')}
           onTabChange={setActiveTab}
         />
       ) : screen === 'work-history' ? (
         <WorkHistoryScreen
           viewState={workHistoryState}
-          onBack={() => setScreen('home')}
-          onAddRecord={() => setScreen('work-record')}
-          onRecordTap={() => alert('作業履歴詳細 → 未実装')}
-          onAnalyze={() => alert('詳しく分析する → SCR-028（未実装）')}
+          onBack={() => setScreen(previousScreen)}
+          onAddRecord={() => navigateTo('work-record')}
+          onRecordTap={() => navigateTo('work-record')}
+          onAnalyze={() => navigateTo('report')}
           onTabChange={setActiveTab}
         />
       ) : screen === 'work-record' ? (
@@ -245,9 +320,9 @@ export default function App() {
         <RecommendedWorkScreen
           viewState={recWorkState}
           onBack={() => setScreen('ai-diagnosis')}
-          onAddToTask={(id) => alert(`タスクに追加: ${id} → SCR-025（未実装）`)}
-          onRecord={(id) => alert(`作業記録: ${id} → SCR-026（未実装）`)}
-          onCreateTasks={(ids) => alert(`タスク作成: ${ids.join(', ')} → SCR-025（未実装）`)}
+          onAddToTask={() => navigateTo('task-create')}
+          onRecord={() => navigateTo('work-record')}
+          onCreateTasks={() => navigateTo('task-create')}
         />
       ) : screen === 'ai-diagnosis' ? (
         <AiDiagnosisScreen
@@ -273,10 +348,10 @@ export default function App() {
         <InspectionCompleteScreen
           viewState={completeState}
           onNextColony={() => { setSelectedColonyId(null); setScreen('inspection-start') }}
-          onAddNote={() => alert('作業記録追加 → SCR-026（未実装）')}
+          onAddNote={() => navigateTo('work-record')}
           onDashboard={() => { setScreen('home'); setActiveTab('home') }}
           onEdit={() => setScreen('inspection-record')}
-          onAiAnalyze={() => alert('AI解析 → SCR-014（未実装）')}
+          onAiAnalyze={() => navigateTo('ai-analysis')}
         />
       ) : screen === 'apiary-map' ? (
         <ApiaryMapScreen
@@ -300,6 +375,7 @@ export default function App() {
       ) : screen === 'inspection-record' ? (
         <InspectionRecordScreen
           viewState={recordState}
+          initialMode={defaultInspectionMode}
           onBack={() => setScreen('inspection-start')}
           onReselect={() => setScreen('inspection-start')}
           onSave={() => setScreen('inspection-complete')}
@@ -314,6 +390,19 @@ export default function App() {
           }}
           onStart={() => { setScreen('inspection-record') }}
         />
+      ) : screen === 'settings' ? (
+        <SettingsScreen
+          viewState={settingsState}
+          activeTab="settings"
+          onTabChange={(tab) => {
+            setActiveTab(tab)
+            if (tab !== 'settings') setScreen('home')
+          }}
+          onColonyCreate={() => navigateTo('colony-create')}
+          onApiaryCreate={() => navigateTo('apiary-create')}
+          onPasswordReset={() => navigateTo('password-reset')}
+          onLogout={() => setScreen('login')}
+        />
       ) : screen === 'colony-detail' ? (
         <ColonyDetailScreen
           colonyId={selectedColonyId ?? undefined}
@@ -321,6 +410,12 @@ export default function App() {
           initialPopover={new URLSearchParams(window.location.search).get('popover') === '1'}
           onBack={() => { setScreen('home'); setActiveTab('farms') }}
           onStartInspection={(id) => { setSelectedColonyId(id); setScreen('inspection-start') }}
+          onSensorDetail={(id) => { setSelectedColonyId(id); navigateTo('sensor-detail') }}
+          onFrameViewer={(id) => { setSelectedColonyId(id); navigateTo('frame-viewer') }}
+          onInspectionHistory={(id) => { setSelectedColonyId(id); navigateTo('frame-viewer') }}
+          onWorkHistory={(id) => { setSelectedColonyId(id); navigateTo('work-history') }}
+          onCameraImages={(id) => { setSelectedColonyId(id); navigateTo('camera-images') }}
+          onAiDiagnosis={(id) => { setSelectedColonyId(id); navigateTo('ai-diagnosis') }}
         />
       ) : (
         <>
@@ -330,7 +425,7 @@ export default function App() {
               activeTab={activeTab}
               onTabChange={setActiveTab}
               onStartInspection={() => { setSelectedColonyId(null); setScreen('inspection-start') }}
-              onNotifClick={() => alert('通知 → SCR-007（未実装）')}
+              onNotifClick={() => navigateTo('notification-center')}
               onAlertColonies={() => {
                 setActiveTab('farms')
                 setViewState('normal')
@@ -343,7 +438,7 @@ export default function App() {
               viewState={colonyState}
               activeTab={activeTab}
               onTabChange={setActiveTab}
-              onNotifClick={() => alert('通知 → SCR-007（未実装）')}
+              onNotifClick={() => navigateTo('notification-center')}
               onColonyClick={(id) => { setSelectedColonyId(id); setScreen('colony-detail') }}
               onAddColony={() => { navigateTo('colony-create') }}
             />
@@ -358,11 +453,26 @@ export default function App() {
             />
           )}
 
-          {(activeTab === 'work' || activeTab === 'settings') && (
-            <DashboardScreen
-              viewState="empty"
-              activeTab={activeTab}
+          {activeTab === 'work' && (
+            <WorkListScreen
+              viewState={workListState}
               onTabChange={setActiveTab}
+              onAddTask={() => { navigateTo('task-create'); setViewState('normal-manual') }}
+            />
+          )}
+
+          {activeTab === 'settings' && (
+            <SettingsScreen
+              viewState={settingsState}
+              activeTab={activeTab}
+              onTabChange={(tab) => {
+                setActiveTab(tab)
+                if (tab !== 'settings') setScreen('home')
+              }}
+              onColonyCreate={() => navigateTo('colony-create')}
+              onApiaryCreate={() => navigateTo('apiary-create')}
+              onPasswordReset={() => navigateTo('password-reset')}
+              onLogout={() => setScreen('login')}
             />
           )}
         </>
