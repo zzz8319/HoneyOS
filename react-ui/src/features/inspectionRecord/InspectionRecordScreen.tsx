@@ -3,6 +3,8 @@ import { ArrowLeft, ChevronDown, Plus, MoreVertical } from 'lucide-react'
 import type { FrameRecord, StageRecord, QueenStatus, InspectionSession, RecordViewState } from './types'
 import { DEFAULT_SESSION, getInitialStages, getInitialEditPos } from './mockData'
 import { DraftStore } from './InspectionDraftStore'
+import { resolveInitialInspectionMode } from '../../lib/inspectionMode'
+import type { InspectionMode } from '../../lib/inspectionMode'
 import styles from './InspectionRecordScreen.module.css'
 
 export type { RecordViewState }
@@ -305,22 +307,36 @@ function StageAccordion({
   )
 }
 
+// ── Supported modes ───────────────────────────────────────────────────────────
+// 現在 ratio（割合式）は準備中。実装完了後にここへ追加する。
+const SUPPORTED_MODES: InspectionMode[] = ['frame']
+
 // ── InspectionRecordScreen (main) ─────────────────────────────────────────────
 interface Props {
   viewState?: RecordViewState
   session?: InspectionSession
+  /**
+   * 初期記録方式のヒント。優先順位は resolveInitialInspectionMode() に従う:
+   *   1. previousMode（対象蜂群の直近確定内検方式）
+   *   2. initialMode（userDefaultMode として扱う）
+   *   3. 'frame'（システムデフォルト）
+   */
+  initialMode?: InspectionMode
   onBack?: () => void
   onReselect?: () => void
   onSave?: (params: {
     stages: StageRecord[]
     queenStatus: QueenStatus | null
     observations: string[]
+    /** 実際に使用した記録方式（count_mode として保存すること） */
+    effectiveMode: InspectionMode
   }) => void
 }
 
 export function InspectionRecordScreen({
   viewState = 'normal',
   session = DEFAULT_SESSION,
+  initialMode,
   onBack,
   onReselect,
   onSave,
@@ -328,6 +344,18 @@ export function InspectionRecordScreen({
   const isOffline     = viewState === 'offline'
   const isSaveError   = viewState === 'save-error'
   const isDraftRestore= viewState === 'draft-restore'
+
+  // ── 初期記録方式の解決 ────────────────────────────────────────────────────
+  // initialMode は userDefaultMode として扱う（previousMode は現時点では未取得）。
+  // 画面初期化時の1回だけ適用し、ユーザー操作後は上書きしない。
+  const [resolved] = useState(() =>
+    resolveInitialInspectionMode({
+      previousMode: undefined,   // TODO: SCR-011 から渡される前回方式（現在は未接続）
+      userDefaultMode: initialMode,
+      supportedModes: SUPPORTED_MODES,
+    })
+  )
+  const { preferredMode, effectiveMode, ratioFallbackActive } = resolved
 
   const [stages, setStages] = useState<StageRecord[]>(() => getInitialStages(viewState))
   const [queenStatus, setQueenStatus] = useState<QueenStatus | null>(
@@ -419,7 +447,7 @@ export function InspectionRecordScreen({
     setSaveError(null)
     setTimeout(() => {
       setIsSaving(false)
-      onSave?.({ stages, queenStatus, observations })
+      onSave?.({ stages, queenStatus, observations, effectiveMode })
     }, 800)
   }
 
@@ -478,11 +506,37 @@ export function InspectionRecordScreen({
         </button>
 
         {/* Mode tabs */}
-        <div className={styles.modeTabs} role="tablist">
-          <button role="tab" aria-selected className={`${styles.modeTab} ${styles.modeTabActive}`} type="button">枠式</button>
-          <button role="tab" aria-selected={false} className={`${styles.modeTab} ${styles.modeTabDisabled}`} disabled type="button">割合式（準備中）</button>
+        <div className={styles.modeTabs} role="tablist" data-testid="mode-tabs">
+          <button
+            role="tab"
+            aria-selected={effectiveMode === 'frame'}
+            className={`${styles.modeTab} ${effectiveMode === 'frame' ? styles.modeTabActive : ''}`}
+            type="button"
+            data-testid="mode-tab-frame"
+          >
+            枠式
+          </button>
+          <button
+            role="tab"
+            aria-selected={false}
+            className={`${styles.modeTab} ${styles.modeTabDisabled}`}
+            disabled
+            type="button"
+            data-testid="mode-tab-ratio"
+          >
+            割合式（準備中）
+          </button>
         </div>
-        <p className={styles.modeHint}>前回の方式を選択済み</p>
+        {ratioFallbackActive && (
+          <p className={styles.modeHint} data-testid="ratio-fallback-note">
+            既定は割合式ですが、現在は準備中のため枠式で開始します
+          </p>
+        )}
+        {!ratioFallbackActive && preferredMode === 'frame' && (
+          <p className={styles.modeHint} data-testid="mode-hint-frame">
+            枠式で記録します
+          </p>
+        )}
 
         {/* Add stage */}
         <button className={styles.addStageBtn} onClick={handleAddStage} type="button">
