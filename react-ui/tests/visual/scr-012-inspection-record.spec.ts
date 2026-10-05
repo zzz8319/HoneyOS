@@ -14,6 +14,8 @@ for (const state of STATES) {
   test(`SCR-012 inspection-record ${state}`, async ({ page }) => {
     await page.goto(`/?screen=inspection-record&state=${state}&devbar=0`)
     await page.waitForLoadState('networkidle')
+    // 設定解決後に SCR-012 がマウントされるのを待つ
+    await page.waitForSelector('[data-testid="mode-tabs"]', { timeout: 3000 })
     await expect(page).toHaveScreenshot(`scr-012-${state}.png`)
   })
 }
@@ -21,6 +23,7 @@ for (const state of STATES) {
 test('SCR-012 inspection-record normal scrolled-to-bottom', async ({ page }) => {
   await page.goto('/?screen=inspection-record&state=normal&devbar=0')
   await page.waitForLoadState('networkidle')
+  await page.waitForSelector('[data-testid="mode-tabs"]', { timeout: 3000 })
   // Scroll the main content area to bottom
   await page.evaluate(() => {
     const main = document.querySelector('main')

@@ -88,3 +88,67 @@ export const db = () => window.HoneyDB
 ```
 
 直接 Supabase SDK を呼ばない。全 CRUD は `db().*` 経由。
+
+---
+
+## SCR-012 内検記録方式（default_inspection_mode）
+
+### 完成済み: SCR-031 設定 → SCR-012 新規内検への反映
+
+SCR-031「設定」で保存した `default_inspection_mode` を、SCR-012「内検記録」の新規内検開始時の初期表示方式へ安全に反映する。
+
+#### 本番時の動作
+
+- 新規内検開始時、SCR-031 で保存した `default_inspection_mode` を SCR-012 の初期表示へ反映する
+- 同一ユーザーの検証済みキャッシュ（`honeyos_user_prefs` + `honeyos_prefs_user_id`）を利用できる
+- キャッシュがない場合は DB の `user_preferences` を取得する
+- DB 取得完了前に `frame` を誤確定させない（App 側でゲーティング、Approach A）
+- 設定を取得できない場合は `frame` へフォールバックする
+- 別ユーザーのキャッシュは `getSession()` でユーザー ID を検証し使用しない
+- SCR-012 を開始した後に設定値が変化しても、進行中の入力や選択モードを上書きしない
+- `ratio` を利用できない条件（`SUPPORTED_MODES=['frame']`）では `frame` へフォールバックし、理由を案内する
+
+#### 現在の優先順位（本番）
+
+1. 同一ユーザーの検証済みキャッシュ
+2. DB の `default_inspection_mode`（`user_preferences`）
+3. `frame`（フォールバック）
+
+> **注意**: `?initialMode=` URL パラメータはテスト専用のオーバーライドであり、本番の優先順位には含まれない。一般ユーザー向けの機能として案内・保存しない。不正値は安全に無視し `localStorage` や `user_preferences` へ保存しない。
+
+#### pref-loading の終了保証
+
+以下のいずれの場合も `defaultInspectionMode` は `null` から `'frame'` または `'ratio'` へ必ず解決する:
+
+| 状況 | 動作 |
+|---|---|
+| `getDB()` が null（HoneyDB 未ロード / オフライン） | キャッシュ使用（なければ `frame`）|
+| `getSession()` が失敗 | catch → `frame` |
+| 未ログイン（`session.user = null`）| キャッシュ検証 → DB フェッチ → 完了か catch |
+| `getUserPreferences()` が失敗 | catch → `frame` |
+| `user_preferences` に行がない | `frame`（`getUserPreferences` がデフォルト返却） |
+| localStorage が壊れている | `JSON.parse` 例外を無視 → `frame` |
+| 別ユーザーのキャッシュのみ存在 | キャッシュ不一致 → DB フェッチ → 完了か catch |
+
+---
+
+### 延期要件: SCR-011 接続後の previousMode 反映
+
+#### 残課題
+
+SCR-012 の初期記録方式には、**対象蜂群の直近確定内検方式（previousMode）** を最優先する仕様が存在するが、SCR-011 から対象蜂群および直近確定内検方式を渡せるようになった段階で接続する。
+
+`InspectionRecordScreen.tsx` の `resolveInitialInspectionMode()` 呼び出しに `// TODO: SCR-011 から渡される前回方式（現在は未接続）` コメントあり。
+
+#### SCR-011 接続後の最終優先順位
+
+1. 対象蜂群の `previousMode`（直近確定済み内検の記録方式）
+2. ユーザーの `default_inspection_mode`
+3. `frame`
+
+#### 実装時の制約
+
+- `previousMode` を仮データで接続しない
+- SCR-011 の `onStart` コールバックに `previousMode` を追加する際は SCR-011 の変更として別工程で行う
+- `previousMode` が判明したタイミングで SCR-012 に渡すが、**進行中の SCR-012 セッション（既にマウント済み）を後から上書きしない**
+- `useState` lazy init によりマウント時点の値で確定するため、上書きはシステム設計上発生しない

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { DashboardScreen } from './features/dashboard'
 import type { DashboardViewState } from './features/dashboard'
 import { ColonySummaryScreen } from './features/colonyList'
@@ -58,6 +58,8 @@ import type { SensorDetailViewState, SensorGraphViewState, GraphColony } from '.
 import { SettingsScreen } from './features/settings'
 import type { SettingsViewState } from './features/settings'
 import type { TabId } from './components'
+import { getDB } from './lib/db'
+import { getCachedDefaultInspectionMode } from './lib/inspectionMode'
 import styles from './App.module.css'
 
 type ViewState = DashboardViewState | ColonyListViewState | ColonyDetailViewState | InspectionStartViewState | RecordViewState | ViewerViewState | ApiaryMapViewState | CompleteViewState | CameraViewState | AiAnalysisViewState | DiagnosisViewState | RecommendedWorkState | WorkListViewState | TaskCreateViewState | WorkRecordViewState | WorkHistoryViewState | ReportViewState | ColonyTrendViewState | ColonyComparisonViewState | ColonyCreateViewState | ApiaryCreateViewState | PasswordResetViewState | LoginViewState | SignupViewState | OnboardingStep1ViewState | OnboardingStep2ViewState | OnboardingStep3ViewState | NotificationCenterViewState | SensorDetailViewState | SensorGraphViewState | SettingsViewState
@@ -139,22 +141,64 @@ export default function App() {
   const sensorGraphState    = viewState as SensorGraphViewState
   const settingsState       = viewState as SettingsViewState
   const [sensorGraphColony, setSensorGraphColony] = useState<GraphColony | null>(null)
-  // default_inspection_mode from user preferences — stored here for future hookup to InspectionRecordScreen.
-  // InspectionRecordScreen does not currently accept an initialMode prop, so this is stored but not yet passed.
-  // Remaining work: add initialMode prop to InspectionRecordScreen and pass defaultInspectionMode here.
-  const [defaultInspectionMode] = useState<'frame' | 'ratio'>(() => {
-    try {
-      const cached = localStorage.getItem('honeyos_user_prefs')
-      if (cached) {
-        const parsed = JSON.parse(cached) as { default_inspection_mode?: string }
-        if (parsed.default_inspection_mode === 'frame' || parsed.default_inspection_mode === 'ratio') {
-          return parsed.default_inspection_mode
-        }
-      }
-    } catch { /* ignore */ }
-    return 'frame'
+  // default_inspection_mode from user preferences — passed to InspectionRecordScreen as initialMode.
+  // Priority: URL param (dev/test) → session-validated cache → DB fetch → 'frame'.
+  // null = not yet resolved; SCR-012 only mounts after resolution (Approach A).
+  //
+  // Two-path resolution:
+  //   Online path  : getSession() → validate same-user cache → getUserPreferences() → set mode
+  //   Offline path : getDB() returns null → use any available cache (best-effort) → 'frame'
+  const [defaultInspectionMode, setDefaultInspectionMode] = useState<'frame' | 'ratio' | null>(() => {
+    const urlOverride = new URLSearchParams(window.location.search).get('initialMode')
+    if (urlOverride === 'frame' || urlOverride === 'ratio') return urlOverride
+    return null  // always resolve via async effect for correctness
   })
-  void defaultInspectionMode // suppress unused warning until prop is added
+
+  useEffect(() => {
+    if (defaultInspectionMode !== null) return
+    let cancelled = false
+    const toMode = (m: string | null | undefined): 'frame' | 'ratio' =>
+      m === 'frame' || m === 'ratio' ? m : 'frame'
+
+    async function resolve() {
+      const db = getDB()
+
+      if (!db) {
+        // Offline / HoneyDB not loaded: use any same-user cache as best-effort, else 'frame'
+        const raw = localStorage.getItem('honeyos_user_prefs')
+        let cached: string | null = null
+        try {
+          if (raw) {
+            const p = JSON.parse(raw) as { default_inspection_mode?: string }
+            cached = p.default_inspection_mode ?? null
+          }
+        } catch { /* ignore */ }
+        if (!cancelled) setDefaultInspectionMode(toMode(cached))
+        return
+      }
+
+      try {
+        // Get current session to validate the same-user cache
+        const session = await db.getSession()
+        const userId = session.user?.id ?? null
+        // getCachedDefaultInspectionMode validates honeyos_prefs_user_id === userId
+        const fromCache = getCachedDefaultInspectionMode(userId)
+        if (fromCache !== null) {
+          if (!cancelled) setDefaultInspectionMode(fromCache)
+          return
+        }
+        // No valid same-user cache: fetch from DB
+        const prefs = await db.getUserPreferences()
+        if (!cancelled) setDefaultInspectionMode(toMode(prefs.default_inspection_mode))
+      } catch {
+        if (!cancelled) setDefaultInspectionMode('frame')
+      }
+    }
+
+    resolve()
+    return () => { cancelled = true }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   function handleNotifNavigate(target: NotificationItem['navigateTo'], colonyId?: string) {
     if (target === 'inspection-start') {
@@ -370,13 +414,16 @@ export default function App() {
           onEdit={() => setScreen('inspection-record')}
           onAddStage={(record) => { setAddStageRecord(record); setScreen('add-stage') }}
         />
-      ) : screen === 'inspection-record' ? (
+      ) : screen === 'inspection-record' && defaultInspectionMode !== null ? (
         <InspectionRecordScreen
           viewState={recordState}
+          initialMode={defaultInspectionMode}
           onBack={() => setScreen('inspection-start')}
           onReselect={() => setScreen('inspection-start')}
           onSave={() => setScreen('inspection-complete')}
         />
+      ) : screen === 'inspection-record' ? (
+        <div aria-busy="true" aria-label="設定を読み込み中" data-testid="pref-loading" />
       ) : screen === 'inspection-start' ? (
         <InspectionStartScreen
           viewState={inspState}
