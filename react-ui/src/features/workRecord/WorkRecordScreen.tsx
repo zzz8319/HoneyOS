@@ -485,6 +485,7 @@ interface WorkRecordScreenProps {
 // ── Main component ─────────────────────────────────────────────────────────
 
 export function WorkRecordScreen({ viewState, onBack, onSuccess }: WorkRecordScreenProps) {
+  const [saveError, setSaveError] = useState<string | null>(null)
   const [dbColonies, setDbColonies] = useState<WorkRecordColony[]>(MOCK_COLONIES)
   const [dbApiaries, setDbApiaries] = useState<WorkRecordApiary[]>(MOCK_APIARIES)
 
@@ -986,6 +987,11 @@ export function WorkRecordScreen({ viewState, onBack, onSuccess }: WorkRecordScr
 
       {/* Bottom actions */}
       <div className={styles.bottomActions}>
+        {saveError && (
+          <div role="alert" className={styles.errorBanner} data-testid="save-error-banner">
+            {saveError}
+          </div>
+        )}
         <div className={styles.actionBtns}>
           <button
             className={styles.draftBtn}
@@ -998,6 +1004,7 @@ export function WorkRecordScreen({ viewState, onBack, onSuccess }: WorkRecordScr
             className={styles.submitBtn}
             disabled={isBusy || isOffline}
             onClick={async () => {
+              setSaveError(null)
               const db = window.HoneyDB
               if (db?.saveWorkRecord && selectedColony) {
                 try {
@@ -1012,8 +1019,11 @@ export function WorkRecordScreen({ viewState, onBack, onSuccess }: WorkRecordScr
                     feedAmount: workType === 'feed' ? Number(feedAmount) : undefined,
                     photoUrls: photos,
                   })
+                  onSuccess()
+                  return
                 } catch {
-                  // fall through to navigate; error handling can be enhanced later
+                  setSaveError('保存に失敗しました。もう一度お試しください。')
+                  return
                 }
               }
               onSuccess()

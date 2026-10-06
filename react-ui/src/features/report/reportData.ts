@@ -41,7 +41,6 @@ export function buildReportData(
   const workList   = workRecords as RawWork[]
   const inspList   = inspRecords as RawInsp[]
 
-  const farmMap    = new Map(farmList.map(f => [String(f.id), f.name]))
   const colonyMap  = new Map(colonyList.map(c => [String(c.id), c]))
 
   const apiaries: ReportApiary[] = farmList.map(f => ({ id: String(f.id), name: f.name }))
