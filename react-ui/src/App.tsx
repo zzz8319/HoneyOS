@@ -101,6 +101,7 @@ export default function App() {
   const [selectedColonyId, setSelectedColonyId] = useState<string | null>(() =>
     new URLSearchParams(window.location.search).get('colonyId'),
   )
+  const [previousInspectionMode, setPreviousInspectionMode] = useState<'frame' | 'ratio' | undefined>(undefined)
   const [addStageRecord, setAddStageRecord] = useState<InspectionRecord | null>(null)
   const [previousScreen, setPreviousScreen] = useState<Screen>('home')
 
@@ -417,6 +418,7 @@ export default function App() {
       ) : screen === 'inspection-record' && defaultInspectionMode !== null ? (
         <InspectionRecordScreen
           viewState={recordState}
+          previousMode={previousInspectionMode}
           initialMode={defaultInspectionMode}
           onBack={() => setScreen('inspection-start')}
           onReselect={() => setScreen('inspection-start')}
@@ -432,7 +434,7 @@ export default function App() {
             if (selectedColonyId) { setScreen('colony-detail') }
             else { setScreen('home'); setActiveTab('home') }
           }}
-          onStart={() => { setScreen('inspection-record') }}
+          onStart={({ previousMode }) => { setPreviousInspectionMode(previousMode); setScreen('inspection-record') }}
         />
       ) : screen === 'settings' ? (
         <SettingsScreen
