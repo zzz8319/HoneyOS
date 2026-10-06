@@ -442,7 +442,7 @@ export default function App() {
           initialMode={defaultInspectionMode}
           onBack={() => setScreen('inspection-start')}
           onReselect={() => setScreen('inspection-start')}
-          onSave={async ({ stages, queenStatus, observations: _obs, effectiveMode }) => {
+          onSave={async ({ stages, queenStatus, effectiveMode }) => {
             const db = window.HoneyDB
             type Frame = { bee: number; brood: number; honey: number }
             const frames = stages.flatMap(s =>
@@ -466,7 +466,8 @@ export default function App() {
                   temperature: inspectionTemperature,
                 })
               } catch {
-                // fall through; screen can show error state
+                setViewState('save-error')
+                return
               }
             }
 
