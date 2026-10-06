@@ -30,57 +30,35 @@ export interface ExportData {
 // ── HoneyDBClient interface ───────────────────────────────────────────────────
 
 export interface HoneyDBClient {
-  // 認証 (legacy aliases kept for existing components)
-  login(email: string, password: string): Promise<void>
-  signUp(email: string, password: string, name: string): Promise<void>
-  logout(): Promise<void>
-  getSession(): Promise<{ user: { id: string; email: string } | null }>
-  resetPassword(email: string): Promise<void>
-  updatePassword(newPassword: string): Promise<void>
-
-  // 認証 (actual window.HoneyDB methods)
+  // 認証
   signIn(email: string, password: string): Promise<unknown>
+  signUp(email: string, password: string, name: string, farmName?: string): Promise<unknown>
   signOut(): Promise<void>
+  getSession(): Promise<{ user: { id: string; email: string } | null }>
   getUserProfile(): Promise<{ name: string; farm_name: string } | null>
   updateProfile(name: string, farmName: string): Promise<void>
+  resetPassword(email: string): Promise<void>
 
-  // プロフィール (legacy alias)
-  getProfile(): Promise<{ name: string; farm_name: string } | null>
-
-  // 蜂群 (legacy aliases)
-  getColonies(): Promise<Array<{ id: string; name: string; farm_id: number | null }>>
-  saveColony(id: string, name: string, sortOrder: number): Promise<void>
-  deleteColony(id: string): Promise<void>
-
-  // 蜂群 (actual)
+  // 蜂群
   loadColonies(): Promise<unknown[]>
+  saveColony(id: string, name: string, sortOrder: number, opts?: { farmId?: string; colonyType?: string }): Promise<void>
   archiveColony(id: string): Promise<void>
+  deleteColony(id: string): Promise<void>
   initDefaultColonies(ids: string[]): Promise<void>
 
-  // 養蜂場 (legacy aliases)
-  getFarms(): Promise<Array<{ id: number; name: string }>>
-  saveFarm(data: { name: string; address: string; lat: number; lng: number }): Promise<{ id: number }>
-  searchAddress?(query: string): Promise<Array<{ address: string; lat: number; lng: number }>>
-
-  // 養蜂場 (actual)
+  // 養蜂場
   loadFarms(): Promise<unknown[]>
+  saveFarm(name: string, id?: string | null | undefined, opts?: { latitude?: number | null; longitude?: number | null }): Promise<void>
   archiveFarm(id: string): Promise<void>
   deleteFarm(id: string): Promise<void>
+  searchAddress?(query: string): Promise<Array<{ address: string; lat: number; lng: number }>>
 
-  // 内検記録 (legacy)
-  getInspRecords(): Promise<unknown[]>
-  saveInspRecord(record: unknown): Promise<{ id: number }>
-
-  // 内検記録 (actual)
+  // 内検記録
   loadInspRecords(): Promise<unknown[]>
   updateInspRecord(id: string, record: unknown): Promise<void>
   deleteInspRecord(id: string): Promise<void>
 
-  // 作業記録 (legacy)
-  getWorkRecords(): Promise<unknown[]>
-  saveWorkRecord(record: unknown): Promise<{ id: number }>
-
-  // 作業記録 (actual)
+  // 作業記録
   loadWorkRecords(): Promise<unknown[]>
   updateWorkRecord(id: string, record: unknown): Promise<void>
   deleteWorkRecord(id: string): Promise<void>

@@ -201,6 +201,20 @@ export default function App() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // 起動時セッション確認: URLパラメータで画面指定がない場合のみ実行
+  // ログイン済み → 'home'、未ログイン → 'login'
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('screen')) return  // 開発用URL paramがある場合はスキップ
+    const db = getDB()
+    if (!db) return  // HoneyDB未ロードの場合はスキップ（開発環境）
+    db.getSession().then(session => {
+      if (!session || !session.user) {
+        setScreen('login')
+      }
+    }).catch(() => { /* セッション確認失敗は無視 */ })
+  }, [])
+
   function handleNotifNavigate(target: NotificationItem['navigateTo'], colonyId?: string) {
     if (target === 'inspection-start') {
       if (colonyId) setSelectedColonyId(colonyId)
