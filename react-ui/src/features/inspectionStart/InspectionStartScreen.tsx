@@ -18,6 +18,9 @@ interface Props {
   onClose?: () => void
   onStart?: (params: {
     colonyId: string
+    colonyLabel: string
+    apiaryName: string
+    statusLabel: string
     inspDate: string
     weather: string
     temperature: number
@@ -215,7 +218,7 @@ export function InspectionStartScreen({
 
   const handleStart = () => {
     if (!selectedColony) return
-    onStart?.({ colonyId: selectedColony.id, inspDate, weather, temperature, previousMode: selectedColony.previousInspectionMode })
+    onStart?.({ colonyId: selectedColony.id, colonyLabel: selectedColony.colonyId, apiaryName: selectedColony.apiaryName, statusLabel: selectedColony.statusLabel, inspDate, weather, temperature, previousMode: selectedColony.previousInspectionMode })
   }
 
   const showList = !isLoading && !isError && !isEmpty
