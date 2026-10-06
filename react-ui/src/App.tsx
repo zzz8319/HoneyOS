@@ -467,7 +467,6 @@ export default function App() {
         <ColonyDetailScreen
           colonyId={selectedColonyId ?? undefined}
           viewState={detailState}
-          initialPopover={new URLSearchParams(window.location.search).get('popover') === '1'}
           onBack={() => { setScreen('home'); setActiveTab('farms') }}
           onStartInspection={(id) => { setSelectedColonyId(id); setScreen('inspection-start') }}
           onSensorDetail={(id) => { setSelectedColonyId(id); navigateTo('sensor-detail') }}
