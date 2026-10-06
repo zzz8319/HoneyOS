@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { ChevronLeft, X, ClipboardList, Camera, Brain } from 'lucide-react'
 import { ErrorBanner } from '../../components'
 import { CompositionTrendChart } from './CompositionTrendChart'
@@ -6,7 +6,8 @@ import { StrengthTrendChart } from './StrengthTrendChart'
 import { SensorSummary } from './SensorSummary'
 import { QuickLinkCard } from './QuickLinkCard'
 import { mockColonyDetail } from './mockData'
-import type { InspectionPoint } from './mockData'
+import type { ColonyDetail, InspectionPoint } from './mockData'
+import { buildColonyDetail } from './colonyDetailData'
 import styles from './ColonyDetailScreen.module.css'
 
 export type ColonyDetailViewState = 'normal' | 'empty' | 'loading' | 'error' | 'offline'
@@ -14,7 +15,6 @@ export type ColonyDetailViewState = 'normal' | 'empty' | 'loading' | 'error' | '
 interface Props {
   colonyId?: string
   viewState?: ColonyDetailViewState
-  initialPopover?: boolean
   onBack?: () => void
   onStartInspection?: (colonyId: string) => void
   onSensorDetail?: (colonyId: string) => void
@@ -50,7 +50,6 @@ function CardSkeleton({ height = 120 }: { height?: number }) {
 export function ColonyDetailScreen({
   colonyId,
   viewState = 'normal',
-  initialPopover = false,
   onBack,
   onStartInspection,
   onSensorDetail,
@@ -60,11 +59,25 @@ export function ColonyDetailScreen({
   onCameraImages,
   onAiDiagnosis,
 }: Props) {
-  const colony = mockColonyDetail
-  const defaultActive = colony.inspections.find(i => i.date === '2026-08-28') ?? null
-  const [activeInsp, setActiveInsp] = useState<InspectionPoint | null>(
-    initialPopover ? defaultActive : null,
-  )
+  const [colonyData, setColonyData] = useState<ColonyDetail>(mockColonyDetail)
+
+  useEffect(() => {
+    if (viewState !== 'normal' || !colonyId) return
+    const db = window.HoneyDB
+    if (!db?.loadColonies) return
+    let cancelled = false
+    Promise.all([db.loadFarms(), db.loadColonies(), db.loadInspRecords()])
+      .then(([farms, colonies, inspRecords]) => {
+        if (cancelled) return
+        const detail = buildColonyDetail(colonyId, farms as unknown[], colonies as unknown[], inspRecords as unknown[])
+        if (detail) setColonyData(detail)
+      })
+      .catch(() => { /* fallback to mockData */ })
+    return () => { cancelled = true }
+  }, [colonyId, viewState])
+
+  const colony = colonyData
+  const [activeInsp, setActiveInsp] = useState<InspectionPoint | null>(null)
 
   const isLoading = viewState === 'loading'
   const isError   = viewState === 'error'
