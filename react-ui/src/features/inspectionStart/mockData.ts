@@ -23,6 +23,7 @@ export interface SelectableColony {
   prevEmpty: number
   prevInspDate: string      // "2026/8/22" (前回内検日)
   prevInspRelLabel: string  // "16日前" など
+  previousInspectionMode?: 'frame' | 'ratio'  // 直近確定内検の記録方式
   cached?: boolean
 }
 
@@ -40,6 +41,7 @@ export const MOCK_COLONIES: SelectableColony[] = [
     prevBee: 30, prevBrood: 22, prevHoney: 28, prevEmpty: 20,
     prevInspDate: '2026/8/23',
     prevInspRelLabel: '16日前',
+    previousInspectionMode: 'frame',
     cached: true,
   },
   {
@@ -55,6 +57,7 @@ export const MOCK_COLONIES: SelectableColony[] = [
     prevBee: 30, prevBrood: 20, prevHoney: 32, prevEmpty: 18,
     prevInspDate: '2026/8/28',
     prevInspRelLabel: '11日前',
+    previousInspectionMode: 'frame',
     cached: true,
   },
   {

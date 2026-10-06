@@ -21,6 +21,7 @@ interface Props {
     inspDate: string
     weather: string
     temperature: number
+    previousMode?: 'frame' | 'ratio'
   }) => void
 }
 
@@ -214,7 +215,7 @@ export function InspectionStartScreen({
 
   const handleStart = () => {
     if (!selectedColony) return
-    onStart?.({ colonyId: selectedColony.id, inspDate, weather, temperature })
+    onStart?.({ colonyId: selectedColony.id, inspDate, weather, temperature, previousMode: selectedColony.previousInspectionMode })
   }
 
   const showList = !isLoading && !isError && !isEmpty
