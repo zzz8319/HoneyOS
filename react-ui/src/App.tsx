@@ -58,6 +58,7 @@ import type { SensorDetailViewState, SensorGraphViewState, GraphColony } from '.
 import { SettingsScreen } from './features/settings'
 import type { SettingsViewState } from './features/settings'
 import type { TabId } from './components'
+import type { InspectionSession } from './features/inspectionRecord'
 import { getDB } from './lib/db'
 import { getCachedDefaultInspectionMode } from './lib/inspectionMode'
 import styles from './App.module.css'
@@ -102,6 +103,8 @@ export default function App() {
     new URLSearchParams(window.location.search).get('colonyId'),
   )
   const [previousInspectionMode, setPreviousInspectionMode] = useState<'frame' | 'ratio' | undefined>(undefined)
+  const [inspectionSession, setInspectionSession] = useState<InspectionSession | null>(null)
+  const [inspectionTemperature, setInspectionTemperature] = useState<number>(0)
   const [addStageRecord, setAddStageRecord] = useState<InspectionRecord | null>(null)
   const [previousScreen, setPreviousScreen] = useState<Screen>('home')
 
@@ -432,11 +435,38 @@ export default function App() {
       ) : screen === 'inspection-record' && defaultInspectionMode !== null ? (
         <InspectionRecordScreen
           viewState={recordState}
+          session={inspectionSession ?? undefined}
           previousMode={previousInspectionMode}
           initialMode={defaultInspectionMode}
           onBack={() => setScreen('inspection-start')}
           onReselect={() => setScreen('inspection-start')}
-          onSave={() => setScreen('inspection-complete')}
+          onSave={async ({ stages, queenStatus, effectiveMode }) => {
+            const db = window.HoneyDB
+            if (db?.saveInspRecord && inspectionSession) {
+              const frames = stages.flatMap(s =>
+                (s.frames as Array<{ bee: number; brood: number; honey: number } | null>).filter(Boolean)
+              )
+              const now = new Date()
+              const time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
+              try {
+                await db.saveInspRecord({
+                  colony: inspectionSession.colonyId,
+                  date: inspectionSession.inspDate,
+                  time,
+                  weather: inspectionSession.weather,
+                  frames,
+                  count_mode: effectiveMode,
+                  queen_status: queenStatus,
+                  queen_present: queenStatus !== null,
+                  bees_total: frames.reduce((s, f) => s + (f?.bee ?? 0), 0),
+                  temperature: inspectionTemperature,
+                })
+              } catch {
+                // fall through to navigate even on error; screen can show error state
+              }
+            }
+            setScreen('inspection-complete')
+          }}
         />
       ) : screen === 'inspection-record' ? (
         <div aria-busy="true" aria-label="設定を読み込み中" data-testid="pref-loading" />
@@ -448,7 +478,13 @@ export default function App() {
             if (selectedColonyId) { setScreen('colony-detail') }
             else { setScreen('home'); setActiveTab('home') }
           }}
-          onStart={({ previousMode }) => { setPreviousInspectionMode(previousMode); setScreen('inspection-record') }}
+          onStart={({ colonyId, colonyLabel, apiaryName, statusLabel, inspDate, weather, temperature, previousMode }) => {
+            setPreviousInspectionMode(previousMode)
+            setInspectionSession({ colonyId, colonyLabel, apiaryName, statusLabel, inspDate, weather })
+            setInspectionTemperature(temperature)
+            setSelectedColonyId(colonyId)
+            setScreen('inspection-record')
+          }}
         />
       ) : screen === 'settings' ? (
         <SettingsScreen

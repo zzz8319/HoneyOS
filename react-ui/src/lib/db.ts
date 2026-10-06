@@ -55,6 +55,7 @@ export interface HoneyDBClient {
 
   // 内検記録
   loadInspRecords(): Promise<unknown[]>
+  saveInspRecord(record: Record<string, unknown>): Promise<string | null>
   updateInspRecord(id: string, record: unknown): Promise<void>
   deleteInspRecord(id: string): Promise<void>
 
