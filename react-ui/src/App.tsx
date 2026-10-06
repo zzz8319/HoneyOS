@@ -16,7 +16,7 @@ import { AddStageScreen } from './features/addStage'
 import { ApiaryMapScreen } from './features/apiaryMap'
 import type { ApiaryMapViewState } from './features/apiaryMap'
 import { InspectionCompleteScreen } from './features/inspectionComplete'
-import type { CompleteViewState } from './features/inspectionComplete'
+import type { CompleteViewState, InspectionCompleteData } from './features/inspectionComplete'
 import { CameraImagesScreen } from './features/cameraImages'
 import type { CameraViewState } from './features/cameraImages'
 import { AiAnalysisScreen } from './features/aiAnalysis'
@@ -105,6 +105,7 @@ export default function App() {
   const [previousInspectionMode, setPreviousInspectionMode] = useState<'frame' | 'ratio' | undefined>(undefined)
   const [inspectionSession, setInspectionSession] = useState<InspectionSession | null>(null)
   const [inspectionTemperature, setInspectionTemperature] = useState<number>(0)
+  const [completedInspData, setCompletedInspData] = useState<InspectionCompleteData | null>(null)
   const [addStageRecord, setAddStageRecord] = useState<InspectionRecord | null>(null)
   const [previousScreen, setPreviousScreen] = useState<Screen>('home')
 
@@ -407,6 +408,7 @@ export default function App() {
       ) : screen === 'inspection-complete' ? (
         <InspectionCompleteScreen
           viewState={completeState}
+          data={completedInspData ?? undefined}
           onNextColony={() => { setSelectedColonyId(null); setScreen('inspection-start') }}
           onAddNote={() => navigateTo('work-record')}
           onDashboard={() => { setScreen('home'); setActiveTab('home') }}
@@ -440,14 +442,16 @@ export default function App() {
           initialMode={defaultInspectionMode}
           onBack={() => setScreen('inspection-start')}
           onReselect={() => setScreen('inspection-start')}
-          onSave={async ({ stages, queenStatus, effectiveMode }) => {
+          onSave={async ({ stages, queenStatus, observations: _obs, effectiveMode }) => {
             const db = window.HoneyDB
+            type Frame = { bee: number; brood: number; honey: number }
+            const frames = stages.flatMap(s =>
+              (s.frames as Array<Frame | null>).filter((f): f is Frame => f !== null)
+            )
+            const now = new Date()
+            const time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
+
             if (db?.saveInspRecord && inspectionSession) {
-              const frames = stages.flatMap(s =>
-                (s.frames as Array<{ bee: number; brood: number; honey: number } | null>).filter(Boolean)
-              )
-              const now = new Date()
-              const time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
               try {
                 await db.saveInspRecord({
                   colony: inspectionSession.colonyId,
@@ -458,12 +462,55 @@ export default function App() {
                   count_mode: effectiveMode,
                   queen_status: queenStatus,
                   queen_present: queenStatus !== null,
-                  bees_total: frames.reduce((s, f) => s + (f?.bee ?? 0), 0),
+                  bees_total: frames.reduce((s, f) => s + f.bee, 0),
                   temperature: inspectionTemperature,
                 })
               } catch {
-                // fall through to navigate even on error; screen can show error state
+                // fall through; screen can show error state
               }
+            }
+
+            // Build completion summary for SCR-015
+            if (inspectionSession) {
+              const filled = frames.filter(f => f.bee + f.brood + f.honey > 0)
+              const n = filled.length || 1
+              const avgBee   = Math.round(filled.reduce((s, f) => s + f.bee, 0) / n)
+              const avgBrood = Math.round(filled.reduce((s, f) => s + f.brood, 0) / n)
+              const avgHoney = Math.round(filled.reduce((s, f) => s + f.honey, 0) / n)
+              const score    = Math.round(avgBee * 0.6 + avgBrood * 0.4)
+              const totalFrames = stages.reduce((s, st) => s + (st.frames as unknown[]).length, 0)
+              // Suggest next inspection 14 days out
+              const d = new Date(inspectionSession.inspDate)
+              const next = new Date(d.getTime() + 14 * 86400000)
+              const DOW = ['日', '月', '火', '水', '木', '金', '土']
+              const suggestedDate = `${next.getFullYear()}年${next.getMonth()+1}月${next.getDate()}日（${DOW[next.getDay()]}）`
+              const inspDateFormatted = (() => {
+                const dd = new Date(inspectionSession.inspDate)
+                return isNaN(dd.getTime()) ? inspectionSession.inspDate
+                  : `${dd.getFullYear()}年${dd.getMonth()+1}月${dd.getDate()}日（${DOW[dd.getDay()]}）`
+              })()
+              setCompletedInspData({
+                inspectionId: `insp-${inspectionSession.inspDate}-${inspectionSession.colonyId}`,
+                colonyId: inspectionSession.colonyId,
+                colonyLabel: inspectionSession.colonyLabel,
+                apiaryName: inspectionSession.apiaryName,
+                inspDate: inspDateFormatted,
+                weather: inspectionSession.weather,
+                tempCelsius: inspectionTemperature,
+                queenStatus: (queenStatus as 'laying' | 'unconfirmed' | 'concern') ?? 'unconfirmed',
+                estimatedBeeCount: filled.length * Math.round(avgBee * 3),
+                strengthScore: score,
+                stageSummary: { stageCount: stages.length, totalFrames, recordedFrames: filled.length },
+                previousInspDate: null,
+                comparison: [
+                  { key: 'bee',      label: '蜂量',   current: avgBee,   previous: null, unit: '%' },
+                  { key: 'brood',    label: '育児量', current: avgBrood, previous: null, unit: '%' },
+                  { key: 'honey',    label: '貯蜜量', current: avgHoney, previous: null, unit: '%' },
+                  { key: 'strength', label: '簡易強さ', current: score,  previous: null, unit: '' },
+                ],
+                aiDiagnosis: null,
+                nextInspection: { daysBefore: 1, suggestedDate, userDate: null },
+              })
             }
             setScreen('inspection-complete')
           }}

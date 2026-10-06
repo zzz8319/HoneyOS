@@ -1,11 +1,12 @@
-import { useState, useMemo, useId } from 'react'
-import type { ReportViewState, ReportPeriodMode, ReportAggUnit } from './types'
+import { useState, useMemo, useId, useEffect } from 'react'
+import type { ReportViewState, ReportPeriodMode, ReportAggUnit, ReportRecord, ReportApiary, ReportColony, StrengthEntry } from './types'
 import {
   REPORT_APIARIES,
   REPORT_COLONIES,
   REPORT_RECORDS,
   STRENGTH_ENTRIES,
 } from './mockData'
+import { buildReportData } from './reportData'
 import {
   filterByMonth,
   filterByYear,
@@ -305,13 +306,34 @@ export function ReportScreen({
   onTabChange,
 }: ReportScreenProps) {
   const noop = () => {}
-  const today = new Date(2026, 8, 1) // Sep 2026
+  const today = new Date()
   const [mode, setMode] = useState<ReportPeriodMode>('monthly')
   const [year, setYear] = useState(today.getFullYear())
   const [month, setMonth] = useState(today.getMonth() + 1)
   const [aggUnit, setAggUnit] = useState<ReportAggUnit>('overall')
   const [apiaryId, setApiaryId] = useState<string | null>(null)
   const selectId = useId()
+
+  const [reportRecords, setReportRecords] = useState<ReportRecord[]>(REPORT_RECORDS)
+  const [strengthEntries, setStrengthEntries] = useState<StrengthEntry[]>(STRENGTH_ENTRIES)
+  const [reportApiaries, setReportApiaries] = useState<ReportApiary[]>(REPORT_APIARIES)
+  const [reportColonies, setReportColonies] = useState<ReportColony[]>(REPORT_COLONIES)
+
+  useEffect(() => {
+    const db = window.HoneyDB
+    if (!db?.loadFarms) return
+    Promise.all([db.loadFarms(), db.loadColonies(), db.loadWorkRecords ? db.loadWorkRecords() : Promise.resolve([]), db.loadInspRecords()])
+      .then(([farms, cols, workRecs, inspRecs]) => {
+        if ((cols as unknown[]).length === 0) return
+        const { records, strengthEntries: se, apiaries, reportColonies: rc } =
+          buildReportData(farms as unknown[], cols as unknown[], workRecs as unknown[], inspRecs as unknown[])
+        setReportRecords(records)
+        setStrengthEntries(se)
+        setReportApiaries(apiaries)
+        setReportColonies(rc)
+      })
+      .catch(() => {})
+  }, [viewState])
 
   const MIN_YEAR = 2024
   const MAX_YEAR = today.getFullYear()
@@ -349,8 +371,8 @@ export function ReportScreen({
   // apiaryId applies regardless of aggUnit
   const { kpi, breakdown, monthlyHarvest, monthlyStrength } = useMemo(() => {
     const apId = apiaryId
-    const baseRecords = filterByApiary(REPORT_RECORDS, apId)
-    const baseStrength = filterStrengthByApiary(STRENGTH_ENTRIES, apId)
+    const baseRecords = filterByApiary(reportRecords, apId)
+    const baseStrength = filterStrengthByApiary(strengthEntries, apId)
 
     const current = mode === 'monthly'
       ? filterByMonth(baseRecords, year, month)
@@ -366,8 +388,8 @@ export function ReportScreen({
     })()
 
     const activeColonies = apId
-      ? REPORT_COLONIES.filter(c => c.apiaryId === apId)
-      : REPORT_COLONIES
+      ? reportColonies.filter(c => c.apiaryId === apId)
+      : reportColonies
 
     const kpi = buildKPI(current, prev, activeColonies)
     const breakdown = calcWorkBreakdown(current)
@@ -375,7 +397,7 @@ export function ReportScreen({
     const monthlyStrength = calcMonthlyStrength(baseStrength)
 
     return { kpi, breakdown, monthlyHarvest, monthlyStrength }
-  }, [mode, year, month, apiaryId])
+  }, [mode, year, month, apiaryId, reportRecords, strengthEntries, reportColonies])
 
   // KPI change formatter: ↑/↓ style
   function fmtChange(v: number | null, unit = '%'): string {
@@ -536,7 +558,7 @@ export function ReportScreen({
               aria-label="養蜂場を選択"
             >
               <option value="">全養蜂場</option>
-              {REPORT_APIARIES.map(a => (
+              {reportApiaries.map(a => (
                 <option key={a.id} value={a.id}>{a.name}</option>
               ))}
             </select>

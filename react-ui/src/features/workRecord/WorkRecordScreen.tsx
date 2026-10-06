@@ -1,5 +1,5 @@
-import { useState, useRef, useCallback } from 'react'
-import type { WorkRecordViewState, WorkType, WorkRecordColony } from './types'
+import { useState, useRef, useCallback, useEffect } from 'react'
+import type { WorkRecordViewState, WorkType, WorkRecordColony, WorkRecordApiary } from './types'
 import { MOCK_COLONIES, MOCK_APIARIES, FEED_TYPES, FEED_UNITS, LINKED_CONTEXT, NEW_CONTEXT } from './mockData'
 import styles from './WorkRecordScreen.module.css'
 
@@ -313,18 +313,22 @@ function localDateToDisplay(iso: string): string {
 
 function ColonyPicker({
   selectedId,
+  colonies,
+  apiaries,
   onSelect,
   onClose,
 }: {
   selectedId: string | null
+  colonies: WorkRecordColony[]
+  apiaries: WorkRecordApiary[]
   onSelect: (colony: WorkRecordColony) => void
   onClose: () => void
 }) {
   const [query, setQuery] = useState('')
-  const filtered = MOCK_COLONIES.filter(c =>
+  const filtered = colonies.filter(c =>
     c.name.toLowerCase().includes(query.toLowerCase()),
   )
-  const groups = MOCK_APIARIES.map(ap => ({
+  const groups = apiaries.map(ap => ({
     apiary: ap,
     colonies: filtered.filter(c => c.apiaryId === ap.id),
   })).filter(g => g.colonies.length > 0)
@@ -481,6 +485,28 @@ interface WorkRecordScreenProps {
 // ── Main component ─────────────────────────────────────────────────────────
 
 export function WorkRecordScreen({ viewState, onBack, onSuccess }: WorkRecordScreenProps) {
+  const [dbColonies, setDbColonies] = useState<WorkRecordColony[]>(MOCK_COLONIES)
+  const [dbApiaries, setDbApiaries] = useState<WorkRecordApiary[]>(MOCK_APIARIES)
+
+  useEffect(() => {
+    const db = window.HoneyDB
+    if (!db?.loadColonies) return
+    Promise.all([db.loadFarms(), db.loadColonies()])
+      .then(([farms, colonies]) => {
+        const farmList = farms as Array<{ id: string; name: string }>
+        const colonyList = colonies as Array<{ id: string; name: string; farmId: string | null }>
+        if (!colonyList.length) return
+        const farmMap = new Map(farmList.map(f => [String(f.id), f.name]))
+        const builtColonies: WorkRecordColony[] = colonyList.map(c => {
+          const farmId = c.farmId ? String(c.farmId) : 'unknown'
+          return { id: c.id, name: c.name, apiaryId: farmId, apiaryName: farmMap.get(farmId) ?? '養蜂場なし' }
+        })
+        const builtApiaries: WorkRecordApiary[] = farmList.map(f => ({ id: String(f.id), name: f.name }))
+        setDbColonies(builtColonies)
+        setDbApiaries(builtApiaries)
+      })
+      .catch(() => {})
+  }, [])
   const isLinked = (
     viewState === 'normal-linked-top' ||
     viewState === 'normal-linked-bottom' ||
@@ -971,8 +997,25 @@ export function WorkRecordScreen({ viewState, onBack, onSuccess }: WorkRecordScr
           <button
             className={styles.submitBtn}
             disabled={isBusy || isOffline}
-            onClick={() => {
-              // validation would run here, then window.HoneyDB.saveWorkRecord(...)
+            onClick={async () => {
+              const db = window.HoneyDB
+              if (db?.saveWorkRecord && selectedColony) {
+                try {
+                  await db.saveWorkRecord({
+                    type: workType,
+                    colony: selectedColony.id,
+                    colonyIds: [selectedColony.id],
+                    date: performedDate,
+                    time: performedTime,
+                    memo,
+                    feedType: workType === 'feed' ? feedType : undefined,
+                    feedAmount: workType === 'feed' ? Number(feedAmount) : undefined,
+                    photoUrls: photos,
+                  })
+                } catch {
+                  // fall through to navigate; error handling can be enhanced later
+                }
+              }
               onSuccess()
             }}
           >
@@ -989,6 +1032,8 @@ export function WorkRecordScreen({ viewState, onBack, onSuccess }: WorkRecordScr
       {isColonyOpen && (
         <ColonyPicker
           selectedId={selectedColony?.id ?? null}
+          colonies={dbColonies}
+          apiaries={dbApiaries}
           onSelect={(c) => {
             setSelectedColony(c)
             clearError('colonyId')

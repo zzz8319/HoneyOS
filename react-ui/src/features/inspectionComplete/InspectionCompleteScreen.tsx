@@ -286,6 +286,7 @@ function queenLabel(status: InspectionCompleteData['queenStatus']) {
 
 interface Props {
   viewState: CompleteViewState
+  data?: InspectionCompleteData
   onNextColony?: () => void
   onAddNote?: () => void
   onDashboard?: () => void
@@ -295,6 +296,7 @@ interface Props {
 
 export function InspectionCompleteScreen({
   viewState,
+  data: dataProp,
   onNextColony,
   onAddNote,
   onDashboard,
@@ -308,7 +310,7 @@ export function InspectionCompleteScreen({
   if (viewState === 'offline')        return <OfflineScreen onDashboard={onDashboard} />
   if (viewState === 'missing-record') return <MissingRecordScreen onDashboard={onDashboard} onNextColony={onNextColony} />
 
-  const data = getMockData(viewState)
+  const data = dataProp ?? getMockData(viewState)
   if (!data) return <MissingRecordScreen onDashboard={onDashboard} onNextColony={onNextColony} />
 
   const showWarning = data.strengthScore < 60
