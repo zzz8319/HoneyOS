@@ -66,8 +66,8 @@ export function ColonyCreateScreen({
     setApiaryLoading(true)
     setApiaryLoadError(false)
     try {
-      if (typeof window !== 'undefined' && window.HoneyDB?.getFarms) {
-        const farms = await window.HoneyDB.getFarms()
+      if (typeof window !== 'undefined' && window.HoneyDB?.loadFarms) {
+        const farms = await window.HoneyDB.loadFarms() as Array<{ id: string; name: string }>
         setApiaries(farms.map(f => ({ id: String(f.id), name: f.name })))
       } else {
         // dev/test fallback

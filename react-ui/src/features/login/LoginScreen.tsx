@@ -92,7 +92,7 @@ export function LoginScreen({ viewState = 'normal', onSuccess, onForgotPassword,
 
     setSubmitting(true)
     try {
-      await window.HoneyDB.login(email, password)
+      await window.HoneyDB.signIn(email, password)
       onSuccess?.()
     } catch {
       setAuthError(true)
