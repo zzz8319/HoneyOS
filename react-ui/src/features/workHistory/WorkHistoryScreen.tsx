@@ -1,6 +1,8 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import type { WorkHistoryViewState, WorkHistoryWorkType, WorkHistoryRecord, WorkHistoryFilters, PeriodOption } from './types'
 import { MOCK_RECORDS, MOCK_APIARIES, MOCK_COLONIES } from './mockData'
+import type { WorkHistoryApiary } from './types'
+import { buildWorkHistoryData } from './workHistoryData'
 import { BottomNav } from '../../components'
 import styles from './WorkHistoryScreen.module.css'
 
@@ -340,6 +342,30 @@ export function WorkHistoryScreen({
   )
   const [menuOpen, setMenuOpen] = useState(viewState === 'filter-menu')
   const [sortDesc, setSortDesc] = useState(true)
+  const [dbRecords, setDbRecords] = useState<WorkHistoryRecord[]>(MOCK_RECORDS)
+  const [dbApiaries, setDbApiaries] = useState<WorkHistoryApiary[]>(MOCK_APIARIES)
+  const [dbColonies, setDbColonies] = useState(MOCK_COLONIES)
+
+  useEffect(() => {
+    if (viewState === 'loading' || viewState === 'error') return
+    const db = window.HoneyDB
+    if (!db?.loadWorkRecords) return
+    let cancelled = false
+    Promise.all([db.loadFarms(), db.loadColonies(), db.loadWorkRecords()])
+      .then(([farms, colonies, recs]) => {
+        if (cancelled) return
+        const { records, apiaries } = buildWorkHistoryData(farms as unknown[], colonies as unknown[], recs as unknown[])
+        if (records.length > 0 || (farms as unknown[]).length > 0) {
+          setDbRecords(records)
+          setDbApiaries(apiaries)
+          const builtColonies = (colonies as Array<{ id: string; name: string; farmId: string | null }>)
+            .map(c => ({ id: c.id, name: c.name, apiaryId: c.farmId ? String(c.farmId) : 'unknown' }))
+          setDbColonies(builtColonies)
+        }
+      })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [viewState])
 
   const setFilter = <K extends keyof WorkHistoryFilters>(key: K, value: WorkHistoryFilters[K]) => {
     setFilters(prev => {
@@ -355,15 +381,15 @@ export function WorkHistoryScreen({
   }
 
   const availableColonies = filters.apiaryId
-    ? MOCK_COLONIES.filter(c => c.apiaryId === filters.apiaryId)
-    : MOCK_COLONIES
+    ? dbColonies.filter(c => c.apiaryId === filters.apiaryId)
+    : dbColonies
 
   const filteredRecords = useMemo(() => {
     if (viewState === 'empty') return []
     if (viewState === 'loading' || viewState === 'error' || viewState === 'offline-no-cache') return []
     if (viewState === 'no-results') return []
 
-    let recs = [...MOCK_RECORDS]
+    let recs = [...dbRecords]
 
     if (filters.workType !== 'all') {
       recs = recs.filter(r => r.workType === filters.workType)
@@ -384,7 +410,7 @@ export function WorkHistoryScreen({
     })
 
     return recs
-  }, [filters, viewState, sortDesc])
+  }, [filters, viewState, sortDesc, dbRecords])
 
   const monthGroups = useMemo(() => {
     const groups: { key: string; records: typeof filteredRecords }[] = []
@@ -597,7 +623,7 @@ export function WorkHistoryScreen({
             aria-label="養蜂場を選択"
           >
             <option value="">全養蜂場</option>
-            {MOCK_APIARIES.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+            {dbApiaries.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
           </select>
           <ChevronDownIcon />
         </div>

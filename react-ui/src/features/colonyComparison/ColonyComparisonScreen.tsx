@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useMemo } from 'react'
+import { useState, useRef, useCallback, useMemo, useEffect } from 'react'
 import {
   Calendar, MapPin, ChevronRight, ChevronUp,
   AlertCircle, Info, WifiOff, RefreshCw, AlertTriangle,
@@ -12,6 +12,9 @@ import {
   COMPARISON_APIARIES, COLONY_HISTORIES,
   selectRowsForDate, buildWarnings, filterRows, sortRows,
 } from './mockData'
+import type { ComparisonApiary } from './types'
+import { buildComparisonData } from './colonyComparisonData'
+import type { BuiltColonyHistory } from './colonyComparisonData'
 import styles from './ColonyComparisonScreen.module.css'
 
 // ── Inline SVG icons ──────────────────────────────────────────────────────
@@ -42,7 +45,8 @@ interface ColonyComparisonScreenProps {
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────
-const APIARIES = COMPARISON_APIARIES
+// will be replaced by DB data; keep module-level fallback for non-component code
+const APIARIES_FALLBACK = COMPARISON_APIARIES
 
 // ── Sort header cell (module-level to avoid react-hooks/static-components) ──
 function SortTh({
@@ -95,7 +99,7 @@ export function ColonyComparisonScreen({
 
   // ── Comparison state ─────────────────────────────────────────────────────
   const [tab, setTab]               = useState<ComparisonTab>('table')
-  const [refDate, setRefDate]       = useState('2026-09-08')
+  const [refDate, setRefDate]       = useState(() => new Date().toISOString().slice(0, 10))
   const [topApiary, setTopApiary]   = useState<string | null>(null)  // null = 全養蜂場
   const [statusFilter, setStatusFilter] = useState('all')
   const [apiaryFilter, setApiaryFilter] = useState('all')  // filter row
@@ -103,6 +107,26 @@ export function ColonyComparisonScreen({
   const [sortKey, setSortKey]       = useState<SortKey>('strength')
   const [sortDir, setSortDir]       = useState<SortDir>('desc')
   const [retryKey, setRetryKey]     = useState(0)
+  const [dbHistories, setDbHistories] = useState<BuiltColonyHistory[]>(COLONY_HISTORIES as unknown as BuiltColonyHistory[])
+  const [dbApiaries, setDbApiaries]   = useState<ComparisonApiary[]>(APIARIES_FALLBACK)
+
+  useEffect(() => {
+    if (viewState === 'loading' || viewState === 'error') return
+    const db = window.HoneyDB
+    if (!db?.loadInspRecords) return
+    let cancelled = false
+    Promise.all([db.loadFarms(), db.loadColonies(), db.loadInspRecords()])
+      .then(([farms, colonies, recs]) => {
+        if (cancelled) return
+        if ((colonies as unknown[]).length > 0) {
+          const { histories, apiaries } = buildComparisonData(farms as unknown[], colonies as unknown[], recs as unknown[])
+          setDbHistories(histories)
+          setDbApiaries(apiaries)
+        }
+      })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [viewState, retryKey])
 
   // dropdown open state
   const [openDropdown, setOpenDropdown] = useState<'date' | 'apiary' | 'status' | 'apiaryFilter' | 'insp' | null>(null)
@@ -110,7 +134,7 @@ export function ColonyComparisonScreen({
   const rankingRef = useRef<HTMLDivElement>(null)
 
   // ── Derived data (all re-computed when refDate changes) ──────────────────
-  const allRows = useMemo(() => selectRowsForDate(COLONY_HISTORIES, refDate), [refDate])
+  const allRows = useMemo(() => selectRowsForDate(dbHistories as Parameters<typeof selectRowsForDate>[0], refDate), [dbHistories, refDate])
 
   const topApiaryRows = topApiary
     ? allRows.filter(r => r.apiaryId === topApiary)
@@ -207,7 +231,7 @@ export function ColonyComparisonScreen({
         >
           <MapPin size={15} aria-hidden color="var(--color-text-secondary)" />
           <span className={styles.controlBtnLabel}>
-            {topApiary ? APIARIES.find(a => a.id === topApiary)?.name : '全養蜂場'}
+            {topApiary ? dbApiaries.find(a => a.id === topApiary)?.name : '全養蜂場'}
           </span>
           <span className={styles.controlBtnChevron}><IconChevronDown /></span>
         </button>
@@ -221,7 +245,7 @@ export function ColonyComparisonScreen({
               >
                 全養蜂場
               </button>
-              {APIARIES.map(a => (
+              {dbApiaries.map(a => (
                 <button
                   key={a.id}
                   className={`${styles.dropdownItem} ${topApiary === a.id ? styles.dropdownItemActive : ''}`}
@@ -268,7 +292,7 @@ export function ColonyComparisonScreen({
   ]
   const APIARY_OPTIONS = [
     { value: 'all', label: '養蜂場：すべて' },
-    ...APIARIES.map(a => ({ value: a.id, label: a.name })),
+    ...dbApiaries.map(a => ({ value: a.id, label: a.name })),
   ]
   const INSP_OPTIONS = [
     { value: 'all',  label: '最終内検：すべて' },
@@ -320,7 +344,7 @@ export function ColonyComparisonScreen({
           onClick={() => setOpenDropdown(o => o === 'apiaryFilter' ? null : 'apiaryFilter')}
         >
           <span className={styles.filterBtnLabel}>
-            {apiaryFilter === 'all' ? '養蜂場' : APIARIES.find(a => a.id === apiaryFilter)?.name}
+            {apiaryFilter === 'all' ? '養蜂場' : dbApiaries.find(a => a.id === apiaryFilter)?.name}
           </span>
           <IconChevronDown />
         </button>
@@ -569,7 +593,7 @@ export function ColonyComparisonScreen({
   }
 
   if (viewState === 'empty') {
-    const hasAnyColonies = COLONY_HISTORIES.length > 0
+    const hasAnyColonies = dbHistories.length > 0
     return (
       <div className={styles.screen}>
         {header}

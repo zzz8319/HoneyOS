@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { ClipboardCheck } from 'lucide-react'
 import { AppHeader, BottomNav, EmptyState, ErrorBanner } from '../../components'
 import type { TabId } from '../../components'
@@ -6,6 +7,8 @@ import { WeatherCard } from './WeatherCard'
 import { ColonySummaryCard } from './ColonySummaryCard'
 import { WeeklyStatsCard } from './WeeklyStatsCard'
 import { mockDashboard } from './mockData'
+import type { DashboardData } from './mockData'
+import { buildDashboardData } from './dashboardData'
 import styles from './DashboardScreen.module.css'
 
 export type DashboardViewState = 'normal' | 'empty' | 'loading' | 'error' | 'offline'
@@ -29,7 +32,24 @@ export function DashboardScreen({
   onAlertColonies,
   onMethodClick,
 }: DashboardScreenProps) {
-  const { farmName, alertColonyCount, weather, colonies, weekly } = mockDashboard
+  const [dashData, setDashData] = useState<DashboardData>(mockDashboard)
+
+  useEffect(() => {
+    if (viewState !== 'normal') return
+    const db = window.HoneyDB
+    if (!db?.loadColonies) return
+    let cancelled = false
+    Promise.all([db.loadFarms(), db.loadColonies(), db.loadInspRecords()])
+      .then(([farms, colonies, inspRecords]) => {
+        if (cancelled) return
+        if ((colonies as unknown[]).length > 0)
+          setDashData(buildDashboardData(farms as unknown[], colonies as unknown[], inspRecords as unknown[]))
+      })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [viewState])
+
+  const { farmName, alertColonyCount, weather, colonies, weekly } = dashData
 
   return (
     <div className="app-shell">

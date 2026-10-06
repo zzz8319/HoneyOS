@@ -61,6 +61,7 @@ export interface HoneyDBClient {
 
   // 作業記録
   loadWorkRecords(): Promise<unknown[]>
+  saveWorkRecord(record: Record<string, unknown>): Promise<void>
   updateWorkRecord(id: string, record: unknown): Promise<void>
   deleteWorkRecord(id: string): Promise<void>
 
