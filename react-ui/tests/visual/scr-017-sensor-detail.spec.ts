@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 
-const BASE = 'http://localhost:5175/?screen=sensor-detail&devbar=0'
+const BASE = '/?screen=sensor-detail&devbar=0'
 
 const STATES: { id: string; label: string }[] = [
   { id: 'normal',          label: '通常' },

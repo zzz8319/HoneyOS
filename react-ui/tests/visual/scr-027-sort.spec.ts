@@ -1,6 +1,11 @@
 import { test, expect } from '@playwright/test'
+import { injectMockHoneyDB } from './helpers/mockHoneyDB'
 
-const URL = 'http://localhost:5173/?screen=work-history&state=normal&devbar=0'
+const URL = '/?screen=work-history&state=normal&devbar=0'
+
+test.beforeEach(async ({ page }) => {
+  await injectMockHoneyDB(page)
+})
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 

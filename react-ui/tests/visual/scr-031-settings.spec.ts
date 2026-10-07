@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 
-const BASE = 'http://localhost:5175'
+const BASE = ''
 const STATES = [
   'normal',
   'profile-edit',

@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
+import { injectMockHoneyDB } from './helpers/mockHoneyDB'
 
 const STATES = ['normal', 'empty', 'loading', 'error', 'offline'] as const
 
@@ -6,6 +7,7 @@ const STATES = ['normal', 'empty', 'loading', 'error', 'offline'] as const
 const FIXED_NOW = new Date('2026-09-20T00:00:00+09:00')
 
 async function gotoColonyList(page: Page, state: typeof STATES[number]) {
+  await injectMockHoneyDB(page)
   await page.clock.install({ time: FIXED_NOW })
   // URLパラメータで状態を指定し、devbarを使わない
   await page.goto(`/?tab=farms&state=${state}&devbar=0`, { waitUntil: 'networkidle' })
