@@ -1,6 +1,5 @@
 import { useState, useMemo, useEffect } from 'react'
 import type { WorkHistoryViewState, WorkHistoryWorkType, WorkHistoryRecord, WorkHistoryFilters, PeriodOption } from './types'
-import { MOCK_RECORDS, MOCK_APIARIES, MOCK_COLONIES } from './mockData'
 import type { WorkHistoryApiary } from './types'
 import { buildWorkHistoryData } from './workHistoryData'
 import { BottomNav } from '../../components'
@@ -342,9 +341,9 @@ export function WorkHistoryScreen({
   )
   const [menuOpen, setMenuOpen] = useState(viewState === 'filter-menu')
   const [sortDesc, setSortDesc] = useState(true)
-  const [dbRecords, setDbRecords] = useState<WorkHistoryRecord[]>(MOCK_RECORDS)
-  const [dbApiaries, setDbApiaries] = useState<WorkHistoryApiary[]>(MOCK_APIARIES)
-  const [dbColonies, setDbColonies] = useState(MOCK_COLONIES)
+  const [dbRecords, setDbRecords] = useState<WorkHistoryRecord[]>([])
+  const [dbApiaries, setDbApiaries] = useState<WorkHistoryApiary[]>([])
+  const [dbColonies, setDbColonies] = useState<Array<{ id: string; name: string; apiaryId: string }>>([])
 
   useEffect(() => {
     if (viewState === 'loading' || viewState === 'error') return
@@ -355,13 +354,11 @@ export function WorkHistoryScreen({
       .then(([farms, colonies, recs]) => {
         if (cancelled) return
         const { records, apiaries } = buildWorkHistoryData(farms as unknown[], colonies as unknown[], recs as unknown[])
-        if (records.length > 0 || (farms as unknown[]).length > 0) {
-          setDbRecords(records)
-          setDbApiaries(apiaries)
-          const builtColonies = (colonies as Array<{ id: string; name: string; farmId: string | null }>)
-            .map(c => ({ id: c.id, name: c.name, apiaryId: c.farmId ? String(c.farmId) : 'unknown' }))
-          setDbColonies(builtColonies)
-        }
+        setDbRecords(records)
+        setDbApiaries(apiaries)
+        const builtColonies = (colonies as Array<{ id: string; name: string; farmId: string | null }>)
+          .map(c => ({ id: c.id, name: c.name, apiaryId: c.farmId ? String(c.farmId) : 'unknown' }))
+        setDbColonies(builtColonies)
       })
       .catch(() => {})
     return () => { cancelled = true }
