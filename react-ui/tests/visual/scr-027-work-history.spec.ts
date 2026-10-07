@@ -28,6 +28,10 @@ test('SCR-027 normal-bottom', async ({ page }) => {
 test('SCR-027 filtered-feeding', async ({ page }) => {
   await page.goto(url('filtered-feeding'))
   await page.waitForLoadState('networkidle')
+  // Move mouse away and blur focus to avoid caret/cursor rendering artifacts.
+  await page.mouse.move(0, 0)
+  await page.evaluate(() => { (document.activeElement as HTMLElement | null)?.blur?.() })
+  await page.waitForTimeout(100)
   await expect(page).toHaveScreenshot('scr-027-filtered-feeding.png')
 })
 
