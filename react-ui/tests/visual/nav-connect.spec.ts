@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { injectMockHoneyDB } from './helpers/mockHoneyDB'
 
 const BASE = ''
 
@@ -14,7 +15,8 @@ test('SCR-009 → SCR-013: 内検履歴を見る opens frame-viewer', async ({ p
 
 // ── SCR-009 → SCR-027 (作業記録) ─────────────────────────────────────────
 test('SCR-009 → SCR-027: 作業記録 opens work-history', async ({ page }) => {
-  await page.goto(`${BASE}/?screen=colony-detail&devbar=0`)
+  await injectMockHoneyDB(page)
+  await page.goto(`${BASE}/?screen=colony-detail&colonyId=a1&devbar=0`)
   await page.waitForLoadState('networkidle')
   const workBtn = page.locator('[data-testid="quick-links"]').getByText('作業記録')
   await expect(workBtn).toBeVisible()
@@ -24,7 +26,8 @@ test('SCR-009 → SCR-027: 作業記録 opens work-history', async ({ page }) =>
 
 // ── SCR-009 → SCR-021 (カメラ画像) ───────────────────────────────────────
 test('SCR-009 → SCR-021: カメラ画像 opens camera-images', async ({ page }) => {
-  await page.goto(`${BASE}/?screen=colony-detail&devbar=0`)
+  await injectMockHoneyDB(page)
+  await page.goto(`${BASE}/?screen=colony-detail&colonyId=a1&devbar=0`)
   await page.waitForLoadState('networkidle')
   const camBtn = page.locator('[data-testid="quick-links"]').getByText('カメラ画像')
   await expect(camBtn).toBeVisible()
@@ -38,7 +41,8 @@ test('SCR-009 → SCR-021: カメラ画像 opens camera-images', async ({ page }
 
 // ── SCR-009 → SCR-022 (AI診断) ───────────────────────────────────────────
 test('SCR-009 → SCR-022: AI診断 opens ai-diagnosis', async ({ page }) => {
-  await page.goto(`${BASE}/?screen=colony-detail&devbar=0`)
+  await injectMockHoneyDB(page)
+  await page.goto(`${BASE}/?screen=colony-detail&colonyId=a1&devbar=0`)
   await page.waitForLoadState('networkidle')
   const aiBtn = page.locator('[data-testid="quick-links"]').getByText('AI診断')
   await expect(aiBtn).toBeVisible()
@@ -108,6 +112,7 @@ test('SCR-027 → SCR-026: record row tap opens work-record', async ({ page }) =
 
 // ── SCR-027 → SCR-028 (詳しく分析する) ───────────────────────────────────
 test('SCR-027 → SCR-028: 詳しく分析する opens report', async ({ page }) => {
+  await injectMockHoneyDB(page)
   await page.goto(`${BASE}/?screen=work-history&devbar=0`)
   await page.waitForLoadState('networkidle')
   const analyzeBtn = page.locator('button[aria-label="詳しく分析する"]')
