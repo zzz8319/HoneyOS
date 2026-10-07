@@ -1,11 +1,5 @@
 import { useState, useMemo, useId, useEffect } from 'react'
 import type { ReportViewState, ReportPeriodMode, ReportAggUnit, ReportRecord, ReportApiary, ReportColony, StrengthEntry } from './types'
-import {
-  REPORT_APIARIES,
-  REPORT_COLONIES,
-  REPORT_RECORDS,
-  STRENGTH_ENTRIES,
-} from './mockData'
 import { buildReportData } from './reportData'
 import {
   filterByMonth,
@@ -314,17 +308,17 @@ export function ReportScreen({
   const [apiaryId, setApiaryId] = useState<string | null>(null)
   const selectId = useId()
 
-  const [reportRecords, setReportRecords] = useState<ReportRecord[]>(REPORT_RECORDS)
-  const [strengthEntries, setStrengthEntries] = useState<StrengthEntry[]>(STRENGTH_ENTRIES)
-  const [reportApiaries, setReportApiaries] = useState<ReportApiary[]>(REPORT_APIARIES)
-  const [reportColonies, setReportColonies] = useState<ReportColony[]>(REPORT_COLONIES)
+  const [reportRecords, setReportRecords] = useState<ReportRecord[]>([])
+  const [strengthEntries, setStrengthEntries] = useState<StrengthEntry[]>([])
+  const [reportApiaries, setReportApiaries] = useState<ReportApiary[]>([])
+  const [reportColonies, setReportColonies] = useState<ReportColony[]>([])
 
   useEffect(() => {
+    if (viewState === 'error') return
     const db = window.HoneyDB
     if (!db?.loadFarms) return
     Promise.all([db.loadFarms(), db.loadColonies(), db.loadWorkRecords ? db.loadWorkRecords() : Promise.resolve([]), db.loadInspRecords()])
       .then(([farms, cols, workRecs, inspRecs]) => {
-        if ((cols as unknown[]).length === 0) return
         const { records, strengthEntries: se, apiaries, reportColonies: rc } =
           buildReportData(farms as unknown[], cols as unknown[], workRecs as unknown[], inspRecs as unknown[])
         setReportRecords(records)

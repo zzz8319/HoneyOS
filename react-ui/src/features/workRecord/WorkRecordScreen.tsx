@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import type { WorkRecordViewState, WorkType, WorkRecordColony, WorkRecordApiary } from './types'
-import { MOCK_COLONIES, MOCK_APIARIES, FEED_TYPES, FEED_UNITS, LINKED_CONTEXT, NEW_CONTEXT } from './mockData'
+import { MOCK_COLONIES, FEED_TYPES, FEED_UNITS, LINKED_CONTEXT, NEW_CONTEXT } from './mockData'
 import styles from './WorkRecordScreen.module.css'
 
 // ── SVG Icons ──────────────────────────────────────────────────────────────
@@ -486,8 +486,8 @@ interface WorkRecordScreenProps {
 
 export function WorkRecordScreen({ viewState, onBack, onSuccess }: WorkRecordScreenProps) {
   const [saveError, setSaveError] = useState<string | null>(null)
-  const [dbColonies, setDbColonies] = useState<WorkRecordColony[]>(MOCK_COLONIES)
-  const [dbApiaries, setDbApiaries] = useState<WorkRecordApiary[]>(MOCK_APIARIES)
+  const [dbColonies, setDbColonies] = useState<WorkRecordColony[]>([])
+  const [dbApiaries, setDbApiaries] = useState<WorkRecordApiary[]>([])
 
   useEffect(() => {
     const db = window.HoneyDB
@@ -496,7 +496,6 @@ export function WorkRecordScreen({ viewState, onBack, onSuccess }: WorkRecordScr
       .then(([farms, colonies]) => {
         const farmList = farms as Array<{ id: string; name: string }>
         const colonyList = colonies as Array<{ id: string; name: string; farmId: string | null }>
-        if (!colonyList.length) return
         const farmMap = new Map(farmList.map(f => [String(f.id), f.name]))
         const builtColonies: WorkRecordColony[] = colonyList.map(c => {
           const farmId = c.farmId ? String(c.farmId) : 'unknown'

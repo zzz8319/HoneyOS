@@ -6,7 +6,6 @@ import { AlertBanner } from './AlertBanner'
 import { WeatherCard } from './WeatherCard'
 import { ColonySummaryCard } from './ColonySummaryCard'
 import { WeeklyStatsCard } from './WeeklyStatsCard'
-import { mockDashboard } from './mockData'
 import type { DashboardData } from './mockData'
 import { buildDashboardData } from './dashboardData'
 import styles from './DashboardScreen.module.css'
@@ -32,24 +31,34 @@ export function DashboardScreen({
   onAlertColonies,
   onMethodClick,
 }: DashboardScreenProps) {
-  const [dashData, setDashData] = useState<DashboardData>(mockDashboard)
+  const [dashData, setDashData] = useState<DashboardData | null>(null)
+  const [dataError, setDataError] = useState(false)
 
   useEffect(() => {
     if (viewState !== 'normal') return
     const db = window.HoneyDB
-    if (!db?.loadColonies) return
+    if (!db?.loadColonies) {
+      Promise.resolve().then(() => setDataError(true))
+      return
+    }
     let cancelled = false
     Promise.all([db.loadFarms(), db.loadColonies(), db.loadInspRecords()])
       .then(([farms, colonies, inspRecords]) => {
         if (cancelled) return
-        if ((colonies as unknown[]).length > 0)
-          setDashData(buildDashboardData(farms as unknown[], colonies as unknown[], inspRecords as unknown[]))
+        setDataError(false)
+        setDashData(buildDashboardData(farms as unknown[], colonies as unknown[], inspRecords as unknown[]))
       })
-      .catch(() => {})
+      .catch(() => {
+        if (!cancelled) setDataError(true)
+      })
     return () => { cancelled = true }
   }, [viewState])
 
-  const { farmName, alertColonyCount, weather, colonies, weekly } = dashData
+  const farmName = dashData?.farmName ?? ''
+  const alertColonyCount = dashData?.alertColonyCount ?? 0
+  const weather = dashData?.weather
+  const colonies = dashData?.colonies
+  const weekly = dashData?.weekly
 
   return (
     <div className="app-shell">
@@ -67,8 +76,14 @@ export function DashboardScreen({
       )}
       {viewState === 'offline' && (
         <ErrorBanner
-          message={`オフラインです。最終同期: ${weather.fetchedAt}`}
+          message={`オフラインです。最終同期: ${weather?.fetchedAt ?? '—'}`}
           severity="minor"
+        />
+      )}
+      {viewState === 'normal' && dataError && (
+        <ErrorBanner
+          message="データの取得に失敗しました。再度お試しください。"
+          severity="critical"
         />
       )}
 
@@ -123,16 +138,46 @@ export function DashboardScreen({
           />
         )}
 
-        {(viewState === 'normal' || viewState === 'offline') && (
+        {viewState === 'normal' && !dashData && !dataError && (
+          <div className={styles.loadingWrap} aria-busy aria-label="読み込み中">
+            <div className={styles.skelCard}>
+              <div className={styles.skelHeader} />
+              <div className={styles.skelTempRow}>
+                <div className={styles.skelTempVal} />
+                <div className={styles.skelMeta} />
+                <div className={styles.skelBadge} />
+              </div>
+              <div className={styles.skelSparkline} />
+            </div>
+            <div className={styles.skelCard}>
+              <div className={styles.skelHeader} />
+              <div className={styles.skelSummaryRow}>
+                <div className={styles.skelAvg} />
+                <div className={styles.skelCount} />
+              </div>
+              <div className={styles.skelChart} />
+            </div>
+            <div className={styles.skelCard}>
+              <div className={styles.skelHeader} />
+              <div className={styles.skelStatsRow}>
+                <div className={styles.skelStatBlock} />
+                <div className={styles.skelStatBlock} />
+              </div>
+              <div className={styles.skelBar} />
+            </div>
+          </div>
+        )}
+
+        {(viewState === 'normal' || viewState === 'offline') && dashData && (
           <>
             <section aria-label="内検コンディション">
-              <WeatherCard data={weather} />
+              <WeatherCard data={weather!} />
             </section>
             <section aria-label="蜂群の強さ">
-              <ColonySummaryCard data={colonies} onMethodClick={onMethodClick} />
+              <ColonySummaryCard data={colonies!} onMethodClick={onMethodClick} />
             </section>
             <section aria-label="今週の統計">
-              <WeeklyStatsCard data={weekly} />
+              <WeeklyStatsCard data={weekly!} />
             </section>
           </>
         )}

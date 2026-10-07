@@ -9,7 +9,6 @@ import type {
   ColonyComparisonViewState, ComparisonTab, SortKey, SortDir,
 } from './types'
 import {
-  COMPARISON_APIARIES, COLONY_HISTORIES,
   selectRowsForDate, buildWarnings, filterRows, sortRows,
 } from './mockData'
 import type { ComparisonApiary } from './types'
@@ -43,10 +42,6 @@ interface ColonyComparisonScreenProps {
   onTabChange: (tab: TabId) => void
   onColonyDetail: (colonyId: string) => void
 }
-
-// ── Helpers ───────────────────────────────────────────────────────────────
-// will be replaced by DB data; keep module-level fallback for non-component code
-const APIARIES_FALLBACK = COMPARISON_APIARIES
 
 // ── Sort header cell (module-level to avoid react-hooks/static-components) ──
 function SortTh({
@@ -107,8 +102,8 @@ export function ColonyComparisonScreen({
   const [sortKey, setSortKey]       = useState<SortKey>('strength')
   const [sortDir, setSortDir]       = useState<SortDir>('desc')
   const [retryKey, setRetryKey]     = useState(0)
-  const [dbHistories, setDbHistories] = useState<BuiltColonyHistory[]>(COLONY_HISTORIES as unknown as BuiltColonyHistory[])
-  const [dbApiaries, setDbApiaries]   = useState<ComparisonApiary[]>(APIARIES_FALLBACK)
+  const [dbHistories, setDbHistories] = useState<BuiltColonyHistory[]>([])
+  const [dbApiaries, setDbApiaries]   = useState<ComparisonApiary[]>([])
 
   useEffect(() => {
     if (viewState === 'loading' || viewState === 'error') return
@@ -118,11 +113,9 @@ export function ColonyComparisonScreen({
     Promise.all([db.loadFarms(), db.loadColonies(), db.loadInspRecords()])
       .then(([farms, colonies, recs]) => {
         if (cancelled) return
-        if ((colonies as unknown[]).length > 0) {
-          const { histories, apiaries } = buildComparisonData(farms as unknown[], colonies as unknown[], recs as unknown[])
-          setDbHistories(histories)
-          setDbApiaries(apiaries)
-        }
+        const { histories, apiaries } = buildComparisonData(farms as unknown[], colonies as unknown[], recs as unknown[])
+        setDbHistories(histories)
+        setDbApiaries(apiaries)
       })
       .catch(() => {})
     return () => { cancelled = true }
