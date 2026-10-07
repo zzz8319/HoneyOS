@@ -94,7 +94,12 @@ export function ColonyComparisonScreen({
 
   // ── Comparison state ─────────────────────────────────────────────────────
   const [tab, setTab]               = useState<ComparisonTab>('table')
-  const [refDate, setRefDate]       = useState(() => new Date().toISOString().slice(0, 10))
+  const DROPDOWN_DATES = ['2026-09-08', '2026-08-31', '2026-09-01']
+  const [refDate, setRefDate]       = useState(() => {
+    const today = new Date().toISOString().slice(0, 10)
+    const eligible = DROPDOWN_DATES.filter(d => d <= today).sort()
+    return eligible[eligible.length - 1] ?? DROPDOWN_DATES[0]
+  })
   const [topApiary, setTopApiary]   = useState<string | null>(null)  // null = 全養蜂場
   const [statusFilter, setStatusFilter] = useState('all')
   const [apiaryFilter, setApiaryFilter] = useState('all')  // filter row

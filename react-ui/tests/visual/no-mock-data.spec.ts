@@ -1,6 +1,6 @@
 /**
  * Verify that mock-specific strings do NOT appear in the production-normal state
- * for the 8 data screens (SCR-006/008/009/026/027/028/032/033).
+ * for the 8 data screens (SCR-006/008/009/026/027/028/029/030).
  *
  * In production, window.HoneyDB is undefined during Playwright test runs
  * (no real Supabase connection).  Each screen should therefore show a loading
@@ -78,18 +78,18 @@ test('SCR-027 normal: no mock strings shown', async ({ page }) => {
   }
 })
 
-// ── Colony Trend (SCR-032) ─────────────────────────────────────────────────
+// ── Colony Trend (SCR-029) ─────────────────────────────────────────────────
 
-test('SCR-032 normal: no mock colony/apiary name shown', async ({ page }) => {
+test('SCR-029 normal: no mock colony/apiary name shown', async ({ page }) => {
   await goTo(page, 'colony-trend', 'normal')
   for (const str of MOCK_ONLY_STRINGS) {
     await expect(page.getByText(str, { exact: false })).not.toBeVisible()
   }
 })
 
-// ── Colony Comparison (SCR-033) ────────────────────────────────────────────
+// ── Colony Comparison (SCR-030) ────────────────────────────────────────────
 
-test('SCR-033 normal: no mock colony/apiary name shown', async ({ page }) => {
+test('SCR-030 normal: no mock colony/apiary name shown', async ({ page }) => {
   await goTo(page, 'colony-comparison', 'normal')
   for (const str of MOCK_ONLY_STRINGS) {
     await expect(page.getByText(str, { exact: false })).not.toBeVisible()
