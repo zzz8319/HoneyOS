@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { injectMockHoneyDB } from './helpers/mockHoneyDB'
 
 const SCREEN = 'colony-create'
 const BASE_URL = `/?screen=${SCREEN}&devbar=0`
@@ -150,6 +151,7 @@ test('SCR-032 from-colony-list', async ({ page }) => {
 
 // ── 11. 蜂群トレンドからの遷移 ───────────────────────────────────────────────
 test('SCR-032 from-colony-trend', async ({ page }) => {
+  await injectMockHoneyDB(page)
   await page.clock.install({ time: FIXED_NOW })
   await page.goto('/?screen=colony-trend&devbar=0', { waitUntil: 'networkidle' })
   await page.waitForTimeout(200)

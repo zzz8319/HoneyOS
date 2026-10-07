@@ -8,7 +8,9 @@ async function mockHoneyDB(page: Page) {
   await page.addInitScript(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ;(window as any).HoneyDB = {
+      signIn: async () => {},
       login: async () => {},
+      signOut: async () => {},
       logout: async () => {},
       getSession: async () => ({ user: null }),
       resetPassword: async () => {},
