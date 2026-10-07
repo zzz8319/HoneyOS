@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 
-const BASE = 'http://localhost:5175'
+const BASE = ''
 
 // ── SCR-009 → SCR-013 (内検履歴を見る) ──────────────────────────────────
 test('SCR-009 → SCR-013: 内検履歴を見る opens frame-viewer', async ({ page }) => {
