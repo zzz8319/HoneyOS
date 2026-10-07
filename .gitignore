@@ -4,4 +4,5 @@ react-ui/dist/
 react-ui/node_modules/
 react-ui/playwright-report/
 react-ui/test-results/
+react-ui/test-reports/
 test-results/
