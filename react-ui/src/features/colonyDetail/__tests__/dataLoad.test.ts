@@ -52,3 +52,67 @@ describe('ColonyDetailScreen HoneyDB contract', () => {
     expect(db?.loadColonies).toBeUndefined()
   })
 })
+
+/** Simulates the unified useEffect fetch logic from ColonyDetailScreen */
+async function simulateFetch(
+  viewState: string,
+  db: {
+    loadFarms: () => Promise<unknown[]>
+    loadColonies: () => Promise<unknown[]>
+    loadInspRecords: () => Promise<unknown[]>
+  },
+  colonyId = 'c1',
+) {
+  if (viewState === 'error' || viewState === 'offline') return
+  const [farms, colonies] = await Promise.all([db.loadFarms(), db.loadColonies()])
+  const inspRecords = viewState === 'normal' ? await db.loadInspRecords() : []
+  return buildColonyDetail(colonyId, farms as unknown[], colonies as unknown[], inspRecords as unknown[])
+}
+
+describe('ColonyDetailScreen fetch counts per viewState', () => {
+  const makeDb = () => ({
+    loadFarms:       vi.fn().mockResolvedValue(FARM),
+    loadColonies:    vi.fn().mockResolvedValue(COLONY),
+    loadInspRecords: vi.fn().mockResolvedValue(INSP),
+  })
+
+  it('normal: loadFarms once, loadColonies once, loadInspRecords once', async () => {
+    const db = makeDb()
+    await simulateFetch('normal', db)
+    expect(db.loadFarms).toHaveBeenCalledTimes(1)
+    expect(db.loadColonies).toHaveBeenCalledTimes(1)
+    expect(db.loadInspRecords).toHaveBeenCalledTimes(1)
+  })
+
+  it('empty: loadFarms once, loadColonies once, loadInspRecords not called', async () => {
+    const db = makeDb()
+    await simulateFetch('empty', db)
+    expect(db.loadFarms).toHaveBeenCalledTimes(1)
+    expect(db.loadColonies).toHaveBeenCalledTimes(1)
+    expect(db.loadInspRecords).not.toHaveBeenCalled()
+  })
+
+  it('loading: loadFarms once, loadColonies once, loadInspRecords not called', async () => {
+    const db = makeDb()
+    await simulateFetch('loading', db)
+    expect(db.loadFarms).toHaveBeenCalledTimes(1)
+    expect(db.loadColonies).toHaveBeenCalledTimes(1)
+    expect(db.loadInspRecords).not.toHaveBeenCalled()
+  })
+
+  it('error: no API calls', async () => {
+    const db = makeDb()
+    await simulateFetch('error', db)
+    expect(db.loadFarms).not.toHaveBeenCalled()
+    expect(db.loadColonies).not.toHaveBeenCalled()
+    expect(db.loadInspRecords).not.toHaveBeenCalled()
+  })
+
+  it('offline: no API calls', async () => {
+    const db = makeDb()
+    await simulateFetch('offline', db)
+    expect(db.loadFarms).not.toHaveBeenCalled()
+    expect(db.loadColonies).not.toHaveBeenCalled()
+    expect(db.loadInspRecords).not.toHaveBeenCalled()
+  })
+})
