@@ -61,43 +61,38 @@ export function ColonyDetailScreen({
   const [colonyData, setColonyData] = useState<ColonyDetail | null>(null)
   const [dataError, setDataError] = useState(false)
 
-  // Load colony header info (name, farm) for all view states so the header always shows.
+  // Unified data fetch — skip entirely for explicit error/offline states.
   useEffect(() => {
+    if (viewState === 'error' || viewState === 'offline') return
     if (!colonyId) return
-    const db = window.HoneyDB
-    if (!db?.loadColonies) return
-    let cancelled = false
-    Promise.all([db.loadFarms(), db.loadColonies()])
-      .then(([farms, colonies]) => {
-        if (cancelled) return
-        // Build a ColonyDetail with no inspection records just to populate the header.
-        const detail = buildColonyDetail(colonyId, farms as unknown[], colonies as unknown[], [])
-        if (detail && !colonyData) setColonyData(detail)
-      })
-      .catch(() => {})
-    return () => { cancelled = true }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [colonyId])
 
-  // Load full data (including inspection records) only for the normal view state.
-  useEffect(() => {
-    if (viewState !== 'normal' || !colonyId) return
     const db = window.HoneyDB
     if (!db?.loadColonies) {
       Promise.resolve().then(() => setDataError(true))
       return
     }
+
     let cancelled = false
-    Promise.all([db.loadFarms(), db.loadColonies(), db.loadInspRecords()])
-      .then(([farms, colonies, inspRecords]) => {
+
+    async function fetchData() {
+      try {
+        const [farms, colonies] = await Promise.all([db.loadFarms(), db.loadColonies()])
         if (cancelled) return
-        const detail = buildColonyDetail(colonyId, farms as unknown[], colonies as unknown[], inspRecords as unknown[])
+
+        const inspRecords = viewState === 'normal'
+          ? await db.loadInspRecords()
+          : []
+        if (cancelled) return
+
+        const detail = buildColonyDetail(colonyId!, farms as unknown[], colonies as unknown[], inspRecords as unknown[])
         setDataError(false)
         setColonyData(detail ?? null)
-      })
-      .catch(() => {
+      } catch {
         if (!cancelled) setDataError(true)
-      })
+      }
+    }
+
+    fetchData()
     return () => { cancelled = true }
   }, [colonyId, viewState])
 
