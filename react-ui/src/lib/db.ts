@@ -4,6 +4,28 @@
  * 将来 supabase_client.js が window.HoneyDB をセットしたら自動で接続される。
  */
 
+// ── Auth lifecycle types ──────────────────────────────────────────────────────
+
+export type AuthChangeEvent =
+  | 'INITIAL_SESSION'
+  | 'SIGNED_IN'
+  | 'SIGNED_OUT'
+  | 'TOKEN_REFRESHED'
+  | 'USER_UPDATED'
+  | 'PASSWORD_RECOVERY'
+
+export interface AuthSession {
+  user: { id: string; email: string } | null
+  access_token?: string
+}
+
+export type AuthStateChangeCallback = (
+  event: AuthChangeEvent,
+  session: AuthSession | null,
+) => void
+
+export type Unsubscribe = () => void
+
 // ── Settings-specific types ───────────────────────────────────────────────────
 
 export interface UserPreferences {
@@ -38,6 +60,7 @@ export interface HoneyDBClient {
   getUserProfile(): Promise<{ name: string; farm_name: string } | null>
   updateProfile(name: string, farmName: string): Promise<void>
   resetPassword(email: string): Promise<void>
+  onAuthStateChange(callback: AuthStateChangeCallback): Unsubscribe
 
   // 蜂群
   loadColonies(): Promise<unknown[]>

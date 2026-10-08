@@ -19,6 +19,7 @@ const AUTH_EMPTY_SCRIPT = `
 (function() {
   window.HoneyDB = {
     getSession:              async function() { return { user: { id: 'u1', email: 'test@example.com' } }; },
+    onAuthStateChange:       function(_callback) { return function() {}; },
     getUserProfile:          async function() { return { name: 'テスト', farm_name: '' }; },
     getUserPreferences:      async function() { return null; },
     loadFarms:               async function() { return []; },
