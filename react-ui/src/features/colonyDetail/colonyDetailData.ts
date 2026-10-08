@@ -66,8 +66,8 @@ export function buildColonyDetail(
 
   const latest = inspections[0]
   const prev   = inspections[1]
-  const score  = latest ? latest.strengthScore : 0
-  const scoreDelta = latest && prev ? latest.strengthScore - prev.strengthScore : 0
+  const score: number | null  = latest ? latest.strengthScore : null
+  const scoreDelta: number | null = latest && prev ? latest.strengthScore - prev.strengthScore : null
 
   const strengthHistory = [...inspections]
     .reverse()
@@ -78,13 +78,13 @@ export function buildColonyDetail(
     name: colony.name,
     apiaryName: farmName,
     hiveName: '',
-    status: detailStatus(score),
-    statusLabel: detailStatus(score) === 'good' ? '✓ 良好' : detailStatus(score) === 'warn' ? '！ 注意' : '！ 要確認',
+    status: score != null ? detailStatus(score) : 'warn',
+    statusLabel: score != null ? (detailStatus(score) === 'good' ? '✓ 良好' : detailStatus(score) === 'warn' ? '！ 注意' : '！ 要確認') : '—',
     strengthScore: score,
     strengthScoreDelta: scoreDelta,
     inspections,
     strengthHistory,
-    sensor: { fetchedAt: '', temperature: 0, temperatureDelta: 0, humidity: 0, humidityDelta: 0, weight: 0, weightDelta: 0 },
+    sensor: { fetchedAt: null, temperature: null, temperatureDelta: null, humidity: null, humidityDelta: null, weight: null, weightDelta: null },
     workRecordCount: 0,
     latestCameraDate: '',
     aiDiagnosisLabel: '',
