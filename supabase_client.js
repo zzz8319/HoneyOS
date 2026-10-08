@@ -531,14 +531,14 @@
   const VALID_THEMES = ['light', 'dark', 'system'];
   const VALID_LANGUAGES = ['ja', 'en'];
   const VALID_INSPECTION_MODES = ['frame', 'ratio'];
-  const DEFAULT_PREFS = { theme: 'system', language: 'ja', default_inspection_mode: 'frame' };
+  const DEFAULT_PREFS = { theme: 'system', language: 'ja', default_inspection_mode: 'frame', onboarding_completed: false, onboarding_completed_at: null };
 
   async function getUserPreferences() {
     const session = await getSession();
     if (!session) return { ...DEFAULT_PREFS };
     const { data, error } = await sb
       .from('user_preferences')
-      .select('theme, language, default_inspection_mode')
+      .select('theme, language, default_inspection_mode, onboarding_completed, onboarding_completed_at')
       .eq('user_id', session.user.id)
       .single();
     if (error || !data) return { ...DEFAULT_PREFS };
@@ -548,6 +548,8 @@
       default_inspection_mode: VALID_INSPECTION_MODES.includes(data.default_inspection_mode)
         ? data.default_inspection_mode
         : DEFAULT_PREFS.default_inspection_mode,
+      onboarding_completed: typeof data.onboarding_completed === 'boolean' ? data.onboarding_completed : false,
+      onboarding_completed_at: data.onboarding_completed_at || null,
     };
   }
 
@@ -572,7 +574,7 @@
     const { data, error } = await sb
       .from('user_preferences')
       .upsert(upsertData, { onConflict: 'user_id' })
-      .select('theme, language, default_inspection_mode')
+      .select('theme, language, default_inspection_mode, onboarding_completed, onboarding_completed_at')
       .single();
     if (error) throw error;
     return data;

@@ -119,9 +119,34 @@ export default function App() {
   const [recoveryMode, setRecoveryMode] = useState(false)
   const authGenRef = useRef(0)
 
+  // ── Onboarding state ─────────────────────────────────────────────────────
+  // 'pending'   : haven't checked DB yet (also initial / after sign-out)
+  // 'required'  : DB says onboarding_completed=false → show SCR-003
+  // 'completed' : DB says onboarding_completed=true → normal routing
+  // 'error'     : DB fetch failed → show error + retry
+  type OnboardingState = 'pending' | 'required' | 'completed' | 'error'
+  // In DEV mode, auth is bypassed and onboarding check is skipped.
+  // Initialize to 'completed' so 602 dev visual tests can access ?screen= directly.
+  const [onboardingState, setOnboardingState] = useState<OnboardingState>(() =>
+    import.meta.env.DEV ? 'completed' : 'pending',
+  )
+  // Incremented by the retry button to re-trigger the onboarding check effect.
+  const [onboardingRetryCount, setOnboardingRetryCount] = useState(0)
+
   function navigateTo(next: Screen) {
     setPreviousScreen(screen)
     setScreen(next)
+  }
+
+  async function handleOnboardingComplete() {
+    const db = getDB()
+    if (!db) throw new Error('DB not available')
+    await db.updateUserPreferences({
+      onboarding_completed: true,
+      onboarding_completed_at: new Date().toISOString(),
+    })
+    setOnboardingState('completed')
+    setScreen('home')
   }
 
   const taskCreateState = viewState as TaskCreateViewState
@@ -213,6 +238,36 @@ export default function App() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authState, currentUserId])
 
+  // ── Onboarding check: runs after authenticated + userId known ────────────
+  // Skipped in DEV (onboardingState initializes to 'completed').
+  // Skipped during PASSWORD_RECOVERY (SCR-034 takes priority).
+  // TOKEN_REFRESHED / USER_UPDATED do NOT re-run (not in dependency array).
+  useEffect(() => {
+    if (import.meta.env.DEV) return
+    if (authState !== 'authenticated' || !currentUserId || recoveryMode) return
+
+    const db = getDB()
+    let cancelled = false
+
+    async function checkOnboarding() {
+      if (!db) {
+        if (!cancelled) setOnboardingState('error')
+        return
+      }
+      try {
+        const prefs = await db.getUserPreferences()
+        if (cancelled) return
+        const completed = prefs?.onboarding_completed ?? false
+        setOnboardingState(completed ? 'completed' : 'required')
+      } catch {
+        if (!cancelled) setOnboardingState('error')
+      }
+    }
+
+    void checkOnboarding()
+    return () => { cancelled = true }
+  }, [authState, currentUserId, recoveryMode, onboardingRetryCount])
+
   // 起動時認証確認: checking状態を解決する
   // DEV → 初期状態で authenticated に設定済みのためスキップ
   // PROD → onAuthStateChange を購読してから getSession() を1回だけ呼ぶ
@@ -231,7 +286,13 @@ export default function App() {
         case 'INITIAL_SESSION':
           if (session?.user) {
             setAuthState('authenticated')
-            setCurrentUserId(session.user.id)
+            setCurrentUserId(prev => {
+              if (prev !== session.user!.id) {
+                // New user: reset onboarding so check re-runs
+                setOnboardingState('pending')
+              }
+              return session.user!.id
+            })
             // Only navigate away from login if NOT in recovery mode
             setRecoveryMode(prev => {
               if (!prev) {
@@ -248,6 +309,7 @@ export default function App() {
           setAuthState('unauthenticated')
           setCurrentUserId(null)
           setRecoveryMode(false)
+          setOnboardingState('pending')
           setScreen('login')
           break
         case 'TOKEN_REFRESHED':
@@ -328,6 +390,22 @@ export default function App() {
     return <div data-testid="auth-checking" aria-busy="true" aria-label="認証確認中" />
   }
 
+  // Onboarding gate (production only): block home and show spinner/error/onboarding
+  // In DEV mode, onboardingState is always 'completed' (set by effect), so this is a no-op.
+  if (authState === 'authenticated' && !recoveryMode && onboardingState === 'pending') {
+    return <div data-testid="onboarding-checking" aria-busy="true" aria-label="オンボーディング確認中" style={{ minHeight: '100dvh' }} />
+  }
+  if (authState === 'authenticated' && !recoveryMode && onboardingState === 'error') {
+    return (
+      <div data-testid="onboarding-error" role="alert" style={{ padding: '2rem', textAlign: 'center' }}>
+        <p>接続エラーが発生しました。再度お試しください。</p>
+        <button onClick={() => { setOnboardingState('pending'); setOnboardingRetryCount(c => c + 1) }} style={{ marginTop: '1rem' }}>
+          再試行
+        </button>
+      </div>
+    )
+  }
+
   return (
     <>
       {IS_DEV && (
@@ -344,7 +422,15 @@ export default function App() {
         </div>
       )}
 
-      {screen === 'sensor-graph' ? (
+      {/* Onboarding gate: show onboarding-1 when required (production only) */}
+      {authState === 'authenticated' && !recoveryMode && onboardingState === 'required' ? (
+        <OnboardingStep1Screen
+          viewState={onboarding1State}
+          onBack={() => setScreen('login')}
+          onNext={() => setScreen('onboarding-2')}
+          onSkip={() => setScreen('onboarding-2')}
+        />
+      ) : screen === 'sensor-graph' ? (
         <SensorGraphScreen
           viewState={sensorGraphState}
           colony={sensorGraphColony ?? undefined}
@@ -373,6 +459,7 @@ export default function App() {
           onDashboard={() => { setScreen('home'); setActiveTab('home') }}
           onAddApiary={() => navigateTo('apiary-create')}
           onAddColony={() => navigateTo('colony-create')}
+          onComplete={import.meta.env.DEV ? undefined : handleOnboardingComplete}
         />
       ) : screen === 'onboarding-2' ? (
         <OnboardingStep2Screen
@@ -409,10 +496,16 @@ export default function App() {
           recoveryMode={recoveryMode}
           onRecoveryComplete={() => {
             setRecoveryMode(false)
+            setAuthState('unauthenticated')
+            setCurrentUserId(null)
+            setOnboardingState('pending')
             setScreen('login')
           }}
           onCancel={() => {
             setRecoveryMode(false)
+            setAuthState('unauthenticated')
+            setCurrentUserId(null)
+            setOnboardingState('pending')
             setScreen('login')
           }}
         />

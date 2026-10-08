@@ -17,6 +17,8 @@ interface Props {
   onDashboard: () => void
   onAddApiary: () => void
   onAddColony: () => void
+  /** Called before navigating away from this screen. Should persist onboarding_completed=true. */
+  onComplete?: () => Promise<void>
 }
 
 const FIXTURE: ProfileData = {
@@ -70,9 +72,11 @@ export function OnboardingStep3Screen({
   onDashboard,
   onAddApiary,
   onAddColony,
+  onComplete,
 }: Props) {
   const [isNavigating, setIsNavigating] = useState(false)
   const [retried, setRetried] = useState(false)
+  const [completeError, setCompleteError] = useState('')
 
   const isLoading    = viewState === 'loading'
   const isOffline    = viewState === 'offline-cached' || viewState === 'offline-no-cache'
@@ -92,17 +96,33 @@ export function OnboardingStep3Screen({
   if (data !== null && !hasApiary) primaryLabel = '養蜂場を追加する'
   else if (data !== null && !hasColony) primaryLabel = '蜂群を追加する'
 
-  function handlePrimary() {
+  async function handlePrimary() {
     if (primaryDisabled) return
     setIsNavigating(true)
+    setCompleteError('')
+    try {
+      if (onComplete) await onComplete()
+    } catch {
+      setCompleteError('完了処理に失敗しました。もう一度お試しください。')
+      setIsNavigating(false)
+      return
+    }
     if (!hasApiary) { onAddApiary(); return }
     if (!hasColony) { onAddColony(); return }
     onStartInspection()
   }
 
-  function handleDashboard() {
+  async function handleDashboard() {
     if (isNavigating) return
     setIsNavigating(true)
+    setCompleteError('')
+    try {
+      if (onComplete) await onComplete()
+    } catch {
+      setCompleteError('完了処理に失敗しました。もう一度お試しください。')
+      setIsNavigating(false)
+      return
+    }
     onDashboard()
   }
 
@@ -150,6 +170,13 @@ export function OnboardingStep3Screen({
           <AlertTriangle size={16} aria-hidden />
           <span>情報の読み込みに失敗しました。</span>
           <button className={styles.retryBtn} onClick={handleRetry}>再読み込み</button>
+        </div>
+      )}
+      {/* ── 完了処理エラー ── */}
+      {completeError && (
+        <div className={styles.errorBanner} role="alert" data-testid="onboarding-complete-error">
+          <AlertTriangle size={16} aria-hidden />
+          <span>{completeError}</span>
         </div>
       )}
 
