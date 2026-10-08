@@ -48,6 +48,17 @@ export function resolveAuthFromSession(
   return 'authenticated'
 }
 
+/**
+ * Generation guard: returns true if a pending getSession result should be applied.
+ * A newer auth event (which increments the generation counter) should take priority.
+ *
+ * @param sessionGen   - the generation value captured when getSession was called
+ * @param currentGen   - the current authGenRef.current value
+ */
+export function shouldApplyGetSession(sessionGen: number, currentGen: number): boolean {
+  return sessionGen === currentGen
+}
+
 export const PUBLIC_SCREENS = [
   'login',
   'signup',

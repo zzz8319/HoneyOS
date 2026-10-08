@@ -56,6 +56,7 @@ function unauthScript(): string {
       getSessionCallCount++;
       return { user: null };
     },
+    onAuthStateChange: function(_callback) { return function() {}; },
     getUserProfile:          protectedApi('getUserProfile'),
     getUserPreferences:      async function() { return null; }, // called by inspectionMode effect (benign)
     loadFarms:               protectedApi('loadFarms'),
@@ -114,6 +115,7 @@ function authScript(): string {
       getSessionCallCount++;
       return { user: { id: 'u1', email: 'test@example.com' } };
     },
+    onAuthStateChange: function(_callback) { return function() {}; },
     getUserProfile:          async function() { return { name: 'テスト太郎', farm_name: 'テスト養蜂場' }; },
     getUserPreferences:      async function() { return { theme: 'system', language: 'ja', default_inspection_mode: 'frame' }; },
     getNotificationSettings: async function() { return null; },
@@ -177,6 +179,7 @@ function failingSessionScript(): string {
     getSession: async function() {
       throw new Error('Network error: getSession failed');
     },
+    onAuthStateChange: function(_callback) { return function() {}; },
     getUserPreferences: async function() { return null; },
     signIn:  async function() { return { error: null }; },
     signUp:  async function() { return { error: null }; },
@@ -285,6 +288,7 @@ test.describe('Production auth guard — checking state is shown', () => {
         setTimeout(function() { resolve({ user: null }); }, 200);
       });
     },
+    onAuthStateChange: function(_callback) { return function() {}; },
     getUserPreferences: async function() { return null; },
     signIn:  async function() { return { error: null }; },
     signUp:  async function() { return { error: null }; },

@@ -617,6 +617,27 @@
     return { avgAll, totalUsers, totalColonies };
   }
 
+  function onAuthStateChange(callback) {
+    try {
+      var sub = sb.auth.onAuthStateChange(function(event, session) {
+        try {
+          callback(event, session);
+        } catch(e) {
+          // swallow callback errors to keep subscription alive
+        }
+      });
+      return function() {
+        try {
+          if (sub && sub.data && sub.data.subscription) {
+            sub.data.subscription.unsubscribe();
+          }
+        } catch(e) {}
+      };
+    } catch(e) {
+      return function() {};
+    }
+  }
+
   // Expose API
   window.HoneyDB = {
     // Auth
@@ -624,6 +645,7 @@
     signIn,
     signOut,
     getSession,
+    onAuthStateChange,
     getUserProfile,
     updateProfile,
     resetPassword,

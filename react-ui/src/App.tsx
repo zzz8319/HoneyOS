@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { DashboardScreen } from './features/dashboard'
 import type { DashboardViewState } from './features/dashboard'
 import { ColonySummaryScreen } from './features/colonyList'
@@ -60,8 +60,9 @@ import type { SettingsViewState } from './features/settings'
 import type { TabId } from './components'
 import type { InspectionSession } from './features/inspectionRecord'
 import { getDB } from './lib/db'
+import type { AuthChangeEvent, AuthSession } from './lib/db'
 import { getCachedDefaultInspectionMode } from './lib/inspectionMode'
-import { resolveInitialAuthState, resolveAuthFromSession, isPublicScreen } from './lib/auth'
+import { resolveInitialAuthState, resolveAuthFromSession, shouldApplyGetSession, isPublicScreen } from './lib/auth'
 import type { AuthState } from './lib/auth'
 import styles from './App.module.css'
 
@@ -114,6 +115,8 @@ export default function App() {
   const [authState, setAuthState] = useState<AuthState>(() =>
     resolveInitialAuthState(import.meta.env.DEV),
   )
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+  const authGenRef = useRef(0)
 
   function navigateTo(next: Screen) {
     setPreviousScreen(screen)
@@ -167,6 +170,7 @@ export default function App() {
 
   useEffect(() => {
     if (defaultInspectionMode !== null) return
+    if (authState !== 'authenticated') return
     let cancelled = false
     const toMode = (m: string | null | undefined): 'frame' | 'ratio' =>
       m === 'frame' || m === 'ratio' ? m : 'frame'
@@ -189,18 +193,15 @@ export default function App() {
       }
 
       try {
-        // Get current session to validate the same-user cache
-        const session = await db.getSession()
-        const userId = session.user?.id ?? null
-        // getCachedDefaultInspectionMode validates honeyos_prefs_user_id === userId
-        const fromCache = getCachedDefaultInspectionMode(userId)
+        // Use currentUserId from auth state (no extra getSession call needed)
+        const fromCache = getCachedDefaultInspectionMode(currentUserId)
         if (fromCache !== null) {
           if (!cancelled) setDefaultInspectionMode(fromCache)
           return
         }
         // No valid same-user cache: fetch from DB
         const prefs = await db.getUserPreferences()
-        if (!cancelled) setDefaultInspectionMode(toMode(prefs.default_inspection_mode))
+        if (!cancelled) setDefaultInspectionMode(toMode(prefs?.default_inspection_mode))
       } catch {
         if (!cancelled) setDefaultInspectionMode('frame')
       }
@@ -209,42 +210,88 @@ export default function App() {
     resolve()
     return () => { cancelled = true }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [authState, currentUserId])
 
   // 起動時認証確認: checking状態を解決する
-  // DEV + ?screen= → 初期状態で authenticated に設定済みのためスキップ
-  // PROD / DEV without ?screen= → 必ず getSession() を実行
+  // DEV → 初期状態で authenticated に設定済みのためスキップ
+  // PROD → onAuthStateChange を購読してから getSession() を1回だけ呼ぶ
   useEffect(() => {
-    if (authState !== 'checking') return
-    let cancelled = false
+    if (import.meta.env.DEV) return
 
-    async function checkAuth() {
-      const db = getDB()
-      if (!db) {
-        // HoneyDB未ロード → 未認証扱いでlogin画面へ
+    let cancelled = false
+    const gen = ++authGenRef.current
+
+    function handleAuthEvent(event: AuthChangeEvent, session: AuthSession | null) {
+      if (cancelled) return
+      // auth event always supersedes a pending getSession
+      ++authGenRef.current
+      switch (event) {
+        case 'SIGNED_IN':
+        case 'INITIAL_SESSION':
+          if (session?.user) {
+            setAuthState('authenticated')
+            setCurrentUserId(session.user.id)
+            setScreen(prev => prev === 'login' ? 'home' : prev)
+          } else {
+            setAuthState('unauthenticated')
+            setScreen('login')
+          }
+          break
+        case 'SIGNED_OUT':
+          setAuthState('unauthenticated')
+          setCurrentUserId(null)
+          setScreen('login')
+          break
+        case 'TOKEN_REFRESHED':
+        case 'USER_UPDATED':
+          if (session?.user) {
+            setCurrentUserId(session.user.id)
+          }
+          break
+        case 'PASSWORD_RECOVERY':
+          // TODO 工程C: handle password recovery redirect
+          break
+      }
+    }
+
+    const db = getDB()
+    if (!db) {
+      void Promise.resolve().then(() => {
         if (!cancelled) {
           setAuthState('unauthenticated')
           setScreen('login')
         }
-        return
-      }
-      try {
-        const session = await db.getSession()
-        if (cancelled) return
+      })
+      return () => { cancelled = true }
+    }
+
+    // Subscribe to auth state changes FIRST (before getSession)
+    const unsubscribe = db.onAuthStateChange((event, session) => {
+      handleAuthEvent(event, session)
+    })
+
+    // Then call getSession exactly once
+    db.getSession().then((session) => {
+      if (cancelled) return
+      if (shouldApplyGetSession(gen, authGenRef.current)) {
         const next = resolveAuthFromSession(session)
         setAuthState(next)
         if (next === 'unauthenticated') setScreen('login')
-      } catch {
-        if (!cancelled) {
-          setAuthState(resolveAuthFromSession(null, true))
-          setScreen('login')
+        else {
+          const userId = session?.user?.id ?? null
+          setCurrentUserId(userId)
         }
       }
-    }
+    }).catch(() => {
+      if (cancelled || !shouldApplyGetSession(gen, authGenRef.current)) return
+      setAuthState(resolveAuthFromSession(null, true))
+      setScreen('login')
+    })
 
-    checkAuth()
-    return () => { cancelled = true }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => {
+      cancelled = true
+      unsubscribe()
+    }
   }, [])
 
   function handleNotifNavigate(target: NotificationItem['navigateTo'], colonyId?: string) {
