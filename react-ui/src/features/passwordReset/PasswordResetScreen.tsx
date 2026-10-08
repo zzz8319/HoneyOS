@@ -14,6 +14,7 @@ import {
 } from 'lucide-react'
 import type { PasswordResetViewState } from './types'
 import { getDB } from '../../lib/db'
+import { classifyAuthError } from '../../lib/auth'
 import styles from './PasswordResetScreen.module.css'
 
 interface Props {
@@ -112,6 +113,8 @@ export function PasswordResetScreen({ viewState = 'normal', onBack: _onBack, onS
   const [updating, setUpdating]           = useState(viewState === 'password-updating')
   const [updated, setUpdated]             = useState(viewState === 'password-updated')
   const [linkExpired, setLinkExpired]     = useState(false)
+  const [signOutFailed, setSignOutFailed] = useState(false)
+  const [isSigningOut, setIsSigningOut]   = useState(false)
 
   const isOffline = viewState === 'offline'
 
@@ -226,27 +229,36 @@ export function PasswordResetScreen({ viewState = 'normal', onBack: _onBack, onS
       const { error } = await db.updatePassword(password)
       setUpdating(false)
       if (error) {
-        const msg = error.message ?? ''
-        if (msg.toLowerCase().includes('expired') || msg.toLowerCase().includes('invalid')) {
-          setLinkExpired(true)
-        } else {
-          setPwUpdateError('パスワードの更新に失敗しました')
+        const errorType = classifyAuthError(error)
+        switch (errorType) {
+          case 'expired':
+          case 'used':
+          case 'invalid':
+            setLinkExpired(true)
+            break
+          case 'network':
+            setPwUpdateError('ネットワークエラーが発生しました。再試行してください。')
+            break
+          default:
+            setPwUpdateError('パスワードの更新に失敗しました')
         }
         return
       }
       setUpdated(true)
-      try {
-        await db.signOut()
-      } catch {
-        // signOut failure doesn't undo the password update
-      }
-      setTimeout(() => {
+      // signOut after password update: show explicit error if it fails
+      const signOutResult = await (db.signOut() as Promise<{ error: { message: string } | null } | void>).catch((e: unknown) => ({ error: { message: e instanceof Error ? e.message : String(e) } }))
+      const signOutError = (signOutResult && typeof signOutResult === 'object' && 'error' in signOutResult)
+        ? signOutResult.error
+        : null
+      if (!signOutError) {
         if (recoveryMode) {
           onRecoveryComplete?.()
         } else {
           onSuccess?.()
         }
-      }, 2000)
+      } else {
+        setSignOutFailed(true)
+      }
     } catch {
       setUpdating(false)
       setPwUpdateError('処理に失敗しました。もう一度お試しください。')
@@ -486,10 +498,42 @@ export function PasswordResetScreen({ viewState = 'normal', onBack: _onBack, onS
                 <Check size={28} color="#FFFFFF" aria-hidden />
               </div>
               <h2 className={styles.successTitle}>パスワードを更新しました</h2>
-              <p className={styles.successDesc}>
-                新しいパスワードでログインできます。{'\n'}
-                ログイン画面へ移動します…
-              </p>
+              {signOutFailed ? (
+                <>
+                  <p className={styles.successDesc}>
+                    パスワードは更新されましたが、ログアウトできませんでした。
+                  </p>
+                  <button
+                    type="button"
+                    className={styles.submitBtn}
+                    disabled={isSigningOut}
+                    style={{ marginTop: 16 }}
+                    onClick={async () => {
+                      const dbClient = getDB()
+                      if (!dbClient) return
+                      setIsSigningOut(true)
+                      const result = await (dbClient.signOut() as Promise<{ error: { message: string } | null } | void>).catch((e: unknown) => ({ error: { message: e instanceof Error ? e.message : String(e) } }))
+                      const err = (result && typeof result === 'object' && 'error' in result) ? result.error : null
+                      setIsSigningOut(false)
+                      if (!err) {
+                        setSignOutFailed(false)
+                        if (recoveryMode) {
+                          onRecoveryComplete?.()
+                        } else {
+                          onSuccess?.()
+                        }
+                      }
+                    }}
+                  >
+                    {isSigningOut ? 'ログアウト中…' : '再試行'}
+                  </button>
+                </>
+              ) : (
+                <p className={styles.successDesc}>
+                  新しいパスワードでログインできます。{'\n'}
+                  ログイン画面へ移動します…
+                </p>
+              )}
             </div>
           ) : (
             <>

@@ -40,7 +40,7 @@ const RECOVERY_SCRIPT = `
       _updatePasswordCalls.push({ called: true });
       return { data: { user: { id: 'u1', email: 'test@example.com' } }, error: null };
     },
-    signOut: async function() { _signOutCalled = true; },
+    signOut: async function() { _signOutCalled = true; return { error: null }; },
     getUserProfile: async function() { return { name: 'テスト', farm_name: '' }; },
     getUserPreferences: async function() { return { theme: 'system', language: 'ja', default_inspection_mode: 'frame' }; },
     loadFarms: async function() { return []; },
@@ -85,6 +85,12 @@ const RECOVERY_SCRIPT = `
 const RECOVERY_SCRIPT_UPDATE_FAIL = RECOVERY_SCRIPT.replace(
   'return { data: { user: { id: \'u1\', email: \'test@example.com\' } }, error: null };',
   'return { data: null, error: { message: \'Auth session missing\' } };',
+)
+
+// Script variant where signOut returns an error (to test signOutFailed path)
+const RECOVERY_SCRIPT_SIGN_OUT_FAIL = RECOVERY_SCRIPT.replace(
+  'signOut: async function() { _signOutCalled = true; return { error: null }; },',
+  'signOut: async function() { _signOutCalled = true; return { error: { message: \'Network error\' } }; },',
 )
 
 test.use({ launchOptions: { executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' } })
@@ -185,9 +191,8 @@ test('SCR-034: update password success calls signOut and returns to login', asyn
   )
   expect(signOutCalled).toBe(true)
 
-  // After 2000ms success delay, onRecoveryComplete fires, screen returns to login
-  await page.waitForTimeout(2500)
-  await expect(page.locator('input[type="email"]')).toBeVisible()
+  // After signOut succeeds, onRecoveryComplete fires immediately; screen returns to login
+  await expect(page.locator('input[type="email"]')).toBeVisible({ timeout: 3000 })
 })
 
 // ── E. Update password failure → stays on Step 3 ─────────────────────────────
@@ -237,6 +242,55 @@ test('SCR-034: SIGNED_IN after PASSWORD_RECOVERY stays on recovery screen', asyn
 
   // Still on recovery screen — password inputs visible
   await expect(page.locator('input[type="password"]').first()).toBeVisible()
+})
+
+// ── H. signOut failure shows explicit error with retry ───────────────────────
+
+test('SCR-034: signOut failure shows error message, not login screen', async ({ page }) => {
+  await page.addInitScript(RECOVERY_SCRIPT_SIGN_OUT_FAIL)
+  await page.goto('/', { waitUntil: 'networkidle' })
+  await page.waitForTimeout(500)
+
+  await page.evaluate(() =>
+    (window as unknown as { __triggerAuthEvent: (e: string, s: unknown) => void })
+      .__triggerAuthEvent('PASSWORD_RECOVERY', { user: { id: 'u1', email: 'test@example.com' } })
+  )
+  await page.waitForTimeout(400)
+
+  const pwInputs = page.locator('input[type="password"]')
+  await pwInputs.nth(0).fill('newpassword123')
+  await pwInputs.nth(1).fill('newpassword123')
+
+  await page.locator('button[type="submit"]').click()
+  await page.waitForTimeout(800)
+
+  // signOut failed: should NOT return to login screen
+  await expect(page.locator('input[type="email"]')).not.toBeVisible()
+  // Should show retry button
+  await expect(page.locator('button', { hasText: '再試行' })).toBeVisible()
+})
+
+// ── I. SCR-034: SDK fires SIGNED_OUT for invalid token → app shows login ──────
+// Tests that when SDK processes an invalid recovery token and fires SIGNED_OUT,
+// the app correctly shows the login screen, not Step 3 (password input).
+// This simulates what detectSessionInUrl:true + invalid token produces in production.
+
+test('SCR-034: SIGNED_OUT after invalid recovery token shows login, not Step 3', async ({ page }) => {
+  await page.addInitScript(RECOVERY_SCRIPT)
+  await page.goto('/', { waitUntil: 'networkidle' })
+  await page.waitForTimeout(500)
+
+  // Simulate: SDK tried to process a recovery hash but token was invalid → SIGNED_OUT
+  await page.evaluate(() =>
+    (window as unknown as { __triggerAuthEvent: (e: string, s: unknown) => void })
+      .__triggerAuthEvent('SIGNED_OUT', null)
+  )
+  await page.waitForTimeout(400)
+
+  // App should be on login screen, NOT on the password-reset Step 3 form
+  await expect(page.locator('input[type="email"]')).toBeVisible()
+  // The password-reset Step 3 form shows "新しいパスワードを設定" heading
+  await expect(page.locator('h2', { hasText: '新しいパスワードを設定' })).not.toBeVisible()
 })
 
 // ── G. redirectTo uses same origin ───────────────────────────────────────────

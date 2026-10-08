@@ -41,6 +41,13 @@ export interface NotificationSettings {
   systemAnnouncement: boolean
 }
 
+export interface AuthError {
+  message: string
+  code?: string
+  status?: number
+  name?: string
+}
+
 export interface UpdatePasswordResult {
   data: { user: { id: string; email: string } | null } | null
   error: { message: string } | null
@@ -69,7 +76,7 @@ export interface HoneyDBClient {
   // 認証
   signIn(email: string, password: string): Promise<unknown>
   signUp(email: string, password: string, name: string, farmName?: string): Promise<unknown>
-  signOut(): Promise<void>
+  signOut(): Promise<{ error: { message: string } | null }>
   getSession(): Promise<{ user: { id: string; email: string } | null }>
   getUserProfile(): Promise<{ name: string; farm_name: string } | null>
   updateProfile(name: string, farmName: string): Promise<void>

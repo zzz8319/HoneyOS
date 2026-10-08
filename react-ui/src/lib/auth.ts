@@ -14,6 +14,38 @@
 
 export type AuthState = 'checking' | 'authenticated' | 'unauthenticated'
 
+export type AuthErrorType = 'expired' | 'invalid' | 'used' | 'network' | 'unknown'
+
+export interface SupabaseAuthError {
+  message: string
+  code?: string
+  status?: number
+  name?: string
+}
+
+/**
+ * Classify a Supabase auth error into a semantic type for UI routing.
+ * Prefers error.code / error.status over string matching.
+ */
+export function classifyAuthError(error: SupabaseAuthError): AuthErrorType {
+  const code = error.code ?? ''
+  const status = error.status ?? 0
+  const msg = (error.message ?? '').toLowerCase()
+
+  if (code === 'otp_expired' || code === 'flow_state_expired') return 'expired'
+  if (code === 'flow_state_not_found') return 'used'
+  if (code === 'bad_code_verifier') return 'invalid'
+  if (code === 'invalid_credentials') return 'invalid'
+  if (status === 401 || status === 403) return 'invalid'
+  if ((error.status !== undefined && status === 0) || msg.includes('network') || msg.includes('fetch')) return 'network'
+
+  // Fallback string checks
+  if (msg.includes('expired')) return 'expired'
+  if (msg.includes('invalid')) return 'invalid'
+
+  return 'unknown'
+}
+
 export type SessionResult =
   | { user: { id: string; email: string } }
   | { user: null }

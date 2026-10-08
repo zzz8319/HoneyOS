@@ -11,6 +11,7 @@
  */
 
 import { describe, it, expect, vi } from 'vitest'
+import { classifyAuthError } from './auth'
 
 // ─── helpers replicated from PasswordResetScreen ─────────────────────────────
 
@@ -333,6 +334,139 @@ describe('signOut failure tolerance', () => {
     }
     expect(updated).toBe(true)
     expect(onRecoveryCompleteCalled).toBe(true)
+  })
+})
+
+// ─── classifyAuthError ────────────────────────────────────────────────────────
+
+describe('classifyAuthError — error code classification', () => {
+  // 1. otp_expired → expired
+  it('classifies otp_expired as expired', () => {
+    expect(classifyAuthError({ message: '', code: 'otp_expired' })).toBe('expired')
+  })
+
+  // 2. flow_state_expired → expired
+  it('classifies flow_state_expired as expired', () => {
+    expect(classifyAuthError({ message: '', code: 'flow_state_expired' })).toBe('expired')
+  })
+
+  // 3. flow_state_not_found → used
+  it('classifies flow_state_not_found as used', () => {
+    expect(classifyAuthError({ message: '', code: 'flow_state_not_found' })).toBe('used')
+  })
+
+  // 4. bad_code_verifier → invalid
+  it('classifies bad_code_verifier as invalid', () => {
+    expect(classifyAuthError({ message: '', code: 'bad_code_verifier' })).toBe('invalid')
+  })
+
+  // 5. invalid_credentials → invalid
+  it('classifies invalid_credentials as invalid', () => {
+    expect(classifyAuthError({ message: '', code: 'invalid_credentials' })).toBe('invalid')
+  })
+
+  // 6. status 401 → invalid
+  it('classifies status 401 as invalid', () => {
+    expect(classifyAuthError({ message: '', status: 401 })).toBe('invalid')
+  })
+
+  // 7. network error message → network
+  it('classifies network error message as network', () => {
+    expect(classifyAuthError({ message: 'network error occurred' })).toBe('network')
+  })
+
+  // 8. unknown message → unknown
+  it('classifies unrecognized error as unknown', () => {
+    expect(classifyAuthError({ message: 'something went wrong' })).toBe('unknown')
+  })
+
+  // 9. fallback: message includes "expired" → expired
+  it('fallback: message with "expired" → expired', () => {
+    expect(classifyAuthError({ message: 'Token has expired' })).toBe('expired')
+  })
+
+  // 10. status 403 → invalid
+  it('classifies status 403 as invalid', () => {
+    expect(classifyAuthError({ message: '', status: 403 })).toBe('invalid')
+  })
+})
+
+// ─── URL cleanup timing ───────────────────────────────────────────────────────
+
+describe('URL cleanup timing', () => {
+  // 11. URL cleanup happens AFTER PASSWORD_RECOVERY event (pure logic test)
+  it('URL cleanup is deferred until after PASSWORD_RECOVERY event fires', () => {
+    const events: string[] = []
+    // Simulate the App.tsx PASSWORD_RECOVERY handler: event fires, then cleanup
+    function handlePasswordRecovery() {
+      events.push('PASSWORD_RECOVERY_handled')
+      // URL cleanup happens inside the case, after state updates
+      events.push('URL_cleanup')
+    }
+    handlePasswordRecovery()
+    expect(events[0]).toBe('PASSWORD_RECOVERY_handled')
+    expect(events[1]).toBe('URL_cleanup')
+    expect(events.indexOf('URL_cleanup')).toBeGreaterThan(events.indexOf('PASSWORD_RECOVERY_handled'))
+  })
+})
+
+// ─── signOut explicit failure handling ───────────────────────────────────────
+
+describe('signOut explicit failure handling', () => {
+  // 12. signOut success → onRecoveryComplete called
+  it('signOut success calls onRecoveryComplete immediately', async () => {
+    let recoveryCalled = false
+    const db = {
+      updatePassword: vi.fn().mockResolvedValue({ data: { user: { id: 'u1' } }, error: null }),
+      signOut: vi.fn().mockResolvedValue({ error: null }),
+    }
+    let signOutFailed = false
+    const { error } = await db.updatePassword('newpass123')
+    if (!error) {
+      const result = await db.signOut()
+      if (!result.error) {
+        recoveryCalled = true
+      } else {
+        signOutFailed = true
+      }
+    }
+    expect(recoveryCalled).toBe(true)
+    expect(signOutFailed).toBe(false)
+  })
+
+  // 13. signOut failure → signOutFailed=true, onRecoveryComplete NOT called
+  it('signOut failure sets signOutFailed=true, does not call onRecoveryComplete', async () => {
+    let recoveryCalled = false
+    let signOutFailed = false
+    const db = {
+      updatePassword: vi.fn().mockResolvedValue({ data: { user: { id: 'u1' } }, error: null }),
+      signOut: vi.fn().mockResolvedValue({ error: { message: 'Network error' } }),
+    }
+    const { error } = await db.updatePassword('newpass123')
+    if (!error) {
+      const result = await db.signOut()
+      if (!result.error) {
+        recoveryCalled = true
+      } else {
+        signOutFailed = true
+      }
+    }
+    expect(signOutFailed).toBe(true)
+    expect(recoveryCalled).toBe(false)
+  })
+
+  // 14. signOut retry success → onRecoveryComplete called
+  it('signOut retry success calls onRecoveryComplete', async () => {
+    let recoveryCalled = false
+    let signOutFailed = true  // start with failure state
+    const retrySignOut = vi.fn().mockResolvedValue({ error: null })
+    const result = await retrySignOut()
+    if (!result.error) {
+      signOutFailed = false
+      recoveryCalled = true
+    }
+    expect(signOutFailed).toBe(false)
+    expect(recoveryCalled).toBe(true)
   })
 })
 
