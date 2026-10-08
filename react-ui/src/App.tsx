@@ -116,6 +116,7 @@ export default function App() {
     resolveInitialAuthState(import.meta.env.DEV),
   )
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+  const [recoveryMode, setRecoveryMode] = useState(false)
   const authGenRef = useRef(0)
 
   function navigateTo(next: Screen) {
@@ -231,7 +232,13 @@ export default function App() {
           if (session?.user) {
             setAuthState('authenticated')
             setCurrentUserId(session.user.id)
-            setScreen(prev => prev === 'login' ? 'home' : prev)
+            // Only navigate away from login if NOT in recovery mode
+            setRecoveryMode(prev => {
+              if (!prev) {
+                setScreen(s => s === 'login' ? 'home' : s)
+              }
+              return prev
+            })
           } else {
             setAuthState('unauthenticated')
             setScreen('login')
@@ -240,6 +247,7 @@ export default function App() {
         case 'SIGNED_OUT':
           setAuthState('unauthenticated')
           setCurrentUserId(null)
+          setRecoveryMode(false)
           setScreen('login')
           break
         case 'TOKEN_REFRESHED':
@@ -249,7 +257,15 @@ export default function App() {
           }
           break
         case 'PASSWORD_RECOVERY':
-          // TODO 工程C: handle password recovery redirect
+          setRecoveryMode(true)
+          setAuthState('authenticated')
+          if (session?.user) {
+            setCurrentUserId(session.user.id)
+          }
+          setScreen('password-reset')
+          if (window.location.search.includes('auth=recovery') || window.location.hash.includes('access_token')) {
+            window.history.replaceState({}, '', window.location.pathname)
+          }
           break
       }
     }
@@ -390,6 +406,15 @@ export default function App() {
           viewState={passwordResetState}
           onBack={() => setScreen(previousScreen)}
           onSuccess={() => setScreen('home')}
+          recoveryMode={recoveryMode}
+          onRecoveryComplete={() => {
+            setRecoveryMode(false)
+            setScreen('login')
+          }}
+          onCancel={() => {
+            setRecoveryMode(false)
+            setScreen('login')
+          }}
         />
       ) : screen === 'apiary-create' ? (
         <ApiaryCreateScreen

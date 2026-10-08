@@ -41,6 +41,20 @@ export interface NotificationSettings {
   systemAnnouncement: boolean
 }
 
+export interface UpdatePasswordResult {
+  data: { user: { id: string; email: string } | null } | null
+  error: { message: string } | null
+}
+
+export interface ResetPasswordOptions {
+  redirectTo?: string
+}
+
+export interface ResetPasswordResult {
+  data: Record<string, never> | null
+  error: { message: string } | null
+}
+
 export interface ExportData {
   exportedAt: string
   profile: { name: string; farm_name: string } | null
@@ -59,7 +73,8 @@ export interface HoneyDBClient {
   getSession(): Promise<{ user: { id: string; email: string } | null }>
   getUserProfile(): Promise<{ name: string; farm_name: string } | null>
   updateProfile(name: string, farmName: string): Promise<void>
-  resetPassword(email: string): Promise<void>
+  resetPassword(email: string, options?: ResetPasswordOptions): Promise<ResetPasswordResult>
+  updatePassword(password: string): Promise<UpdatePasswordResult>
   onAuthStateChange(callback: AuthStateChangeCallback): Unsubscribe
 
   // 蜂群
