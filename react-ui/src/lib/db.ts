@@ -32,6 +32,16 @@ export interface UserPreferences {
   theme: 'light' | 'dark' | 'system'
   language: 'ja' | 'en'
   default_inspection_mode: 'frame' | 'ratio'
+  onboarding_completed: boolean
+  onboarding_completed_at?: string | null
+}
+
+export const DEFAULT_USER_PREFERENCES: UserPreferences = {
+  theme: 'system',
+  language: 'ja',
+  default_inspection_mode: 'frame',
+  onboarding_completed: false,
+  onboarding_completed_at: null,
 }
 
 export interface NotificationSettings {

@@ -88,3 +88,57 @@ export const db = () => window.HoneyDB
 ```
 
 直接 Supabase SDK を呼ばない。全 CRUD は `db().*` 経由。
+
+## Onboarding フロー（認証後の表示判定）
+
+### 表示条件
+- `user_preferences.onboarding_completed = false` → SCR-003 を表示
+- `user_preferences.onboarding_completed = true` → home へ遷移
+- DB 取得失敗 → エラー表示・再試行（home 非表示）
+- `PASSWORD_RECOVERY` 中 → Onboarding チェックをスキップ（SCR-034 優先）
+- DEV モード → Onboarding チェック無効（ビジュアルテスト保護）
+
+### DB が正本
+- localStorage だけで完了判定しない
+- user_preferences.onboarding_completed が唯一の正本
+- 新規ユーザーのデフォルト: false
+- 既存ユーザー（migration backfill）: true
+
+### onboarding state machine（App.tsx）
+| 状態 | 意味 | 表示 |
+|------|------|------|
+| `pending` | DB 未確認 | ローディングスピナー |
+| `required` | completed=false | SCR-003（オンボーディングステップ1） |
+| `completed` | completed=true | 通常ルーティング |
+| `error` | DB 取得失敗 | エラー + 再試行ボタン |
+
+### 完了処理順
+1. 入力データ保存（saveFarm 等） — SCR-004 で実施
+2. SCR-005 でユーザーが「ダッシュボードを見る」または「最初の内検を始める」をタップ
+3. onComplete コールバック → updateUserPreferences({ onboarding_completed: true }) を書き込む
+4. DB 書き込み成功後のみ → onboardingState='completed' → home へ遷移
+
+### オフライン・DB 失敗時
+- 完了ボタンで成功偽装しない
+- home へ進まない
+- 再試行 UI を表示（SCR-005 の completeError バナー）
+
+### Auth イベント別の挙動
+| イベント | onboarding への影響 |
+|----------|---------------------|
+| SIGNED_OUT | onboardingState を 'pending' にリセット |
+| SIGNED_IN（別ユーザー） | onboardingState を 'pending' にリセット（再フェッチ） |
+| SIGNED_IN（同ユーザー） | リセットなし |
+| TOKEN_REFRESHED | 影響なし（再フェッチしない） |
+| USER_UPDATED | 影響なし |
+| PASSWORD_RECOVERY | onboarding チェックスキップ（SCR-034 優先） |
+
+### Migration
+- ファイル: `supabase/migrations/20261009_onboarding_completed.sql`
+- remote DB への適用: **未実施**（手動適用が必要）
+- 適用手順: supabase db push または Supabase Dashboard の SQL Editor
+- 冪等性: IF NOT EXISTS / ON CONFLICT DO NOTHING で複数回実行可能
+
+### DEV モード
+- onboarding チェックをスキップ（`setOnboardingState('completed')` で即座に解決）
+- 既存の 602 件のビジュアルスナップショットテストを保護（?screen= 直接アクセス）
