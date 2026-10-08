@@ -61,6 +61,8 @@ import type { TabId } from './components'
 import type { InspectionSession } from './features/inspectionRecord'
 import { getDB } from './lib/db'
 import { getCachedDefaultInspectionMode } from './lib/inspectionMode'
+import { resolveInitialAuthState, resolveAuthFromSession, isPublicScreen } from './lib/auth'
+import type { AuthState } from './lib/auth'
 import styles from './App.module.css'
 
 type ViewState = DashboardViewState | ColonyListViewState | ColonyDetailViewState | InspectionStartViewState | RecordViewState | ViewerViewState | ApiaryMapViewState | CompleteViewState | CameraViewState | AiAnalysisViewState | DiagnosisViewState | RecommendedWorkState | WorkListViewState | TaskCreateViewState | WorkRecordViewState | WorkHistoryViewState | ReportViewState | ColonyTrendViewState | ColonyComparisonViewState | ColonyCreateViewState | ApiaryCreateViewState | PasswordResetViewState | LoginViewState | SignupViewState | OnboardingStep1ViewState | OnboardingStep2ViewState | OnboardingStep3ViewState | NotificationCenterViewState | SensorDetailViewState | SensorGraphViewState | SettingsViewState
@@ -81,9 +83,6 @@ const VALID_TABS: TabId[] = ['home', 'farms', 'work', 'analytics', 'settings']
 const IS_DEV = import.meta.env.DEV &&
   new URLSearchParams(window.location.search).get('devbar') !== '0'
 
-type AuthState = 'checking' | 'authenticated' | 'unauthenticated'
-
-const PUBLIC_SCREENS: Screen[] = ['login', 'signup', 'password-reset', 'onboarding-1', 'onboarding-2', 'onboarding-3']
 
 function readParam<T extends string>(key: string, valid: T[], fallback: T): T {
   const p = new URLSearchParams(window.location.search).get(key)
@@ -112,11 +111,9 @@ export default function App() {
   const [completedInspData, setCompletedInspData] = useState<InspectionCompleteData | null>(null)
   const [addStageRecord, setAddStageRecord] = useState<InspectionRecord | null>(null)
   const [previousScreen, setPreviousScreen] = useState<Screen>('home')
-  const [authState, setAuthState] = useState<AuthState>(() => {
-    // In DEV: skip auth check entirely (Playwright visual tests use direct navigation)
-    if (import.meta.env.DEV) return 'authenticated'
-    return 'checking'
-  })
+  const [authState, setAuthState] = useState<AuthState>(() =>
+    resolveInitialAuthState(import.meta.env.DEV),
+  )
 
   function navigateTo(next: Screen) {
     setPreviousScreen(screen)
@@ -234,15 +231,12 @@ export default function App() {
       try {
         const session = await db.getSession()
         if (cancelled) return
-        if (session?.user) {
-          setAuthState('authenticated')
-        } else {
-          setAuthState('unauthenticated')
-          setScreen('login')
-        }
+        const next = resolveAuthFromSession(session)
+        setAuthState(next)
+        if (next === 'unauthenticated') setScreen('login')
       } catch {
         if (!cancelled) {
-          setAuthState('unauthenticated')
+          setAuthState(resolveAuthFromSession(null, true))
           setScreen('login')
         }
       }
@@ -267,8 +261,7 @@ export default function App() {
   }
 
   // Auth gate: block protected screens until auth is confirmed
-  const isPublicScreen = PUBLIC_SCREENS.includes(screen)
-  if (authState === 'checking' && !isPublicScreen) {
+  if (authState === 'checking' && !isPublicScreen(screen)) {
     return <div data-testid="auth-checking" aria-busy="true" aria-label="認証確認中" />
   }
 
