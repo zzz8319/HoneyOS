@@ -59,11 +59,19 @@
     return data;
   }
 
-  async function resetPassword(email) {
-    const { error } = await sb.auth.resetPasswordForEmail(email, {
-      redirectTo: window.location.origin + '/HoneyOS/',
+  async function resetPassword(email, options) {
+    var redirectTo = (options && options.redirectTo)
+      ? options.redirectTo
+      : (window.location.origin + window.location.pathname + '?auth=recovery');
+    var { data, error } = await sb.auth.resetPasswordForEmail(email, {
+      redirectTo: redirectTo
     });
-    if (error) throw error;
+    return { data: data || null, error: error || null };
+  }
+
+  async function updatePassword(password) {
+    var { data, error } = await sb.auth.updateUser({ password: password });
+    return { data: data || null, error: error || null };
   }
 
   // ==================
@@ -649,6 +657,7 @@
     getUserProfile,
     updateProfile,
     resetPassword,
+    updatePassword,
     // Farms
     loadFarms,
     saveFarm,
