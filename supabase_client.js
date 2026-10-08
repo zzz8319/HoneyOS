@@ -8,7 +8,7 @@
     auth: {
       persistSession: true,
       autoRefreshToken: true,
-      detectSessionInUrl: false,
+      detectSessionInUrl: true,  // allows SDK to process recovery URL hash (#access_token=...&type=recovery)
     }
   });
 
@@ -39,7 +39,7 @@
 
   async function signOut() {
     const { error } = await sb.auth.signOut();
-    if (error) throw error;
+    return { error: error || null };
   }
 
   async function getSession() {
