@@ -118,7 +118,9 @@ export function ColonyDetailScreen({
         </button>
         <div className={styles.headerInfo}>
           <h1 className={styles.colonyName}>{colony?.name ?? ''}</h1>
-          <span className={styles.location}>{colony?.apiaryName ?? ''}・{colony?.hiveName ?? ''}</span>
+          <span className={styles.location}>
+            {colony ? `${colony.apiaryName}・${colony.hiveName}` : ''}
+          </span>
         </div>
         <span className={`${styles.badge} ${styles[STATUS_STYLE[colony?.status ?? 'good']]}`}>
           {colony?.statusLabel ?? ''}
@@ -213,10 +215,14 @@ export function ColonyDetailScreen({
                 <span className={styles.betaBadge}>簡易指標 β</span>
               </div>
               <div className={styles.scoreRow}>
-                <span className={styles.scoreVal}>現在 {colony?.strengthScore ?? '—'}</span>
-                <span className={(colony?.strengthScoreDelta ?? 0) >= 0 ? styles.deltaUp : styles.deltaDown}>
-                  {(colony?.strengthScoreDelta ?? 0) >= 0 ? '↑' : '↓'} {Math.abs(colony?.strengthScoreDelta ?? 0)}（前回比）
+                <span className={styles.scoreVal}>
+                  現在 {colony?.strengthScore != null ? colony.strengthScore : '—'}
                 </span>
+                {colony?.strengthScoreDelta != null && (
+                  <span className={colony.strengthScoreDelta >= 0 ? styles.deltaUp : styles.deltaDown}>
+                    {colony.strengthScoreDelta >= 0 ? '↑' : '↓'} {Math.abs(colony.strengthScoreDelta)}（前回比）
+                  </span>
+                )}
               </div>
             </div>
           </div>

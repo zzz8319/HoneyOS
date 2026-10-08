@@ -10,23 +10,27 @@ interface Props {
 interface KpiProps {
   icon: React.ReactNode
   label: string
-  value: string
-  delta: number
+  value: string | null
+  delta: number | null
   unit: string
 }
 
 function Kpi({ icon, label, value, delta, unit }: KpiProps) {
-  const isUp = delta >= 0
+  const isUp = (delta ?? 0) >= 0
   return (
     <div className={styles.kpi}>
       <span className={styles.kpiIcon}>{icon}</span>
       <span className={styles.kpiLabel}>{label}</span>
       <span className={styles.kpiValue}>
-        {value}<span className={styles.kpiUnit}>{unit}</span>
+        {value != null
+          ? <>{value}<span className={styles.kpiUnit}>{unit}</span></>
+          : '—'}
       </span>
-      <span className={isUp ? styles.deltaUp : styles.deltaDown}>
-        {isUp ? '↑' : '↓'} {isUp ? '+' : ''}{delta}
-      </span>
+      {delta != null && (
+        <span className={isUp ? styles.deltaUp : styles.deltaDown}>
+          {isUp ? '↑' : '↓'} {isUp ? '+' : ''}{delta}
+        </span>
+      )}
     </div>
   )
 }
@@ -37,7 +41,9 @@ export function SensorSummary({ sensor, onDetailClick }: Props) {
       <div className={styles.header}>
         <div className={styles.headerLeft}>
           <h2 className={styles.title}>センサー情報</h2>
-          <span className={styles.timestamp}>{sensor.fetchedAt} 時点</span>
+          {sensor.fetchedAt
+            ? <span className={styles.timestamp}>{sensor.fetchedAt} 時点</span>
+            : <span className={styles.timestamp}>取得なし</span>}
         </div>
         <button className={styles.detailLink} onClick={onDetailClick} aria-label="センサー詳細を見る">
           詳細を見る ›
@@ -47,7 +53,7 @@ export function SensorSummary({ sensor, onDetailClick }: Props) {
         <Kpi
           icon={<Thermometer size={16} />}
           label="温度"
-          value={sensor.temperature.toFixed(1)}
+          value={sensor.temperature != null ? sensor.temperature.toFixed(1) : null}
           delta={sensor.temperatureDelta}
           unit="℃"
         />
@@ -55,7 +61,7 @@ export function SensorSummary({ sensor, onDetailClick }: Props) {
         <Kpi
           icon={<Droplets size={16} />}
           label="湿度"
-          value={String(sensor.humidity)}
+          value={sensor.humidity != null ? String(sensor.humidity) : null}
           delta={sensor.humidityDelta}
           unit="%"
         />
@@ -63,7 +69,7 @@ export function SensorSummary({ sensor, onDetailClick }: Props) {
         <Kpi
           icon={<Scale size={16} />}
           label="重量"
-          value={sensor.weight.toFixed(1)}
+          value={sensor.weight != null ? sensor.weight.toFixed(1) : null}
           delta={sensor.weightDelta}
           unit="kg"
         />
