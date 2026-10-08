@@ -81,6 +81,10 @@ const VALID_TABS: TabId[] = ['home', 'farms', 'work', 'analytics', 'settings']
 const IS_DEV = import.meta.env.DEV &&
   new URLSearchParams(window.location.search).get('devbar') !== '0'
 
+type AuthState = 'checking' | 'authenticated' | 'unauthenticated'
+
+const PUBLIC_SCREENS: Screen[] = ['login', 'signup', 'password-reset', 'onboarding-1', 'onboarding-2', 'onboarding-3']
+
 function readParam<T extends string>(key: string, valid: T[], fallback: T): T {
   const p = new URLSearchParams(window.location.search).get(key)
   return (valid.includes(p as T) ? p : fallback) as T
@@ -108,6 +112,11 @@ export default function App() {
   const [completedInspData, setCompletedInspData] = useState<InspectionCompleteData | null>(null)
   const [addStageRecord, setAddStageRecord] = useState<InspectionRecord | null>(null)
   const [previousScreen, setPreviousScreen] = useState<Screen>('home')
+  const [authState, setAuthState] = useState<AuthState>(() => {
+    // In DEV: skip auth check entirely (Playwright visual tests use direct navigation)
+    if (import.meta.env.DEV) return 'authenticated'
+    return 'checking'
+  })
 
   function navigateTo(next: Screen) {
     setPreviousScreen(screen)
@@ -205,18 +214,43 @@ export default function App() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // 起動時セッション確認: URLパラメータで画面指定がない場合のみ実行
-  // ログイン済み → 'home'、未ログイン → 'login'
+  // 起動時認証確認: checking状態を解決する
+  // DEV + ?screen= → 初期状態で authenticated に設定済みのためスキップ
+  // PROD / DEV without ?screen= → 必ず getSession() を実行
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search)
-    if (params.get('screen')) return  // 開発用URL paramがある場合はスキップ
-    const db = getDB()
-    if (!db) return  // HoneyDB未ロードの場合はスキップ（開発環境）
-    db.getSession().then(session => {
-      if (!session || !session.user) {
-        setScreen('login')
+    if (authState !== 'checking') return
+    let cancelled = false
+
+    async function checkAuth() {
+      const db = getDB()
+      if (!db) {
+        // HoneyDB未ロード → 未認証扱いでlogin画面へ
+        if (!cancelled) {
+          setAuthState('unauthenticated')
+          setScreen('login')
+        }
+        return
       }
-    }).catch(() => { /* セッション確認失敗は無視 */ })
+      try {
+        const session = await db.getSession()
+        if (cancelled) return
+        if (session?.user) {
+          setAuthState('authenticated')
+        } else {
+          setAuthState('unauthenticated')
+          setScreen('login')
+        }
+      } catch {
+        if (!cancelled) {
+          setAuthState('unauthenticated')
+          setScreen('login')
+        }
+      }
+    }
+
+    checkAuth()
+    return () => { cancelled = true }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   function handleNotifNavigate(target: NotificationItem['navigateTo'], colonyId?: string) {
@@ -230,6 +264,12 @@ export default function App() {
       setScreen('colony-detail')
     }
     // system notifications stay on notification-center; null target stays too
+  }
+
+  // Auth gate: block protected screens until auth is confirmed
+  const isPublicScreen = PUBLIC_SCREENS.includes(screen)
+  if (authState === 'checking' && !isPublicScreen) {
+    return <div data-testid="auth-checking" aria-busy="true" aria-label="認証確認中" />
   }
 
   return (
@@ -301,7 +341,7 @@ export default function App() {
       ) : screen === 'login' ? (
         <LoginScreen
           viewState={loginState}
-          onSuccess={() => setScreen('home')}
+          onSuccess={() => { setAuthState('authenticated'); setScreen('home') }}
           onForgotPassword={() => setScreen('password-reset')}
           onRegister={() => setScreen('signup')}
         />
@@ -545,7 +585,7 @@ export default function App() {
           onColonyCreate={() => navigateTo('colony-create')}
           onApiaryCreate={() => navigateTo('apiary-create')}
           onPasswordReset={() => navigateTo('password-reset')}
-          onLogout={() => setScreen('login')}
+          onLogout={() => { setAuthState('unauthenticated'); setScreen('login') }}
         />
       ) : screen === 'colony-detail' ? (
         <ColonyDetailScreen
@@ -615,7 +655,7 @@ export default function App() {
               onColonyCreate={() => navigateTo('colony-create')}
               onApiaryCreate={() => navigateTo('apiary-create')}
               onPasswordReset={() => navigateTo('password-reset')}
-              onLogout={() => setScreen('login')}
+              onLogout={() => { setAuthState('unauthenticated'); setScreen('login') }}
             />
           )}
         </>
