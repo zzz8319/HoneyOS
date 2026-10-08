@@ -293,6 +293,204 @@ test('SCR-034: SIGNED_OUT after invalid recovery token shows login, not Step 3',
   await expect(page.locator('h2', { hasText: '新しいパスワードを設定' })).not.toBeVisible()
 })
 
+// Script where signOut fails first call, succeeds second call
+const SIGNOUT_FAIL_THEN_SUCCEED_SCRIPT = `
+(function() {
+  var _authCallbacks = [];
+  var _signOutAttempts = 0;
+
+  window.__triggerAuthEvent = function(event, session) {
+    _authCallbacks.slice().forEach(function(cb) {
+      try { cb(event, session); } catch(e) {}
+    });
+  };
+  window.__getSignOutAttempts = function() { return _signOutAttempts; };
+
+  window.HoneyDB = {
+    getSession: async function() { return null; },
+    onAuthStateChange: function(callback) {
+      _authCallbacks.push(callback);
+      return function() {
+        var idx = _authCallbacks.indexOf(callback);
+        if (idx !== -1) _authCallbacks.splice(idx, 1);
+      };
+    },
+    updatePassword: async function() {
+      return { data: { user: { id: 'u1', email: 'test@example.com' } }, error: null };
+    },
+    signOut: async function() {
+      _signOutAttempts++;
+      if (_signOutAttempts === 1) {
+        return { error: { message: 'Network error', code: 'network_error' } };
+      }
+      return { error: null };
+    },
+    getUserProfile: async function() { return { name: 'テスト', farm_name: '' }; },
+    getUserPreferences: async function() { return { theme: 'system', language: 'ja', default_inspection_mode: 'frame' }; },
+    loadFarms: async function() { return []; },
+    loadColonies: async function() { return []; },
+    loadInspRecords: async function() { return []; },
+    loadWorkRecords: async function() { return []; },
+    loadTasks: async function() { return []; },
+    getTasks: async function() { return []; },
+    getNotificationSettings: async function() { return null; },
+    loadBenchmarkStats: async function() { return null; },
+    saveWorkRecord: async function() { return null; },
+    updateWorkRecord: async function() {},
+    deleteWorkRecord: async function() {},
+    saveTask: async function() { return null; },
+    updateTask: async function() {},
+    completeTask: async function() {},
+    deleteTask: async function() {},
+    saveInspRecord: async function() { return null; },
+    saveFarm: async function() {},
+    archiveFarm: async function() {},
+    deleteFarm: async function() {},
+    saveColony: async function() {},
+    archiveColony: async function() {},
+    deleteColony: async function() {},
+    updateProfile: async function() {},
+    updateUserPreferences: async function() {},
+    updateNotificationSettings: async function() {},
+    exportAllData: async function() { return { exportedAt: '', profile: null, inspRecords: [], workRecords: [], tasks: [] }; },
+    subscribeRealtime: function() {},
+    unsubscribeRealtime: function() {},
+    upsertBenchmark: async function() {},
+    savePushSubscription: async function() {},
+    deletePushSubscription: async function() {},
+    resetPassword: async function() { return { data: {}, error: null }; },
+    initDefaultColonies: async function() {},
+    signIn: async function() { return { error: null }; },
+    signUp: async function() { return { error: null }; },
+  };
+})();
+`
+
+function makeUpdatePasswordErrorScript(errorCode: string, errorStatus: number, errorMessage: string): string {
+  return `
+(function() {
+  var _authCallbacks = [];
+  window.__triggerAuthEvent = function(event, session) {
+    _authCallbacks.slice().forEach(function(cb) { try { cb(event, session); } catch(e) {} });
+  };
+  window.HoneyDB = {
+    getSession: async function() { return null; },
+    onAuthStateChange: function(cb) { _authCallbacks.push(cb); return function() { var i = _authCallbacks.indexOf(cb); if (i !== -1) _authCallbacks.splice(i, 1); }; },
+    updatePassword: async function() {
+      return { data: null, error: { message: '${errorMessage}', code: '${errorCode}', status: ${errorStatus} } };
+    },
+    signOut: async function() { return { error: null }; },
+    getUserProfile: async function() { return { name: 'テスト', farm_name: '' }; },
+    getUserPreferences: async function() { return { theme: 'system', language: 'ja', default_inspection_mode: 'frame' }; },
+    loadFarms: async function() { return []; },
+    loadColonies: async function() { return []; },
+    loadInspRecords: async function() { return []; },
+    loadWorkRecords: async function() { return []; },
+    loadTasks: async function() { return []; },
+    getTasks: async function() { return []; },
+    getNotificationSettings: async function() { return null; },
+    loadBenchmarkStats: async function() { return null; },
+    saveWorkRecord: async function() { return null; },
+    updateWorkRecord: async function() {},
+    deleteWorkRecord: async function() {},
+    saveTask: async function() { return null; },
+    updateTask: async function() {},
+    completeTask: async function() {},
+    deleteTask: async function() {},
+    saveInspRecord: async function() { return null; },
+    saveFarm: async function() {},
+    archiveFarm: async function() {},
+    deleteFarm: async function() {},
+    saveColony: async function() {},
+    archiveColony: async function() {},
+    deleteColony: async function() {},
+    updateProfile: async function() {},
+    updateUserPreferences: async function() {},
+    updateNotificationSettings: async function() {},
+    exportAllData: async function() { return { exportedAt: '', profile: null, inspRecords: [], workRecords: [], tasks: [] }; },
+    subscribeRealtime: function() {},
+    unsubscribeRealtime: function() {},
+    upsertBenchmark: async function() {},
+    savePushSubscription: async function() {},
+    deletePushSubscription: async function() {},
+    resetPassword: async function() { return { data: {}, error: null }; },
+    initDefaultColonies: async function() {},
+    signIn: async function() { return { error: null }; },
+    signUp: async function() { return { error: null }; },
+  };
+})();
+  `
+}
+
+async function goToStep3AndSubmit(
+  page: import('@playwright/test').Page,
+  script: string,
+): Promise<void> {
+  await page.addInitScript(script)
+  await page.goto('/', { waitUntil: 'networkidle' })
+  await page.waitForTimeout(500)
+  await page.evaluate(() =>
+    (window as unknown as { __triggerAuthEvent: (e: string, s: unknown) => void })
+      .__triggerAuthEvent('PASSWORD_RECOVERY', { user: { id: 'u1', email: 'test@example.com' } })
+  )
+  await page.waitForTimeout(400)
+  const pwInputs = page.locator('input[type="password"]')
+  await pwInputs.nth(0).fill('newpassword123')
+  const count = await pwInputs.count()
+  if (count > 1) await pwInputs.nth(1).fill('newpassword123')
+  await page.locator('button[type="submit"]').click()
+  await page.waitForTimeout(800)
+}
+
+// ── J. signOut retry: second attempt succeeds → returns to login ──────────────
+
+test('SCR-034: signOut retry succeeds, then shows login', async ({ page }) => {
+  await goToStep3AndSubmit(page, SIGNOUT_FAIL_THEN_SUCCEED_SCRIPT)
+
+  // First signOut fails → retry button shown
+  const retryBtn = page.locator('button', { hasText: '再試行' })
+  await expect(retryBtn).toBeVisible({ timeout: 3000 })
+
+  await retryBtn.click()
+  await page.waitForTimeout(1000)
+
+  // Second signOut succeeds → login screen shown
+  await expect(page.locator('input[type="email"]')).toBeVisible({ timeout: 3000 })
+
+  const signOutCalls = await page.evaluate(() =>
+    (window as unknown as { __getSignOutAttempts: () => number }).__getSignOutAttempts()
+  )
+  expect(signOutCalls).toBeGreaterThanOrEqual(2)
+})
+
+// ── K. Auth error classification ──────────────────────────────────────────────
+
+test.describe('SCR-034: auth error classification', () => {
+  test('otp_expired → expired notice shown, not login', async ({ page }) => {
+    await goToStep3AndSubmit(page, makeUpdatePasswordErrorScript('otp_expired', 401, 'Token expired'))
+    // Link-expired notice shown (not login)
+    const expiredNotice = page.locator('[role="alert"]')
+    await expect(expiredNotice).toBeVisible()
+    await expect(page.locator('input[type="email"]')).not.toBeVisible()
+  })
+
+  test('flow_state_not_found → used link notice shown, not login', async ({ page }) => {
+    await goToStep3AndSubmit(page, makeUpdatePasswordErrorScript('flow_state_not_found', 401, 'Flow state not found'))
+    // Should show some error state, not go to login
+    const expiredNotice = page.locator('[role="alert"]')
+    await expect(expiredNotice).toBeVisible()
+    await expect(page.locator('input[type="email"]')).not.toBeVisible()
+  })
+
+  test('unknown error → generic error message, no token exposed', async ({ page }) => {
+    await goToStep3AndSubmit(page, makeUpdatePasswordErrorScript('unknown_code', 500, 'Unexpected server error'))
+    // Generic error shown, no token in DOM
+    await expect(page.locator('[role="alert"]').first()).toBeVisible()
+    const bodyText = await page.locator('body').innerText()
+    expect(bodyText).not.toMatch(/access_token|refresh_token/)
+  })
+})
+
 // ── G. redirectTo uses same origin ───────────────────────────────────────────
 
 test('SCR-034: resetPassword redirectTo uses same origin', async ({ page }) => {
