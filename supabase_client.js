@@ -603,6 +603,37 @@
   }
 
   // ==================
+  // アカウント削除
+  // ==================
+  async function deleteAccount({ confirmation }) {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) return { error: { message: 'Not authenticated', code: 'unauthenticated' } };
+
+    let result;
+    try {
+      result = await sb.functions.invoke('delete-account', {
+        body: { confirmation },  // DO NOT include userId
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+    } catch (e) {
+      return { error: { message: e && e.message ? e.message : 'Network error', code: 'network_error' } };
+    }
+
+    if (result.error) {
+      // Parse error code from response body if available
+      let code = 'unknown';
+      try {
+        const body = result.error.context
+          ? await result.error.context.json().catch(() => null)
+          : null;
+        if (body && body.error) code = body.error;
+      } catch { /* ignore */ }
+      return { error: { message: result.error.message || 'Deletion failed', code } };
+    }
+    return { error: null };
+  }
+
+  // ==================
   // データエクスポート
   // ==================
   async function exportAllData() {
@@ -722,6 +753,8 @@
     // Realtime
     subscribeRealtime,
     unsubscribeRealtime,
+    // Account deletion
+    deleteAccount,
     // Data
     exportAllData,
     upsertBenchmark,

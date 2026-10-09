@@ -185,3 +185,116 @@ Supabase CLI および Docker が利用できないため、実リカバリリ�
 ### DEV モード
 - onboarding チェックをスキップ（`setOnboardingState('completed')` で即座に解決）
 - 既存の 602 件のビジュアルスナップショットテストを保護（?screen= 直接アクセス）
+
+---
+
+## アカウント削除 (工程E)
+
+### データオーナーシップ監査表
+
+| schema.table | owner_col | FK to auth.users | ON DELETE | RLS | 削除順序 | 明示的削除必要 | 共有データ |
+|---|---|---|---|---|---|---|---|
+| public.profiles | id (PK) | references auth.users(id) | CASCADE | ✅ | auth.users削除で自動 | 不要 | なし |
+| public.farms | user_id | references auth.users(id) | CASCADE | ✅ | auth.users削除で自動 | 不要 | なし |
+| public.colonies | user_id | references auth.users(id) | CASCADE | ✅ | auth.users削除で自動 | 不要 | なし |
+| public.insp_records | user_id | references auth.users(id) | CASCADE | ✅ | auth.users削除で自動 | 不要 | なし |
+| public.work_records | user_id | references auth.users(id) | CASCADE | ✅ | auth.users削除で自動 | 不要 | なし |
+| public.tasks | user_id | references auth.users(id) | CASCADE | ✅ | auth.users削除で自動 | 不要 | なし |
+| public.push_subscriptions | user_id | references auth.users(id) | CASCADE | ✅ | auth.users削除で自動 | 不要 | なし |
+| public.benchmarks | user_id (PK) | references auth.users(id) | CASCADE | ✅ | auth.users削除で自動 | 不要 | 集計のみ参照 |
+| public.notification_settings | user_id (PK) | references auth.users(id) | CASCADE | ✅ | auth.users削除で自動 | 不要 | なし |
+| public.user_preferences | user_id (PK) | references auth.users(id) | CASCADE | ✅ | auth.users削除で自動 | 不要 | なし |
+
+### FK/カスケード監査結果
+
+全テーブルが `auth.users(id) ON DELETE CASCADE` を持つため、`auth.users` のレコード削除のみで全データが自動削除される。明示的な per-table DELETE は不要。RESTRICT/NO ACTION によるブロックなし。
+
+### 新規マイグレーション
+
+**不要。** 既存スキーマで全テーブルが ON DELETE CASCADE を持つ。
+
+### 削除方式
+
+**ハード削除（完全削除）。** ソフトデリートは採用しない。養蜂家の個人データ保護とデータミニマイゼーションのため、削除リクエストは即時かつ完全に処理する。
+
+### 削除順序
+
+1. JWT を `supabase.auth.getUser(token)` で検証 → `userId` を取得
+2. 確認フレーズの完全一致チェック（`アカウントを削除する`）
+3. JWT `iat` が 10 分以内であることを確認（直近認証チェック）
+4. Storage オブジェクトを削除（現時点ではバケット未設定；将来対応）
+5. `adminClient.auth.admin.deleteUser(userId)` → auth.users 削除（全テーブルにカスケード）
+6. 200 を返す
+
+### JWT 検証と userId の取得
+
+- `supabase.auth.getUser(token)` で JWT を検証し、返却された `user.id` を userId として使用
+- リクエストボディに `userId`/`email`/`targetUserId` が含まれる場合は 400 を返す
+- userId は必ず検証済み JWT から取得する（ボディ由来の値は一切使用しない）
+
+### 直近認証チェック（10分）
+
+JWT の `iat`（発行時刻）を取得し、現在時刻との差が 600 秒を超える場合は `{ error: "reauth_required" }` を 401 で返す。`iat` はサーバー側で署名されているため改ざん不可（getUser 検証後のペイロードを使用）。
+
+### Edge Function
+
+- パス: `supabase/functions/delete-account/index.ts`
+- メソッド: POST のみ（他は 405、OPTIONS は CORS プリフライト）
+- CORS 許可オリジン: 環境変数 `ALLOWED_ORIGINS`（デフォルト: localhost 開発ポート 4 種）+ `PRODUCTION_ORIGIN`
+- リクエストオリジンをそのまま反射しない（ホワイトリスト方式）
+
+### service_role キーの保管場所
+
+Edge Function の環境変数のみに存在する（`SUPABASE_SERVICE_ROLE_KEY`）。レスポンスやログに出力しない。React フロントエンド、`supabase_client.js`、リポジトリには一切存在しない。
+
+### 成功/失敗 UX
+
+| 状態 | UI挙動 |
+|---|---|
+| 成功 | ダイアログを閉じ、キャッシュクリア、ログイン画面へ遷移 |
+| API失敗（汎用） | ダイアログ維持、エラーメッセージ表示、入力保持、再試行可能 |
+| reauth_required | 「安全のため再ログインしてください」メッセージ + 再ログインボタン |
+| オフライン | 削除ボタンを disabled、操作ブロック |
+| 送信中 | ボタン disabled（二重送信防止） |
+
+### オフライン挙動
+
+- `navigator.onLine` チェックを実行前に行う
+- オフライン時は API コールなし、エラーメッセージ表示
+
+### キャッシュクリアアプローチ
+
+`clearUserCache(userId)` を削除成功後に呼び出す。対象キー:
+- `honeyos_user_prefs`
+- `honeyos_prefs_user_id`
+- `honeyos_prefs_sync_pending`
+- `honeyos_react_theme`（legacy）
+- `honeyos_react_language`（legacy）
+- userId を含む任意のキー（将来のper-userキー対応）
+
+`sb-` プレフィックスのキー（Supabase 内部ストレージ）は絶対に削除しない。
+
+### 部分的失敗のリカバリ設計
+
+- Storage 削除失敗 → auth.users 削除を実行しない（データ孤立防止）
+- DB 削除は auth.users 削除のカスケードに委任（アトミック）
+- auth.users 削除失敗（404 以外）→ 500 を返す
+- 冪等性: auth.users が既に削除済みの場合（404）→ 200 を返す（成功扱い）
+
+### リモート Edge Function デプロイ状況
+
+**未デプロイ。** 本番リモートへのデプロイは未実施。ローカルおよびCI環境での動作確認のみ。
+
+### 実削除 E2E 未確認
+
+実際のユーザーアカウントを対象とした削除 E2E テストは未実施。Edge Function 未デプロイのため。本番環境での検証は手動テストが必要。
+
+### リリース前チェックリスト（工程E）
+
+- [ ] Edge Function を本番 Supabase プロジェクトへデプロイ
+- [ ] `ALLOWED_ORIGINS` に本番ドメインを設定
+- [ ] `PRODUCTION_ORIGIN` 環境変数を設定
+- [ ] `SUPABASE_SERVICE_ROLE_KEY` を Edge Function 環境変数にのみ設定
+- [ ] 本番環境でのアカウント削除 E2E テストを手動実施
+- [ ] ログに service_role キーが出力されないことを確認
+- [ ] RLS が全テーブルで有効であることを確認

@@ -744,6 +744,12 @@ export default function App() {
           onApiaryCreate={() => navigateTo('apiary-create')}
           onPasswordReset={() => navigateTo('password-reset')}
           onLogout={() => { setAuthState('unauthenticated'); setScreen('login') }}
+          onDeleteAccount={() => {
+            setAuthState('unauthenticated')
+            setCurrentUserId(null)
+            setScreen('login')
+            setOnboardingState('pending')
+          }}
         />
       ) : screen === 'colony-detail' ? (
         <ColonyDetailScreen
@@ -814,6 +820,12 @@ export default function App() {
               onApiaryCreate={() => navigateTo('apiary-create')}
               onPasswordReset={() => navigateTo('password-reset')}
               onLogout={() => { setAuthState('unauthenticated'); setScreen('login') }}
+              onDeleteAccount={() => {
+                setAuthState('unauthenticated')
+                setCurrentUserId(null)
+                setScreen('login')
+                setOnboardingState('pending')
+              }}
             />
           )}
         </>
