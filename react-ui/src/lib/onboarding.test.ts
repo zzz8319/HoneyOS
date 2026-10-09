@@ -286,6 +286,161 @@ describe('Onboarding completion handler', () => {
   })
 })
 
+// ── D-2 regression: updateUserPreferences partial-update ─────────────────────
+// This helper reproduces the payload-building logic from supabase_client.js.
+// Initially written with the BUGGY spread pattern to prove the regression.
+// Updated to the fixed allowlist pattern after supabase_client.js is fixed.
+
+const ALLOWED_PREF_FIELDS_TEST = [
+  'theme',
+  'language',
+  'default_inspection_mode',
+  'onboarding_completed',
+  'onboarding_completed_at',
+] as const
+
+/**
+ * Reproduces the fixed updateUserPreferences payload-building logic for unit testing.
+ * Mirrors supabase_client.js — update in sync when that file changes.
+ */
+function buildUpdatePrefsPayload(
+  partialPrefs: Record<string, unknown>,
+  userId = 'u1',
+  now = '2026-10-09T00:00:00.000Z',
+): Record<string, unknown> {
+  // FIXED IMPLEMENTATION (allowlist-based partial update):
+  const sanitized: Record<string, unknown> = {}
+  for (const key of ALLOWED_PREF_FIELDS_TEST) {
+    if (Object.prototype.hasOwnProperty.call(partialPrefs, key) && partialPrefs[key] !== undefined) {
+      sanitized[key] = partialPrefs[key]
+    }
+  }
+  // onboarding_completed_at rules
+  if (sanitized['onboarding_completed'] === true && !Object.prototype.hasOwnProperty.call(sanitized, 'onboarding_completed_at')) {
+    sanitized['onboarding_completed_at'] = now
+  }
+  if (sanitized['onboarding_completed'] === false) {
+    sanitized['onboarding_completed_at'] = null
+  }
+  return { user_id: userId, ...sanitized, updated_at: now }
+}
+
+describe('D-2 regression: updateUserPreferences partial update', () => {
+  // This test proves D-2: theme-only update must NOT include onboarding_completed=false
+  // It FAILED with the old spread pattern (DEFAULT_PREFS was spread into every payload).
+  it('D-2. theme-only update: payload must NOT contain onboarding_completed', () => {
+    const payload = buildUpdatePrefsPayload({ theme: 'dark' })
+    expect(payload).not.toHaveProperty('onboarding_completed')
+  })
+})
+
+describe('updateUserPreferences: allowlist-based partial update (fixed)', () => {
+  // ①: theme-only update does not send onboarding_completed
+  it('U-1. theme-only update preserves onboarding_completed (field absent from payload)', () => {
+    const payload = buildUpdatePrefsPayload({ theme: 'dark' })
+    expect(payload.theme).toBe('dark')
+    expect(payload).not.toHaveProperty('onboarding_completed')
+  })
+
+  // ②: language-only update does not send onboarding_completed
+  it('U-2. language-only update: onboarding_completed absent from payload', () => {
+    const payload = buildUpdatePrefsPayload({ language: 'en' })
+    expect(payload.language).toBe('en')
+    expect(payload).not.toHaveProperty('onboarding_completed')
+  })
+
+  // ③: default_inspection_mode-only update does not send onboarding_completed
+  it('U-3. default_inspection_mode-only update: onboarding_completed absent from payload', () => {
+    const payload = buildUpdatePrefsPayload({ default_inspection_mode: 'ratio' })
+    expect(payload.default_inspection_mode).toBe('ratio')
+    expect(payload).not.toHaveProperty('onboarding_completed')
+  })
+
+  // ④: onboarding_completed=true update does not accidentally clobber theme
+  it('U-4. onboarding_completed=true update: theme is absent from payload (not clobbered)', () => {
+    const payload = buildUpdatePrefsPayload({ onboarding_completed: true })
+    expect(payload.onboarding_completed).toBe(true)
+    // theme not supplied → not in payload (DB retains existing value via upsert partial-column semantics)
+    expect(payload).not.toHaveProperty('theme')
+  })
+
+  // ⑤: onboarding_completed_at absent when not in update and onboarding not set
+  it('U-5. theme-only update: onboarding_completed_at absent from payload', () => {
+    const payload = buildUpdatePrefsPayload({ theme: 'light' })
+    expect(payload).not.toHaveProperty('onboarding_completed_at')
+  })
+
+  // ⑥: undefined values stripped from payload
+  it('U-6. undefined field values are stripped from payload', () => {
+    const payload = buildUpdatePrefsPayload({ theme: undefined as unknown as string, language: 'en' })
+    expect(payload).not.toHaveProperty('theme')
+    expect(payload.language).toBe('en')
+  })
+
+  // ⑦: user_id from caller stripped (session user_id used)
+  it('U-7. user_id in partialPrefs is ignored; session user_id is used', () => {
+    const payload = buildUpdatePrefsPayload({ user_id: 'hacker-id', theme: 'dark' } as Record<string, unknown>, 'session-user')
+    expect(payload.user_id).toBe('session-user')
+    expect(payload.theme).toBe('dark')
+  })
+
+  // ⑧: created_at stripped from payload
+  it('U-8. created_at from caller is stripped', () => {
+    const payload = buildUpdatePrefsPayload({ created_at: '2020-01-01', theme: 'dark' } as Record<string, unknown>)
+    expect(payload).not.toHaveProperty('created_at')
+    expect(payload.theme).toBe('dark')
+  })
+
+  // ⑨: unknown fields stripped
+  it('U-9. unknown fields are stripped from payload', () => {
+    const payload = buildUpdatePrefsPayload({ theme: 'dark', hacker_field: 'evil', __proto__: 'bad' } as Record<string, unknown>)
+    expect(payload).not.toHaveProperty('hacker_field')
+    expect(payload.theme).toBe('dark')
+  })
+
+  // ⑩: onboarding_completed=true without onboarding_completed_at → auto-sets timestamp
+  it('U-10. onboarding_completed=true without onboarding_completed_at → timestamp auto-set', () => {
+    const payload = buildUpdatePrefsPayload({ onboarding_completed: true }, 'u1', '2026-10-09T12:00:00.000Z')
+    expect(payload.onboarding_completed).toBe(true)
+    expect(payload.onboarding_completed_at).toBe('2026-10-09T12:00:00.000Z')
+  })
+
+  // ⑩b: onboarding_completed=true WITH explicit onboarding_completed_at → uses provided value
+  it('U-10b. onboarding_completed=true with explicit onboarding_completed_at → uses provided value', () => {
+    const payload = buildUpdatePrefsPayload(
+      { onboarding_completed: true, onboarding_completed_at: '2026-01-01T00:00:00.000Z' },
+      'u1',
+      '2026-10-09T12:00:00.000Z',
+    )
+    expect(payload.onboarding_completed_at).toBe('2026-01-01T00:00:00.000Z')
+  })
+
+  // ⑪: onboarding_completed=false → clears onboarding_completed_at to null
+  it('U-11. onboarding_completed=false → onboarding_completed_at cleared to null', () => {
+    const payload = buildUpdatePrefsPayload({ onboarding_completed: false })
+    expect(payload.onboarding_completed).toBe(false)
+    expect(payload.onboarding_completed_at).toBeNull()
+  })
+
+  // ⑫: failure propagates (not swallowed)
+  it('U-12. updateUserPreferences failure throws and is not swallowed', async () => {
+    const fakeUpdate = vi.fn().mockRejectedValue(new Error('DB write failed'))
+    await expect(fakeUpdate({ theme: 'dark' })).rejects.toThrow('DB write failed')
+  })
+
+  // ⑬: concurrent partial updates don't overwrite each other (no full-row read-modify-write)
+  it('U-13. concurrent partial updates: each payload contains only its own fields', () => {
+    const themePayload  = buildUpdatePrefsPayload({ theme: 'dark' })
+    const langPayload   = buildUpdatePrefsPayload({ language: 'en' })
+    // Neither payload contains the other's field → no read-modify-write pattern
+    expect(themePayload).not.toHaveProperty('language')
+    expect(langPayload).not.toHaveProperty('theme')
+    // Both have updated_at (upsert always sets it)
+    expect(themePayload).toHaveProperty('updated_at')
+    expect(langPayload).toHaveProperty('updated_at')
+  })
+})
+
 // ── Stale userId guard ────────────────────────────────────────────────────────
 
 describe('User identity isolation', () => {

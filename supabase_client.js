@@ -553,6 +553,10 @@
     };
   }
 
+  // Fields that may be updated via updateUserPreferences.
+  // user_id, created_at, and unknown fields are always stripped.
+  const ALLOWED_PREF_FIELDS = ['theme', 'language', 'default_inspection_mode', 'onboarding_completed', 'onboarding_completed_at'];
+
   async function updateUserPreferences(partialPrefs) {
     if (partialPrefs.theme !== undefined && !VALID_THEMES.includes(partialPrefs.theme)) {
       throw new Error('テーマの値が無効です: ' + partialPrefs.theme);
@@ -565,12 +569,30 @@
     }
     const { data: { user }, error: userError } = await sb.auth.getUser();
     if (userError || !user) throw new Error('ログインが必要です');
-    const upsertData = {
-      user_id: user.id,
-      ...DEFAULT_PREFS,
-      ...partialPrefs,
-      updated_at: new Date().toISOString(),
-    };
+
+    // Build payload with only the allowed fields explicitly present in partialPrefs.
+    // DEFAULT_PREFS is NOT spread — that would clobber existing onboarding_completed on
+    // conflict. Supabase JS v2 upsert with onConflict only updates columns present in
+    // the payload, so omitting a field leaves the DB value unchanged.
+    const sanitized = {};
+    for (const key of ALLOWED_PREF_FIELDS) {
+      if (Object.prototype.hasOwnProperty.call(partialPrefs, key) && partialPrefs[key] !== undefined) {
+        sanitized[key] = partialPrefs[key];
+      }
+    }
+
+    // onboarding_completed_at rules:
+    // • completed→true without explicit timestamp → set to client time (documented in spec)
+    // • completed→false → clear timestamp to null
+    // • neither field touched → leave both fields out of payload
+    if (sanitized.onboarding_completed === true && !Object.prototype.hasOwnProperty.call(sanitized, 'onboarding_completed_at')) {
+      sanitized.onboarding_completed_at = new Date().toISOString();
+    }
+    if (sanitized.onboarding_completed === false) {
+      sanitized.onboarding_completed_at = null;
+    }
+
+    const upsertData = { user_id: user.id, ...sanitized, updated_at: new Date().toISOString() };
     const { data, error } = await sb
       .from('user_preferences')
       .upsert(upsertData, { onConflict: 'user_id' })
