@@ -370,8 +370,8 @@ test('SCR-031 api: delete confirm button disabled when input empty', async ({ pa
   await page.fill('#delete-confirm-input', '削除しない')
   await expect(deleteBtn).toBeDisabled()
 
-  // Type the correct text
-  await page.fill('#delete-confirm-input', '削除')
+  // Type the correct confirmation phrase
+  await page.fill('#delete-confirm-input', 'アカウントを削除する')
   // Button should now be enabled (but note: no server API so it won't actually delete)
   await expect(deleteBtn).not.toBeDisabled()
 })
