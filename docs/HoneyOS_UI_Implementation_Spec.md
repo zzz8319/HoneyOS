@@ -133,11 +133,54 @@ export const db = () => window.HoneyDB
 | USER_UPDATED | 影響なし |
 | PASSWORD_RECOVERY | onboarding チェックスキップ（SCR-034 優先） |
 
+### updateUserPreferences 部分更新
+
+- **指定されたフィールドのみ DB へ送信する**。`DEFAULT_PREFS` を既存行更新に使用しない。
+- `onboarding_completed` は未指定の更新では変更しない（例: `{ theme: 'dark' }` では `onboarding_completed` フィールドをペイロードに含めない）。
+- 許可フィールド: `theme`, `language`, `default_inspection_mode`, `onboarding_completed`, `onboarding_completed_at`
+- 除外フィールド: `user_id`（呼び出し元からの指定を無視し常にセッション user_id を使用）、`created_at`、未知フィールド、`undefined` 値
+- Supabase JS v2 の upsert は `onConflict` 時ペイロードに含まれるカラムのみ更新するため、フィールド省略 = 既存値保持となる。
+- **D-2 バグ修正**: 旧実装では `DEFAULT_PREFS` をスプレッドするため `onboarding_completed: false` が常にペイロードに含まれ、既存ユーザーが設定を変更すると `onboarding_completed` が false にリセットされていた。
+
+### onboarding_completed_at ルール
+
+- `onboarding_completed: true` を設定し `onboarding_completed_at` を未指定 → クライアント時刻 (`new Date().toISOString()`) を自動設定。
+  - 注意: DB 側時刻 (`now()`) への変更は将来の改善事項。クライアントとサーバーの時刻差が問題になる場合は DB トリガーに移行すること。
+- `onboarding_completed: false` を設定 → `onboarding_completed_at` を `null` にクリア。
+- 両フィールドとも未指定 → どちらもペイロードに含めない（DB 値を保持）。
+
 ### Migration
+
 - ファイル: `supabase/migrations/20261009_onboarding_completed.sql`
-- remote DB への適用: **未実施**（手動適用が必要）
+- **remote DB への適用: 未実施**（手動適用が必要）
 - 適用手順: supabase db push または Supabase Dashboard の SQL Editor
 - 冪等性: IF NOT EXISTS / ON CONFLICT DO NOTHING で複数回実行可能
+
+### deploy 順序
+
+**①supabase migration 適用 → ② フロントエンド deploy の順序で実施すること。**
+
+逆順の場合（フロントエンドを先に deploy すると）、既存ユーザーの `user_preferences` に `onboarding_completed` カラムが存在しないため `getUserPreferences` が `DEFAULT_PREFS`（`onboarding_completed: false`）にフォールバックし、既存ユーザー全員がオンボーディングを再表示してしまう。
+
+### migration トランザクション境界
+
+Supabase CLI は各マイグレーションファイルを自動的に単一トランザクション内で実行する（PostgreSQL の DDL はトランザクション内で安全）。`20261009_onboarding_completed.sql` および `20261004_user_preferences.sql` ともに明示的な `BEGIN`/`COMMIT` を持たないが、これは Supabase CLI がラップするため意図的なものである。マイグレーション SQL の変更は不要。
+
+### initDefaultColonies の接続方針
+
+**Step 2（SCR-004）でfarm・colonies データを直接 `saveFarm`/`saveColony` 経由で保存するため、Onboarding フローから `initDefaultColonies` は呼び出さない。** 二重作成防止のため意図的に未接続。`initDefaultColonies` は将来の admin ツール等で利用できる状態で残す。
+
+### SCR-005 完了処理順（確定版）
+
+1. SCR-004（Step 2）でユーザーが「設定して次へ」→ `saveFarm`/`saveColony` が呼ばれ farm・colony データを保存
+2. SCR-005（Step 3）でユーザーが完了ボタンをタップ
+3. `onComplete` コールバック → `updateUserPreferences({ onboarding_completed: true })` を書き込む
+4. DB 書き込み成功後のみ → `onboardingState = 'completed'` → home へ遷移
+5. DB 書き込み失敗時は home へ遷移しない（`completeError` バナー表示・再試行 UI）
+
+### 実 Recovery Link E2E 未確認
+
+Supabase CLI および Docker が利用できないため、実リカバリリンクを使用した E2E テストは未実施。本番環境でのリカバリフロー検証は手動テストが必要。
 
 ### DEV モード
 - onboarding チェックをスキップ（`setOnboardingState('completed')` で即座に解決）
