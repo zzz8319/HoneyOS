@@ -4,25 +4,36 @@
  * Securely deletes the authenticated user's account and all their data.
  *
  * Security:
- * - userId is derived from the verified JWT, never from the request body.
+ * - JWT is verified via jose.createRemoteJWKSet against the project's JWKS endpoint
+ *   ({SUPABASE_URL}/auth/v1/.well-known/jwks.json). Supports ES256 (current Signing Key)
+ *   and automatic key rotation. Legacy HS256 tokens are intentionally rejected (401) —
+ *   users must re-authenticate to obtain a current ES256 token before deleting.
+ * - issuer and audience are validated explicitly.
  * - AMR claims are read from the cryptographically verified JWT payload (jose),
  *   NOT from userData.user.amr (undocumented, may be undefined).
+ * - userId is derived from the verified JWT claims.sub, never from the request body.
  * - service_role key is only available as an environment variable inside this function.
  * - No internal SQL, stack traces, or service_role values are returned in responses.
  * - Recent password authentication is verified via AMR claims from the verified JWT.
  * - Confirmation phrase must match exactly: "アカウントを削除する"
+ * - Supabase Storage is not used in this project; no storage deletion is performed.
  *
  * Deletion order (safe partial-failure design):
- *   1. Verify JWT signature via jose + SUPABASE_JWT_SECRET → get verified claims
+ *   1. Verify JWT signature via jose JWKS → get verified claims
  *   2. Call getUser(token) for revocation check; verify claims.sub === user.id
  *   3. Check confirmation exact match
  *   4. Check AMR: must have password method within 10 minutes (from claims.amr)
- *   5. Delete Storage objects (if any buckets exist)
- *   6. Delete auth user via admin API (cascades all DB rows via FK ON DELETE CASCADE)
- *   7. Return 200
+ *   5. Delete auth user via admin API (cascades all DB rows via FK ON DELETE CASCADE)
+ *   6. Return 200
  *
- * All tables in this project have FK → auth.users(id) ON DELETE CASCADE, so
+ * All tables (including profiles) have FK → auth.users(id) ON DELETE CASCADE, so
  * deleting the auth user is sufficient; no explicit per-table DELETE is needed.
+ *
+ * Legacy HS256 tokens:
+ *   The project has switched from Legacy Shared Secret (HS256) to Signing Keys (ES256).
+ *   HS256 tokens are signed with a symmetric secret that is NOT in the JWKS, so they
+ *   cannot be verified by this function and will receive 401. Users with HS256 tokens
+ *   must re-authenticate (sign in) to receive a current ES256 token before deleting.
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
@@ -31,7 +42,18 @@ import * as jose from 'https://deno.land/x/jose@v5.2.3/index.ts'
 // ── Constants ────────────────────────────────────────────────────────────────
 
 const CONFIRMATION_PHRASE = 'アカウントを削除する'
-const MAX_IAT_AGE_SECONDS = 10 * 60  // 10 minutes
+const MAX_PASSWORD_AGE_SECONDS = 10 * 60  // 10 minutes
+
+// ── Module-level JWKS cache ───────────────────────────────────────────────────
+// createRemoteJWKSet fetches the keyset on first use and caches it.
+// On an unknown 'kid', it automatically re-fetches (key rotation support).
+
+const _supabaseUrl = Deno.env.get('SUPABASE_URL') ?? ''
+const _jwks = _supabaseUrl
+  ? jose.createRemoteJWKSet(
+      new URL(`${_supabaseUrl}/auth/v1/.well-known/jwks.json`)
+    )
+  : null
 
 // ── CORS ─────────────────────────────────────────────────────────────────────
 
@@ -47,7 +69,6 @@ function getAllowedOrigins(): Set<string> {
 
 function getCorsHeaders(origin: string | null): Record<string, string> {
   const allowed = getAllowedOrigins()
-  // Only reflect if the origin is explicitly allowed
   if (origin && allowed.has(origin)) {
     return {
       'Access-Control-Allow-Origin': origin,
@@ -56,12 +77,11 @@ function getCorsHeaders(origin: string | null): Record<string, string> {
       'Vary': 'Origin',
     }
   }
-  // Return no Access-Control-Allow-Origin to cause CORS failure in browser
   return {}
 }
 
 function isCorsAllowed(origin: string | null): boolean {
-  if (!origin) return true  // non-browser (server-to-server) — no CORS restriction
+  if (!origin) return true
   return getAllowedOrigins().has(origin)
 }
 
@@ -78,16 +98,15 @@ function jsonResponse(body: unknown, status: number, extraHeaders?: Record<strin
  * Check that the verified JWT claims contain a recent password authentication
  * in the AMR array.
  *
- * `claims` must come from a signature-verified JWT (via jose.jwtVerify), never
- * from userData.user.amr or any unverified source.
+ * `claims` must come from a signature-verified JWT (via jose.jwtVerify + JWKS),
+ * never from userData.user.amr or any unverified source.
  *
  * Fail-closed: any missing or invalid data returns false.
  */
-function checkRecentPasswordAuth(claims: { amr?: unknown }, nowSeconds?: number): boolean {
+export function checkRecentPasswordAuth(claims: { amr?: unknown }, nowSeconds?: number): boolean {
   const amr = claims.amr
   if (!Array.isArray(amr) || amr.length === 0) return false
 
-  // Find password auth entries
   const passwordEntries = amr.filter((entry: unknown) =>
     entry !== null &&
     typeof entry === 'object' &&
@@ -95,7 +114,6 @@ function checkRecentPasswordAuth(claims: { amr?: unknown }, nowSeconds?: number)
   )
   if (passwordEntries.length === 0) return false
 
-  // Get the most recent password auth timestamp
   const now = nowSeconds ?? Math.floor(Date.now() / 1000)
   const maxTimestamp = Math.max(
     ...(passwordEntries as Array<{ timestamp?: unknown }>).map(e => {
@@ -105,11 +123,9 @@ function checkRecentPasswordAuth(claims: { amr?: unknown }, nowSeconds?: number)
   )
 
   if (maxTimestamp === 0) return false
-  // Reject future timestamps (more than 30s in future = suspicious)
-  if (maxTimestamp > now + 30) return false
+  if (maxTimestamp > now + 30) return false  // reject future timestamps
 
-  const age = now - maxTimestamp
-  return age <= MAX_IAT_AGE_SECONDS
+  return (now - maxTimestamp) <= MAX_PASSWORD_AGE_SECONDS
 }
 
 // ── Main handler ──────────────────────────────────────────────────────────────
@@ -149,31 +165,37 @@ Deno.serve(async (req: Request): Promise<Response> => {
   const supabaseUrl = Deno.env.get('SUPABASE_URL')
   const anonKey = Deno.env.get('SUPABASE_ANON_KEY')
   const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-  const jwtSecretStr = Deno.env.get('SUPABASE_JWT_SECRET')
 
   if (!supabaseUrl || !anonKey || !serviceRoleKey) {
     return jsonResponse({ error: 'server_error' }, 500, corsHeaders)
   }
-  if (!jwtSecretStr) {
+
+  if (!_jwks) {
     return jsonResponse({ error: 'server_error' }, 500, corsHeaders)
   }
 
-  // ── Step 1: Verify JWT signature and extract claims ──────────────────────
-  // Use jose to cryptographically verify the signature before trusting any claim.
-  // This is the ONLY source of AMR data — userData.user.amr is NOT used.
+  // ── Step 1: Verify JWT signature via JWKS ───────────────────────────────
+  // jose.createRemoteJWKSet uses the project's JWKS endpoint, supports ES256
+  // and automatic key rotation (re-fetches on unknown kid).
+  // issuer and audience are validated explicitly.
+  // Algorithm is determined by the matching JWKS key's 'alg' field (no
+  // algorithm confusion possible). alg:none and HS256 tokens cannot match
+  // any JWKS key and are rejected.
+  // Legacy HS256 tokens (signed with a symmetric secret not in JWKS) → 401.
   let claims: jose.JWTPayload
   try {
-    const secret = new TextEncoder().encode(jwtSecretStr)
-    const { payload } = await jose.jwtVerify(token, secret)
+    const { payload } = await jose.jwtVerify(token, _jwks, {
+      issuer: `${supabaseUrl}/auth/v1`,
+      audience: 'authenticated',
+    })
     claims = payload
   } catch {
     return jsonResponse({ error: 'unauthorized' }, 401, corsHeaders)
   }
 
   // ── Step 2: Call getUser for revocation check ────────────────────────────
-  // getUser contacts the Supabase Auth server, which can detect revoked tokens
-  // (e.g. after signOut). userId MUST come from verified JWT claims.sub,
-  // not from the request body.
+  // getUser contacts the Supabase Auth server to detect revoked tokens.
+  // userId MUST come from verified JWT claims.sub, not from the request body.
   const anonClient = createClient(supabaseUrl, anonKey, {
     auth: { persistSession: false, autoRefreshToken: false },
     global: { headers: { Authorization: `Bearer ${token}` } },
@@ -184,13 +206,10 @@ Deno.serve(async (req: Request): Promise<Response> => {
     return jsonResponse({ error: 'unauthorized' }, 401, corsHeaders)
   }
 
-  // Verify that claims.sub matches the user returned by the Auth server.
-  // A mismatch would indicate a token/user inconsistency.
   if (claims.sub !== userData.user.id) {
     return jsonResponse({ error: 'unauthorized' }, 401, corsHeaders)
   }
 
-  // userId is taken from the verified JWT sub claim (== userData.user.id after check above)
   const userId = userData.user.id
 
   // ── Parse request body ───────────────────────────────────────────────────
@@ -201,7 +220,6 @@ Deno.serve(async (req: Request): Promise<Response> => {
     return jsonResponse({ error: 'bad_request' }, 400, corsHeaders)
   }
 
-  // Reject any body that contains userId / email / targetUserId
   if ('userId' in body || 'email' in body || 'targetUserId' in body) {
     return jsonResponse({ error: 'bad_request' }, 400, corsHeaders)
   }
@@ -212,9 +230,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
   }
 
   // ── Check recent password authentication via verified JWT AMR claims ─────
-  // claims.amr comes from the cryptographically verified JWT payload (jose).
-  // userData.user.amr is NOT used — it is not an officially documented field
-  // and may be undefined.
+  // claims.amr comes from the JWKS-verified JWT payload.
+  // userData.user.amr is NOT used.
   if (!checkRecentPasswordAuth(claims)) {
     return jsonResponse({ error: 'reauth_required' }, 403, corsHeaders)
   }
@@ -224,38 +241,13 @@ Deno.serve(async (req: Request): Promise<Response> => {
     auth: { persistSession: false, autoRefreshToken: false },
   })
 
-  // ── Delete Storage objects ────────────────────────────────────────────────
-  // List known buckets and remove any objects belonging to this user.
-  // Currently no buckets are provisioned; this is a future-proof stub.
-  try {
-    const { data: buckets } = await adminClient.storage.listBuckets()
-    if (buckets && buckets.length > 0) {
-      for (const bucket of buckets) {
-        const { data: files } = await adminClient.storage
-          .from(bucket.id)
-          .list(userId, { limit: 1000 })
-        if (files && files.length > 0) {
-          const paths = files.map(f => `${userId}/${f.name}`)
-          const { error: removeError } = await adminClient.storage
-            .from(bucket.id)
-            .remove(paths)
-          if (removeError) {
-            // Storage delete failure: do NOT proceed with user deletion
-            return jsonResponse({ error: 'server_error' }, 500, corsHeaders)
-          }
-        }
-      }
-    }
-  } catch {
-    // Storage operation failed: do NOT proceed with user deletion
-    return jsonResponse({ error: 'server_error' }, 500, corsHeaders)
-  }
-
   // ── Delete auth user (cascades all DB rows) ───────────────────────────────
+  // Supabase Storage is not used in this project; no storage deletion is needed.
+  // All tables have FK → auth.users(id) ON DELETE CASCADE; deleting the auth
+  // user cascades all owned rows automatically.
   const { error: deleteError } = await adminClient.auth.admin.deleteUser(userId)
 
   if (deleteError) {
-    // Idempotency: if user is already deleted, treat as success
     if (deleteError.message?.toLowerCase().includes('not found') ||
         (deleteError as { status?: number }).status === 404) {
       return jsonResponse({ success: true }, 200, corsHeaders)
