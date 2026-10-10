@@ -298,3 +298,136 @@ Edge Function の環境変数のみに存在する（`SUPABASE_SERVICE_ROLE_KEY`
 - [ ] 本番環境でのアカウント削除 E2E テストを手動実施
 - [ ] ログに service_role キーが出力されないことを確認
 - [ ] RLS が全テーブルで有効であることを確認
+
+---
+
+## データベース基盤（Remote DB Baseline Migration）
+
+### Remote DB の初期状態（監査時点: 2026-10-03）
+
+Remote Supabase には以下の 3 テーブルのみ存在していた:
+
+| テーブル | 備考 |
+|---------|------|
+| `profiles` | id, name, farm_name, created_at。CASCADE FK 確認済み |
+| `insp_records` | id, user_id, colony, date, time, weather, frames, frame_memo, ai_memo, created_at, space_levels, queen_present, bees_total |
+| `work_records` | id, user_id, type, colony, date, time, memo, created_at |
+
+React 版が必要とするテーブル（farms, colonies, tasks, push_subscriptions, notification_settings, benchmarks, user_preferences）はすべて未存在。insp_records / work_records にも多数の列が不足していた。
+
+### Baseline Migration（20261003_react_ui_schema_baseline.sql）
+
+ファイル: `supabase/migrations/20261003_react_ui_schema_baseline.sql`
+
+**設計原則**:
+- `CREATE TABLE IF NOT EXISTS` — 再実行しても安全
+- `ADD COLUMN IF NOT EXISTS` — 再実行しても安全
+- `DROP TABLE` / `TRUNCATE` / `DELETE` 使用禁止
+- 既存データを一切削除しない
+- ID 列・既存列の型変更禁止
+- 完全冪等（何度実行しても副作用なし）
+
+**既存テーブルへの不足列追加**:
+
+`insp_records` に追加:
+- `count_mode text NOT NULL DEFAULT 'frame'`
+- `frame_details jsonb NOT NULL DEFAULT '{}'`
+- `space_count integer`
+- `structure jsonb NOT NULL DEFAULT '{}'`
+- `queen_status text`
+- `swarm_risk boolean NOT NULL DEFAULT false`
+
+> 注意: `swarm_risk`（boolean）は supabase_client.js が読み書きする列。`swarm_risk_score`（integer）は schema.sql にのみ存在し、クライアントコードでは使用されないため**追加しない**。
+
+`work_records` に追加:
+- `colony_ids text[] NOT NULL DEFAULT '{}'`
+- `yield_kg decimal`
+- `harvest_method text`
+- `feed_type text`
+- `feed_amount text`
+- `medication_name text`
+- `next_treatment_date text`
+- `swarm_type text`
+- `photo_urls jsonb NOT NULL DEFAULT '[]'`
+
+> 注意: `photo_urls` は TypeScript 型では `string[]` だが、DB 上は `jsonb`（Supabase JS v2 が JS 配列を JSON に自動シリアライズ）。
+
+**既存データ補完**:
+```sql
+UPDATE public.work_records
+SET colony_ids = ARRAY[colony]
+WHERE colony != '' AND colony_ids = '{}';
+```
+既存行の `colony` 列が空でなく `colony_ids` が空の場合のみ補完する。削除・上書きは行わない。
+
+**新規テーブル作成（依存関係順）**:
+
+1. `farms` — farms を先に作成（colonies / tasks が FK 参照するため）
+2. `colonies` — `farm_id → farms(id) ON DELETE SET NULL`、複合主キー `(id, user_id)`
+3. `tasks` — `farm_id → farms(id) ON DELETE SET NULL`
+4. `push_subscriptions` — `UNIQUE(user_id, endpoint)`
+5. `notification_settings` — user_id が PK
+6. `benchmarks` — user_id が PK
+
+### RLS 設計
+
+全テーブルで Row Level Security を有効化。ポリシーパターン:
+
+```sql
+-- SELECT
+USING (auth.uid() = user_id)
+-- INSERT
+WITH CHECK (auth.uid() = user_id)
+-- UPDATE
+USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id)
+-- DELETE
+USING (auth.uid() = user_id)
+```
+
+`profiles` のみ `auth.uid() = id`（profiles.id が auth.users.id と対応）。
+
+ポリシー管理は `DROP POLICY IF EXISTS` → `CREATE POLICY` パターンで冪等。
+
+### benchmarks の匿名性設計
+
+`avg_health` / `colony_count` は個人の養蜂データであり、他ユーザーに公開しない。
+
+**own-only ポリシーのみ適用**（`"all users read benchmarks"` は意図的に作成しない）:
+```sql
+CREATE POLICY "users manage own benchmark"
+  ON public.benchmarks FOR ALL
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+```
+
+匿名化集計が必要になった場合は、別途集計 RPC または VIEW で対応する。
+
+### Migration 適用順序
+
+| 順序 | ファイル | 内容 |
+|------|---------|------|
+| 1 | `20261003_react_ui_schema_baseline.sql` | テーブル・列の追加、RLS、Realtime |
+| 2 | `20261004_user_preferences.sql` | user_preferences テーブル追加 |
+| 3 | `20261009_onboarding_completed.sql` | onboarding_completed 列追加 |
+| 4 | `20261010_account_deletion_cascade.sql` | 全テーブルへ CASCADE FK 追加 |
+
+### Remote 未適用・適用前チェック
+
+**Remote DB への適用はまだ実施していない。**
+
+適用前に必須:
+- [ ] Supabase ダッシュボードからフルバックアップを取得
+- [ ] `supabase/audit/remote_schema_inspection.sql` を読み取り専用ロールで実行し、現状を記録
+- [ ] Supabase SQL Editor にてマイグレーションを**トランザクション内で**実行
+- [ ] 適用後に inspection SQL を再実行して差分が期待通りであることを確認
+
+### Rollback 方針
+
+Supabase マイグレーションには自動ロールバックがないため、以下で対応:
+
+1. **列追加**: `ALTER TABLE ... DROP COLUMN IF EXISTS` で削除可能（データは失われる）
+2. **テーブル追加**: `DROP TABLE IF EXISTS` で削除可能（新規テーブルのため既存データへの影響なし）
+3. **RLS/ポリシー**: `DROP POLICY IF EXISTS` → 元のポリシーを再作成
+4. **既存データ補完（colony_ids）**: 補完された行を手動で `colony_ids = '{}'` にリセット可能
+5. **最終手段**: 適用前バックアップからリストア
+
