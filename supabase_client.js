@@ -605,6 +605,20 @@
   // ==================
   // アカウント削除
   // ==================
+  async function reauthenticateForAccountDeletion(password) {
+    // Get current user's email from session
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session?.user?.email) return { error: { message: 'セッションが無効です', code: 'unauthenticated' } };
+
+    const { data, error } = await sb.auth.signInWithPassword({
+      email: session.user.email,
+      password: password  // password argument only, never stored
+    });
+
+    if (error) return { error: { message: error.message, code: error.code || 'invalid_credentials' } };
+    return { error: null };
+  }
+
   async function deleteAccount({ confirmation }) {
     const { data: { session } } = await sb.auth.getSession();
     if (!session) return { error: { message: 'Not authenticated', code: 'unauthenticated' } };
@@ -754,6 +768,7 @@
     subscribeRealtime,
     unsubscribeRealtime,
     // Account deletion
+    reauthenticateForAccountDeletion,
     deleteAccount,
     // Data
     exportAllData,
