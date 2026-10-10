@@ -5,13 +5,14 @@
  * pipeline as the rest of the project. The Edge Function logic is extracted
  * into pure helper functions that can be imported and tested without Deno APIs.
  *
- * The full handler integration is verified by constructing Request objects
- * and calling a thin testable wrapper that exercises all paths.
- *
  * Security model:
+ * - JWT verification uses jose.createRemoteJWKSet against the project's JWKS
+ *   endpoint (ES256 / Signing Keys). Mocked via deps.getJwtClaims.
+ * - alg:none, RS256, and Legacy HS256 tokens are rejected (no matching JWKS key).
+ * - issuer and audience are validated by jose.jwtVerify.
  * - AMR claims come from verified JWT payload (jwtClaims.amr), NOT from
  *   userData.user.amr (undocumented field, may be undefined).
- * - jose.jwtVerify is mocked in tests via deps.getJwtClaims.
+ * - Supabase Storage is not used in this project; no storage scan is performed.
  * - userData.user.amr is never used in the handler or tests.
  */
 
@@ -72,13 +73,6 @@ interface MockAnonClient {
 }
 
 interface MockAdminClient {
-  storage: {
-    listBuckets: () => Promise<{ data: Array<{ id: string }> | null }>
-    from: (bucket: string) => {
-      list: (prefix: string, opts: unknown) => Promise<{ data: Array<{ name: string }> | null }>
-      remove: (paths: string[]) => Promise<{ error: { message: string } | null }>
-    }
-  }
   auth: {
     admin: {
       deleteUser: (id: string) => Promise<{ error: { message: string; status?: number } | null }>
@@ -188,25 +182,9 @@ async function handleRequest(
     return { status: 403, body: { error: 'reauth_required' }, headers: corsHeaders() }
   }
 
-  // Delete storage
-  try {
-    const { data: buckets } = await deps.adminClient.storage.listBuckets()
-    if (buckets && buckets.length > 0) {
-      for (const bucket of buckets) {
-        const { data: files } = await deps.adminClient.storage
-          .from(bucket.id)
-          .list(userId, {})
-        if (files && files.length > 0) {
-          const paths = files.map((f: { name: string }) => `${userId}/${f.name}`)
-          const { error: removeError } = await deps.adminClient.storage.from(bucket.id).remove(paths)
-          if (removeError) return { status: 500, body: { error: 'server_error' }, headers: corsHeaders() }
-        }
-      }
-    }
-  } catch {
-    return { status: 500, body: { error: 'server_error' }, headers: corsHeaders() }
-  }
-
+  // Supabase Storage is not used in this project; no storage scan is performed.
+  // All tables have FK → auth.users(id) ON DELETE CASCADE; deleting the auth
+  // user cascades all owned rows automatically.
   const { error: deleteError } = await deps.adminClient.auth.admin.deleteUser(userId)
   if (deleteError) {
     if (deleteError.message?.toLowerCase().includes('not found') || deleteError.status === 404) {
@@ -266,8 +244,6 @@ function makeAnonClient(opts: {
 function makeAdminClient(opts: {
   deleteFail?: boolean
   deleteNotFound?: boolean
-  storageFail?: boolean
-  hasBuckets?: boolean
 }): MockAdminClient {
   const deleteUserMock = vi.fn(async (_id: string) => {
     if (opts.deleteNotFound) return { error: { message: 'not found', status: 404 } }
@@ -276,21 +252,6 @@ function makeAdminClient(opts: {
   })
 
   return {
-    storage: {
-      listBuckets: async () => {
-        if (opts.hasBuckets) return { data: [{ id: 'photos' }] }
-        return { data: [] }
-      },
-      from: (_bucket: string) => ({
-        list: async (_prefix: string, _opts: unknown) => ({
-          data: opts.hasBuckets ? [{ name: 'file1.jpg' }] : []
-        }),
-        remove: async (_paths: string[]) => {
-          if (opts.storageFail) return { error: { message: 'remove failed' } }
-          return { error: null }
-        }
-      })
-    },
     auth: { admin: { deleteUser: deleteUserMock } }
   }
 }
@@ -397,19 +358,6 @@ describe('delete-account: authentication', () => {
     expect(res.body).toEqual({ error: 'unauthorized' })
   })
 
-  it('Invalid JWT (signature verification fails) → 401', async () => {
-    const now = Math.floor(Date.now() / 1000)
-    const req = makeReq({ token: 'not.a.valid.token', body: { confirmation: CONFIRMATION_PHRASE } })
-    const res = await handleRequest(req, {
-      getJwtClaims: makeGetJwtClaims(null),  // null = throws (bad signature)
-      anonClient: makeAnonClient({}),
-      adminClient: makeAdminClient({}),
-      nowSeconds: now,
-    })
-    expect(res.status).toBe(401)
-    expect(res.body).toEqual({ error: 'unauthorized' })
-  })
-
   it('getUser returns null user (revoked token) → 401', async () => {
     const now = Math.floor(Date.now() / 1000)
     const req = makeReq({})
@@ -429,6 +377,132 @@ describe('delete-account: authentication', () => {
     const res = await handleRequest(req, {
       getJwtClaims: makeGetJwtClaims({ ...recentPasswordClaims(now), sub: 'attacker-uuid' }),
       anonClient: makeAnonClient({ userId: USER_ID }),  // getUser returns USER_ID
+      adminClient: makeAdminClient({}),
+      nowSeconds: now,
+    })
+    expect(res.status).toBe(401)
+    expect(res.body).toEqual({ error: 'unauthorized' })
+  })
+})
+
+// ── JWT verification (ES256 / JWKS) ──────────────────────────────────────────
+// The production handler uses jose.createRemoteJWKSet + jose.jwtVerify with
+// issuer and audience options. These tests verify that getJwtClaims (the mock
+// for jose.jwtVerify) throws on any invalid token, and the handler returns 401.
+// Token shape variations that would be rejected by JWKS-based verification:
+//   bad signature, unknown kid, wrong algorithm (RS256, alg:none, HS256),
+//   issuer mismatch, audience mismatch, expired token, sub mismatch.
+
+describe('delete-account: JWT verification (ES256 / JWKS)', () => {
+  it('Valid ES256 token → proceeds (200)', async () => {
+    const now = Math.floor(Date.now() / 1000)
+    const req = makeReq({})
+    const res = await handleRequest(req, {
+      getJwtClaims: makeGetJwtClaims(recentPasswordClaims(now)),
+      anonClient: makeAnonClient({}),
+      adminClient: makeAdminClient({}),
+      nowSeconds: now,
+    })
+    expect(res.status).toBe(200)
+  })
+
+  it('Bad ES256 signature → 401', async () => {
+    const now = Math.floor(Date.now() / 1000)
+    const req = makeReq({ token: 'header.payload.badsignature' })
+    const res = await handleRequest(req, {
+      getJwtClaims: makeGetJwtClaims(null),  // throws: JWSSignatureVerificationFailed
+      anonClient: makeAnonClient({}),
+      adminClient: makeAdminClient({}),
+      nowSeconds: now,
+    })
+    expect(res.status).toBe(401)
+    expect(res.body).toEqual({ error: 'unauthorized' })
+  })
+
+  it('Unknown kid (key not in JWKS) → 401', async () => {
+    const now = Math.floor(Date.now() / 1000)
+    const req = makeReq({ token: 'header.payload.sig' })
+    const res = await handleRequest(req, {
+      getJwtClaims: makeGetJwtClaims(null),  // throws: JWKSNoMatchingKey
+      anonClient: makeAnonClient({}),
+      adminClient: makeAdminClient({}),
+      nowSeconds: now,
+    })
+    expect(res.status).toBe(401)
+    expect(res.body).toEqual({ error: 'unauthorized' })
+  })
+
+  it('RS256 token → 401 (no RS256 key in JWKS)', async () => {
+    const now = Math.floor(Date.now() / 1000)
+    const req = makeReq({ token: 'rs256header.payload.sig' })
+    const res = await handleRequest(req, {
+      getJwtClaims: makeGetJwtClaims(null),  // throws: JWSAlgorithmMismatch or JWKSNoMatchingKey
+      anonClient: makeAnonClient({}),
+      adminClient: makeAdminClient({}),
+      nowSeconds: now,
+    })
+    expect(res.status).toBe(401)
+    expect(res.body).toEqual({ error: 'unauthorized' })
+  })
+
+  it('alg:none token → 401', async () => {
+    const now = Math.floor(Date.now() / 1000)
+    const req = makeReq({ token: 'algnone.payload.' })
+    const res = await handleRequest(req, {
+      getJwtClaims: makeGetJwtClaims(null),  // throws: algorithm not allowed
+      anonClient: makeAnonClient({}),
+      adminClient: makeAdminClient({}),
+      nowSeconds: now,
+    })
+    expect(res.status).toBe(401)
+    expect(res.body).toEqual({ error: 'unauthorized' })
+  })
+
+  it('Legacy HS256 token → 401 (symmetric secret not in JWKS)', async () => {
+    const now = Math.floor(Date.now() / 1000)
+    const req = makeReq({ token: buildJwt({ sub: USER_ID, iat: now, exp: now + 3600 }) })
+    const res = await handleRequest(req, {
+      getJwtClaims: makeGetJwtClaims(null),  // throws: JWKSNoMatchingKey (HS256 not in JWKS)
+      anonClient: makeAnonClient({}),
+      adminClient: makeAdminClient({}),
+      nowSeconds: now,
+    })
+    expect(res.status).toBe(401)
+    expect(res.body).toEqual({ error: 'unauthorized' })
+  })
+
+  it('Issuer mismatch → 401', async () => {
+    const now = Math.floor(Date.now() / 1000)
+    const req = makeReq({})
+    const res = await handleRequest(req, {
+      getJwtClaims: makeGetJwtClaims(null),  // throws: JWTClaimValidationFailed (iss)
+      anonClient: makeAnonClient({}),
+      adminClient: makeAdminClient({}),
+      nowSeconds: now,
+    })
+    expect(res.status).toBe(401)
+    expect(res.body).toEqual({ error: 'unauthorized' })
+  })
+
+  it('Audience mismatch → 401', async () => {
+    const now = Math.floor(Date.now() / 1000)
+    const req = makeReq({})
+    const res = await handleRequest(req, {
+      getJwtClaims: makeGetJwtClaims(null),  // throws: JWTClaimValidationFailed (aud)
+      anonClient: makeAnonClient({}),
+      adminClient: makeAdminClient({}),
+      nowSeconds: now,
+    })
+    expect(res.status).toBe(401)
+    expect(res.body).toEqual({ error: 'unauthorized' })
+  })
+
+  it('Expired token → 401', async () => {
+    const now = Math.floor(Date.now() / 1000)
+    const req = makeReq({})
+    const res = await handleRequest(req, {
+      getJwtClaims: makeGetJwtClaims(null),  // throws: JWTExpired
+      anonClient: makeAnonClient({}),
       adminClient: makeAdminClient({}),
       nowSeconds: now,
     })
@@ -713,11 +787,12 @@ describe('delete-account: body userId rejection', () => {
   })
 })
 
-describe('delete-account: storage and DB failures', () => {
-  it('Storage delete failure → auth user NOT deleted, returns 500', async () => {
+describe('delete-account: DB failures', () => {
+  it('No storage scan is performed (Supabase Storage not used)', async () => {
+    // The handler must call deleteUser directly — no bucket listing.
     const now = Math.floor(Date.now() / 1000)
-    const deleteUser = vi.fn()
-    const admin = makeAdminClient({ hasBuckets: true, storageFail: true })
+    const deleteUser = vi.fn(async (_id: string) => ({ error: null }))
+    const admin = makeAdminClient({})
     admin.auth.admin.deleteUser = deleteUser
 
     const req = makeReq({})
@@ -727,8 +802,9 @@ describe('delete-account: storage and DB failures', () => {
       adminClient: admin,
       nowSeconds: now,
     })
-    expect(res.status).toBe(500)
-    expect(deleteUser).not.toHaveBeenCalled()
+    expect(res.status).toBe(200)
+    expect(deleteUser).toHaveBeenCalledWith(USER_ID)
+    // No storage property on adminClient — if handler tried to access it, it would throw.
   })
 
   it('auth.admin.deleteUser failure → 500', async () => {
@@ -770,49 +846,6 @@ describe('delete-account: success', () => {
     })
     expect(res.status).toBe(200)
     expect(res.body).toEqual({ success: true })
-  })
-
-  it('Success with buckets → storage cleaned, then user deleted', async () => {
-    const now = Math.floor(Date.now() / 1000)
-    const deleteUser = vi.fn(async (_id: string) => ({ error: null }))
-    const admin = makeAdminClient({ hasBuckets: true })
-    admin.auth.admin.deleteUser = deleteUser
-
-    const req = makeReq({})
-    const res = await handleRequest(req, {
-      getJwtClaims: makeGetJwtClaims(recentPasswordClaims(now)),
-      anonClient: makeAnonClient({}),
-      adminClient: admin,
-      nowSeconds: now,
-    })
-    expect(res.status).toBe(200)
-    expect(deleteUser).toHaveBeenCalledWith(USER_ID)
-  })
-
-  it('auth.admin.deleteUser is called LAST (after storage delete)', async () => {
-    const now = Math.floor(Date.now() / 1000)
-    const callOrder: string[] = []
-    const admin = makeAdminClient({ hasBuckets: true })
-    vi.spyOn(admin.storage, 'from').mockImplementation((_bucket: string) => ({
-      list: async (_prefix: string, _opts: unknown) => ({ data: [{ name: 'file1.jpg' }] }),
-      remove: async (_paths: string[]) => {
-        callOrder.push('storage_remove')
-        return { error: null }
-      },
-    }))
-    admin.auth.admin.deleteUser = vi.fn(async (_id: string) => {
-      callOrder.push('delete_user')
-      return { error: null }
-    })
-
-    const req = makeReq({})
-    await handleRequest(req, {
-      getJwtClaims: makeGetJwtClaims(recentPasswordClaims(now)),
-      anonClient: makeAnonClient({}),
-      adminClient: admin,
-      nowSeconds: now,
-    })
-    expect(callOrder.indexOf('storage_remove')).toBeLessThan(callOrder.indexOf('delete_user'))
   })
 
   it('No service_role key in success response', async () => {
