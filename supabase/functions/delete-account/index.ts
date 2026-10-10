@@ -5,24 +5,28 @@
  *
  * Security:
  * - userId is derived from the verified JWT, never from the request body.
+ * - AMR claims are read from the cryptographically verified JWT payload (jose),
+ *   NOT from userData.user.amr (undocumented, may be undefined).
  * - service_role key is only available as an environment variable inside this function.
  * - No internal SQL, stack traces, or service_role values are returned in responses.
- * - Recent authentication is verified (JWT iat must be within 10 minutes).
+ * - Recent password authentication is verified via AMR claims from the verified JWT.
  * - Confirmation phrase must match exactly: "アカウントを削除する"
  *
  * Deletion order (safe partial-failure design):
- *   1. Verify JWT + getUser (get caller's userId)
- *   2. Check confirmation exact match
- *   3. Check JWT iat within 10 minutes
- *   4. Delete Storage objects (if any buckets exist)
- *   5. Delete auth user via admin API (cascades all DB rows via FK ON DELETE CASCADE)
- *   6. Return 200
+ *   1. Verify JWT signature via jose + SUPABASE_JWT_SECRET → get verified claims
+ *   2. Call getUser(token) for revocation check; verify claims.sub === user.id
+ *   3. Check confirmation exact match
+ *   4. Check AMR: must have password method within 10 minutes (from claims.amr)
+ *   5. Delete Storage objects (if any buckets exist)
+ *   6. Delete auth user via admin API (cascades all DB rows via FK ON DELETE CASCADE)
+ *   7. Return 200
  *
  * All tables in this project have FK → auth.users(id) ON DELETE CASCADE, so
  * deleting the auth user is sufficient; no explicit per-table DELETE is needed.
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
+import * as jose from 'https://deno.land/x/jose@v5.2.3/index.ts'
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -70,18 +74,42 @@ function jsonResponse(body: unknown, status: number, extraHeaders?: Record<strin
   })
 }
 
-/** Decode JWT payload without verifying signature (verification is done by Supabase). */
-function decodeJwtPayload(token: string): Record<string, unknown> | null {
-  try {
-    const parts = token.split('.')
-    if (parts.length !== 3) return null
-    const padded = parts[1].replace(/-/g, '+').replace(/_/g, '/').padEnd(
-      parts[1].length + (4 - (parts[1].length % 4)) % 4, '='
-    )
-    return JSON.parse(atob(padded)) as Record<string, unknown>
-  } catch {
-    return null
-  }
+/**
+ * Check that the verified JWT claims contain a recent password authentication
+ * in the AMR array.
+ *
+ * `claims` must come from a signature-verified JWT (via jose.jwtVerify), never
+ * from userData.user.amr or any unverified source.
+ *
+ * Fail-closed: any missing or invalid data returns false.
+ */
+function checkRecentPasswordAuth(claims: { amr?: unknown }, nowSeconds?: number): boolean {
+  const amr = claims.amr
+  if (!Array.isArray(amr) || amr.length === 0) return false
+
+  // Find password auth entries
+  const passwordEntries = amr.filter((entry: unknown) =>
+    entry !== null &&
+    typeof entry === 'object' &&
+    (entry as { method?: unknown }).method === 'password'
+  )
+  if (passwordEntries.length === 0) return false
+
+  // Get the most recent password auth timestamp
+  const now = nowSeconds ?? Math.floor(Date.now() / 1000)
+  const maxTimestamp = Math.max(
+    ...(passwordEntries as Array<{ timestamp?: unknown }>).map(e => {
+      const ts = Number(e.timestamp)
+      return Number.isFinite(ts) ? ts : 0
+    })
+  )
+
+  if (maxTimestamp === 0) return false
+  // Reject future timestamps (more than 30s in future = suspicious)
+  if (maxTimestamp > now + 30) return false
+
+  const age = now - maxTimestamp
+  return age <= MAX_IAT_AGE_SECONDS
 }
 
 // ── Main handler ──────────────────────────────────────────────────────────────
@@ -111,7 +139,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
     })
   }
 
-  // ── Extract and verify JWT ───────────────────────────────────────────────
+  // ── Extract Bearer token ─────────────────────────────────────────────────
   const authHeader = req.headers.get('Authorization')
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return jsonResponse({ error: 'unauthorized' }, 401, corsHeaders)
@@ -121,12 +149,31 @@ Deno.serve(async (req: Request): Promise<Response> => {
   const supabaseUrl = Deno.env.get('SUPABASE_URL')
   const anonKey = Deno.env.get('SUPABASE_ANON_KEY')
   const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+  const jwtSecretStr = Deno.env.get('SUPABASE_JWT_SECRET')
 
   if (!supabaseUrl || !anonKey || !serviceRoleKey) {
     return jsonResponse({ error: 'server_error' }, 500, corsHeaders)
   }
+  if (!jwtSecretStr) {
+    return jsonResponse({ error: 'server_error' }, 500, corsHeaders)
+  }
 
-  // Use anon client to verify the JWT via getUser
+  // ── Step 1: Verify JWT signature and extract claims ──────────────────────
+  // Use jose to cryptographically verify the signature before trusting any claim.
+  // This is the ONLY source of AMR data — userData.user.amr is NOT used.
+  let claims: jose.JWTPayload
+  try {
+    const secret = new TextEncoder().encode(jwtSecretStr)
+    const { payload } = await jose.jwtVerify(token, secret)
+    claims = payload
+  } catch {
+    return jsonResponse({ error: 'unauthorized' }, 401, corsHeaders)
+  }
+
+  // ── Step 2: Call getUser for revocation check ────────────────────────────
+  // getUser contacts the Supabase Auth server, which can detect revoked tokens
+  // (e.g. after signOut). userId MUST come from verified JWT claims.sub,
+  // not from the request body.
   const anonClient = createClient(supabaseUrl, anonKey, {
     auth: { persistSession: false, autoRefreshToken: false },
     global: { headers: { Authorization: `Bearer ${token}` } },
@@ -137,7 +184,13 @@ Deno.serve(async (req: Request): Promise<Response> => {
     return jsonResponse({ error: 'unauthorized' }, 401, corsHeaders)
   }
 
-  // userId MUST come from verified JWT, never from request body
+  // Verify that claims.sub matches the user returned by the Auth server.
+  // A mismatch would indicate a token/user inconsistency.
+  if (claims.sub !== userData.user.id) {
+    return jsonResponse({ error: 'unauthorized' }, 401, corsHeaders)
+  }
+
+  // userId is taken from the verified JWT sub claim (== userData.user.id after check above)
   const userId = userData.user.id
 
   // ── Parse request body ───────────────────────────────────────────────────
@@ -158,18 +211,12 @@ Deno.serve(async (req: Request): Promise<Response> => {
     return jsonResponse({ error: 'bad_request' }, 400, corsHeaders)
   }
 
-  // ── Check recent authentication (JWT iat within 10 minutes) ─────────────
-  const payload = decodeJwtPayload(token)
-  if (!payload) {
-    return jsonResponse({ error: 'unauthorized' }, 401, corsHeaders)
-  }
-  const iat = typeof payload.iat === 'number' ? payload.iat : null
-  if (iat === null) {
-    return jsonResponse({ error: 'unauthorized' }, 401, corsHeaders)
-  }
-  const nowSeconds = Math.floor(Date.now() / 1000)
-  if (nowSeconds - iat > MAX_IAT_AGE_SECONDS) {
-    return jsonResponse({ error: 'reauth_required' }, 401, corsHeaders)
+  // ── Check recent password authentication via verified JWT AMR claims ─────
+  // claims.amr comes from the cryptographically verified JWT payload (jose).
+  // userData.user.amr is NOT used — it is not an officially documented field
+  // and may be undefined.
+  if (!checkRecentPasswordAuth(claims)) {
+    return jsonResponse({ error: 'reauth_required' }, 403, corsHeaders)
   }
 
   // ── Admin client (service_role) ──────────────────────────────────────────

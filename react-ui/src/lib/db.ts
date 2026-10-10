@@ -141,6 +141,7 @@ export interface HoneyDBClient {
   updateUserPreferences(prefs: Partial<UserPreferences>): Promise<UserPreferences>
 
   // アカウント削除 (settings)
+  reauthenticateForAccountDeletion(password: string): Promise<{ error: { message: string; code: string } | null }>
   deleteAccount(params: { confirmation: string }): Promise<{ error: { message: string; code: string } | null }>
 
   // データエクスポート (settings)
