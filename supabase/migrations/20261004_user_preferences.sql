@@ -7,8 +7,9 @@
 --   - CREATE OR REPLACE FUNCTION
 --   - Trigger: DO $$ IF NOT EXISTS pg_trigger $$ ブロック
 --   - RLS: ALTER TABLE ENABLE ROW LEVEL SECURITY (冪等)
---   - Policy: DO $$ DROP POLICY IF EXISTS + CREATE POLICY $$ パターン
---     (CREATE POLICY IF NOT EXISTS は PostgreSQL 15/16 では非対応のため使用しない)
+--   - Policy: DROP POLICY IF EXISTS と CREATE POLICY を 1 つの DO ブロック内で
+--     EXECUTE を使い原子的に実行する
+--     (標準の CREATE POLICY 構文に IF NOT EXISTS は存在しないため使用しない)
 --
 -- user_preferences に DELETE ポリシーを設けない理由:
 --   アカウント削除は auth.users を CASCADE DELETE で行うため、
@@ -47,24 +48,38 @@ $$;
 -- RLS
 ALTER TABLE public.user_preferences ENABLE ROW LEVEL SECURITY;
 
--- Policy: DROP IF EXISTS → CREATE パターンで冪等かつ定義変更にも対応
--- (CREATE POLICY IF NOT EXISTS は PostgreSQL 17+ 構文のため PG 15/16 では使用不可)
+-- Policy: DROP と CREATE を 1 つの DO ブロック内で EXECUTE を使い原子的に実行する。
+-- 途中でエラーが発生しても DO ブロック全体が失敗し、ポリシーが欠落した状態にならない。
+-- 標準の CREATE POLICY 構文に IF NOT EXISTS は存在しないため、
+-- DROP POLICY IF EXISTS → EXECUTE 'CREATE POLICY ...' パターンを使用する。
 DO $$
 BEGIN
+  -- SELECT
   DROP POLICY IF EXISTS "user_preferences_select_own" ON public.user_preferences;
+  EXECUTE '
+    CREATE POLICY "user_preferences_select_own"
+      ON public.user_preferences FOR SELECT
+      USING (auth.uid() = user_id)
+  ';
+
+  -- INSERT
   DROP POLICY IF EXISTS "user_preferences_insert_own" ON public.user_preferences;
+  EXECUTE '
+    CREATE POLICY "user_preferences_insert_own"
+      ON public.user_preferences FOR INSERT
+      WITH CHECK (auth.uid() = user_id)
+  ';
+
+  -- UPDATE
   DROP POLICY IF EXISTS "user_preferences_update_own" ON public.user_preferences;
-END $$;
+  EXECUTE '
+    CREATE POLICY "user_preferences_update_own"
+      ON public.user_preferences FOR UPDATE
+      USING (auth.uid() = user_id)
+      WITH CHECK (auth.uid() = user_id)
+  ';
 
-CREATE POLICY "user_preferences_select_own"
-  ON public.user_preferences FOR SELECT
-  USING (auth.uid() = user_id);
-
-CREATE POLICY "user_preferences_insert_own"
-  ON public.user_preferences FOR INSERT
-  WITH CHECK (auth.uid() = user_id);
-
-CREATE POLICY "user_preferences_update_own"
-  ON public.user_preferences FOR UPDATE
-  USING (auth.uid() = user_id)
-  WITH CHECK (auth.uid() = user_id);
+  -- DELETE: 意図的に作成しない
+  -- auth.users の CASCADE DELETE で自動削除されるため不要
+END;
+$$;

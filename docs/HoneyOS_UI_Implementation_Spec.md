@@ -386,7 +386,9 @@ USING (auth.uid() = user_id)
 
 `profiles` のみ `auth.uid() = id`（profiles.id が auth.users.id と対応）。
 
-ポリシー管理は `DROP POLICY IF EXISTS` → `CREATE POLICY` パターンで冪等。`CREATE POLICY IF NOT EXISTS` は PostgreSQL 17 以降の構文であり、Supabase が使用する PostgreSQL 15/16 環境では構文エラーになるため使用しない。
+ポリシー管理は `DROP POLICY IF EXISTS` → `CREATE POLICY` パターンで冪等。標準の `CREATE POLICY` 構文に `IF NOT EXISTS` は存在しないため使用しない（PostgreSQL 18 を含むいかなるバージョンの標準構文にも `CREATE POLICY IF NOT EXISTS` は含まれない）。
+
+`user_preferences` のポリシー操作は DROP と CREATE を同一 DO ブロック内で `EXECUTE` を使い原子的に実行する。途中エラーが発生した場合は DO ブロック全体が失敗し、ポリシーが欠落した状態で終了しない。
 
 **user_preferences の DELETE ポリシー省略について**:  
 `user_preferences` には DELETE ポリシーを設けない。アカウント削除は `auth.users` の CASCADE DELETE で自動処理されるため、アプリ層からの `DELETE` は不要。誤削除リスクを排除するため意図的に省略する。
