@@ -25,11 +25,14 @@ export default defineConfig({
     },
   ],
   use: {
-    baseURL: 'http://127.0.0.1:4173',
+    // The production build uses base: '/HoneyOS/', so preview serves the app
+    // at /HoneyOS/. Playwright resolves bare-path gotos (e.g. './', '?screen=X')
+    // relative to this base URL.
+    baseURL: 'http://127.0.0.1:4173/HoneyOS/',
   },
   webServer: {
-    command: 'npx vite preview --host 127.0.0.1 --port 4173',
-    url: 'http://127.0.0.1:4173',
+    command: 'npx vite preview --host 127.0.0.1 --port 4173 --base /HoneyOS/',
+    url: 'http://127.0.0.1:4173/HoneyOS/',
     reuseExistingServer: false,
     timeout: 30000,
   },

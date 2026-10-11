@@ -99,7 +99,7 @@ test.use({ launchOptions: { executablePath: '/opt/pw-browsers/chromium-1194/chro
 
 test('SCR-034: email send shows success state', async ({ page }) => {
   await page.addInitScript(RECOVERY_SCRIPT)
-  await page.goto('/', { waitUntil: 'networkidle' })
+  await page.goto('./', { waitUntil: 'networkidle' })
   await page.waitForTimeout(500)
   // Auth settles to unauthenticated → login screen
   await page.locator('button', { hasText: 'パスワードを忘れた方' }).click()
@@ -128,7 +128,7 @@ test('SCR-034: email send failure shows error banner', async ({ page }) => {
     '_resetPasswordCalls.push({ email: email, opts: opts });\n      throw new Error(\'Rate limit\');',
   )
   await page.addInitScript(throwScript)
-  await page.goto('/', { waitUntil: 'networkidle' })
+  await page.goto('./', { waitUntil: 'networkidle' })
   await page.waitForTimeout(500)
   await page.locator('button', { hasText: 'パスワードを忘れた方' }).click()
   await page.waitForTimeout(300)
@@ -147,7 +147,7 @@ test('SCR-034: email send failure shows error banner', async ({ page }) => {
 
 test('SCR-034: PASSWORD_RECOVERY event shows password input (Step 3)', async ({ page }) => {
   await page.addInitScript(RECOVERY_SCRIPT)
-  await page.goto('/', { waitUntil: 'networkidle' })
+  await page.goto('./', { waitUntil: 'networkidle' })
   await page.waitForTimeout(500)
 
   await page.evaluate(() =>
@@ -165,7 +165,7 @@ test('SCR-034: PASSWORD_RECOVERY event shows password input (Step 3)', async ({ 
 
 test('SCR-034: update password success calls signOut and returns to login', async ({ page }) => {
   await page.addInitScript(RECOVERY_SCRIPT)
-  await page.goto('/', { waitUntil: 'networkidle' })
+  await page.goto('./', { waitUntil: 'networkidle' })
   await page.waitForTimeout(500)
 
   await page.evaluate(() =>
@@ -199,7 +199,7 @@ test('SCR-034: update password success calls signOut and returns to login', asyn
 
 test('SCR-034: update password failure stays on Step 3', async ({ page }) => {
   await page.addInitScript(RECOVERY_SCRIPT_UPDATE_FAIL)
-  await page.goto('/', { waitUntil: 'networkidle' })
+  await page.goto('./', { waitUntil: 'networkidle' })
   await page.waitForTimeout(500)
 
   await page.evaluate(() =>
@@ -225,7 +225,7 @@ test('SCR-034: update password failure stays on Step 3', async ({ page }) => {
 
 test('SCR-034: SIGNED_IN after PASSWORD_RECOVERY stays on recovery screen', async ({ page }) => {
   await page.addInitScript(RECOVERY_SCRIPT)
-  await page.goto('/', { waitUntil: 'networkidle' })
+  await page.goto('./', { waitUntil: 'networkidle' })
   await page.waitForTimeout(500)
 
   await page.evaluate(() =>
@@ -248,7 +248,7 @@ test('SCR-034: SIGNED_IN after PASSWORD_RECOVERY stays on recovery screen', asyn
 
 test('SCR-034: signOut failure shows error message, not login screen', async ({ page }) => {
   await page.addInitScript(RECOVERY_SCRIPT_SIGN_OUT_FAIL)
-  await page.goto('/', { waitUntil: 'networkidle' })
+  await page.goto('./', { waitUntil: 'networkidle' })
   await page.waitForTimeout(500)
 
   await page.evaluate(() =>
@@ -277,7 +277,7 @@ test('SCR-034: signOut failure shows error message, not login screen', async ({ 
 
 test('SCR-034: SIGNED_OUT after invalid recovery token shows login, not Step 3', async ({ page }) => {
   await page.addInitScript(RECOVERY_SCRIPT)
-  await page.goto('/', { waitUntil: 'networkidle' })
+  await page.goto('./', { waitUntil: 'networkidle' })
   await page.waitForTimeout(500)
 
   // Simulate: SDK tried to process a recovery hash but token was invalid → SIGNED_OUT
@@ -427,7 +427,7 @@ async function goToStep3AndSubmit(
   script: string,
 ): Promise<void> {
   await page.addInitScript(script)
-  await page.goto('/', { waitUntil: 'networkidle' })
+  await page.goto('./', { waitUntil: 'networkidle' })
   await page.waitForTimeout(500)
   await page.evaluate(() =>
     (window as unknown as { __triggerAuthEvent: (e: string, s: unknown) => void })
@@ -495,7 +495,7 @@ test.describe('SCR-034: auth error classification', () => {
 
 test('SCR-034: resetPassword redirectTo uses same origin', async ({ page }) => {
   await page.addInitScript(RECOVERY_SCRIPT)
-  await page.goto('/', { waitUntil: 'networkidle' })
+  await page.goto('./', { waitUntil: 'networkidle' })
   await page.waitForTimeout(500)
   await page.locator('button', { hasText: 'パスワードを忘れた方' }).click()
   await page.waitForTimeout(300)

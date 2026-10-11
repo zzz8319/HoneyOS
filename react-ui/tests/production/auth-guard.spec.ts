@@ -202,12 +202,12 @@ const PROTECTED_MARKERS = ['山田 太郎', 'A-03']
 // ── Protected URL fixtures ──────────────────────────────────────────────────
 
 const PROTECTED_URLS = [
-  { name: 'dashboard',         url: '/?screen=home' },
-  { name: 'settings',          url: '/?screen=settings' },
-  { name: 'colony-detail',     url: '/?screen=colony-detail&colonyId=a3' },
-  { name: 'inspection-record', url: '/?screen=inspection-record' },
-  { name: 'work-history',      url: '/?screen=work-history' },
-  { name: 'report',            url: '/?screen=report' },
+  { name: 'dashboard',         url: '?screen=home' },
+  { name: 'settings',          url: '?screen=settings' },
+  { name: 'colony-detail',     url: '?screen=colony-detail&colonyId=a3' },
+  { name: 'inspection-record', url: '?screen=inspection-record' },
+  { name: 'work-history',      url: '?screen=work-history' },
+  { name: 'report',            url: '?screen=report' },
 ]
 
 // ── Section 1: Unauthenticated session → login shown, protected content hidden
@@ -327,7 +327,7 @@ test.describe('Production auth guard — checking state is shown', () => {
 })();
 `
     await page.addInitScript(slowAuthScript)
-    await page.goto('/?screen=home', { waitUntil: 'domcontentloaded' })
+    await page.goto('?screen=home', { waitUntil: 'domcontentloaded' })
     await page.waitForTimeout(600)
 
     const seen: string[] = await page.evaluate(() => (window as unknown as { __seenCheckingThenLogin: string[] }).__seenCheckingThenLogin)
@@ -346,7 +346,7 @@ test.describe('Production auth guard — HoneyDB uninitialized', () => {
     page.on('pageerror', err => pageErrors.push(err.message))
 
     await page.addInitScript(noHoneyDBScript())
-    await page.goto('/?screen=home', { waitUntil: 'networkidle' })
+    await page.goto('?screen=home', { waitUntil: 'networkidle' })
     await page.waitForTimeout(500)
 
     await expect(page.locator(EMAIL_INPUT)).toBeVisible({ timeout: 5000 })
@@ -361,7 +361,7 @@ test.describe('Production auth guard — getSession fails', () => {
     page.on('pageerror', err => pageErrors.push(err.message))
 
     await page.addInitScript(failingSessionScript())
-    await page.goto('/?screen=settings', { waitUntil: 'networkidle' })
+    await page.goto('?screen=settings', { waitUntil: 'networkidle' })
     await page.waitForTimeout(500)
 
     await expect(page.locator(EMAIL_INPUT)).toBeVisible({ timeout: 5000 })
@@ -379,7 +379,7 @@ test.describe('Production auth guard — authenticated session', () => {
     page.on('pageerror', err => pageErrors.push(err.message))
 
     await page.addInitScript(authScript())
-    await page.goto('/', { waitUntil: 'networkidle' })
+    await page.goto('./', { waitUntil: 'networkidle' })
     await page.waitForTimeout(500)
 
     // Should NOT show login
@@ -401,7 +401,7 @@ test.describe('Production auth guard — authenticated session', () => {
     page.on('pageerror', err => pageErrors.push(err.message))
 
     await page.addInitScript(authScript())
-    await page.goto('/?screen=settings', { waitUntil: 'networkidle' })
+    await page.goto('?screen=settings', { waitUntil: 'networkidle' })
     await page.waitForTimeout(500)
 
     // getSession was called (auth was NOT bypassed by ?screen=)

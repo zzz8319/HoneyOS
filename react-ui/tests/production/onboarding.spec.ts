@@ -97,7 +97,7 @@ const FAILING_PREFS_SCRIPT = NEW_USER_SCRIPT.replace(
 
 test('Onboarding: new user (completed=false) sees SCR-003, not home', async ({ page }) => {
   await page.addInitScript(NEW_USER_SCRIPT)
-  await page.goto('/', { waitUntil: 'networkidle' })
+  await page.goto('./', { waitUntil: 'networkidle' })
   await page.waitForTimeout(800)
 
   // Should NOT be on login (email input absent)
@@ -112,7 +112,7 @@ test('Onboarding: new user (completed=false) sees SCR-003, not home', async ({ p
 
 test('Onboarding: existing user (completed=true) does not see onboarding', async ({ page }) => {
   await page.addInitScript(EXISTING_USER_SCRIPT)
-  await page.goto('/', { waitUntil: 'networkidle' })
+  await page.goto('./', { waitUntil: 'networkidle' })
   await page.waitForTimeout(800)
 
   // Should NOT be on login
@@ -126,7 +126,7 @@ test('Onboarding: existing user (completed=true) does not see onboarding', async
 
 test('Onboarding: PASSWORD_RECOVERY bypasses onboarding check', async ({ page }) => {
   await page.addInitScript(NEW_USER_SCRIPT)
-  await page.goto('/', { waitUntil: 'networkidle' })
+  await page.goto('./', { waitUntil: 'networkidle' })
   await page.waitForTimeout(500)
 
   // Trigger PASSWORD_RECOVERY event
@@ -146,7 +146,7 @@ test('Onboarding: PASSWORD_RECOVERY bypasses onboarding check', async ({ page })
 
 test('Onboarding: DB failure shows error state, not home or onboarding-1', async ({ page }) => {
   await page.addInitScript(FAILING_PREFS_SCRIPT)
-  await page.goto('/', { waitUntil: 'networkidle' })
+  await page.goto('./', { waitUntil: 'networkidle' })
   await page.waitForTimeout(800)
 
   // Should NOT be on login
@@ -225,7 +225,7 @@ test('Onboarding: retry button after DB failure re-triggers check', async ({ pag
 `
 
   await page.addInitScript(retryScript)
-  await page.goto('/', { waitUntil: 'networkidle' })
+  await page.goto('./', { waitUntil: 'networkidle' })
   await page.waitForTimeout(800)
 
   // Should show error state
@@ -244,7 +244,7 @@ test('Onboarding: retry button after DB failure re-triggers check', async ({ pag
 
 test('Onboarding: no home flash before check completes (slow prefs)', async ({ page }) => {
   await page.addInitScript(SLOW_PREFS_SCRIPT)
-  await page.goto('/', { waitUntil: 'domcontentloaded' })
+  await page.goto('./', { waitUntil: 'domcontentloaded' })
   // At 100ms prefs haven't resolved (200ms delay) — the app must show the
   // onboarding-checking spinner, not home or the login form.
   await page.waitForTimeout(100)
@@ -260,7 +260,7 @@ test('Onboarding: no home flash before check completes (slow prefs)', async ({ p
 
 test('Onboarding: SIGNED_OUT then new SIGNED_IN re-fetches onboarding', async ({ page }) => {
   await page.addInitScript(EXISTING_USER_SCRIPT)
-  await page.goto('/', { waitUntil: 'networkidle' })
+  await page.goto('./', { waitUntil: 'networkidle' })
   await page.waitForTimeout(800)
 
   // User is in completed state (no onboarding shown)
@@ -279,7 +279,7 @@ test('Onboarding: SIGNED_OUT then new SIGNED_IN re-fetches onboarding', async ({
 
 test('Onboarding: TOKEN_REFRESHED does not change onboarding state', async ({ page }) => {
   await page.addInitScript(EXISTING_USER_SCRIPT)
-  await page.goto('/', { waitUntil: 'networkidle' })
+  await page.goto('./', { waitUntil: 'networkidle' })
   await page.waitForTimeout(800)
 
   // Existing user: completed, not on onboarding
@@ -303,7 +303,7 @@ test('Onboarding: complete flow success → home shown, BottomNav visible', asyn
   // Variant of NEW_USER_SCRIPT where updateUserPreferences resolves successfully
   const successScript = NEW_USER_SCRIPT
   await page.addInitScript(successScript)
-  await page.goto('/', { waitUntil: 'networkidle' })
+  await page.goto('./', { waitUntil: 'networkidle' })
   await page.waitForTimeout(800)
 
   // SCR-003 shown (new user)
@@ -343,7 +343,7 @@ test('Onboarding: SCR-005 complete button failure → stays on error, no home', 
     'updateUserPreferences: async function(updates) { _prefsUpdates.push(updates); throw new Error(\'DB write failed\'); },',
   )
   await page.addInitScript(failScript)
-  await page.goto('/', { waitUntil: 'networkidle' })
+  await page.goto('./', { waitUntil: 'networkidle' })
   await page.waitForTimeout(800)
 
   // New user sees SCR-003 (onboarding step 1)
@@ -359,7 +359,7 @@ test('Onboarding D-2 regression: theme update payload does not contain onboardin
   // Existing user (onboarding completed), getUserPreferences returns completed=true
   const captureScript = EXISTING_USER_SCRIPT
   await page.addInitScript(captureScript)
-  await page.goto('/', { waitUntil: 'networkidle' })
+  await page.goto('./', { waitUntil: 'networkidle' })
   await page.waitForTimeout(800)
 
   // Existing user: no onboarding shown
@@ -386,7 +386,7 @@ test('Onboarding D-2 regression: theme update payload does not contain onboardin
 
 test('Onboarding: BottomNav absent while onboarding required, visible after completed', async ({ page }) => {
   await page.addInitScript(NEW_USER_SCRIPT)
-  await page.goto('/', { waitUntil: 'networkidle' })
+  await page.goto('./', { waitUntil: 'networkidle' })
   await page.waitForTimeout(800)
 
   // New user → onboarding required → BottomNav must be absent

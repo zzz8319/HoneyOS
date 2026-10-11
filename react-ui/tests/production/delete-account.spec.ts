@@ -152,7 +152,7 @@ async function fillDeleteDialog(page: import('@playwright/test').Page, opts: { p
 
 test('A: successful account deletion navigates to login screen', async ({ page }) => {
   await page.addInitScript(buildScript({ reauthResult: 'success', deleteAccountResult: 'success' }))
-  await page.goto('/?screen=settings&tab=settings', { waitUntil: 'networkidle' })
+  await page.goto('?screen=settings&tab=settings', { waitUntil: 'networkidle' })
 
   await page.evaluate(() => {
     ;(window as unknown as { __triggerAuthEvent: (e: string, s: unknown) => void }).__triggerAuthEvent('SIGNED_IN', { user: { id: 'test-user-123', email: 'test@example.com' }, access_token: 'fake-token' })
@@ -181,7 +181,7 @@ test('A: successful account deletion navigates to login screen', async ({ page }
 
 test('A2: phrase filled but no password → delete button disabled', async ({ page }) => {
   await page.addInitScript(buildScript({ reauthResult: 'success', deleteAccountResult: 'success' }))
-  await page.goto('/?screen=settings&tab=settings', { waitUntil: 'networkidle' })
+  await page.goto('?screen=settings&tab=settings', { waitUntil: 'networkidle' })
   await page.evaluate(() => {
     (window as unknown as { __triggerAuthEvent: (e: string, s: unknown) => void }).__triggerAuthEvent('SIGNED_IN', { user: { id: 'test-user-123', email: 'test@example.com' }, access_token: 'fake-token' })
   })
@@ -200,7 +200,7 @@ test('A2: phrase filled but no password → delete button disabled', async ({ pa
 
 test('A3: password filled but wrong phrase → delete button disabled', async ({ page }) => {
   await page.addInitScript(buildScript({ reauthResult: 'success', deleteAccountResult: 'success' }))
-  await page.goto('/?screen=settings&tab=settings', { waitUntil: 'networkidle' })
+  await page.goto('?screen=settings&tab=settings', { waitUntil: 'networkidle' })
   await page.evaluate(() => {
     (window as unknown as { __triggerAuthEvent: (e: string, s: unknown) => void }).__triggerAuthEvent('SIGNED_IN', { user: { id: 'test-user-123', email: 'test@example.com' }, access_token: 'fake-token' })
   })
@@ -219,7 +219,7 @@ test('A3: password filled but wrong phrase → delete button disabled', async ({
 
 test('A4: phrase + password both filled → delete button enabled', async ({ page }) => {
   await page.addInitScript(buildScript({ reauthResult: 'success', deleteAccountResult: 'success' }))
-  await page.goto('/?screen=settings&tab=settings', { waitUntil: 'networkidle' })
+  await page.goto('?screen=settings&tab=settings', { waitUntil: 'networkidle' })
   await page.evaluate(() => {
     (window as unknown as { __triggerAuthEvent: (e: string, s: unknown) => void }).__triggerAuthEvent('SIGNED_IN', { user: { id: 'test-user-123', email: 'test@example.com' }, access_token: 'fake-token' })
   })
@@ -236,7 +236,7 @@ test('A4: phrase + password both filled → delete button enabled', async ({ pag
 
 test('B: delete API failure keeps dialog open with error message', async ({ page }) => {
   await page.addInitScript(buildScript({ reauthResult: 'success', deleteAccountResult: 'fail' }))
-  await page.goto('/?screen=settings&tab=settings', { waitUntil: 'networkidle' })
+  await page.goto('?screen=settings&tab=settings', { waitUntil: 'networkidle' })
 
   await page.evaluate(() => {
     (window as unknown as { __triggerAuthEvent: (e: string, s: unknown) => void }).__triggerAuthEvent('SIGNED_IN', { user: { id: 'test-user-123', email: 'test@example.com' }, access_token: 'fake-token' })
@@ -262,7 +262,7 @@ test('B: delete API failure keeps dialog open with error message', async ({ page
 
 test('B2: reauth failure shows error, deleteAccount not called', async ({ page }) => {
   await page.addInitScript(buildScript({ reauthResult: 'fail', deleteAccountResult: 'success' }))
-  await page.goto('/?screen=settings&tab=settings', { waitUntil: 'networkidle' })
+  await page.goto('?screen=settings&tab=settings', { waitUntil: 'networkidle' })
 
   await page.evaluate(() => {
     (window as unknown as { __triggerAuthEvent: (e: string, s: unknown) => void }).__triggerAuthEvent('SIGNED_IN', { user: { id: 'test-user-123', email: 'test@example.com' }, access_token: 'fake-token' })
@@ -297,7 +297,7 @@ test('C: offline blocks deletion', async ({ page }) => {
     Object.defineProperty(navigator, 'onLine', { get: () => false, configurable: true })
   })
 
-  await page.goto('/?screen=settings&tab=settings', { waitUntil: 'networkidle' })
+  await page.goto('?screen=settings&tab=settings', { waitUntil: 'networkidle' })
   await page.evaluate(() => {
     (window as unknown as { __triggerAuthEvent: (e: string, s: unknown) => void }).__triggerAuthEvent('SIGNED_IN', { user: { id: 'test-user-123', email: 'test@example.com' }, access_token: 'fake-token' })
   })
@@ -323,7 +323,7 @@ test('C: offline blocks deletion', async ({ page }) => {
 
 test('D: reauth_required from Edge Function shows re-login message', async ({ page }) => {
   await page.addInitScript(buildScript({ reauthResult: 'success', deleteAccountResult: 'reauth_required' }))
-  await page.goto('/?screen=settings&tab=settings', { waitUntil: 'networkidle' })
+  await page.goto('?screen=settings&tab=settings', { waitUntil: 'networkidle' })
 
   await page.evaluate(() => {
     (window as unknown as { __triggerAuthEvent: (e: string, s: unknown) => void }).__triggerAuthEvent('SIGNED_IN', { user: { id: 'test-user-123', email: 'test@example.com' }, access_token: 'fake-token' })
@@ -345,7 +345,7 @@ test('D: reauth_required from Edge Function shows re-login message', async ({ pa
 
 test('D2: reauth_required from reauthenticate shows re-login message', async ({ page }) => {
   await page.addInitScript(buildScript({ reauthResult: 'reauth_required', deleteAccountResult: 'success' }))
-  await page.goto('/?screen=settings&tab=settings', { waitUntil: 'networkidle' })
+  await page.goto('?screen=settings&tab=settings', { waitUntil: 'networkidle' })
 
   await page.evaluate(() => {
     (window as unknown as { __triggerAuthEvent: (e: string, s: unknown) => void }).__triggerAuthEvent('SIGNED_IN', { user: { id: 'test-user-123', email: 'test@example.com' }, access_token: 'fake-token' })
@@ -365,7 +365,7 @@ test('D2: reauth_required from reauthenticate shows re-login message', async ({ 
 
 test('E: double-submit prevention calls deleteAccount only once', async ({ page }) => {
   await page.addInitScript(buildScript({ reauthResult: 'success', deleteAccountResult: 'success', deleteAccountDelayMs: 800 }))
-  await page.goto('/?screen=settings&tab=settings', { waitUntil: 'networkidle' })
+  await page.goto('?screen=settings&tab=settings', { waitUntil: 'networkidle' })
 
   await page.evaluate(() => {
     (window as unknown as { __triggerAuthEvent: (e: string, s: unknown) => void }).__triggerAuthEvent('SIGNED_IN', { user: { id: 'test-user-123', email: 'test@example.com' }, access_token: 'fake-token' })

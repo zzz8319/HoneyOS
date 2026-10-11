@@ -117,7 +117,7 @@ const UNAUTH_LIFECYCLE_SCRIPT = `
 
 test('SIGNED_OUT: dashboard disappears, login shown', async ({ page }) => {
   await page.addInitScript(AUTH_LIFECYCLE_SCRIPT)
-  await page.goto('/', { waitUntil: 'networkidle' })
+  await page.goto('./', { waitUntil: 'networkidle' })
   await page.waitForTimeout(500)
   // Should be authenticated (no login)
   await expect(page.locator('input[type="email"]')).not.toBeVisible()
@@ -134,7 +134,7 @@ test('SIGNED_OUT: dashboard disappears, login shown', async ({ page }) => {
 
 test('cross-tab logout: SIGNED_OUT shows login screen', async ({ page }) => {
   await page.addInitScript(AUTH_LIFECYCLE_SCRIPT)
-  await page.goto('/', { waitUntil: 'networkidle' })
+  await page.goto('./', { waitUntil: 'networkidle' })
   await page.waitForTimeout(500)
   await expect(page.locator('input[type="email"]')).not.toBeVisible()
   // Simulate another tab signing out
@@ -148,7 +148,7 @@ test('cross-tab logout: SIGNED_OUT shows login screen', async ({ page }) => {
 
 test('TOKEN_REFRESHED: current screen maintained, no navigation to login', async ({ page }) => {
   await page.addInitScript(AUTH_LIFECYCLE_SCRIPT)
-  await page.goto('/', { waitUntil: 'networkidle' })
+  await page.goto('./', { waitUntil: 'networkidle' })
   await page.waitForTimeout(500)
   // Authenticated — not on login
   await expect(page.locator('input[type="email"]')).not.toBeVisible()
@@ -165,7 +165,7 @@ test('TOKEN_REFRESHED: current screen maintained, no navigation to login', async
 
 test('SIGNED_IN: login screen transitions to app', async ({ page }) => {
   await page.addInitScript(UNAUTH_LIFECYCLE_SCRIPT)
-  await page.goto('/', { waitUntil: 'networkidle' })
+  await page.goto('./', { waitUntil: 'networkidle' })
   await page.waitForTimeout(500)
   // Should be on login
   await expect(page.locator('input[type="email"]')).toBeVisible()
@@ -182,7 +182,7 @@ test('SIGNED_IN: login screen transitions to app', async ({ page }) => {
 
 test('USER_UPDATED: current screen maintained, no navigation to login', async ({ page }) => {
   await page.addInitScript(AUTH_LIFECYCLE_SCRIPT)
-  await page.goto('/', { waitUntil: 'networkidle' })
+  await page.goto('./', { waitUntil: 'networkidle' })
   await page.waitForTimeout(500)
   await expect(page.locator('input[type="email"]')).not.toBeVisible()
   await page.evaluate(() =>
@@ -196,7 +196,7 @@ test('USER_UPDATED: current screen maintained, no navigation to login', async ({
 
 test('listener cleanup: unsubscribe called on reload', async ({ page }) => {
   await page.addInitScript(AUTH_LIFECYCLE_SCRIPT)
-  await page.goto('/', { waitUntil: 'networkidle' })
+  await page.goto('./', { waitUntil: 'networkidle' })
   await page.waitForTimeout(500)
   // Reload triggers unmount → unsubscribe
   await page.reload({ waitUntil: 'networkidle' })
@@ -212,7 +212,7 @@ test('listener cleanup: unsubscribe called on reload', async ({ page }) => {
 
 test('production: getSession called exactly once on startup', async ({ page }) => {
   await page.addInitScript(AUTH_LIFECYCLE_SCRIPT)
-  await page.goto('/', { waitUntil: 'networkidle' })
+  await page.goto('./', { waitUntil: 'networkidle' })
   await page.waitForTimeout(500)
   const count = await page.evaluate(() => (window as unknown as { __getSessionCalls?: number }).__getSessionCalls ?? 0)
   expect(count).toBe(1)

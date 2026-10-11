@@ -67,7 +67,7 @@ const MOCK_ONLY_STRINGS = ['宮田養蜂場', '川東養蜂場']
 
 async function goTo(page: Page, screen: string, state: string) {
   await page.addInitScript(AUTH_EMPTY_SCRIPT)
-  await page.goto(`/?screen=${screen}&state=${state}`, { waitUntil: 'networkidle' })
+  await page.goto(`?screen=${screen}&state=${state}`, { waitUntil: 'networkidle' })
   await page.waitForTimeout(300)
   // Auth guard must not have redirected to login
   const heading = await page.getByRole('heading', { level: 1 }).filter({ hasText: 'ログイン' })
