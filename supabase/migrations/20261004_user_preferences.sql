@@ -1,4 +1,21 @@
 -- user_preferences table
+-- =============================================================================
+-- Migration: 20261004_user_preferences.sql
+--
+-- 冪等性設計:
+--   - CREATE TABLE IF NOT EXISTS
+--   - CREATE OR REPLACE FUNCTION
+--   - Trigger: DO $$ IF NOT EXISTS pg_trigger $$ ブロック
+--   - RLS: ALTER TABLE ENABLE ROW LEVEL SECURITY (冪等)
+--   - Policy: DO $$ DROP POLICY IF EXISTS + CREATE POLICY $$ パターン
+--     (CREATE POLICY IF NOT EXISTS は PostgreSQL 15/16 では非対応のため使用しない)
+--
+-- user_preferences に DELETE ポリシーを設けない理由:
+--   アカウント削除は auth.users を CASCADE DELETE で行うため、
+--   user_preferences 行はアプリ層からの DELETE を必要とせず
+--   CASCADE で自動削除される。誤削除を防ぐため DELETE ポリシーは意図的に省略する。
+-- =============================================================================
+
 CREATE TABLE IF NOT EXISTS public.user_preferences (
   user_id     uuid        PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   theme       text        NOT NULL DEFAULT 'system' CHECK (theme IN ('light', 'dark', 'system')),
@@ -30,15 +47,24 @@ $$;
 -- RLS
 ALTER TABLE public.user_preferences ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY IF NOT EXISTS "user_preferences_select_own"
+-- Policy: DROP IF EXISTS → CREATE パターンで冪等かつ定義変更にも対応
+-- (CREATE POLICY IF NOT EXISTS は PostgreSQL 17+ 構文のため PG 15/16 では使用不可)
+DO $$
+BEGIN
+  DROP POLICY IF EXISTS "user_preferences_select_own" ON public.user_preferences;
+  DROP POLICY IF EXISTS "user_preferences_insert_own" ON public.user_preferences;
+  DROP POLICY IF EXISTS "user_preferences_update_own" ON public.user_preferences;
+END $$;
+
+CREATE POLICY "user_preferences_select_own"
   ON public.user_preferences FOR SELECT
   USING (auth.uid() = user_id);
 
-CREATE POLICY IF NOT EXISTS "user_preferences_insert_own"
+CREATE POLICY "user_preferences_insert_own"
   ON public.user_preferences FOR INSERT
   WITH CHECK (auth.uid() = user_id);
 
-CREATE POLICY IF NOT EXISTS "user_preferences_update_own"
+CREATE POLICY "user_preferences_update_own"
   ON public.user_preferences FOR UPDATE
   USING (auth.uid() = user_id)
   WITH CHECK (auth.uid() = user_id);
