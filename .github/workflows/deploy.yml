@@ -3,20 +3,15 @@ name: Deploy React UI to GitHub Pages
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
-
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: pages
-  cancel-in-progress: false
 
 jobs:
   ci:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: react-ui
@@ -49,7 +44,7 @@ jobs:
       - name: Security scan — no secrets in dist
         run: |
           set -e
-          patterns=(service_role SUPABASE_SERVICE_ROLE_KEY SUPABASE_JWT_SECRET JWT_SECRET "BEGIN PRIVATE KEY")
+          patterns=("service_role" "SUPABASE_SERVICE_ROLE_KEY" "SUPABASE_JWT_SECRET" "JWT_SECRET" "BEGIN PRIVATE KEY")
           for pat in "${patterns[@]}"; do
             if grep -r "$pat" dist/ --include='*.js' --include='*.html' -l 2>/dev/null | grep -q .; then
               echo "FAIL: found '$pat' in dist/" >&2
@@ -58,14 +53,26 @@ jobs:
           done
           echo "Security scan passed."
 
+      - name: Smoke tests
+        run: npm run test:smoke
+
       - name: Upload Pages artifact
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@v3
         with:
           path: react-ui/dist
 
   deploy:
     needs: ci
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    concurrency:
+      group: pages
+      cancel-in-progress: false
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

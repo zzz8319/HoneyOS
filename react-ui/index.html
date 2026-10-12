@@ -22,13 +22,18 @@
     -->
     <script>
     (function () {
-      var existing = window.HoneyDB;
-      if (!existing) return;
+      // If window.HoneyDB is already defined (data value OR getter-only accessor),
+      // freeze it with a no-op setter so supabase_client.js assignment does not
+      // throw in strict mode.  If no descriptor exists, let supabase_client.js
+      // initialize the property normally.
+      var desc = Object.getOwnPropertyDescriptor(window, 'HoneyDB');
+      if (!desc) return;
+      var snap = window.HoneyDB;
       Object.defineProperty(window, 'HoneyDB', {
         configurable: true,
         enumerable: true,
-        get: function () { return existing; },
-        set: function () { /* no-op: preserve test mock */ },
+        get: function () { return snap; },
+        set: function () { /* no-op: preserve injected state */ },
       });
     })();
     </script>
