@@ -35,6 +35,13 @@ async function injectHoneyDB(
   )
 }
 
+/** window.HoneyDB を undefined に固定する（supabase_client.js が上書きしないよう guard が凍結する） */
+async function noHoneyDB(page: import('@playwright/test').Page): Promise<void> {
+  await page.addInitScript(() => {
+    ;(window as unknown as Record<string, unknown>).HoneyDB = undefined
+  })
+}
+
 /** localStorage にユーザープリファレンスキャッシュを設定 */
 async function setLocalStoragePrefs(
   page: import('@playwright/test').Page,
@@ -163,8 +170,9 @@ test('SCR-012 default mode: different-user cache is ignored → falls back to DB
 test('SCR-012 default mode: offline with same-user cache → use cache value', async ({ page }) => {
   // 同一ユーザーのキャッシュを設定（ここではユーザーIDを任意に設定）
   await setLocalStoragePrefs(page, 'user-self', 'ratio')
-  // HoneyDB は注入しない（window.HoneyDB undefined → getDB() returns null → 即座に fallback）
-  // キャッシュが有効なため DB フェッチは実行されない
+  // HoneyDB を undefined に固定（supabase_client.js が設定しても guard が上書きを防ぐ）
+  // → getDB() returns null → 即座に localStorage fallback
+  await noHoneyDB(page)
   await page.goto('/?screen=inspection-record&devbar=0')
   await waitForInspectionRecord(page)
 

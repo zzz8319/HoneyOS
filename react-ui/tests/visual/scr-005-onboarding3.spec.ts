@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { injectMockHoneyDB } from './helpers/mockHoneyDB'
 
 const BASE = 'http://localhost:5173/?screen=onboarding-3&devbar=0'
 
@@ -241,6 +242,7 @@ test('SCR-005 onboarding3 — 副ボタンでダッシュボードへ', async ({
 })
 
 test('SCR-005 onboarding3 — SCR-004の保存完了でSCR-005へ遷移', async ({ page }) => {
+  await injectMockHoneyDB(page)
   await page.goto('http://localhost:5173/?screen=onboarding-2&devbar=0&state=filled')
   await page.waitForLoadState('networkidle')
   await page.getByRole('button', { name: '設定して次へ' }).click()
