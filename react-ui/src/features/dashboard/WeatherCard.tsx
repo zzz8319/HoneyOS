@@ -95,10 +95,38 @@ function Sparkline({ values }: SparklineProps) {
 }
 
 interface WeatherCardProps {
-  data: WeatherData
+  data: WeatherData | null
 }
 
 export function WeatherCard({ data }: WeatherCardProps) {
+  if (!data) {
+    return (
+      <div className={styles.card}>
+        <div className={styles.header}>
+          <span className={styles.cardTitle}>内検コンディション</span>
+          <span className={styles.fetchTime}>未取得</span>
+        </div>
+        <div className={styles.tempRow}>
+          <div className={styles.tempBlock}>
+            <span className={styles.weatherEmoji} aria-hidden>☀️</span>
+            <span className={styles.tempVal}>—</span>
+          </div>
+          <div className={styles.metaBlock}>
+            <div className={styles.metaItem}>
+              <span className={styles.metaEmoji} aria-hidden>💧</span>
+              <span className={styles.metaKey}>湿度</span>
+              <span className={styles.metaVal}>—</span>
+            </div>
+            <div className={styles.metaItem}>
+              <span className={styles.metaEmoji} aria-hidden>💨</span>
+              <span className={styles.metaKey}>風速</span>
+              <span className={styles.metaVal}>—</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
   const { tempC, humidity, windMs, tempHistory, inspectable, inspectReason, fetchedAt } = data
   return (
     <div className={styles.card}>

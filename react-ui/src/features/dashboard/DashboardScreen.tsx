@@ -41,12 +41,19 @@ export function DashboardScreen({
       Promise.resolve().then(() => setDataError(true))
       return
     }
+    const loaders: Promise<unknown>[] = [db.loadFarms(), db.loadColonies(), db.loadInspRecords()]
+    if (db.loadWorkRecords) loaders.push(db.loadWorkRecords())
     let cancelled = false
-    Promise.all([db.loadFarms(), db.loadColonies(), db.loadInspRecords()])
-      .then(([farms, colonies, inspRecords]) => {
+    Promise.all(loaders)
+      .then(([farms, colonies, inspRecords, workRecords]) => {
         if (cancelled) return
         setDataError(false)
-        setDashData(buildDashboardData(farms as unknown[], colonies as unknown[], inspRecords as unknown[]))
+        setDashData(buildDashboardData(
+          farms as unknown[],
+          colonies as unknown[],
+          inspRecords as unknown[],
+          (workRecords ?? []) as unknown[],
+        ))
       })
       .catch(() => {
         if (!cancelled) setDataError(true)
@@ -76,7 +83,7 @@ export function DashboardScreen({
       )}
       {viewState === 'offline' && (
         <ErrorBanner
-          message={`オフラインです。最終同期: ${weather?.fetchedAt ?? '—'}`}
+          message="オフラインです。最終同期: —"
           severity="minor"
         />
       )}
@@ -171,7 +178,7 @@ export function DashboardScreen({
         {(viewState === 'normal' || viewState === 'offline') && dashData && (
           <>
             <section aria-label="内検コンディション">
-              <WeatherCard data={weather!} />
+              <WeatherCard data={weather ?? null} />
             </section>
             <section aria-label="蜂群の強さ">
               <ColonySummaryCard data={colonies!} onMethodClick={onMethodClick} />

@@ -43,7 +43,7 @@ export interface WeeklyStats {
 export interface DashboardData {
   farmName: string
   alertColonyCount: number
-  weather: WeatherData
+  weather: WeatherData | null
   colonies: ColonySummary
   weekly: WeeklyStats
 }
