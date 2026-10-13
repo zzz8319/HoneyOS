@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Search,
   MoreVertical,
@@ -16,9 +16,36 @@ import {
 } from 'lucide-react'
 import { BottomNav } from '../../components'
 import type { TabId } from '../../components'
-import type { WorkListViewState, WorkTask, TaskIconType } from './types'
-import { MOCK_TASKS } from './mockData'
+import type { WorkListViewState, WorkTask, TaskIconType, TaskStatus } from './types'
 import styles from './WorkListScreen.module.css'
+
+function toTaskStatus(due: string | undefined, completed: boolean): TaskStatus {
+  if (completed) return 'completed'
+  if (!due) return 'upcoming'
+  const today = new Date(); today.setHours(0, 0, 0, 0)
+  const d = new Date(due); d.setHours(0, 0, 0, 0)
+  const diff = Math.round((d.getTime() - today.getTime()) / 86400000)
+  if (diff < 0) return 'overdue'
+  if (diff === 0) return 'today'
+  if (diff === 1) return 'tomorrow'
+  return 'upcoming'
+}
+
+function mapTask(raw: Record<string, unknown>): WorkTask {
+  return {
+    id: String(raw.id ?? ''),
+    title: String(raw.title ?? raw.name ?? ''),
+    tag: String(raw.colony_name ?? raw.apiary_name ?? raw.tag ?? ''),
+    note: raw.note ? String(raw.note) : undefined,
+    dueDate: String(raw.due_date ?? raw.dueDate ?? ''),
+    status: toTaskStatus(
+      raw.due_date as string | undefined,
+      Boolean(raw.completed_at ?? raw.completed),
+    ),
+    iconType: (raw.icon_type ?? raw.iconType ?? 'inspection') as TaskIconType,
+    completedAt: raw.completed_at ? String(raw.completed_at) : undefined,
+  }
+}
 
 interface Props {
   viewState: WorkListViewState
@@ -217,18 +244,36 @@ export function WorkListScreen({ viewState, onTabChange, onAddTask }: Props) {
     viewState === 'updating-completion' ? 'task-2' : null,
   )
   const [completedIds, setCompletedIds] = useState<Set<string>>(new Set())
+  const [dbTasks, setDbTasks] = useState<WorkTask[] | null>(null)
 
-  const handleToggle = (id: string) => {
+  useEffect(() => {
+    if (viewState === 'loading' || viewState === 'error' || viewState === 'offline-no-cache') return
+    const db = window.HoneyDB
+    if (!db?.loadTasks) return
+    let cancelled = false
+    db.loadTasks().then(raw => {
+      if (cancelled) return
+      setDbTasks((raw as Record<string, unknown>[]).map(mapTask))
+    }).catch(() => { if (!cancelled) setDbTasks([]) })
+    return () => { cancelled = true }
+  }, [viewState])
+
+  const handleToggle = async (id: string) => {
     if (updatingId) return
     setUpdatingId(id)
-    setTimeout(() => {
-      setUpdatingId(null)
+    try {
+      const db = window.HoneyDB
+      if (db?.completeTask) await db.completeTask(id)
       setCompletedIds(prev => {
         const next = new Set(prev)
         if (next.has(id)) next.delete(id); else next.add(id)
         return next
       })
-    }, 800)
+    } catch {
+      // keep current state on failure
+    } finally {
+      setUpdatingId(null)
+    }
   }
 
   const noop = () => {}
@@ -295,7 +340,7 @@ export function WorkListScreen({ viewState, onTabChange, onAddTask }: Props) {
   }
 
   // ── Normal / filtered states ────────────────────────────────
-  const tasks = MOCK_TASKS.map(t =>
+  const tasks = (dbTasks ?? []).map(t =>
     completedIds.has(t.id) ? { ...t, status: 'completed' as const } : t,
   )
 

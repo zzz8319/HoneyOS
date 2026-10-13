@@ -11,7 +11,6 @@ import {
 import { PrimaryButton } from '../../components'
 import { HiveStackIcon } from '../../components/icons'
 import type { ColonyCreateViewState, Apiary } from './types'
-import { MOCK_APIARIES } from './mockData'
 import styles from './ColonyCreateScreen.module.css'
 
 interface Props {
@@ -70,10 +69,7 @@ export function ColonyCreateScreen({
         const farms = await window.HoneyDB.loadFarms() as Array<{ id: string; name: string }>
         setApiaries(farms.map(f => ({ id: String(f.id), name: f.name })))
       } else {
-        // dev/test fallback
-        setApiaries(
-          isNoApiary || isApiaryLoadError ? [] : MOCK_APIARIES,
-        )
+        setApiaries([])
         if (isApiaryLoadError) setApiaryLoadError(true)
       }
     } catch {

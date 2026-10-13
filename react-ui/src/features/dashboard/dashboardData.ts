@@ -1,10 +1,10 @@
-import type { DashboardData, ColonySummaryItem, ColonyStatus } from './mockData'
-import { mockDashboard } from './mockData'
+import type { DashboardData, ColonySummaryItem, ColonyStatus, WeeklyStats } from './mockData'
 
 interface RawFarm   { id: string; name: string; [k: string]: unknown }
 interface RawColony { id: string; name: string; farmId: string | null; [k: string]: unknown }
 interface RawFrame  { bee: number; brood: number; honey: number }
 interface RawInsp   { id: string; colony: string; date: string; frames?: RawFrame[]; [k: string]: unknown }
+interface RawWork   { type?: string; date?: string; yieldKg?: number; [k: string]: unknown }
 
 function avgComp(frames: RawFrame[]) {
   const filled = frames.filter(f => f && (f.bee + f.brood + f.honey) > 0)
@@ -27,14 +27,69 @@ function colonyStatus(sc: number): ColonyStatus {
   return 'danger'
 }
 
+function buildWeeklyStats(workRecords: RawWork[]): WeeklyStats {
+  const now = new Date()
+  const weekStart = new Date(now)
+  weekStart.setDate(now.getDate() - now.getDay())
+  weekStart.setHours(0, 0, 0, 0)
+  const prevWeekStart = new Date(weekStart)
+  prevWeekStart.setDate(weekStart.getDate() - 7)
+
+  const harvests = workRecords.filter(r => r.type === 'harvest')
+  const thisWeek = harvests.filter(r => r.date && new Date(r.date) >= weekStart)
+  const prevWeek = harvests.filter(r => {
+    if (!r.date) return false
+    const d = new Date(r.date)
+    return d >= prevWeekStart && d < weekStart
+  })
+
+  const thisKg = thisWeek.reduce((s, r) => s + (Number(r.yieldKg) || 0), 0)
+  const prevKg = prevWeek.reduce((s, r) => s + (Number(r.yieldKg) || 0), 0)
+  const honeyPrevPct = prevKg > 0 ? Math.round(((thisKg - prevKg) / prevKg) * 100) : 0
+
+  const allThisWeek = workRecords.filter(r => r.date && new Date(r.date) >= weekStart)
+  const allPrevWeek = workRecords.filter(r => {
+    if (!r.date) return false
+    const d = new Date(r.date)
+    return d >= prevWeekStart && d < weekStart
+  })
+
+  const label = (d: Date) => `${d.getMonth() + 1}/${d.getDate()}`
+  const periodEnd = new Date(weekStart)
+  periodEnd.setDate(weekStart.getDate() + 6)
+
+  const historyWeeks = 4
+  const honeyHistory = Array.from({ length: historyWeeks }, (_, i) => {
+    const ws = new Date(weekStart)
+    ws.setDate(weekStart.getDate() - (historyWeeks - 1 - i) * 7)
+    const we = new Date(ws)
+    we.setDate(ws.getDate() + 7)
+    const kg = harvests
+      .filter(r => r.date && new Date(r.date) >= ws && new Date(r.date) < we)
+      .reduce((s, r) => s + (Number(r.yieldKg) || 0), 0)
+    return { label: label(ws), kg: Math.round(kg * 10) / 10 }
+  })
+
+  return {
+    period: `${label(weekStart)} - ${label(periodEnd)}`,
+    honeyKg: Math.round(thisKg * 10) / 10,
+    honeyPrevPct,
+    workCount: allThisWeek.length,
+    workPrevDiff: allThisWeek.length - allPrevWeek.length,
+    honeyHistory,
+  }
+}
+
 export function buildDashboardData(
   farms: unknown[],
   colonies: unknown[],
   inspRecords: unknown[],
+  workRecords: unknown[] = [],
 ): DashboardData {
   const farmList = farms as RawFarm[]
   const colonyList = colonies as RawColony[]
   const recordList = inspRecords as RawInsp[]
+  const workList = workRecords as RawWork[]
 
   const farmName = farmList[0]?.name ?? '養蜂場'
 
@@ -74,8 +129,8 @@ export function buildDashboardData(
   return {
     farmName,
     alertColonyCount,
-    weather: mockDashboard.weather,  // weather requires external API; keep mock
+    weather: null,
     colonies: { total: items.length, average, good, warn, danger, colonies: items },
-    weekly: mockDashboard.weekly,    // work record analytics; keep mock for now
+    weekly: buildWeeklyStats(workList),
   }
 }

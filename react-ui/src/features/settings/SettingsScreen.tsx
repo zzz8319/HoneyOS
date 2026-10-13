@@ -5,12 +5,6 @@ import type { TabId } from '../../components'
 import { getDB } from '../../lib/db'
 import type { NotificationSettings, UserPreferences } from '../../lib/db'
 import {
-  MOCK_PROFILE,
-  MOCK_NOTIFICATIONS,
-  MOCK_APP_SETTINGS,
-  MOCK_DATA_STATUS_SYNCED,
-  MOCK_DATA_STATUS_UNSYNCED,
-  MOCK_DATA_STATUS_ERROR,
   APP_VERSION,
 } from './mockData'
 import type {
@@ -58,7 +52,7 @@ function readLSTheme(): AppTheme {
     const v = localStorage.getItem(LS_THEME)
     if (v === 'light' || v === 'dark' || v === 'system') return v
   } catch { /* ignore */ }
-  return MOCK_APP_SETTINGS.theme
+  return 'system'
 }
 
 function readLSLanguage(): AppLanguage {
@@ -66,11 +60,11 @@ function readLSLanguage(): AppLanguage {
     const v = localStorage.getItem(LS_LANGUAGE)
     if (v === 'ja' || v === 'en') return v
   } catch { /* ignore */ }
-  return MOCK_APP_SETTINGS.language
+  return 'ja'
 }
 
 function readLSInspectionMode(): DefaultRecordType {
-  return MOCK_APP_SETTINGS.defaultRecordType
+  return 'frame'
 }
 
 /** Map UI DefaultRecordType to DB default_inspection_mode */
@@ -203,10 +197,11 @@ export function SettingsScreen({
 }: SettingsScreenProps) {
   const isOffline = viewState === 'offline'
 
-  // Profile state
-  const [profile, setProfile] = useState<SettingsProfile>(MOCK_PROFILE)
-  const [editUsername, setEditUsername] = useState(MOCK_PROFILE.username)
-  const [editApiaryName, setEditApiaryName] = useState(MOCK_PROFILE.primaryApiaryName)
+  // Profile state — null until loaded from DB
+  const [profile, setProfile] = useState<SettingsProfile | null>(null)
+  const [profileError, setProfileError] = useState(false)
+  const [editUsername, setEditUsername] = useState('')
+  const [editApiaryName, setEditApiaryName] = useState('')
 
   // Derived edit open/saving state
   const isSaving = viewState === 'profile-saving'
@@ -252,8 +247,9 @@ export function SettingsScreen({
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [deleteReauthRequired, setDeleteReauthRequired] = useState(false)
 
-  // Notification state — loaded from HoneyDB on mount if available
-  const [notifs, setNotifs] = useState<NotificationSettings>(MOCK_NOTIFICATIONS)
+  // Notification state — null until loaded from DB
+  const [notifs, setNotifs] = useState<NotificationSettings | null>(null)
+  const [notifsError, setNotifsError] = useState(false)
   const [notifSaveError, setNotifSaveError] = useState<string | null>(null)
 
   // App settings — theme/language from localStorage, defaultRecordType from mockData
@@ -276,13 +272,13 @@ export function SettingsScreen({
   const [prefFeedback, setPrefFeedback] = useState<string | null>(null)
   const prefFeedbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  // Data status
+  // Data status — only sync state is known; counts/timestamps unavailable without a dedicated API
   const dataStatus: DataStatus =
     viewState === 'unsynced-data'
-      ? MOCK_DATA_STATUS_UNSYNCED
+      ? { syncStatus: 'unsynced', unsyncedCount: 0, lastSyncedAt: null }
       : viewState === 'sync-error'
-        ? MOCK_DATA_STATUS_ERROR
-        : { ...MOCK_DATA_STATUS_SYNCED, syncStatus: isOffline ? 'offline' : 'synced' }
+        ? { syncStatus: 'sync-error', unsyncedCount: 0, lastSyncedAt: null }
+        : { syncStatus: isOffline ? 'offline' : 'synced', unsyncedCount: 0, lastSyncedAt: null }
 
   // Push permission denied state (from viewState or actual Notification API)
   const [actualPushDenied] = useState(() => {
@@ -315,21 +311,30 @@ export function SettingsScreen({
     const db = getDB()
     if (!db) return
 
-    // Load profile
-    db.getUserProfile().then(p => {
+    // Load profile (email comes from session, name/farm from getUserProfile)
+    Promise.all([
+      db.getUserProfile(),
+      db.getSession(),
+    ]).then(([p, session]) => {
+      const email = (session as { user?: { email?: string } } | null)?.user?.email ?? ''
       if (p) {
-        setProfile(prev => ({
-          ...prev,
-          username: p.name || prev.username,
-          primaryApiaryName: p.farm_name || prev.primaryApiaryName,
-        }))
+        setProfile({
+          username: p.name || '',
+          email,
+          primaryApiaryName: p.farm_name || '',
+        })
+        setEditUsername(p.name || '')
+        setEditApiaryName(p.farm_name || '')
+      } else {
+        setProfileError(true)
       }
-    }).catch(() => { /* silent: keep mock */ })
+    }).catch(() => { setProfileError(true) })
 
     // Load notification settings
     db.getNotificationSettings().then(ns => {
       if (ns) setNotifs(ns)
-    }).catch(() => { /* silent: keep mock */ })
+      else setNotifsError(true)
+    }).catch(() => { setNotifsError(true) })
 
     // Load user preferences
     ;(async () => {
@@ -410,8 +415,8 @@ export function SettingsScreen({
   const bodyRef = useRef<HTMLDivElement>(null)
 
   function handleEditOpen() {
-    setEditUsername(profile.username)
-    setEditApiaryName(profile.primaryApiaryName)
+    setEditUsername(profile?.username ?? '')
+    setEditApiaryName(profile?.primaryApiaryName ?? '')
     setLocalSaveError(null)
     setLocalEditOpen(true)
     // Scroll back to top so the header and profile remain visible
@@ -421,8 +426,8 @@ export function SettingsScreen({
   }
 
   function handleEditCancel() {
-    setEditUsername(profile.username)
-    setEditApiaryName(profile.primaryApiaryName)
+    setEditUsername(profile?.username ?? '')
+    setEditApiaryName(profile?.primaryApiaryName ?? '')
     setLocalEditOpen(false)
     setLocalSaveError(null)
   }
@@ -443,7 +448,11 @@ export function SettingsScreen({
       if (db) {
         await db.updateProfile(editUsername.trim(), editApiaryName.trim())
       }
-      setProfile({ ...profile, username: editUsername.trim(), primaryApiaryName: editApiaryName.trim() })
+      setProfile(prev => ({
+        username: editUsername.trim(),
+        email: prev?.email ?? '',
+        primaryApiaryName: editApiaryName.trim(),
+      }))
       setLocalEditOpen(false)
     } catch {
       setLocalSaveError('保存に失敗しました。通信状況を確認して再試行してください。')
@@ -453,6 +462,7 @@ export function SettingsScreen({
   }
 
   const handleNotifToggle = useCallback(async (key: keyof NotificationSettings) => {
+    if (!notifs) return
     const next = { ...notifs, [key]: !notifs[key] }
     setNotifs(next)
     setNotifSaveError(null)
@@ -756,9 +766,17 @@ export function SettingsScreen({
         <section className={styles.section} aria-label="プロフィール">
           <div className={styles.profileCard}>
             <div className={styles.profileInfo}>
-              <p className={styles.profileName}>{profile.username}</p>
-              <p className={styles.profileEmail}>{profile.email}</p>
-              <p className={styles.profileApiary}>{profile.primaryApiaryName}</p>
+              {profile ? (
+                <>
+                  <p className={styles.profileName}>{profile.username || '—'}</p>
+                  <p className={styles.profileEmail}>{profile.email || '—'}</p>
+                  <p className={styles.profileApiary}>{profile.primaryApiaryName || '—'}</p>
+                </>
+              ) : profileError ? (
+                <p className={styles.profileName} role="alert">プロフィールを取得できませんでした</p>
+              ) : (
+                <p className={styles.profileName} aria-busy="true">読み込み中…</p>
+              )}
             </div>
             <button
               className={styles.editBtn}
@@ -872,6 +890,9 @@ export function SettingsScreen({
           {notifSaveError && (
             <p className={styles.actionError} role="alert">{notifSaveError}</p>
           )}
+          {notifsError && (
+            <p className={styles.actionError} role="alert">通知設定を取得できませんでした</p>
+          )}
           <div className={styles.rowList}>
             <div className={styles.toggleRow}>
               <div className={styles.toggleRowText}>
@@ -879,10 +900,10 @@ export function SettingsScreen({
                 <span className={styles.rowDesc}>内検の予定時刻前にお知らせします</span>
               </div>
               <Toggle
-                checked={notifs.inspectionReminder}
+                checked={notifs?.inspectionReminder ?? false}
                 onChange={() => handleNotifToggle('inspectionReminder')}
                 label="内検リマインダーを切り替え"
-                disabled={pushDenied}
+                disabled={pushDenied || !notifs}
               />
             </div>
             <div className={styles.toggleRow}>
@@ -891,10 +912,10 @@ export function SettingsScreen({
                 <span className={styles.rowDesc}>AI診断が完了したときにお知らせします</span>
               </div>
               <Toggle
-                checked={notifs.aiDiagnosisComplete}
+                checked={notifs?.aiDiagnosisComplete ?? false}
                 onChange={() => handleNotifToggle('aiDiagnosisComplete')}
                 label="AI診断完了通知を切り替え"
-                disabled={pushDenied}
+                disabled={pushDenied || !notifs}
               />
             </div>
             <div className={styles.toggleRow}>
@@ -903,10 +924,10 @@ export function SettingsScreen({
                 <span className={styles.rowDesc}>センサーが異常値を検知したときにお知らせします</span>
               </div>
               <Toggle
-                checked={notifs.sensorAlert}
+                checked={notifs?.sensorAlert ?? false}
                 onChange={() => handleNotifToggle('sensorAlert')}
                 label="センサー異常アラートを切り替え"
-                disabled={pushDenied}
+                disabled={pushDenied || !notifs}
               />
             </div>
             <div className={styles.toggleRow}>
@@ -915,10 +936,10 @@ export function SettingsScreen({
                 <span className={styles.rowDesc}>アプリの更新・重要なお知らせを通知します</span>
               </div>
               <Toggle
-                checked={notifs.systemAnnouncement}
+                checked={notifs?.systemAnnouncement ?? false}
                 onChange={() => handleNotifToggle('systemAnnouncement')}
                 label="システムお知らせを切り替え"
-                disabled={pushDenied}
+                disabled={pushDenied || !notifs}
               />
             </div>
           </div>
