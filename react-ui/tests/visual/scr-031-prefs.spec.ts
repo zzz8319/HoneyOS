@@ -5,7 +5,7 @@
  */
 import { test, expect } from '@playwright/test'
 
-const SETTINGS_URL = 'http://localhost:5175/?screen=settings&tab=settings&devbar=0'
+const SETTINGS_URL = '/?screen=settings&tab=settings&devbar=0'
 
 const BASE_PREFS = { theme: 'system', language: 'ja', default_inspection_mode: 'frame' }
 

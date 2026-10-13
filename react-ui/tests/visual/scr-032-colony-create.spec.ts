@@ -1,11 +1,19 @@
 import { test, expect } from '@playwright/test'
+import { injectMockHoneyDB } from './helpers/mockHoneyDB'
 
 const SCREEN = 'colony-create'
 const BASE_URL = `/?screen=${SCREEN}&devbar=0`
 const FIXED_NOW = new Date('2026-09-23T10:00:00+09:00')
 
+const COLONY_CREATE_FARMS_OVERRIDE = `
+window.HoneyDB.loadFarms = async () => [
+  { id: 'apiary-miyata', name: '宮田養蜂場' },
+  { id: 'apiary-kawahigashi', name: '川東養蜂場' },
+];`
+
 async function goto(page: import('@playwright/test').Page, extra = '') {
   await page.clock.install({ time: FIXED_NOW })
+  await injectMockHoneyDB(page, COLONY_CREATE_FARMS_OVERRIDE)
   await page.goto(`${BASE_URL}${extra}`, { waitUntil: 'networkidle' })
   await page.waitForTimeout(300)
 }
@@ -136,6 +144,7 @@ test('SCR-032 apiary-load-error', async ({ page }) => {
 // ── 10. 蜂群一覧からの遷移 ────────────────────────────────────────────────────
 test('SCR-032 from-colony-list', async ({ page }) => {
   await page.clock.install({ time: FIXED_NOW })
+  await injectMockHoneyDB(page, COLONY_CREATE_FARMS_OVERRIDE)
   // Start on colony list (farms tab)
   await page.goto('/?tab=farms&devbar=0', { waitUntil: 'networkidle' })
   await page.waitForTimeout(200)
@@ -150,6 +159,7 @@ test('SCR-032 from-colony-list', async ({ page }) => {
 
 // ── 11. 蜂群トレンドからの遷移 ───────────────────────────────────────────────
 test('SCR-032 from-colony-trend', async ({ page }) => {
+  await injectMockHoneyDB(page)
   await page.clock.install({ time: FIXED_NOW })
   await page.goto('/?screen=colony-trend&devbar=0', { waitUntil: 'networkidle' })
   await page.waitForTimeout(200)
@@ -182,6 +192,7 @@ test('SCR-032 has no BottomNav', async ({ page }) => {
 // ── Functional: back navigation ───────────────────────────────────────────────
 test('SCR-032 back button returns to previous screen', async ({ page }) => {
   await page.clock.install({ time: FIXED_NOW })
+  await injectMockHoneyDB(page, COLONY_CREATE_FARMS_OVERRIDE)
   await page.goto('/?tab=farms&devbar=0', { waitUntil: 'networkidle' })
   await page.waitForTimeout(200)
   await page.getByRole('button', { name: '蜂群を追加' }).click()
@@ -196,6 +207,7 @@ test('SCR-032 back button returns to previous screen', async ({ page }) => {
 // ── Functional: cancel button ────────────────────────────────────────────────
 test('SCR-032 cancel button returns to previous screen', async ({ page }) => {
   await page.clock.install({ time: FIXED_NOW })
+  await injectMockHoneyDB(page, COLONY_CREATE_FARMS_OVERRIDE)
   await page.goto('/?tab=farms&devbar=0', { waitUntil: 'networkidle' })
   await page.waitForTimeout(200)
   await page.getByRole('button', { name: '蜂群を追加' }).click()

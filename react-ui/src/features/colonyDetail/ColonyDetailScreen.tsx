@@ -1,12 +1,12 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { ChevronLeft, X, ClipboardList, Camera, Brain } from 'lucide-react'
 import { ErrorBanner } from '../../components'
 import { CompositionTrendChart } from './CompositionTrendChart'
 import { StrengthTrendChart } from './StrengthTrendChart'
 import { SensorSummary } from './SensorSummary'
 import { QuickLinkCard } from './QuickLinkCard'
-import { mockColonyDetail } from './mockData'
-import type { InspectionPoint } from './mockData'
+import type { ColonyDetail, InspectionPoint } from './mockData'
+import { buildColonyDetail } from './colonyDetailData'
 import styles from './ColonyDetailScreen.module.css'
 
 export type ColonyDetailViewState = 'normal' | 'empty' | 'loading' | 'error' | 'offline'
@@ -14,7 +14,6 @@ export type ColonyDetailViewState = 'normal' | 'empty' | 'loading' | 'error' | '
 interface Props {
   colonyId?: string
   viewState?: ColonyDetailViewState
-  initialPopover?: boolean
   onBack?: () => void
   onStartInspection?: (colonyId: string) => void
   onSensorDetail?: (colonyId: string) => void
@@ -50,7 +49,6 @@ function CardSkeleton({ height = 120 }: { height?: number }) {
 export function ColonyDetailScreen({
   colonyId,
   viewState = 'normal',
-  initialPopover = false,
   onBack,
   onStartInspection,
   onSensorDetail,
@@ -60,14 +58,49 @@ export function ColonyDetailScreen({
   onCameraImages,
   onAiDiagnosis,
 }: Props) {
-  const colony = mockColonyDetail
-  const defaultActive = colony.inspections.find(i => i.date === '2026-08-28') ?? null
-  const [activeInsp, setActiveInsp] = useState<InspectionPoint | null>(
-    initialPopover ? defaultActive : null,
-  )
+  const [colonyData, setColonyData] = useState<ColonyDetail | null>(null)
+  const [dataError, setDataError] = useState(false)
 
-  const isLoading = viewState === 'loading'
-  const isError   = viewState === 'error'
+  // Unified data fetch — skip entirely for explicit error/offline states.
+  useEffect(() => {
+    if (viewState === 'error' || viewState === 'offline') return
+    if (!colonyId) return
+
+    const db = window.HoneyDB
+    if (!db?.loadColonies) {
+      Promise.resolve().then(() => setDataError(true))
+      return
+    }
+
+    let cancelled = false
+
+    async function fetchData() {
+      try {
+        const [farms, colonies] = await Promise.all([db.loadFarms(), db.loadColonies()])
+        if (cancelled) return
+
+        const inspRecords = viewState === 'normal'
+          ? await db.loadInspRecords()
+          : []
+        if (cancelled) return
+
+        const detail = buildColonyDetail(colonyId!, farms as unknown[], colonies as unknown[], inspRecords as unknown[])
+        setDataError(false)
+        setColonyData(detail ?? null)
+      } catch {
+        if (!cancelled) setDataError(true)
+      }
+    }
+
+    fetchData()
+    return () => { cancelled = true }
+  }, [colonyId, viewState])
+
+  const colony = colonyData
+  const [activeInsp, setActiveInsp] = useState<InspectionPoint | null>(null)
+
+  const isLoading = viewState === 'loading' || (viewState === 'normal' && colony === null && !dataError)
+  const isError   = viewState === 'error' || (viewState === 'normal' && dataError)
   const isEmpty   = viewState === 'empty'
   const isOffline = viewState === 'offline'
   const showData  = !isLoading && !isError && !isEmpty
@@ -84,17 +117,19 @@ export function ColonyDetailScreen({
           <ChevronLeft size={20} aria-hidden />
         </button>
         <div className={styles.headerInfo}>
-          <h1 className={styles.colonyName}>{colony.name}</h1>
-          <span className={styles.location}>{colony.apiaryName}・{colony.hiveName}</span>
+          <h1 className={styles.colonyName}>{colony?.name ?? ''}</h1>
+          <span className={styles.location}>
+            {colony ? `${colony.apiaryName}・${colony.hiveName}` : ''}
+          </span>
         </div>
-        <span className={`${styles.badge} ${styles[STATUS_STYLE[colony.status]]}`}>
-          {colony.statusLabel}
+        <span className={`${styles.badge} ${styles[STATUS_STYLE[colony?.status ?? 'good']]}`}>
+          {colony?.statusLabel ?? ''}
         </span>
       </header>
 
       {isOffline && (
         <ErrorBanner
-          message={`オフラインです。最終同期: ${colony.lastSyncAt}`}
+          message={`オフラインです。最終同期: ${colony?.lastSyncAt ?? '—'}`}
           severity="minor"
         />
       )}
@@ -141,7 +176,7 @@ export function ColonyDetailScreen({
               <CardSkeleton height={125} />
             ) : (
               <CompositionTrendChart
-                inspections={showData || isOffline ? colony.inspections : []}
+                inspections={showData || isOffline ? (colony?.inspections ?? []) : []}
                 onPointClick={handlePointClick}
                 activeId={activeInsp?.id}
               />
@@ -157,7 +192,7 @@ export function ColonyDetailScreen({
                 <p className={styles.popoverNote}>{activeInsp.note}</p>
                 <button
                   className={styles.popoverBtn}
-                  onClick={() => onFrameViewer?.(colonyId ?? colony.id, activeInsp.id)}
+                  onClick={() => onFrameViewer?.(colonyId ?? colony?.id ?? '', activeInsp.id)}
                 >
                   ▣ 枠ビューアで見る
                 </button>
@@ -166,7 +201,7 @@ export function ColonyDetailScreen({
           </div>
 
           <button className={styles.historyLink}
-            onClick={() => onInspectionHistory?.(colonyId ?? colony.id)}>
+            onClick={() => onInspectionHistory?.(colonyId ?? colony?.id ?? '')}>
             内検履歴を見る ›
           </button>
         </section>
@@ -180,10 +215,14 @@ export function ColonyDetailScreen({
                 <span className={styles.betaBadge}>簡易指標 β</span>
               </div>
               <div className={styles.scoreRow}>
-                <span className={styles.scoreVal}>現在 {colony.strengthScore}</span>
-                <span className={colony.strengthScoreDelta >= 0 ? styles.deltaUp : styles.deltaDown}>
-                  {colony.strengthScoreDelta >= 0 ? '↑' : '↓'} {Math.abs(colony.strengthScoreDelta)}（前回比）
+                <span className={styles.scoreVal}>
+                  現在 {colony?.strengthScore != null ? colony.strengthScore : '—'}
                 </span>
+                {colony?.strengthScoreDelta != null && (
+                  <span className={colony.strengthScoreDelta >= 0 ? styles.deltaUp : styles.deltaDown}>
+                    {colony.strengthScoreDelta >= 0 ? '↑' : '↓'} {Math.abs(colony.strengthScoreDelta)}（前回比）
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -192,7 +231,7 @@ export function ColonyDetailScreen({
             <CardSkeleton height={100} />
           ) : (
             <StrengthTrendChart
-              history={showData || isOffline ? colony.strengthHistory : []}
+              history={showData || isOffline ? (colony?.strengthHistory ?? []) : []}
             />
           )}
 
@@ -211,12 +250,12 @@ export function ColonyDetailScreen({
             <button className={styles.retryBtn}
               onClick={() => alert('再試行（未実装）')}>再試行</button>
           </div>
-        ) : (
+        ) : colony ? (
           <SensorSummary
             sensor={colony.sensor}
             onDetailClick={() => onSensorDetail?.(colonyId ?? colony.id)}
           />
-        )}
+        ) : null}
 
         {/* ===== クイック導線 ===== */}
         {isLoading ? (
@@ -230,20 +269,20 @@ export function ColonyDetailScreen({
             <QuickLinkCard
               icon={<ClipboardList size={20} />}
               title="作業記録"
-              subtitle={`直近 ${colony.workRecordCount}件`}
-              onClick={() => onWorkHistory?.(colonyId ?? colony.id)}
+              subtitle={`直近 ${colony?.workRecordCount ?? '—'}件`}
+              onClick={() => onWorkHistory?.(colonyId ?? colony?.id ?? '')}
             />
             <QuickLinkCard
               icon={<Camera size={20} />}
               title="カメラ画像"
-              subtitle={`最新 ${colony.latestCameraDate}`}
-              onClick={() => onCameraImages?.(colonyId ?? colony.id)}
+              subtitle={`最新 ${colony?.latestCameraDate ?? '—'}`}
+              onClick={() => onCameraImages?.(colonyId ?? colony?.id ?? '')}
             />
             <QuickLinkCard
               icon={<Brain size={20} />}
               title="AI診断"
-              subtitle={colony.aiDiagnosisLabel}
-              onClick={() => onAiDiagnosis?.(colonyId ?? colony.id)}
+              subtitle={colony?.aiDiagnosisLabel ?? ''}
+              onClick={() => onAiDiagnosis?.(colonyId ?? colony?.id ?? '')}
             />
           </div>
         )}
@@ -254,7 +293,7 @@ export function ColonyDetailScreen({
       <div className={styles.ctaWrap} data-testid="inspection-start-cta">
         <button
           className={styles.ctaBtn}
-          onClick={() => onStartInspection?.(colonyId ?? colony.id)}
+          onClick={() => onStartInspection?.(colonyId ?? colony?.id ?? '')}
           aria-label="内検を始める"
         >
           ▷ 内検を始める

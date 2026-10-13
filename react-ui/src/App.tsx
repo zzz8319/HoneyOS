@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { DashboardScreen } from './features/dashboard'
 import type { DashboardViewState } from './features/dashboard'
 import { ColonySummaryScreen } from './features/colonyList'
@@ -16,7 +16,7 @@ import { AddStageScreen } from './features/addStage'
 import { ApiaryMapScreen } from './features/apiaryMap'
 import type { ApiaryMapViewState } from './features/apiaryMap'
 import { InspectionCompleteScreen } from './features/inspectionComplete'
-import type { CompleteViewState } from './features/inspectionComplete'
+import type { CompleteViewState, InspectionCompleteData } from './features/inspectionComplete'
 import { CameraImagesScreen } from './features/cameraImages'
 import type { CameraViewState } from './features/cameraImages'
 import { AiAnalysisScreen } from './features/aiAnalysis'
@@ -58,8 +58,12 @@ import type { SensorDetailViewState, SensorGraphViewState, GraphColony } from '.
 import { SettingsScreen } from './features/settings'
 import type { SettingsViewState } from './features/settings'
 import type { TabId } from './components'
+import type { InspectionSession } from './features/inspectionRecord'
 import { getDB } from './lib/db'
+import type { AuthChangeEvent, AuthSession } from './lib/db'
 import { getCachedDefaultInspectionMode } from './lib/inspectionMode'
+import { resolveInitialAuthState, resolveAuthFromSession, shouldApplyGetSession, isPublicScreen } from './lib/auth'
+import type { AuthState } from './lib/auth'
 import styles from './App.module.css'
 
 type ViewState = DashboardViewState | ColonyListViewState | ColonyDetailViewState | InspectionStartViewState | RecordViewState | ViewerViewState | ApiaryMapViewState | CompleteViewState | CameraViewState | AiAnalysisViewState | DiagnosisViewState | RecommendedWorkState | WorkListViewState | TaskCreateViewState | WorkRecordViewState | WorkHistoryViewState | ReportViewState | ColonyTrendViewState | ColonyComparisonViewState | ColonyCreateViewState | ApiaryCreateViewState | PasswordResetViewState | LoginViewState | SignupViewState | OnboardingStep1ViewState | OnboardingStep2ViewState | OnboardingStep3ViewState | NotificationCenterViewState | SensorDetailViewState | SensorGraphViewState | SettingsViewState
@@ -79,6 +83,7 @@ const VALID_TABS: TabId[] = ['home', 'farms', 'work', 'analytics', 'settings']
 
 const IS_DEV = import.meta.env.DEV &&
   new URLSearchParams(window.location.search).get('devbar') !== '0'
+
 
 function readParam<T extends string>(key: string, valid: T[], fallback: T): T {
   const p = new URLSearchParams(window.location.search).get(key)
@@ -101,12 +106,47 @@ export default function App() {
   const [selectedColonyId, setSelectedColonyId] = useState<string | null>(() =>
     new URLSearchParams(window.location.search).get('colonyId'),
   )
+  const [previousInspectionMode, setPreviousInspectionMode] = useState<'frame' | 'ratio' | undefined>(undefined)
+  const [inspectionSession, setInspectionSession] = useState<InspectionSession | null>(null)
+  const [inspectionTemperature, setInspectionTemperature] = useState<number>(0)
+  const [completedInspData, setCompletedInspData] = useState<InspectionCompleteData | null>(null)
   const [addStageRecord, setAddStageRecord] = useState<InspectionRecord | null>(null)
   const [previousScreen, setPreviousScreen] = useState<Screen>('home')
+  const [authState, setAuthState] = useState<AuthState>(() =>
+    resolveInitialAuthState(import.meta.env.DEV),
+  )
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+  const [recoveryMode, setRecoveryMode] = useState(false)
+  const authGenRef = useRef(0)
+
+  // ── Onboarding state ─────────────────────────────────────────────────────
+  // 'pending'   : haven't checked DB yet (also initial / after sign-out)
+  // 'required'  : DB says onboarding_completed=false → show SCR-003
+  // 'completed' : DB says onboarding_completed=true → normal routing
+  // 'error'     : DB fetch failed → show error + retry
+  type OnboardingState = 'pending' | 'required' | 'completed' | 'error'
+  // In DEV mode, auth is bypassed and onboarding check is skipped.
+  // Initialize to 'completed' so 602 dev visual tests can access ?screen= directly.
+  const [onboardingState, setOnboardingState] = useState<OnboardingState>(() =>
+    import.meta.env.DEV ? 'completed' : 'pending',
+  )
+  // Incremented by the retry button to re-trigger the onboarding check effect.
+  const [onboardingRetryCount, setOnboardingRetryCount] = useState(0)
 
   function navigateTo(next: Screen) {
     setPreviousScreen(screen)
     setScreen(next)
+  }
+
+  async function handleOnboardingComplete() {
+    const db = getDB()
+    if (!db) throw new Error('DB not available')
+    await db.updateUserPreferences({
+      onboarding_completed: true,
+      onboarding_completed_at: new Date().toISOString(),
+    })
+    setOnboardingState('completed')
+    setScreen('home')
   }
 
   const taskCreateState = viewState as TaskCreateViewState
@@ -156,6 +196,7 @@ export default function App() {
 
   useEffect(() => {
     if (defaultInspectionMode !== null) return
+    if (authState !== 'authenticated') return
     let cancelled = false
     const toMode = (m: string | null | undefined): 'frame' | 'ratio' =>
       m === 'frame' || m === 'ratio' ? m : 'frame'
@@ -178,18 +219,15 @@ export default function App() {
       }
 
       try {
-        // Get current session to validate the same-user cache
-        const session = await db.getSession()
-        const userId = session.user?.id ?? null
-        // getCachedDefaultInspectionMode validates honeyos_prefs_user_id === userId
-        const fromCache = getCachedDefaultInspectionMode(userId)
+        // Use currentUserId from auth state (no extra getSession call needed)
+        const fromCache = getCachedDefaultInspectionMode(currentUserId)
         if (fromCache !== null) {
           if (!cancelled) setDefaultInspectionMode(fromCache)
           return
         }
         // No valid same-user cache: fetch from DB
         const prefs = await db.getUserPreferences()
-        if (!cancelled) setDefaultInspectionMode(toMode(prefs.default_inspection_mode))
+        if (!cancelled) setDefaultInspectionMode(toMode(prefs?.default_inspection_mode))
       } catch {
         if (!cancelled) setDefaultInspectionMode('frame')
       }
@@ -198,6 +236,140 @@ export default function App() {
     resolve()
     return () => { cancelled = true }
   // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authState, currentUserId])
+
+  // ── Onboarding check: runs after authenticated + userId known ────────────
+  // Skipped in DEV (onboardingState initializes to 'completed').
+  // Skipped during PASSWORD_RECOVERY (SCR-034 takes priority).
+  // TOKEN_REFRESHED / USER_UPDATED do NOT re-run (not in dependency array).
+  useEffect(() => {
+    if (import.meta.env.DEV) return
+    if (authState !== 'authenticated' || !currentUserId || recoveryMode) return
+
+    const db = getDB()
+    let cancelled = false
+
+    async function checkOnboarding() {
+      if (!db) {
+        if (!cancelled) setOnboardingState('error')
+        return
+      }
+      try {
+        const prefs = await db.getUserPreferences()
+        if (cancelled) return
+        const completed = prefs?.onboarding_completed ?? false
+        setOnboardingState(completed ? 'completed' : 'required')
+      } catch {
+        if (!cancelled) setOnboardingState('error')
+      }
+    }
+
+    void checkOnboarding()
+    return () => { cancelled = true }
+  }, [authState, currentUserId, recoveryMode, onboardingRetryCount])
+
+  // 起動時認証確認: checking状態を解決する
+  // DEV → 初期状態で authenticated に設定済みのためスキップ
+  // PROD → onAuthStateChange を購読してから getSession() を1回だけ呼ぶ
+  useEffect(() => {
+    if (import.meta.env.DEV) return
+
+    let cancelled = false
+    const gen = ++authGenRef.current
+
+    function handleAuthEvent(event: AuthChangeEvent, session: AuthSession | null) {
+      if (cancelled) return
+      // auth event always supersedes a pending getSession
+      ++authGenRef.current
+      switch (event) {
+        case 'SIGNED_IN':
+        case 'INITIAL_SESSION':
+          if (session?.user) {
+            setAuthState('authenticated')
+            setCurrentUserId(prev => {
+              if (prev !== session.user!.id) {
+                // New user: reset onboarding so check re-runs
+                setOnboardingState('pending')
+              }
+              return session.user!.id
+            })
+            // Only navigate away from login if NOT in recovery mode
+            setRecoveryMode(prev => {
+              if (!prev) {
+                setScreen(s => s === 'login' ? 'home' : s)
+              }
+              return prev
+            })
+          } else {
+            setAuthState('unauthenticated')
+            setScreen('login')
+          }
+          break
+        case 'SIGNED_OUT':
+          setAuthState('unauthenticated')
+          setCurrentUserId(null)
+          setRecoveryMode(false)
+          setOnboardingState('pending')
+          setScreen('login')
+          break
+        case 'TOKEN_REFRESHED':
+        case 'USER_UPDATED':
+          if (session?.user) {
+            setCurrentUserId(session.user.id)
+          }
+          break
+        case 'PASSWORD_RECOVERY':
+          setRecoveryMode(true)
+          setAuthState('authenticated')
+          if (session?.user) {
+            setCurrentUserId(session.user.id)
+          }
+          setScreen('password-reset')
+          if (window.location.search.includes('auth=recovery') || window.location.hash.includes('access_token')) {
+            window.history.replaceState({}, '', window.location.pathname)
+          }
+          break
+      }
+    }
+
+    const db = getDB()
+    if (!db) {
+      void Promise.resolve().then(() => {
+        if (!cancelled) {
+          setAuthState('unauthenticated')
+          setScreen('login')
+        }
+      })
+      return () => { cancelled = true }
+    }
+
+    // Subscribe to auth state changes FIRST (before getSession)
+    const unsubscribe = db.onAuthStateChange((event, session) => {
+      handleAuthEvent(event, session)
+    })
+
+    // Then call getSession exactly once
+    db.getSession().then((session) => {
+      if (cancelled) return
+      if (shouldApplyGetSession(gen, authGenRef.current)) {
+        const next = resolveAuthFromSession(session)
+        setAuthState(next)
+        if (next === 'unauthenticated') setScreen('login')
+        else {
+          const userId = session?.user?.id ?? null
+          setCurrentUserId(userId)
+        }
+      }
+    }).catch(() => {
+      if (cancelled || !shouldApplyGetSession(gen, authGenRef.current)) return
+      setAuthState(resolveAuthFromSession(null, true))
+      setScreen('login')
+    })
+
+    return () => {
+      cancelled = true
+      unsubscribe()
+    }
   }, [])
 
   function handleNotifNavigate(target: NotificationItem['navigateTo'], colonyId?: string) {
@@ -211,6 +383,27 @@ export default function App() {
       setScreen('colony-detail')
     }
     // system notifications stay on notification-center; null target stays too
+  }
+
+  // Auth gate: block protected screens until auth is confirmed
+  if (authState === 'checking' && !isPublicScreen(screen)) {
+    return <div data-testid="auth-checking" aria-busy="true" aria-label="認証確認中" />
+  }
+
+  // Onboarding gate (production only): block home and show spinner/error/onboarding
+  // In DEV mode, onboardingState is always 'completed' (set by effect), so this is a no-op.
+  if (authState === 'authenticated' && !recoveryMode && onboardingState === 'pending') {
+    return <div data-testid="onboarding-checking" aria-busy="true" aria-label="オンボーディング確認中" style={{ minHeight: '100dvh' }} />
+  }
+  if (authState === 'authenticated' && !recoveryMode && onboardingState === 'error') {
+    return (
+      <div data-testid="onboarding-error" role="alert" style={{ padding: '2rem', textAlign: 'center' }}>
+        <p>接続エラーが発生しました。再度お試しください。</p>
+        <button onClick={() => { setOnboardingState('pending'); setOnboardingRetryCount(c => c + 1) }} style={{ marginTop: '1rem' }}>
+          再試行
+        </button>
+      </div>
+    )
   }
 
   return (
@@ -229,7 +422,15 @@ export default function App() {
         </div>
       )}
 
-      {screen === 'sensor-graph' ? (
+      {/* Onboarding gate: show onboarding-1 when required (production only) */}
+      {authState === 'authenticated' && !recoveryMode && onboardingState === 'required' ? (
+        <OnboardingStep1Screen
+          viewState={onboarding1State}
+          onBack={() => setScreen('login')}
+          onNext={() => setScreen('onboarding-2')}
+          onSkip={() => setScreen('onboarding-2')}
+        />
+      ) : screen === 'sensor-graph' ? (
         <SensorGraphScreen
           viewState={sensorGraphState}
           colony={sensorGraphColony ?? undefined}
@@ -258,6 +459,7 @@ export default function App() {
           onDashboard={() => { setScreen('home'); setActiveTab('home') }}
           onAddApiary={() => navigateTo('apiary-create')}
           onAddColony={() => navigateTo('colony-create')}
+          onComplete={import.meta.env.DEV ? undefined : handleOnboardingComplete}
         />
       ) : screen === 'onboarding-2' ? (
         <OnboardingStep2Screen
@@ -282,7 +484,7 @@ export default function App() {
       ) : screen === 'login' ? (
         <LoginScreen
           viewState={loginState}
-          onSuccess={() => setScreen('home')}
+          onSuccess={() => { setAuthState('authenticated'); setScreen('home') }}
           onForgotPassword={() => setScreen('password-reset')}
           onRegister={() => setScreen('signup')}
         />
@@ -291,6 +493,21 @@ export default function App() {
           viewState={passwordResetState}
           onBack={() => setScreen(previousScreen)}
           onSuccess={() => setScreen('home')}
+          recoveryMode={recoveryMode}
+          onRecoveryComplete={() => {
+            setRecoveryMode(false)
+            setAuthState('unauthenticated')
+            setCurrentUserId(null)
+            setOnboardingState('pending')
+            setScreen('login')
+          }}
+          onCancel={() => {
+            setRecoveryMode(false)
+            setAuthState('unauthenticated')
+            setCurrentUserId(null)
+            setOnboardingState('pending')
+            setScreen('login')
+          }}
         />
       ) : screen === 'apiary-create' ? (
         <ApiaryCreateScreen
@@ -389,6 +606,7 @@ export default function App() {
       ) : screen === 'inspection-complete' ? (
         <InspectionCompleteScreen
           viewState={completeState}
+          data={completedInspData ?? undefined}
           onNextColony={() => { setSelectedColonyId(null); setScreen('inspection-start') }}
           onAddNote={() => navigateTo('work-record')}
           onDashboard={() => { setScreen('home'); setActiveTab('home') }}
@@ -417,10 +635,84 @@ export default function App() {
       ) : screen === 'inspection-record' && defaultInspectionMode !== null ? (
         <InspectionRecordScreen
           viewState={recordState}
+          session={inspectionSession ?? undefined}
+          previousMode={previousInspectionMode}
           initialMode={defaultInspectionMode}
           onBack={() => setScreen('inspection-start')}
           onReselect={() => setScreen('inspection-start')}
-          onSave={() => setScreen('inspection-complete')}
+          onSave={async ({ stages, queenStatus, effectiveMode }) => {
+            const db = window.HoneyDB
+            type Frame = { bee: number; brood: number; honey: number }
+            const frames = stages.flatMap(s =>
+              (s.frames as Array<Frame | null>).filter((f): f is Frame => f !== null)
+            )
+            const now = new Date()
+            const time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
+
+            if (db?.saveInspRecord && inspectionSession) {
+              try {
+                await db.saveInspRecord({
+                  colony: inspectionSession.colonyId,
+                  date: inspectionSession.inspDate,
+                  time,
+                  weather: inspectionSession.weather,
+                  frames,
+                  count_mode: effectiveMode,
+                  queen_status: queenStatus,
+                  queen_present: queenStatus !== null,
+                  bees_total: frames.reduce((s, f) => s + f.bee, 0),
+                  temperature: inspectionTemperature,
+                })
+              } catch {
+                setViewState('save-error')
+                return
+              }
+            }
+
+            // Build completion summary for SCR-015
+            if (inspectionSession) {
+              const filled = frames.filter(f => f.bee + f.brood + f.honey > 0)
+              const n = filled.length || 1
+              const avgBee   = Math.round(filled.reduce((s, f) => s + f.bee, 0) / n)
+              const avgBrood = Math.round(filled.reduce((s, f) => s + f.brood, 0) / n)
+              const avgHoney = Math.round(filled.reduce((s, f) => s + f.honey, 0) / n)
+              const score    = Math.round(avgBee * 0.6 + avgBrood * 0.4)
+              const totalFrames = stages.reduce((s, st) => s + (st.frames as unknown[]).length, 0)
+              // Suggest next inspection 14 days out
+              const d = new Date(inspectionSession.inspDate)
+              const next = new Date(d.getTime() + 14 * 86400000)
+              const DOW = ['日', '月', '火', '水', '木', '金', '土']
+              const suggestedDate = `${next.getFullYear()}年${next.getMonth()+1}月${next.getDate()}日（${DOW[next.getDay()]}）`
+              const inspDateFormatted = (() => {
+                const dd = new Date(inspectionSession.inspDate)
+                return isNaN(dd.getTime()) ? inspectionSession.inspDate
+                  : `${dd.getFullYear()}年${dd.getMonth()+1}月${dd.getDate()}日（${DOW[dd.getDay()]}）`
+              })()
+              setCompletedInspData({
+                inspectionId: `insp-${inspectionSession.inspDate}-${inspectionSession.colonyId}`,
+                colonyId: inspectionSession.colonyId,
+                colonyLabel: inspectionSession.colonyLabel,
+                apiaryName: inspectionSession.apiaryName,
+                inspDate: inspDateFormatted,
+                weather: inspectionSession.weather,
+                tempCelsius: inspectionTemperature,
+                queenStatus: (queenStatus as 'laying' | 'unconfirmed' | 'concern') ?? 'unconfirmed',
+                estimatedBeeCount: filled.length * Math.round(avgBee * 3),
+                strengthScore: score,
+                stageSummary: { stageCount: stages.length, totalFrames, recordedFrames: filled.length },
+                previousInspDate: null,
+                comparison: [
+                  { key: 'bee',      label: '蜂量',   current: avgBee,   previous: null, unit: '%' },
+                  { key: 'brood',    label: '育児量', current: avgBrood, previous: null, unit: '%' },
+                  { key: 'honey',    label: '貯蜜量', current: avgHoney, previous: null, unit: '%' },
+                  { key: 'strength', label: '簡易強さ', current: score,  previous: null, unit: '' },
+                ],
+                aiDiagnosis: null,
+                nextInspection: { daysBefore: 1, suggestedDate, userDate: null },
+              })
+            }
+            setScreen('inspection-complete')
+          }}
         />
       ) : screen === 'inspection-record' ? (
         <div aria-busy="true" aria-label="設定を読み込み中" data-testid="pref-loading" />
@@ -432,7 +724,13 @@ export default function App() {
             if (selectedColonyId) { setScreen('colony-detail') }
             else { setScreen('home'); setActiveTab('home') }
           }}
-          onStart={() => { setScreen('inspection-record') }}
+          onStart={({ colonyId, colonyLabel, apiaryName, statusLabel, inspDate, weather, temperature, previousMode }) => {
+            setPreviousInspectionMode(previousMode)
+            setInspectionSession({ colonyId, colonyLabel, apiaryName, statusLabel, inspDate, weather })
+            setInspectionTemperature(temperature)
+            setSelectedColonyId(colonyId)
+            setScreen('inspection-record')
+          }}
         />
       ) : screen === 'settings' ? (
         <SettingsScreen
@@ -445,13 +743,18 @@ export default function App() {
           onColonyCreate={() => navigateTo('colony-create')}
           onApiaryCreate={() => navigateTo('apiary-create')}
           onPasswordReset={() => navigateTo('password-reset')}
-          onLogout={() => setScreen('login')}
+          onLogout={() => { setAuthState('unauthenticated'); setScreen('login') }}
+          onDeleteAccount={() => {
+            setAuthState('unauthenticated')
+            setCurrentUserId(null)
+            setScreen('login')
+            setOnboardingState('pending')
+          }}
         />
       ) : screen === 'colony-detail' ? (
         <ColonyDetailScreen
           colonyId={selectedColonyId ?? undefined}
           viewState={detailState}
-          initialPopover={new URLSearchParams(window.location.search).get('popover') === '1'}
           onBack={() => { setScreen('home'); setActiveTab('farms') }}
           onStartInspection={(id) => { setSelectedColonyId(id); setScreen('inspection-start') }}
           onSensorDetail={(id) => { setSelectedColonyId(id); navigateTo('sensor-detail') }}
@@ -516,7 +819,13 @@ export default function App() {
               onColonyCreate={() => navigateTo('colony-create')}
               onApiaryCreate={() => navigateTo('apiary-create')}
               onPasswordReset={() => navigateTo('password-reset')}
-              onLogout={() => setScreen('login')}
+              onLogout={() => { setAuthState('unauthenticated'); setScreen('login') }}
+              onDeleteAccount={() => {
+                setAuthState('unauthenticated')
+                setCurrentUserId(null)
+                setScreen('login')
+                setOnboardingState('pending')
+              }}
             />
           )}
         </>

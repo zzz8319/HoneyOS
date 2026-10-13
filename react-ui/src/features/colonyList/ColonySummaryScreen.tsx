@@ -1,11 +1,11 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { Search, Map, Plus, ChevronDown } from 'lucide-react'
 import { AppHeader, BottomNav, EmptyState, ErrorBanner } from '../../components'
 import type { TabId } from '../../components'
 import { ColonyCard } from './ColonyCard'
 import { COMP_SEGMENTS } from './compositionConfig'
-import { mockColonyList } from './mockData'
-import type { ColonyListItem } from './mockData'
+import type { ColonyListItem, ColonyListData } from './mockData'
+import { buildColonyListData } from './colonyListData'
 import styles from './ColonySummaryScreen.module.css'
 
 export type ColonyListViewState = 'normal' | 'empty' | 'loading' | 'error' | 'offline'
@@ -69,8 +69,31 @@ export function ColonySummaryScreen({
   const [apiaryTab, setApiaryTab] = useState<ApiaryTab>('all')
   const [query, setQuery] = useState('')
   const [sortKey] = useState<SortKey>('inspection')
+  const [listData, setListData] = useState<ColonyListData | null>(null)
+  const [dataError, setDataError] = useState(false)
 
-  const { apiaries, fetchedAt } = mockColonyList
+  useEffect(() => {
+    if (viewState !== 'normal') return
+    const db = window.HoneyDB
+    if (!db?.loadColonies) {
+      Promise.resolve().then(() => setDataError(true))
+      return
+    }
+    let cancelled = false
+    Promise.all([db.loadFarms(), db.loadColonies(), db.loadInspRecords()])
+      .then(([farms, colonies, inspRecords]) => {
+        if (cancelled) return
+        setDataError(false)
+        setListData(buildColonyListData(farms as unknown[], colonies as unknown[], inspRecords as unknown[]))
+      })
+      .catch(() => {
+        if (!cancelled) setDataError(true)
+      })
+    return () => { cancelled = true }
+  }, [viewState])
+
+  const apiaries = useMemo(() => listData?.apiaries ?? [], [listData])
+  const fetchedAt = listData?.fetchedAt ?? '—'
 
   const apiaryTabOptions = [
     { id: 'all', label: '全て' },
@@ -103,14 +126,14 @@ export function ColonySummaryScreen({
     [apiaries, filtered],
   )
 
-  const showContent = viewState === 'normal' || viewState === 'offline'
+  const showContent = (viewState === 'normal' || viewState === 'offline') && listData !== null && !dataError
   const hasResults = filtered.length > 0
 
   return (
     <div className="app-shell">
       <AppHeader notifCount={0} onNotifClick={onNotifClick} />
 
-      {viewState === 'error' && (
+      {(viewState === 'error' || (viewState === 'normal' && dataError)) && (
         <ErrorBanner
           message="データの取得に失敗しました。再度お試しください。"
           severity="critical"
@@ -186,7 +209,7 @@ export function ColonySummaryScreen({
         </div>
 
         {/* ===== ローディング ===== */}
-        {viewState === 'loading' && (
+        {(viewState === 'loading' || (viewState === 'normal' && listData === null && !dataError)) && (
           <div className={styles.skeletonWrap} aria-busy aria-label="読み込み中">
             {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
           </div>
@@ -204,7 +227,7 @@ export function ColonySummaryScreen({
         )}
 
         {/* ===== エラー状態 ===== */}
-        {viewState === 'error' && (
+        {(viewState === 'error' || (viewState === 'normal' && dataError)) && (
           <EmptyState
             emoji="⚠️"
             title="データを読み込めません"

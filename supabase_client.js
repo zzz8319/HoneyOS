@@ -8,7 +8,7 @@
     auth: {
       persistSession: true,
       autoRefreshToken: true,
-      detectSessionInUrl: false,
+      detectSessionInUrl: true,  // allows SDK to process recovery URL hash (#access_token=...&type=recovery)
     }
   });
 
@@ -39,7 +39,7 @@
 
   async function signOut() {
     const { error } = await sb.auth.signOut();
-    if (error) throw error;
+    return { error: error || null };
   }
 
   async function getSession() {
@@ -59,11 +59,19 @@
     return data;
   }
 
-  async function resetPassword(email) {
-    const { error } = await sb.auth.resetPasswordForEmail(email, {
-      redirectTo: window.location.origin + '/HoneyOS/',
+  async function resetPassword(email, options) {
+    var redirectTo = (options && options.redirectTo)
+      ? options.redirectTo
+      : (window.location.origin + window.location.pathname + '?auth=recovery');
+    var { data, error } = await sb.auth.resetPasswordForEmail(email, {
+      redirectTo: redirectTo
     });
-    if (error) throw error;
+    return { data: data || null, error: error || null };
+  }
+
+  async function updatePassword(password) {
+    var { data, error } = await sb.auth.updateUser({ password: password });
+    return { data: data || null, error: error || null };
   }
 
   // ==================
@@ -523,14 +531,14 @@
   const VALID_THEMES = ['light', 'dark', 'system'];
   const VALID_LANGUAGES = ['ja', 'en'];
   const VALID_INSPECTION_MODES = ['frame', 'ratio'];
-  const DEFAULT_PREFS = { theme: 'system', language: 'ja', default_inspection_mode: 'frame' };
+  const DEFAULT_PREFS = { theme: 'system', language: 'ja', default_inspection_mode: 'frame', onboarding_completed: false, onboarding_completed_at: null };
 
   async function getUserPreferences() {
     const session = await getSession();
     if (!session) return { ...DEFAULT_PREFS };
     const { data, error } = await sb
       .from('user_preferences')
-      .select('theme, language, default_inspection_mode')
+      .select('theme, language, default_inspection_mode, onboarding_completed, onboarding_completed_at')
       .eq('user_id', session.user.id)
       .single();
     if (error || !data) return { ...DEFAULT_PREFS };
@@ -540,8 +548,14 @@
       default_inspection_mode: VALID_INSPECTION_MODES.includes(data.default_inspection_mode)
         ? data.default_inspection_mode
         : DEFAULT_PREFS.default_inspection_mode,
+      onboarding_completed: typeof data.onboarding_completed === 'boolean' ? data.onboarding_completed : false,
+      onboarding_completed_at: data.onboarding_completed_at || null,
     };
   }
+
+  // Fields that may be updated via updateUserPreferences.
+  // user_id, created_at, and unknown fields are always stripped.
+  const ALLOWED_PREF_FIELDS = ['theme', 'language', 'default_inspection_mode', 'onboarding_completed', 'onboarding_completed_at'];
 
   async function updateUserPreferences(partialPrefs) {
     if (partialPrefs.theme !== undefined && !VALID_THEMES.includes(partialPrefs.theme)) {
@@ -555,19 +569,82 @@
     }
     const { data: { user }, error: userError } = await sb.auth.getUser();
     if (userError || !user) throw new Error('ログインが必要です');
-    const upsertData = {
-      user_id: user.id,
-      ...DEFAULT_PREFS,
-      ...partialPrefs,
-      updated_at: new Date().toISOString(),
-    };
+
+    // Build payload with only the allowed fields explicitly present in partialPrefs.
+    // DEFAULT_PREFS is NOT spread — that would clobber existing onboarding_completed on
+    // conflict. Supabase JS v2 upsert with onConflict only updates columns present in
+    // the payload, so omitting a field leaves the DB value unchanged.
+    const sanitized = {};
+    for (const key of ALLOWED_PREF_FIELDS) {
+      if (Object.prototype.hasOwnProperty.call(partialPrefs, key) && partialPrefs[key] !== undefined) {
+        sanitized[key] = partialPrefs[key];
+      }
+    }
+
+    // onboarding_completed_at rules:
+    // • completed→true without explicit timestamp → set to client time (documented in spec)
+    // • completed→false → clear timestamp to null
+    // • neither field touched → leave both fields out of payload
+    if (sanitized.onboarding_completed === true && !Object.prototype.hasOwnProperty.call(sanitized, 'onboarding_completed_at')) {
+      sanitized.onboarding_completed_at = new Date().toISOString();
+    }
+    if (sanitized.onboarding_completed === false) {
+      sanitized.onboarding_completed_at = null;
+    }
+
+    const upsertData = { user_id: user.id, ...sanitized, updated_at: new Date().toISOString() };
     const { data, error } = await sb
       .from('user_preferences')
       .upsert(upsertData, { onConflict: 'user_id' })
-      .select('theme, language, default_inspection_mode')
+      .select('theme, language, default_inspection_mode, onboarding_completed, onboarding_completed_at')
       .single();
     if (error) throw error;
     return data;
+  }
+
+  // ==================
+  // アカウント削除
+  // ==================
+  async function reauthenticateForAccountDeletion(password) {
+    // Get current user's email from session
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session?.user?.email) return { error: { message: 'セッションが無効です', code: 'unauthenticated' } };
+
+    const { data, error } = await sb.auth.signInWithPassword({
+      email: session.user.email,
+      password: password  // password argument only, never stored
+    });
+
+    if (error) return { error: { message: error.message, code: error.code || 'invalid_credentials' } };
+    return { error: null };
+  }
+
+  async function deleteAccount({ confirmation }) {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) return { error: { message: 'Not authenticated', code: 'unauthenticated' } };
+
+    let result;
+    try {
+      result = await sb.functions.invoke('delete-account', {
+        body: { confirmation },  // DO NOT include userId
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+    } catch (e) {
+      return { error: { message: e && e.message ? e.message : 'Network error', code: 'network_error' } };
+    }
+
+    if (result.error) {
+      // Parse error code from response body if available
+      let code = 'unknown';
+      try {
+        const body = result.error.context
+          ? await result.error.context.json().catch(() => null)
+          : null;
+        if (body && body.error) code = body.error;
+      } catch { /* ignore */ }
+      return { error: { message: result.error.message || 'Deletion failed', code } };
+    }
+    return { error: null };
   }
 
   // ==================
@@ -617,6 +694,27 @@
     return { avgAll, totalUsers, totalColonies };
   }
 
+  function onAuthStateChange(callback) {
+    try {
+      var sub = sb.auth.onAuthStateChange(function(event, session) {
+        try {
+          callback(event, session);
+        } catch(e) {
+          // swallow callback errors to keep subscription alive
+        }
+      });
+      return function() {
+        try {
+          if (sub && sub.data && sub.data.subscription) {
+            sub.data.subscription.unsubscribe();
+          }
+        } catch(e) {}
+      };
+    } catch(e) {
+      return function() {};
+    }
+  }
+
   // Expose API
   window.HoneyDB = {
     // Auth
@@ -624,9 +722,11 @@
     signIn,
     signOut,
     getSession,
+    onAuthStateChange,
     getUserProfile,
     updateProfile,
     resetPassword,
+    updatePassword,
     // Farms
     loadFarms,
     saveFarm,
@@ -667,6 +767,9 @@
     // Realtime
     subscribeRealtime,
     unsubscribeRealtime,
+    // Account deletion
+    reauthenticateForAccountDeletion,
+    deleteAccount,
     // Data
     exportAllData,
     upsertBenchmark,

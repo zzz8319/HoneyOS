@@ -1,9 +1,14 @@
 import { test, expect } from '@playwright/test'
+import { injectMockHoneyDB } from './helpers/mockHoneyDB'
 
 const SCREEN = 'colony-trend'
 const BASE_URL = `/?screen=${SCREEN}&devbar=0`
 // Freeze time so relative dates are deterministic
 const FIXED_NOW = new Date('2026-09-20T00:00:00+09:00')
+
+test.beforeEach(async ({ page }) => {
+  await injectMockHoneyDB(page)
+})
 
 async function goto(page: import('@playwright/test').Page, extra = '') {
   await page.clock.install({ time: FIXED_NOW })

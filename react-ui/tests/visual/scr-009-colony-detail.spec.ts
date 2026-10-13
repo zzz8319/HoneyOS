@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
+import { injectMockHoneyDB } from './helpers/mockHoneyDB'
 
 const STATES = ['normal', 'empty', 'loading', 'error', 'offline'] as const
 
@@ -7,6 +8,7 @@ async function gotoColonyDetail(
   state: typeof STATES[number],
   extraParams = '',
 ) {
+  await injectMockHoneyDB(page)
   await page.goto(
     `/?screen=colony-detail&colonyId=a3&state=${state}&devbar=0${extraParams}`,
     { waitUntil: 'networkidle' },

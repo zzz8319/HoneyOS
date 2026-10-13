@@ -22,13 +22,13 @@ export interface StrengthPoint {
 }
 
 export interface SensorData {
-  fetchedAt: string
-  temperature: number
-  temperatureDelta: number
-  humidity: number
-  humidityDelta: number
-  weight: number
-  weightDelta: number
+  fetchedAt: string | null
+  temperature: number | null
+  temperatureDelta: number | null
+  humidity: number | null
+  humidityDelta: number | null
+  weight: number | null
+  weightDelta: number | null
 }
 
 export interface ColonyDetail {
@@ -38,8 +38,8 @@ export interface ColonyDetail {
   hiveName: string
   status: ColonyDetailStatus
   statusLabel: string
-  strengthScore: number
-  strengthScoreDelta: number
+  strengthScore: number | null
+  strengthScoreDelta: number | null
   inspections: InspectionPoint[]
   strengthHistory: StrengthPoint[]
   sensor: SensorData

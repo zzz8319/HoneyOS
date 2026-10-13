@@ -13,12 +13,17 @@ import {
   RefreshCw,
 } from 'lucide-react'
 import type { PasswordResetViewState } from './types'
+import { getDB } from '../../lib/db'
+import { classifyAuthError } from '../../lib/auth'
 import styles from './PasswordResetScreen.module.css'
 
 interface Props {
   viewState?: PasswordResetViewState
   onBack: () => void
   onSuccess?: () => void
+  recoveryMode?: boolean
+  onRecoveryComplete?: () => void
+  onCancel?: () => void
 }
 
 type Step = 1 | 2 | 3
@@ -58,7 +63,8 @@ function MailKeyIllustration() {
   )
 }
 
-export function PasswordResetScreen({ viewState = 'normal', onBack, onSuccess }: Props) {
+export function PasswordResetScreen({ viewState = 'normal', onBack: _onBack, onSuccess, recoveryMode = false, onRecoveryComplete, onCancel }: Props) {
+  const onBack = recoveryMode ? (onCancel ?? _onBack) : _onBack
   const emailId      = useId()
   const emailErrId   = useId()
   const pwId         = useId()
@@ -67,7 +73,7 @@ export function PasswordResetScreen({ viewState = 'normal', onBack, onSuccess }:
   const cpwErrId     = useId()
   const statusId     = useId()
 
-  const [step, setStep] = useState<Step>(() => getInitialStep(viewState))
+  const [step, setStep] = useState<Step>(() => recoveryMode ? 3 : getInitialStep(viewState))
 
   // ── Step 1 state ──────────────────────────────────────────────────────────
   const [email, setEmail] = useState(() =>
@@ -107,6 +113,8 @@ export function PasswordResetScreen({ viewState = 'normal', onBack, onSuccess }:
   const [updating, setUpdating]           = useState(viewState === 'password-updating')
   const [updated, setUpdated]             = useState(viewState === 'password-updated')
   const [linkExpired, setLinkExpired]     = useState(false)
+  const [signOutFailed, setSignOutFailed] = useState(false)
+  const [isSigningOut, setIsSigningOut]   = useState(false)
 
   const isOffline = viewState === 'offline'
 
@@ -151,10 +159,9 @@ export function PasswordResetScreen({ viewState = 'normal', onBack, onSuccess }:
     }
     setSubmitting(true)
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const fn = (window.HoneyDB as any)?.resetPassword
-      if (typeof fn === 'function') {
-        await fn.call(window.HoneyDB, email.trim())
+      const db = getDB()
+      if (db) {
+        await db.resetPassword(email.trim())
       }
       // アカウント存在有無にかかわらず送信完了画面へ（情報漏洩防止）
       setSentEmail(email.trim())
@@ -170,10 +177,9 @@ export function PasswordResetScreen({ viewState = 'normal', onBack, onSuccess }:
     if (resendCountdown > 0 || submitting) return
     setSubmitting(true)
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const fn = (window.HoneyDB as any)?.resetPassword
-      if (typeof fn === 'function') {
-        await fn.call(window.HoneyDB, sentEmail)
+      const db = getDB()
+      if (db) {
+        await db.resetPassword(sentEmail)
       }
       setResendCountdown(60)
     } catch {
@@ -213,23 +219,49 @@ export function PasswordResetScreen({ viewState = 'normal', onBack, onSuccess }:
       return
     }
     setUpdating(true)
+    const db = getDB()
+    if (!db) {
+      setPwUpdateError('接続エラー')
+      setUpdating(false)
+      return
+    }
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const fn = (window.HoneyDB as any)?.updatePassword
-      if (typeof fn === 'function') {
-        await fn.call(window.HoneyDB, password)
+      const { error } = await db.updatePassword(password)
+      setUpdating(false)
+      if (error) {
+        const errorType = classifyAuthError(error)
+        switch (errorType) {
+          case 'expired':
+          case 'used':
+          case 'invalid':
+            setLinkExpired(true)
+            break
+          case 'network':
+            setPwUpdateError('ネットワークエラーが発生しました。再試行してください。')
+            break
+          default:
+            setPwUpdateError('パスワードの更新に失敗しました')
+        }
+        return
       }
       setUpdated(true)
-      setTimeout(() => { onSuccess?.() }, 2000)
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : ''
-      if (msg.toLowerCase().includes('expired') || msg.toLowerCase().includes('invalid')) {
-        setLinkExpired(true)
+      // signOut after password update: show explicit error if it fails
+      const signOutResult = await (db.signOut() as Promise<{ error: { message: string } | null } | void>).catch((e: unknown) => ({ error: { message: e instanceof Error ? e.message : String(e) } }))
+      const signOutError = (signOutResult && typeof signOutResult === 'object' && 'error' in signOutResult)
+        ? signOutResult.error
+        : null
+      if (!signOutError) {
+        if (recoveryMode) {
+          onRecoveryComplete?.()
+        } else {
+          onSuccess?.()
+        }
       } else {
-        setPwUpdateError('処理に失敗しました。もう一度お試しください。')
+        setSignOutFailed(true)
       }
-    } finally {
+    } catch {
       setUpdating(false)
+      setPwUpdateError('処理に失敗しました。もう一度お試しください。')
     }
   }
 
@@ -466,10 +498,42 @@ export function PasswordResetScreen({ viewState = 'normal', onBack, onSuccess }:
                 <Check size={28} color="#FFFFFF" aria-hidden />
               </div>
               <h2 className={styles.successTitle}>パスワードを更新しました</h2>
-              <p className={styles.successDesc}>
-                新しいパスワードでログインできます。{'\n'}
-                ログイン画面へ移動します…
-              </p>
+              {signOutFailed ? (
+                <>
+                  <p className={styles.successDesc}>
+                    パスワードは更新されましたが、ログアウトできませんでした。
+                  </p>
+                  <button
+                    type="button"
+                    className={styles.submitBtn}
+                    disabled={isSigningOut}
+                    style={{ marginTop: 16 }}
+                    onClick={async () => {
+                      const dbClient = getDB()
+                      if (!dbClient) return
+                      setIsSigningOut(true)
+                      const result = await (dbClient.signOut() as Promise<{ error: { message: string } | null } | void>).catch((e: unknown) => ({ error: { message: e instanceof Error ? e.message : String(e) } }))
+                      const err = (result && typeof result === 'object' && 'error' in result) ? result.error : null
+                      setIsSigningOut(false)
+                      if (!err) {
+                        setSignOutFailed(false)
+                        if (recoveryMode) {
+                          onRecoveryComplete?.()
+                        } else {
+                          onSuccess?.()
+                        }
+                      }
+                    }}
+                  >
+                    {isSigningOut ? 'ログアウト中…' : '再試行'}
+                  </button>
+                </>
+              ) : (
+                <p className={styles.successDesc}>
+                  新しいパスワードでログインできます。{'\n'}
+                  ログイン画面へ移動します…
+                </p>
+              )}
             </div>
           ) : (
             <>

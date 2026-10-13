@@ -321,6 +321,7 @@ interface Props {
    *   2. initialMode（userDefaultMode として扱う）
    *   3. 'frame'（システムデフォルト）
    */
+  previousMode?: InspectionMode
   initialMode?: InspectionMode
   onBack?: () => void
   onReselect?: () => void
@@ -336,6 +337,7 @@ interface Props {
 export function InspectionRecordScreen({
   viewState = 'normal',
   session = DEFAULT_SESSION,
+  previousMode,
   initialMode,
   onBack,
   onReselect,
@@ -346,11 +348,12 @@ export function InspectionRecordScreen({
   const isDraftRestore= viewState === 'draft-restore'
 
   // ── 初期記録方式の解決 ────────────────────────────────────────────────────
-  // initialMode は userDefaultMode として扱う（previousMode は現時点では未取得）。
+  // previousMode: SCR-011 から渡される対象蜂群の直近確定内検方式（最優先）
+  // initialMode:  ユーザーの default_inspection_mode（第二優先）
   // 画面初期化時の1回だけ適用し、ユーザー操作後は上書きしない。
   const [resolved] = useState(() =>
     resolveInitialInspectionMode({
-      previousMode: undefined,   // TODO: SCR-011 から渡される前回方式（現在は未接続）
+      previousMode,
       userDefaultMode: initialMode,
       supportedModes: SUPPORTED_MODES,
     })

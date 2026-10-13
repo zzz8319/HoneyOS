@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   MoreVertical, ChevronDown, Calendar, ChevronRight, X, Plus,
   ClipboardList, AlertCircle, WifiOff, RefreshCw,
@@ -8,10 +8,11 @@ import type { TabId } from '../../components'
 import { TrendLineChart } from './TrendLineChart'
 import { RadarChart } from './RadarChart'
 import {
-  TREND_DATA, DEFAULT_COLONY_IDS, METRIC_LABELS, METRIC_SHORT_LABELS, PERIOD_LABELS,
+  DEFAULT_COLONY_IDS, METRIC_LABELS, METRIC_SHORT_LABELS, PERIOD_LABELS,
   SERIES_COLORS, filterByPeriod, get1yStartDate,
 } from './mockData'
-import type { ColonyTrendViewState, Metric, Period, CompareMode, YearMode } from './mockData'
+import type { ColonyTrendViewState, Metric, Period, CompareMode, YearMode, ColonyTrendData } from './mockData'
+import { buildColonyTrendData } from './colonyTrendData'
 import styles from './ColonyTrendScreen.module.css'
 
 interface ColonyTrendScreenProps {
@@ -36,13 +37,36 @@ export function ColonyTrendScreen({
   const [metricOpen,  setMetricOpen]  = useState(false)
   const [pickerOpen,  setPickerOpen]  = useState(false)
 
+  const [trendData, setTrendData] = useState<ColonyTrendData | null>(null)
+  const [dataError, setDataError] = useState(false)
+
+  useEffect(() => {
+    if (viewState !== 'normal') return
+    const db = window.HoneyDB
+    if (!db?.loadInspRecords) {
+      Promise.resolve().then(() => setDataError(true))
+      return
+    }
+    let cancelled = false
+    Promise.all([db.loadFarms(), db.loadColonies(), db.loadInspRecords()])
+      .then(([farms, colonies, recs]) => {
+        if (cancelled) return
+        setDataError(false)
+        setTrendData(buildColonyTrendData(farms as unknown[], colonies as unknown[], recs as unknown[]))
+      })
+      .catch(() => {
+        if (!cancelled) setDataError(true)
+      })
+    return () => { cancelled = true }
+  }, [viewState])
+
   // Selected colony IDs (with assigned colors)
   const [selectedIds, setSelectedIds] = useState<string[]>([...DEFAULT_COLONY_IDS])
   // Active colony for detail card (default: A-03)
   const [activeDetailId, setActiveDetailId] = useState<string>('a3')
 
-  // Derive series from selected IDs
-  const allSeries = TREND_DATA.series
+  // trendData is guaranteed non-null after early returns below (for the normal render path)
+  const allSeries = trendData?.series ?? []
   const selectedSeries = selectedIds
     .map((id, i) => {
       const s = allSeries.find(s => s.colonyId === id)
@@ -90,13 +114,13 @@ export function ColonyTrendScreen({
       colonyId: 'avg',
       name: '全体平均',
       color: '#6B7280',
-      points: TREND_DATA.average.points,
+      points: trendData?.average.points ?? { strength: [], bee: [], brood: [], honey: [], queen: [] },
       radar: { bee: 55, brood: 52, honey: 48, queen: 66, latestDate: '2026年9月20日' },
     },
   ]
 
   // Colonies available to add (not yet selected)
-  const addableColonies = TREND_DATA.availableColonies.filter(
+  const addableColonies = (trendData?.availableColonies ?? []).filter(
     c => !selectedIds.includes(c.id)
   )
 
@@ -119,9 +143,10 @@ export function ColonyTrendScreen({
 
   // ── Render states ────────────────────────────────────────────────────────
   if (viewState === 'loading') return <LoadingScreen onTabChange={onTabChange} onColonyComparison={onColonyComparison} />
-  if (viewState === 'error')   return <ErrorScreen   onTabChange={onTabChange} onColonyComparison={onColonyComparison} />
+  if (viewState === 'error' || (viewState === 'normal' && dataError)) return <ErrorScreen onTabChange={onTabChange} onColonyComparison={onColonyComparison} />
   if (viewState === 'offline') return <OfflineScreen  onTabChange={onTabChange} onColonyComparison={onColonyComparison} />
   if (viewState === 'empty')   return <EmptyTrendScreen onTabChange={onTabChange} onColonyComparison={onColonyComparison} />
+  if (viewState === 'normal' && trendData === null) return <LoadingScreen onTabChange={onTabChange} onColonyComparison={onColonyComparison} />
 
   // ── Normal state ─────────────────────────────────────────────────────────
   return (
@@ -204,7 +229,7 @@ export function ColonyTrendScreen({
         {compareMode === 'individual' && (
           <div className={styles.chipsRow} role="list" aria-label="比較対象の蜂群">
             {selectedIds.map((id, i) => {
-              const meta = TREND_DATA.availableColonies.find(c => c.id === id)
+              const meta = trendData!.availableColonies.find(c => c.id === id)
               const color = SERIES_COLORS[i % SERIES_COLORS.length]
               return (
                 <div
@@ -297,7 +322,7 @@ export function ColonyTrendScreen({
                   <line x1={0} y1={5} x2={20} y2={5} stroke="#EF4444"
                     strokeWidth={1.5} strokeDasharray="4,2" />
                 </svg>
-                <span>注意基準（{TREND_DATA.alertThreshold}）</span>
+                <span>注意基準（{trendData!.alertThreshold}）</span>
               </span>
             </div>
           </div>
@@ -308,7 +333,7 @@ export function ColonyTrendScreen({
             metric={metric}
             metricLabel={METRIC_LABELS[metric]}
             metricShortLabel={METRIC_SHORT_LABELS[metric]}
-            alertThreshold={TREND_DATA.alertThreshold}
+            alertThreshold={trendData!.alertThreshold}
             minDate={periodMin}
             maxDate={periodMax}
           />

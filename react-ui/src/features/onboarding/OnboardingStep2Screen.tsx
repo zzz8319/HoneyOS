@@ -162,12 +162,11 @@ export function OnboardingStep2Screen({ viewState = 'normal', onBack, onNext, on
     setSubmitting(true)
     try {
       if (farmName.trim() || location) {
-        await window.HoneyDB?.saveFarm?.({
-          name:    farmName.trim() || '養蜂場',
-          address: location?.address ?? '',
-          lat:     location?.lat ?? 0,
-          lng:     location?.lng ?? 0,
-        })
+        await window.HoneyDB?.saveFarm?.(
+          farmName.trim() || '養蜂場',
+          undefined,
+          { latitude: location?.lat ?? null, longitude: location?.lng ?? null },
+        )
       }
       if (colonyCount > 0) {
         for (let i = 0; i < colonyCount; i++) {

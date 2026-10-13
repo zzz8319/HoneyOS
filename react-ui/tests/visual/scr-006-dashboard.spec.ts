@@ -1,9 +1,11 @@
 import { expect, test } from '@playwright/test'
+import { injectMockHoneyDB } from './helpers/mockHoneyDB'
 
 const STATES = ['normal', 'empty', 'loading', 'error', 'offline'] as const
 
 for (const state of STATES) {
   test(`SCR-006 dashboard — ${state} state`, async ({ page }) => {
+    await injectMockHoneyDB(page)
     await page.goto('/')
     const label =
       state === 'normal'  ? '通常'   :
@@ -25,6 +27,7 @@ for (const state of STATES) {
 
 // 通常状態でスクロール下端（今週カード）を確認
 test('SCR-006 dashboard — normal state scrolled bottom', async ({ page }) => {
+  await injectMockHoneyDB(page)
   await page.goto('/')
   await page.getByRole('button', { name: '通常' }).click()
   await page.evaluate(() => window.scrollTo({ top: document.body.scrollHeight }))

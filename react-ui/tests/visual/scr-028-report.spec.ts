@@ -1,6 +1,11 @@
 import { test, expect } from '@playwright/test'
+import { injectMockHoneyDB } from './helpers/mockHoneyDB'
 
-const BASE = 'http://localhost:5173'
+const BASE = ''
+
+test.beforeEach(async ({ page }) => {
+  await injectMockHoneyDB(page)
+})
 
 async function gotoReport(page: import('@playwright/test').Page, state = 'normal') {
   await page.goto(`${BASE}/?screen=report&state=${state}&devbar=0`)

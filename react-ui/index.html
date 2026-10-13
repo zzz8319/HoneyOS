@@ -8,6 +8,37 @@
   </head>
   <body>
     <div id="root"></div>
+    <!--
+      HoneyDB initialization order:
+        1. Guard script  — protects a pre-injected test mock from being overwritten
+        2. supabase.min.js — sets window.supabase (Supabase JS SDK)
+        3. supabase_client.js — sets window.HoneyDB (HoneyOS DB client)
+        4. React app (module) — reads window.HoneyDB via src/lib/db.ts
+
+      The guard uses a no-op setter so that in test environments where
+      window.HoneyDB is already set by page.addInitScript(), the real
+      supabase_client.js IIFE cannot overwrite it (strict-mode assignment
+      to a property with a setter defined does not throw).
+    -->
+    <script>
+    (function () {
+      // If window.HoneyDB is already defined (data value OR getter-only accessor),
+      // freeze it with a no-op setter so supabase_client.js assignment does not
+      // throw in strict mode.  If no descriptor exists, let supabase_client.js
+      // initialize the property normally.
+      var desc = Object.getOwnPropertyDescriptor(window, 'HoneyDB');
+      if (!desc) return;
+      var snap = window.HoneyDB;
+      Object.defineProperty(window, 'HoneyDB', {
+        configurable: true,
+        enumerable: true,
+        get: function () { return snap; },
+        set: function () { /* no-op: preserve injected state */ },
+      });
+    })();
+    </script>
+    <script src="%BASE_URL%supabase.min.js"></script>
+    <script src="%BASE_URL%supabase_client.js"></script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

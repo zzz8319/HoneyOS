@@ -72,14 +72,7 @@ export function SignupScreen({ viewState = 'normal', onBack, onLogin }: Props) {
     if (!validate()) return
     setSubmitting(true)
     try {
-      await window.HoneyDB.signUp(email, password, name)
-      if (farmName.trim()) {
-        try {
-          await window.HoneyDB.saveFarm({ name: farmName.trim(), address: '', lat: 0, lng: 0 })
-        } catch {
-          // Farm save failed — account created; show confirmation with warning note
-        }
-      }
+      await window.HoneyDB.signUp(email, password, name, farmName.trim() || undefined)
       setSentEmail(email)
     } catch {
       setSignupError(true)

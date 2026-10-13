@@ -1,43 +1,85 @@
-name: Deploy to GitHub Pages
+name: Deploy React UI to GitHub Pages
 
 on:
   push:
     branches: [main]
-
-permissions:
-  contents: write
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
 
 jobs:
-  test:
+  ci:
     runs-on: ubuntu-latest
-    env:
-      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: react-ui
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
-      - run: npm ci
-      - run: npm test -- --no-coverage
+          cache-dependency-path: react-ui/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+
+      - name: Install Chromium for smoke tests
+        run: npx playwright install --with-deps chromium
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit tests
+        run: npm run test:unit
+
+      - name: Build
+        run: npm run build
+
+      - name: Security scan — no secrets in dist
+        run: |
+          set -e
+          patterns=("service_role" "SUPABASE_SERVICE_ROLE_KEY" "SUPABASE_JWT_SECRET" "JWT_SECRET" "BEGIN PRIVATE KEY")
+          for pat in "${patterns[@]}"; do
+            if grep -r "$pat" dist/ --include='*.js' --include='*.html' -l 2>/dev/null | grep -q .; then
+              echo "FAIL: found '$pat' in dist/" >&2
+              exit 1
+            fi
+          done
+          echo "Security scan passed."
+
+      - name: Smoke tests
+        run: npm run test:smoke
+
+      - name: Upload Pages artifact
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: react-ui/dist
 
   deploy:
-    needs: test
+    needs: ci
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Bump service worker cache version
-        run: |
-          VERSION="honeyos-$(date -u +%Y%m%d-%H%M%S)"
-          sed -i "s/const CACHE = '[^']*'/const CACHE = '$VERSION'/" sw.js
-
-      - name: Commit and push
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add sw.js
-          git diff --staged --quiet || git commit -m "ci: bump SW cache version [skip ci]"
-          git push
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

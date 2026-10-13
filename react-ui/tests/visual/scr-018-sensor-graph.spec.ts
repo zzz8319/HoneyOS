@@ -1,6 +1,6 @@
 import { test, expect, Page } from '@playwright/test'
 
-const BASE = 'http://localhost:5175/?screen=sensor-graph&devbar=0'
+const BASE = '/?screen=sensor-graph&devbar=0'
 
 async function resetScroll(page: Page) {
   await page.evaluate(() => {

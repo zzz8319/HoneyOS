@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { clearUserCache } from '../../lib/clearUserCache'
 import { BottomNav } from '../../components'
 import type { TabId } from '../../components'
 import { getDB } from '../../lib/db'
@@ -105,6 +106,9 @@ function writeLSPrefs(prefs: Partial<UserPreferences>, userId: string) {
   } catch { /* ignore */ }
 }
 
+// ── Confirmation phrase for account deletion ──────────────────────────────────
+export const DELETE_ACCOUNT_CONFIRMATION = 'アカウントを削除する'
+
 // ── Props ─────────────────────────────────────────────────────────────────────
 interface SettingsScreenProps {
   viewState: SettingsViewState
@@ -114,6 +118,7 @@ interface SettingsScreenProps {
   onApiaryCreate: () => void
   onPasswordReset: () => void
   onLogout?: () => void
+  onDeleteAccount?: () => void
 }
 
 // ── Icons ────────────────────────────────────────────────────────────────────
@@ -194,6 +199,7 @@ export function SettingsScreen({
   onApiaryCreate,
   onPasswordReset,
   onLogout,
+  onDeleteAccount,
 }: SettingsScreenProps) {
   const isOffline = viewState === 'offline'
 
@@ -227,6 +233,12 @@ export function SettingsScreen({
   // Delete confirmation text input
   const [deleteConfirmText, setDeleteConfirmText] = useState('')
 
+  // Delete password input — stored only in React state, never persisted
+  const [deletePassword, setDeletePassword] = useState('')
+
+  // Separate error messages for reauth failure vs deletion failure
+  const [deleteReauthError, setDeleteReauthError] = useState<string | null>(null)
+
   // Logout in-flight state
   const [logoutLoading, setLogoutLoading] = useState(false)
   const [logoutError, setLogoutError] = useState<string | null>(null)
@@ -234,6 +246,11 @@ export function SettingsScreen({
   // Export in-flight state
   const [exportLoading, setExportLoading] = useState(false)
   const [exportError, setExportError] = useState<string | null>(null)
+
+  // Delete account in-flight state
+  const [deleteLoading, setDeleteLoading] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
+  const [deleteReauthRequired, setDeleteReauthRequired] = useState(false)
 
   // Notification state — loaded from HoneyDB on mount if available
   const [notifs, setNotifs] = useState<NotificationSettings>(MOCK_NOTIFICATIONS)
@@ -273,6 +290,13 @@ export function SettingsScreen({
     if (typeof Notification !== 'undefined' && Notification.permission === 'denied') return true
     return false
   })
+
+  // Clear password from state on component unmount
+  useEffect(() => {
+    return () => {
+      setDeletePassword('')
+    }
+  }, [])
 
   // Scroll to top on initial render when profile edit starts open
   useEffect(() => {
@@ -581,10 +605,73 @@ export function SettingsScreen({
     }
   }
 
-  function handleDeleteAccount() {
-    // No safe server-side deletion API — keep button disabled
-    // This handler is never reached because the button is always disabled
-    setDeleteDialogOpen(false)
+  async function handleDeleteAccount() {
+    // Phrase and password must both be satisfied before calling
+    if (deleteConfirmText !== DELETE_ACCOUNT_CONFIRMATION) return
+    if (!deletePassword) return
+    // Offline check
+    if (!navigator.onLine) {
+      setDeleteError('オフラインのため削除できません。接続後にお試しください。')
+      return
+    }
+    // Double-submit prevention
+    if (deleteLoading) return
+
+    setDeleteLoading(true)
+    setDeleteError(null)
+    setDeleteReauthError(null)
+    setDeleteReauthRequired(false)
+
+    try {
+      const db = getDB()
+      if (!db) {
+        setDeleteError('データベース接続が利用できません')
+        return
+      }
+
+      // Step 1: Reauthenticate with current password
+      const reauthResult = await db.reauthenticateForAccountDeletion(deletePassword)
+      if (reauthResult.error) {
+        if (reauthResult.error.code === 'reauth_required') {
+          setDeleteReauthRequired(true)
+        } else {
+          setDeleteReauthError('パスワードが正しくありません。再度お試しください。')
+        }
+        return
+      }
+
+      // Step 2: Get current userId for cache cleanup
+      let currentUserId: string | null = null
+      try {
+        const session = await db.getSession() as unknown as { user?: { id: string } } | null
+        currentUserId = session?.user?.id ?? null
+      } catch { /* ignore */ }
+
+      // Step 3: Delete account (confirmation verified server-side)
+      const result = await db.deleteAccount({ confirmation: DELETE_ACCOUNT_CONFIRMATION })
+
+      if (result.error) {
+        if (result.error.code === 'reauth_required') {
+          setDeleteReauthRequired(true)
+          setDeleteError(null)
+        } else {
+          setDeleteError('アカウント削除に失敗しました。通信状況を確認して再試行してください。')
+        }
+        return
+      }
+
+      // Success: clear password from state, clear user caches, and navigate
+      setDeletePassword('')
+      if (currentUserId) {
+        clearUserCache(currentUserId)
+      }
+      setDeleteDialogOpen(false)
+      onDeleteAccount?.()
+    } catch {
+      setDeleteError('アカウント削除に失敗しました。通信状況を確認して再試行してください。')
+    } finally {
+      setDeleteLoading(false)
+    }
   }
 
   // ── Special states ─────────────────────────────────────────────────────────
@@ -761,7 +848,7 @@ export function SettingsScreen({
             <button
               className={`${styles.row} ${styles.rowDanger}`}
               aria-label="アカウントを削除"
-              onClick={() => { setDeleteConfirmText(''); setDeleteDialogOpen(true) }}
+              onClick={() => { setDeleteConfirmText(''); setDeletePassword(''); setDeleteReauthError(null); setDeleteError(null); setDeleteDialogOpen(true) }}
               disabled={isSaving}
             >
               <span className={styles.rowText}>アカウントを削除</span>
@@ -1070,34 +1157,99 @@ export function SettingsScreen({
             <p className={styles.dialogBody}>
               この操作は取り消せません。すべてのデータが削除されます。
             </p>
-            <p className={styles.dialogBodyNote}>
-              アカウント削除には管理者への連絡が必要です。
-            </p>
-            <label className={styles.dialogBody} htmlFor="delete-confirm-input">
-              確認のため「削除」と入力してください
-            </label>
-            <input
-              id="delete-confirm-input"
-              type="text"
-              className={styles.deleteConfirmInput}
-              value={deleteConfirmText}
-              onChange={e => setDeleteConfirmText(e.target.value)}
-              placeholder="削除"
-              aria-label="削除確認テキスト入力"
-            />
-            <div className={styles.dialogActions}>
-              <button className={styles.dialogCancelBtn} onClick={() => { setDeleteDialogOpen(false); setDeleteConfirmText('') }}>
-                キャンセル
-              </button>
-              <button
-                className={styles.dialogDestructiveBtn}
-                onClick={handleDeleteAccount}
-                disabled={deleteConfirmText !== '削除' || isOffline}
-                aria-disabled={deleteConfirmText !== '削除' || isOffline}
-              >
-                削除（管理者へ連絡）
-              </button>
-            </div>
+            {deleteReauthRequired ? (
+              <div>
+                <p className={styles.actionError} role="alert">
+                  安全のため再ログインしてください
+                </p>
+                <div className={styles.dialogActions}>
+                  <button
+                    className={styles.dialogCancelBtn}
+                    onClick={() => {
+                      setDeleteDialogOpen(false)
+                      setDeleteConfirmText('')
+                      setDeleteError(null)
+                      setDeleteReauthRequired(false)
+                    }}
+                  >
+                    キャンセル
+                  </button>
+                  <button
+                    className={styles.dialogDestructiveBtn}
+                    onClick={() => {
+                      setDeleteDialogOpen(false)
+                      setDeleteConfirmText('')
+                      setDeleteError(null)
+                      setDeleteReauthRequired(false)
+                      onLogout?.()
+                    }}
+                  >
+                    再ログイン
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <>
+                {deleteError && (
+                  <p className={styles.actionError} role="alert">{deleteError}</p>
+                )}
+                {deleteReauthError && (
+                  <p className={styles.actionError} role="alert">{deleteReauthError}</p>
+                )}
+                <label className={styles.dialogBody} htmlFor="delete-confirm-input">
+                  確認のため「{DELETE_ACCOUNT_CONFIRMATION}」と入力してください
+                </label>
+                <input
+                  id="delete-confirm-input"
+                  type="text"
+                  className={styles.deleteConfirmInput}
+                  value={deleteConfirmText}
+                  onChange={e => setDeleteConfirmText(e.target.value)}
+                  placeholder={DELETE_ACCOUNT_CONFIRMATION}
+                  aria-label="削除確認テキスト入力"
+                  disabled={deleteLoading}
+                />
+                <label className={styles.dialogBody} htmlFor="delete-password-input">
+                  現在のパスワード
+                </label>
+                <input
+                  id="delete-password-input"
+                  type="password"
+                  className={styles.deleteConfirmInput}
+                  value={deletePassword}
+                  onChange={e => setDeletePassword(e.target.value)}
+                  placeholder="パスワード"
+                  aria-label="現在のパスワード"
+                  disabled={deleteLoading}
+                  autoComplete="current-password"
+                />
+                <div className={styles.dialogActions}>
+                  <button
+                    className={styles.dialogCancelBtn}
+                    onClick={() => {
+                      setDeleteDialogOpen(false)
+                      setDeleteConfirmText('')
+                      setDeletePassword('')
+                      setDeleteError(null)
+                      setDeleteReauthError(null)
+                      setDeleteReauthRequired(false)
+                    }}
+                    disabled={deleteLoading}
+                  >
+                    キャンセル
+                  </button>
+                  <button
+                    className={styles.dialogDestructiveBtn}
+                    onClick={handleDeleteAccount}
+                    disabled={deleteConfirmText !== DELETE_ACCOUNT_CONFIRMATION || !deletePassword || isOffline || deleteLoading}
+                    aria-disabled={deleteConfirmText !== DELETE_ACCOUNT_CONFIRMATION || !deletePassword || isOffline || deleteLoading}
+                    data-testid="delete-account-confirm-btn"
+                  >
+                    {deleteLoading ? '削除中…' : isOffline ? '接続が必要です' : '削除する'}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}

@@ -4,7 +4,7 @@
  */
 import { test, expect } from '@playwright/test'
 
-const BASE = 'http://localhost:5175'
+const BASE = ''
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -370,8 +370,13 @@ test('SCR-031 api: delete confirm button disabled when input empty', async ({ pa
   await page.fill('#delete-confirm-input', '削除しない')
   await expect(deleteBtn).toBeDisabled()
 
-  // Type the correct text
-  await page.fill('#delete-confirm-input', '削除')
+  // Type the correct confirmation phrase
+  await page.fill('#delete-confirm-input', 'アカウントを削除する')
+  // Button still disabled until password is also entered
+  await expect(deleteBtn).toBeDisabled()
+
+  // Enter password — both fields filled → button enabled
+  await page.fill('#delete-password-input', 'anypassword')
   // Button should now be enabled (but note: no server API so it won't actually delete)
   await expect(deleteBtn).not.toBeDisabled()
 })

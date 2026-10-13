@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 
-const BASE = 'http://localhost:5175/?screen=sensor-graph&devbar=0&state=normal-day'
+const BASE = '/?screen=sensor-graph&devbar=0&state=normal-day'
 
 test('SCR-018 CSS computed style verification', async ({ page }) => {
   await page.goto(BASE)
