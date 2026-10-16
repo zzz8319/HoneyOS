@@ -1,6 +1,11 @@
 import { expect, test, type Page } from '@playwright/test'
+import { injectMockHoneyDB } from './helpers/mockHoneyDB'
 
 const STATES = ['normal', 'selected', 'empty', 'loading', 'error', 'offline'] as const
+
+test.beforeEach(async ({ page }) => {
+  await injectMockHoneyDB(page)
+})
 
 async function gotoInspectionStart(
   page: Page,
@@ -30,7 +35,7 @@ test('SCR-011 inspection start — selected state assertions', async ({ page }) 
   await gotoInspectionStart(page, 'selected')
 
   // A-05カードが aria-pressed="true"
-  const a05Card = page.locator('[data-colony-id="a05"]')
+  const a05Card = page.locator('[data-colony-id="a5"]')
   await expect(a05Card).toHaveAttribute('aria-pressed', 'true')
 
   // CTAが有効（disabled属性なし）かつ文言が「この蜂群で始める」
@@ -72,20 +77,20 @@ test('SCR-011 inspection start — selected-bottom (no CTA overlap)', async ({ p
 test('SCR-011 inspection start — sort order verification', async ({ page }) => {
   await gotoInspectionStart(page, 'normal')
 
-  // おすすめ順のデフォルト確認: 最初のカードはA-05（期限超過）
+  // おすすめ順のデフォルト確認: 最初のカードはA-05（最終内検が最も古い）
   const firstCard = page.locator('[data-colony-id]').first()
-  await expect(firstCard).toHaveAttribute('data-colony-id', 'a05')
+  await expect(firstCard).toHaveAttribute('data-colony-id', 'a5')
 
-  // 最終内検が古い順: A-05(16日前)が先頭
+  // 最終内検が古い順: A-05(2026-08-23)が先頭
   const sortSelect = page.getByTestId('sort-select')
   await sortSelect.selectOption('oldest')
-  await expect(page.locator('[data-colony-id]').first()).toHaveAttribute('data-colony-id', 'a05')
+  await expect(page.locator('[data-colony-id]').first()).toHaveAttribute('data-colony-id', 'a5')
 
-  // 最終内検が新しい順: A-01(3日前)が先頭
+  // 最終内検が新しい順: A-02(2026-09-06)が先頭
   await sortSelect.selectOption('newest')
-  await expect(page.locator('[data-colony-id]').first()).toHaveAttribute('data-colony-id', 'a01')
+  await expect(page.locator('[data-colony-id]').first()).toHaveAttribute('data-colony-id', 'a2')
 
   // おすすめ順に戻す: A-05が先頭
   await sortSelect.selectOption('recommended')
-  await expect(page.locator('[data-colony-id]').first()).toHaveAttribute('data-colony-id', 'a05')
+  await expect(page.locator('[data-colony-id]').first()).toHaveAttribute('data-colony-id', 'a5')
 })

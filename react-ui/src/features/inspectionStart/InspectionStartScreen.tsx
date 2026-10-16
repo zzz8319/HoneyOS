@@ -189,7 +189,7 @@ export function InspectionStartScreen({
 
   // selected状態: A-05を確実に選択済みにする
   const [selectedId, setSelectedId] = useState<string | null>(() => {
-    if (viewState === 'selected') return initialColonyId ?? 'a05'
+    if (viewState === 'selected') return initialColonyId ?? 'a5'
     return initialColonyId ?? null
   })
 

@@ -69,6 +69,19 @@ const MOCK_WORK_RECORDS = [
 ]
 
 /**
+ * Tasks for WorkListScreen (SCR-024).
+ * Fixed date = 2026-09-20T00:00:00+09:00 = 2026-09-19T15:00:00Z (UTC).
+ */
+const MOCK_TASKS = [
+  { id: 'task-1', title: 'A-05 内検',     colony_name: 'A-05', due_date: '2026-09-15', icon_type: 'inspection' },
+  { id: 'task-2', title: 'A-03 治療確認', colony_name: 'A-03', due_date: '2026-09-17', icon_type: 'treatment', note: 'アピバール2回目' },
+  { id: 'task-3', title: 'B-01 給餌確認', colony_name: 'B-01', due_date: '2026-09-19', icon_type: 'feeding' },
+  { id: 'task-4', title: 'A-02 採蜜準備', colony_name: 'A-02', due_date: '2026-09-22', icon_type: 'harvest' },
+  { id: 'task-5', title: '器具消毒',       colony_name: '',     due_date: '2026-09-25', icon_type: 'other' },
+  { id: 'task-6', title: 'A-01 定期内検', colony_name: 'A-01', due_date: '2026-09-10', icon_type: 'inspection', completed_at: '2026-09-10T10:00:00' },
+]
+
+/**
  * Inject a complete window.HoneyDB mock that all data-loading screens can use.
  * Call this with page.addInitScript() before page.goto().
  */
@@ -101,7 +114,7 @@ window.HoneyDB = {
   archiveColony:           async () => {},
   deleteColony:            async () => {},
   initDefaultColonies:     async () => {},
-  loadTasks:               async () => [],
+  loadTasks:               async () => ${JSON.stringify(MOCK_TASKS)},
   getTasks:                async () => [],
   saveTask:                async () => null,
   updateTask:              async () => {},
@@ -112,8 +125,8 @@ window.HoneyDB = {
   deleteInspRecord:        async () => {},
   getSession:              async () => ({ user: { id: 'user-1', email: 'test@example.com' } }),
   getUserProfile:          async () => ({ name: 'テスト太郎', farm_name: '宮田養蜂場' }),
-  getNotificationSettings: async () => null,
-  getUserPreferences:      async () => null,
+  getNotificationSettings: async () => ({ inspectionReminder: true, aiDiagnosisComplete: true, sensorAlert: false, systemAnnouncement: true }),
+  getUserPreferences:      async () => ({ theme: 'system', language: 'ja', default_inspection_mode: 'frame', onboarding_completed: true }),
   updateUserPreferences:   async () => {},
   updateNotificationSettings: async () => {},
   updateProfile:           async () => {},
