@@ -7,8 +7,27 @@ function url(state: string) {
   return `${BASE}/?screen=work-record&state=${state}&devbar=0`
 }
 
+// Match old MOCK_COLONIES baseline: b1 (B-01) is in farm f1 (宮田養蜂場),
+// same as the original 8-colony WorkRecord fixture where B-01 was in apiary-1.
+const COLONY_OVERRIDE = `
+window.HoneyDB.loadFarms = async () => [
+  { id: 'f1', name: '宮田養蜂場' },
+  { id: 'f2', name: '田中養蜂場' },
+];
+window.HoneyDB.loadColonies = async () => [
+  { id: 'a1', name: 'A-01', farmId: 'f1' },
+  { id: 'a2', name: 'A-02', farmId: 'f1' },
+  { id: 'a3', name: 'A-03', farmId: 'f1' },
+  { id: 'a4', name: 'A-04', farmId: 'f1' },
+  { id: 'a5', name: 'A-05', farmId: 'f1' },
+  { id: 'b1', name: 'B-01', farmId: 'f1' },
+  { id: 'b2', name: 'B-02', farmId: 'f2' },
+  { id: 'c1', name: 'C-01', farmId: 'f2' },
+];
+`
+
 test.beforeEach(async ({ page }) => {
-  await injectMockHoneyDB(page)
+  await injectMockHoneyDB(page, COLONY_OVERRIDE)
 })
 
 test('SCR-026 normal-linked-top', async ({ page }) => {
