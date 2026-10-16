@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { injectMockHoneyDB } from './helpers/mockHoneyDB'
 
 const STATES = [
   'normal',
@@ -12,6 +13,10 @@ const STATES = [
   'overdue-filtered',
   'updating-completion',
 ] as const
+
+test.beforeEach(async ({ page }) => {
+  await injectMockHoneyDB(page)
+})
 
 for (const state of STATES) {
   test(`SCR-024 work-list ${state}`, async ({ page }) => {
