@@ -17,6 +17,10 @@ const STATES = [
   'offline',
 ] as const
 
+test.beforeEach(async ({ page }) => {
+  await injectMockHoneyDB(page)
+})
+
 // ── Visual snapshot tests (12 states) ────────────────────────────────────────
 
 // Override profile/session to match old MOCK_PROFILE baseline:
@@ -163,6 +167,9 @@ test('SCR-031 op: notification toggle changes aria-checked', async ({ page }) =>
 window.HoneyDB.getUserPreferences = async () => ({
   theme: 'light', language: 'ja', default_inspection_mode: 'frame',
   onboarding_completed: true,
+});
+window.HoneyDB.getNotificationSettings = async () => ({
+  inspectionReminder: true, aiDiagnosisComplete: true, sensorAlert: false, systemAnnouncement: true,
 });`)
   await page.goto(`${BASE}/?screen=settings&devbar=0`)
   await page.waitForLoadState('networkidle')
