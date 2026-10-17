@@ -225,21 +225,45 @@ export function InspectionStartScreen({
           const farmKey = farmId ?? 'unknown'
           const lastInsp = lastInspMap.get(id)
           let daysAgo: number | null = null
-          let lastLabel = '内検記録なし'
           if (lastInsp?.date) {
             const d = new Date(String(lastInsp.date)); d.setHours(0, 0, 0, 0)
             daysAgo = Math.round((today.getTime() - d.getTime()) / 86400000)
-            lastLabel = daysAgo === 0 ? '今日' : `${daysAgo}日前`
           }
           const status = daysAgo === null ? 'overdue' : daysAgo >= 14 ? 'overdue' : daysAgo >= 7 ? 'warn' : 'good'
-          const statusLabel = status === 'overdue' ? '期限超過' : status === 'warn' ? '注意' : '良好'
+          const statusLabel = status === 'overdue' ? '期限超過' : status === 'warn' ? '！ 注意' : '✓ 良好'
+          const lastLabel = daysAgo === null ? '内検記録なし' : daysAgo === 0 ? '今日' : status === 'overdue' ? `${daysAgo}日未内検` : `${daysAgo}日前`
+          // Compose bee/brood/honey/empty from inspection frames
+          const colonyInspRecs = (inspRecords as RawInsp[])
+            .filter(r => String(r.colony) === id)
+            .sort((a, b) => String(b.date).localeCompare(String(a.date)))
+          type RawFrame2 = { bee?: number; brood?: number; honey?: number }
+          const frameComp = (frames: unknown[]): {bee:number;brood:number;honey:number;empty:number} => {
+            const fs = (frames as RawFrame2[]).filter(f => f && ((f.bee??0)+(f.brood??0)+(f.honey??0)) > 0)
+            if (!fs.length) return {bee:0,brood:0,honey:0,empty:0}
+            const n = fs.length
+            const b = Math.round(fs.reduce((s,f)=>s+(f.bee??0),0)/n)
+            const br = Math.round(fs.reduce((s,f)=>s+(f.brood??0),0)/n)
+            const h = Math.round(fs.reduce((s,f)=>s+(f.honey??0),0)/n)
+            return {bee:b,brood:br,honey:h,empty:Math.max(0,100-b-br-h)}
+          }
+          const latestRec = colonyInspRecs[0]
+          const prevRec   = colonyInspRecs[1]
+          const curr = frameComp(Array.isArray(latestRec?.frames) ? latestRec.frames : [])
+          const prev = frameComp(Array.isArray(prevRec?.frames)   ? prevRec.frames   : [])
+          let prevInspDate = '', prevInspRelLabel = ''
+          if (latestRec?.date) {
+            const pd = new Date(String(latestRec.date))
+            const dap = Math.round((today.getTime() - pd.getTime()) / 86400000)
+            prevInspDate = `${pd.getFullYear()}/${pd.getMonth()+1}/${pd.getDate()}`
+            prevInspRelLabel = dap === 0 ? '今日' : `${dap}日前`
+          }
           return {
             id, colonyId: name, apiaryName: farmName, apiaryKey: farmKey,
             status, statusLabel,
             lastInspDaysAgo: daysAgo, lastInspDateLabel: lastLabel,
-            bee: 0, brood: 0, honey: 0, empty: 0,
-            prevBee: 0, prevBrood: 0, prevHoney: 0, prevEmpty: 0,
-            prevInspDate: '', prevInspRelLabel: '',
+            bee: curr.bee, brood: curr.brood, honey: curr.honey, empty: curr.empty,
+            prevBee: prev.bee, prevBrood: prev.brood, prevHoney: prev.honey, prevEmpty: prev.empty,
+            prevInspDate, prevInspRelLabel,
           } satisfies SelectableColony
         })
         setDbColonies(mapped)
