@@ -95,7 +95,9 @@ type Screen = typeof VALID_SCREENS[number]
 
 export default function App() {
   const [viewState, setViewState] = useState<ViewState>(() =>
-    readParam('state', VALID_STATES, 'normal'),
+    import.meta.env.DEV
+      ? readParam('state', VALID_STATES, 'normal')
+      : 'normal',
   )
   const [activeTab, setActiveTab] = useState<TabId>(() =>
     readParam('tab', VALID_TABS, 'home'),
