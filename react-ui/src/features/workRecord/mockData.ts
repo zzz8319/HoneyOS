@@ -24,9 +24,9 @@ export const FEED_UNITS = ['mL', 'L']
 export const LINKED_CONTEXT: WorkRecordContext = {
   taskId: 'task-001',
   taskName: 'B-01 給餌',
-  colonyId: 'B-01',
+  colonyId: 'b1',
   colonyName: 'B-01',
-  apiaryId: 'apiary-1',
+  apiaryId: 'f1',
   apiaryName: '宮田養蜂場',
   workType: 'feed',
   dueDate: '2026-09-08',

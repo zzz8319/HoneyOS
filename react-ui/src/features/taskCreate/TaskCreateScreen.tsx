@@ -1,4 +1,4 @@
-import { useState, useRef, useId } from 'react'
+import { useState, useRef, useId, useEffect } from 'react'
 import {
   X,
   Calendar,
@@ -12,7 +12,7 @@ import {
   Plus,
 } from 'lucide-react'
 import type { TaskCreateViewState, TaskPriority, Colony } from './types'
-import { MOCK_COLONIES, AI_CONTEXT, MANUAL_CONTEXT } from './mockData'
+import { AI_CONTEXT, MANUAL_CONTEXT } from './mockData'
 import styles from './TaskCreateScreen.module.css'
 
 interface Props {
@@ -88,16 +88,18 @@ function localDateToDisplay(iso: string): string {
 
 function ColonyPicker({
   selected,
+  colonies,
   onSelect,
   onClose,
 }: {
   selected: Colony | null
+  colonies: Colony[]
   onSelect: (c: Colony) => void
   onClose: () => void
 }) {
   const [query, setQuery] = useState('')
 
-  const groups = MOCK_COLONIES.reduce<Record<string, Colony[]>>((acc, c) => {
+  const groups = colonies.reduce<Record<string, Colony[]>>((acc, c) => {
     if (!acc[c.apiaryName]) acc[c.apiaryName] = []
     acc[c.apiaryName].push(c)
     return acc
@@ -265,10 +267,30 @@ export function TaskCreateScreen({ viewState, onBack, onSuccess }: Props) {
     viewState === 'validation-error' ? '' : (ctx.initialDueDate ?? ''),
   )
   const [priority, setPriority] = useState<TaskPriority>(ctx.initialPriority ?? 'high')
-  const [selectedColony, setSelectedColony] = useState<Colony | null>(() => {
-    if (viewState === 'validation-error' || !ctx.colonyId) return null
-    return MOCK_COLONIES.find(c => c.id === ctx.colonyId) ?? null
-  })
+  const [dbColonies, setDbColonies] = useState<Colony[]>([])
+  const [selectedColony, setSelectedColony] = useState<Colony | null>(null)
+
+  useEffect(() => {
+    const db = window.HoneyDB
+    if (!db?.loadColonies) return
+    Promise.all([db.loadFarms(), db.loadColonies()])
+      .then(([farms, colonies]) => {
+        const farmList = farms as Array<{ id: string; name: string }>
+        const colonyList = colonies as Array<{ id: string; name: string; farmId: string | null }>
+        const farmMap = new Map(farmList.map(f => [String(f.id), f.name]))
+        const built: Colony[] = colonyList.map(c => {
+          const farmId = c.farmId ? String(c.farmId) : 'unknown'
+          return { id: c.id, name: c.name, apiaryId: farmId, apiaryName: farmMap.get(farmId) ?? '養蜂場なし' }
+        })
+        setDbColonies(built)
+        if (viewState !== 'validation-error' && ctx.colonyId) {
+          const match = built.find(c => c.id === ctx.colonyId)
+          if (match) setSelectedColony(match)
+        }
+      })
+      .catch(() => {})
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
   const [memo, setMemo] = useState(
     viewState === 'validation-error' ? '' : (ctx.initialMemo ?? ''),
   )
@@ -662,6 +684,7 @@ export function TaskCreateScreen({ viewState, onBack, onSuccess }: Props) {
       {showColonyPicker && (
         <ColonyPicker
           selected={selectedColony}
+          colonies={dbColonies}
           onSelect={c => { setSelectedColony(c); isDirty.current = true }}
           onClose={() => setShowColonyPicker(false)}
         />

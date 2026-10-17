@@ -1,10 +1,10 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import {
   X, Calendar, Sun, ChevronRight,
   Search, SlidersHorizontal,
 } from 'lucide-react'
 import {
-  MOCK_COLONIES, APIARIES, SORT_OPTIONS, sortColonies,
+  APIARIES, SORT_OPTIONS, sortColonies,
   type SelectableColony, type SortMode,
 } from './mockData'
 import styles from './InspectionStartScreen.module.css'
@@ -189,20 +189,97 @@ export function InspectionStartScreen({
 
   // selected状態: A-05を確実に選択済みにする
   const [selectedId, setSelectedId] = useState<string | null>(() => {
-    if (viewState === 'selected') return initialColonyId ?? 'a05'
+    if (viewState === 'selected') return initialColonyId ?? 'a5'
     return initialColonyId ?? null
   })
 
   const [apiaryFilter, setApiaryFilter] = useState('all')
   const [searchQuery, setSearchQuery]   = useState('')
   const [sortMode, setSortMode]         = useState<SortMode>('recommended')
+  const [dbColonies, setDbColonies] = useState<SelectableColony[] | null>(null)
+
+  useEffect(() => {
+    if (isLoading || isError || isEmpty) return
+    const db = window.HoneyDB
+    if (!db?.loadColonies) return
+    let cancelled = false
+    Promise.all([db.loadFarms(), db.loadColonies(), db.loadInspRecords()])
+      .then(([farms, colonies, inspRecords]) => {
+        if (cancelled) return
+        type RawFarm = Record<string, unknown>
+        type RawColony = Record<string, unknown>
+        type RawInsp = Record<string, unknown>
+        const farmMap = new Map((farms as RawFarm[]).map(f => [String(f.id), String(f.name)]))
+        const lastInspMap = new Map<string, RawInsp>()
+        for (const r of (inspRecords as RawInsp[])) {
+          const cid = String(r.colony)
+          const prev = lastInspMap.get(cid)
+          if (!prev || String(r.date) > String(prev.date)) lastInspMap.set(cid, r)
+        }
+        const today = new Date(); today.setHours(0, 0, 0, 0)
+        const mapped: SelectableColony[] = (colonies as RawColony[]).map(c => {
+          const id = String(c.id)
+          const name = String(c.name)
+          const farmId = c.farmId != null ? String(c.farmId) : null
+          const farmName = farmId ? (farmMap.get(farmId) ?? '不明') : '不明'
+          const farmKey = farmId ?? 'unknown'
+          const lastInsp = lastInspMap.get(id)
+          let daysAgo: number | null = null
+          if (lastInsp?.date) {
+            const d = new Date(String(lastInsp.date)); d.setHours(0, 0, 0, 0)
+            daysAgo = Math.round((today.getTime() - d.getTime()) / 86400000)
+          }
+          const status = daysAgo === null ? 'overdue' : daysAgo >= 14 ? 'overdue' : daysAgo >= 7 ? 'warn' : 'good'
+          const statusLabel = status === 'overdue' ? '期限超過' : status === 'warn' ? '！ 注意' : '✓ 良好'
+          const lastLabel = daysAgo === null ? '内検記録なし' : daysAgo === 0 ? '今日' : status === 'overdue' ? `${daysAgo}日未内検` : `${daysAgo}日前`
+          // Compose bee/brood/honey/empty from inspection frames
+          const colonyInspRecs = (inspRecords as RawInsp[])
+            .filter(r => String(r.colony) === id)
+            .sort((a, b) => String(b.date).localeCompare(String(a.date)))
+          type RawFrame2 = { bee?: number; brood?: number; honey?: number }
+          const frameComp = (frames: unknown[]): {bee:number;brood:number;honey:number;empty:number} => {
+            const fs = (frames as RawFrame2[]).filter(f => f && ((f.bee??0)+(f.brood??0)+(f.honey??0)) > 0)
+            if (!fs.length) return {bee:0,brood:0,honey:0,empty:0}
+            const n = fs.length
+            const b = Math.round(fs.reduce((s,f)=>s+(f.bee??0),0)/n)
+            const br = Math.round(fs.reduce((s,f)=>s+(f.brood??0),0)/n)
+            const h = Math.round(fs.reduce((s,f)=>s+(f.honey??0),0)/n)
+            return {bee:b,brood:br,honey:h,empty:Math.max(0,100-b-br-h)}
+          }
+          const latestRec = colonyInspRecs[0]
+          const prevRec   = colonyInspRecs[1]
+          const curr = frameComp(Array.isArray(latestRec?.frames) ? latestRec.frames : [])
+          const prev = frameComp(Array.isArray(prevRec?.frames)   ? prevRec.frames   : [])
+          let prevInspDate = '', prevInspRelLabel = ''
+          if (latestRec?.date) {
+            const pd = new Date(String(latestRec.date))
+            const dap = Math.round((today.getTime() - pd.getTime()) / 86400000)
+            prevInspDate = `${pd.getFullYear()}/${pd.getMonth()+1}/${pd.getDate()}`
+            prevInspRelLabel = dap === 0 ? '今日' : `${dap}日前`
+          }
+          return {
+            id, colonyId: name, apiaryName: farmName, apiaryKey: farmKey,
+            status, statusLabel,
+            lastInspDaysAgo: daysAgo, lastInspDateLabel: lastLabel,
+            bee: curr.bee, brood: curr.brood, honey: curr.honey, empty: curr.empty,
+            prevBee: prev.bee, prevBrood: prev.brood, prevHoney: prev.honey, prevEmpty: prev.empty,
+            prevInspDate, prevInspRelLabel,
+          } satisfies SelectableColony
+        })
+        setDbColonies(mapped)
+      })
+      .catch(() => { if (!cancelled) setDbColonies([]) })
+    return () => { cancelled = true }
+  }, [viewState, isLoading, isError, isEmpty])
+
+  const colonies = useMemo(() => dbColonies ?? [], [dbColonies])
 
   const inspDate    = '2026年9月8日（火）'
   const weather     = '晴れ'
   const temperature = 28
 
   const filtered = useMemo(() => {
-    let list = sortColonies(MOCK_COLONIES, sortMode)
+    let list = sortColonies(colonies, sortMode)
     if (apiaryFilter !== 'all') list = list.filter(c => c.apiaryKey === apiaryFilter)
     if (searchQuery) {
       const q = searchQuery.toLowerCase()
@@ -212,9 +289,9 @@ export function InspectionStartScreen({
     }
     if (isOffline) list = list.filter(c => c.cached)
     return list
-  }, [apiaryFilter, searchQuery, sortMode, isOffline])
+  }, [colonies, apiaryFilter, searchQuery, sortMode, isOffline])
 
-  const selectedColony = MOCK_COLONIES.find(c => c.id === selectedId) ?? null
+  const selectedColony = colonies.find(c => c.id === selectedId) ?? null
 
   const handleStart = () => {
     if (!selectedColony) return

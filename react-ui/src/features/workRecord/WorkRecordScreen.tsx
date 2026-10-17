@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import type { WorkRecordViewState, WorkType, WorkRecordColony, WorkRecordApiary } from './types'
-import { MOCK_COLONIES, FEED_TYPES, FEED_UNITS, LINKED_CONTEXT, NEW_CONTEXT } from './mockData'
+import { FEED_TYPES, FEED_UNITS, LINKED_CONTEXT, NEW_CONTEXT } from './mockData'
 import styles from './WorkRecordScreen.module.css'
 
 // ── SVG Icons ──────────────────────────────────────────────────────────────
@@ -532,10 +532,11 @@ export function WorkRecordScreen({ viewState, onBack, onSuccess }: WorkRecordScr
   const initTime = isLinked && !isValidationError ? '10:30' : ''
 
   const [workType, setWorkType] = useState<WorkType | null>(initWorkType)
-  const [selectedColony, setSelectedColony] = useState<WorkRecordColony | null>(() => {
-    if (!initColonyId) return null
-    return MOCK_COLONIES.find(c => c.id === initColonyId) ?? null
-  })
+  const [selectedColonyId, setSelectedColonyId] = useState<string | null>(
+    viewState !== 'validation-error' ? (initColonyId ?? null) : null,
+  )
+  const selectedColony = dbColonies.find(c => c.id === selectedColonyId) ?? null
+  const setSelectedColony = (c: WorkRecordColony | null) => setSelectedColonyId(c?.id ?? null)
   const [performedDate, setPerformedDate] = useState(initDate)
   const [performedTime, setPerformedTime] = useState(initTime)
   const [feedType, setFeedType] = useState('砂糖水')

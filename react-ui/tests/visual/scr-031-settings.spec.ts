@@ -19,16 +19,29 @@ const STATES = [
 
 // ── Visual snapshot tests (12 states) ────────────────────────────────────────
 
-for (const state of STATES) {
-  test(`SCR-031 snapshot: ${state}`, async ({ page }) => {
-    await page.setViewportSize({ width: 390, height: 844 })
-    await page.goto(`${BASE}/?screen=settings&state=${state}&devbar=0`)
-    await page.waitForLoadState('networkidle')
-    await expect(page).toHaveScreenshot(`scr-031-${state}.png`, {
-      fullPage: false,
-    })
+// Override profile/session to match old MOCK_PROFILE baseline:
+// username='山田 太郎', email='yamada.taro@example.com', farm='山田養蜂場'.
+const PROFILE_OVERRIDE = `
+window.HoneyDB.getUserProfile = async () => ({ name: '山田 太郎', farm_name: '山田養蜂場' });
+window.HoneyDB.getSession = async () => ({ user: { id: 'user-1', email: 'yamada.taro@example.com' } });
+`
+
+test.describe('SCR-031 snapshot', () => {
+  test.beforeEach(async ({ page }) => {
+    await injectMockHoneyDB(page, PROFILE_OVERRIDE)
   })
-}
+
+  for (const state of STATES) {
+    test(`${state}`, async ({ page }) => {
+      await page.setViewportSize({ width: 390, height: 844 })
+      await page.goto(`${BASE}/?screen=settings&state=${state}&devbar=0`)
+      await page.waitForLoadState('networkidle')
+      await expect(page).toHaveScreenshot(`scr-031-${state}.png`, {
+        fullPage: false,
+      })
+    })
+  }
+})
 
 // ── Operation tests ────────────────────────────────────────────────────────
 
@@ -138,7 +151,7 @@ test('SCR-031 op: profile-error state shows error with inputs', async ({ page })
   await page.goto(`${BASE}/?screen=settings&state=profile-error&devbar=0`)
   await page.waitForLoadState('networkidle')
   await expect(page.locator('#edit-username')).toBeVisible()
-  const errorMsg = page.locator('[role="alert"]')
+  const errorMsg = page.locator('[role="alert"]').first()
   await expect(errorMsg).toBeVisible()
 })
 

@@ -1,6 +1,30 @@
 import { test, expect } from '@playwright/test'
+import { injectMockHoneyDB } from './helpers/mockHoneyDB'
 
-const BASE = 'http://localhost:5173'
+const BASE = ''
+
+// Match old 7-colony/2-apiary MOCK_COLONIES baseline. B-01 is placed in
+// 田中養蜂場 (f2) so the colony picker shows the same two apiary groups as
+// the original fixture (宮田養蜂場 ×5, 田中養蜂場 ×2).
+const COLONY_OVERRIDE = `
+window.HoneyDB.loadFarms = async () => [
+  { id: 'f1', name: '宮田養蜂場' },
+  { id: 'f2', name: '田中養蜂場' },
+];
+window.HoneyDB.loadColonies = async () => [
+  { id: 'a1', name: 'A-01', farmId: 'f1' },
+  { id: 'a2', name: 'A-02', farmId: 'f1' },
+  { id: 'a3', name: 'A-03', farmId: 'f1' },
+  { id: 'a4', name: 'A-04', farmId: 'f1' },
+  { id: 'a5', name: 'A-05', farmId: 'f1' },
+  { id: 'b1', name: 'B-01', farmId: 'f2' },
+  { id: 'b2', name: 'B-02', farmId: 'f2' },
+];
+`
+
+test.beforeEach(async ({ page }) => {
+  await injectMockHoneyDB(page, COLONY_OVERRIDE)
+})
 
 function url(state: string) {
   return `${BASE}/?screen=task-create&state=${state}&devbar=0`

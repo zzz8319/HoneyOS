@@ -82,3 +82,49 @@ describe('DashboardScreen HoneyDB integration contract', () => {
     expect(db?.loadColonies).toBeUndefined()
   })
 })
+
+describe('buildWeeklyStats boundary conditions', () => {
+  it('0件: no NaN or Infinity in output', () => {
+    const result = buildDashboardData(FARM, COLONY, INSP, [])
+    const w = result.weekly
+    expect(Number.isFinite(w.honeyKg)).toBe(true)
+    expect(Number.isFinite(w.honeyPrevPct)).toBe(true)
+    expect(Number.isFinite(w.workCount)).toBe(true)
+    expect(Number.isFinite(w.workPrevDiff)).toBe(true)
+    expect(w.honeyHistory).toHaveLength(4)
+    w.honeyHistory.forEach(h => expect(Number.isFinite(h.kg)).toBe(true))
+  })
+
+  it('prevKg=0: honeyPrevPct is 0 (not Infinity)', () => {
+    // this week has harvest, prev week has none → no division by zero
+    const today = new Date()
+    const thisMonday = today.toISOString().slice(0, 10)
+    const workRecords = [{ type: 'harvest', date: thisMonday, yieldKg: 5 }]
+    const result = buildDashboardData(FARM, COLONY, INSP, workRecords)
+    expect(result.weekly.honeyPrevPct).toBe(0)
+    expect(Number.isFinite(result.weekly.honeyPrevPct)).toBe(true)
+  })
+
+  it('non-harvest work records: not counted in honeyKg', () => {
+    const today = new Date().toISOString().slice(0, 10)
+    const workRecords = [
+      { type: 'feeding', date: today, yieldKg: 10 },
+      { type: 'treatment', date: today },
+    ]
+    const result = buildDashboardData(FARM, COLONY, INSP, workRecords)
+    expect(result.weekly.honeyKg).toBe(0)
+    expect(result.weekly.workCount).toBe(2)
+  })
+
+  it('yieldKg as string: coerced to number', () => {
+    const today = new Date().toISOString().slice(0, 10)
+    const workRecords = [{ type: 'harvest', date: today, yieldKg: '3.5' as unknown as number }]
+    const result = buildDashboardData(FARM, COLONY, INSP, workRecords)
+    expect(result.weekly.honeyKg).toBe(3.5)
+  })
+
+  it('weather is always null (no external API)', () => {
+    const result = buildDashboardData(FARM, COLONY, INSP, [])
+    expect(result.weather).toBeNull()
+  })
+})
