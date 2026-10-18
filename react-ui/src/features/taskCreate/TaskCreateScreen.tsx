@@ -1,4 +1,4 @@
-import { useState, useRef, useId, useEffect } from 'react'
+import { useState, useRef, useId, useEffect, useCallback } from 'react'
 import {
   X,
   Calendar,
@@ -257,7 +257,7 @@ export function TaskCreateScreen({ viewState, onBack, onSuccess }: Props) {
   const dueDateErrId = useId()
 
   const [showAiCard, setShowAiCard] = useState(ctx.source === 'ai-recommendation')
-  const [linkedRecommendationId, setLinkedRecommendationId] = useState(ctx.recommendationId)
+  const [, setLinkedRecommendationId] = useState(ctx.recommendationId)
 
   // Form state — validation-error starts empty; all others from context
   const [title, setTitle] = useState(
@@ -309,9 +309,21 @@ export function TaskCreateScreen({ viewState, onBack, onSuccess }: Props) {
     viewState === 'validation-error' ? '期限日を選択してください。' : '',
   )
 
-  const isSubmitting = viewState === 'submitting'
-  const isOffline = viewState === 'offline'
-  const hasSubmitError = viewState === 'submit-error'
+  // DEV-only: viewState drives snapshot fixtures for visual tests
+  const devSubmitting = import.meta.env.DEV && viewState === 'submitting'
+  const devOffline    = import.meta.env.DEV && viewState === 'offline'
+  const devSubmitErr  = import.meta.env.DEV && viewState === 'submit-error'
+
+  // Runtime save state (production and dev)
+  const [saving, setSaving]         = useState(false)
+  const [saveError, setSaveError]   = useState(false)
+  const savingRef                   = useRef(false)
+  const mountedRef                  = useRef(true)
+  useEffect(() => { mountedRef.current = true; return () => { mountedRef.current = false } }, [])
+
+  const isSubmitting  = devSubmitting || saving
+  const isOffline     = devOffline
+  const hasSubmitError = devSubmitErr || saveError
   const disabled = isSubmitting || isOffline
 
   const isDirty = useRef(false)
@@ -341,29 +353,54 @@ export function TaskCreateScreen({ viewState, onBack, onSuccess }: Props) {
     onBack()
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = useCallback(() => {
     let valid = true
     if (!title.trim()) { setTitleError('タイトルを入力してください。'); valid = false }
     if (!dueDate) { setDueDateError('期限日を選択してください。'); valid = false }
     if (!valid) return
 
-    // [DEV] In production: call window.HoneyDB.createTask(payload)
-    const _payload = {
+    // Prevent concurrent submissions
+    if (savingRef.current) return
+    savingRef.current = true
+    setSaving(true)
+    setSaveError(false)
+
+    const farmIdRaw = selectedColony?.apiaryId
+    const farmId = (farmIdRaw && farmIdRaw !== 'unknown')
+      ? (Number.isFinite(Number(farmIdRaw)) ? Number(farmIdRaw) : null)
+      : null
+
+    const payload = {
       title: title.trim(),
       dueDate,
       priority,
-      colonyId: selectedColony?.id ?? null,
-      apiaryId: selectedColony?.apiaryId ?? null,
+      colonyIds: selectedColony ? [selectedColony.id] : [],
+      farmId,
       memo,
       reminderEnabled: reminderOn,
-      source: ctx.source,
-      recommendationId: linkedRecommendationId,
-      diagnosisResultId: ctx.diagnosisResultId,
-      inspectionId: ctx.inspectionId,
     }
-    void _payload
-    onSuccess?.()
-  }
+
+    const db = window.HoneyDB
+    if (!db?.saveTask) {
+      savingRef.current = false
+      if (mountedRef.current) { setSaving(false); setSaveError(true) }
+      return
+    }
+
+    db.saveTask(payload)
+      .then(() => {
+        if (!mountedRef.current) return
+        setSaving(false)
+        savingRef.current = false
+        onSuccess?.()
+      })
+      .catch(() => {
+        if (!mountedRef.current) return
+        setSaving(false)
+        savingRef.current = false
+        setSaveError(true)
+      })
+  }, [title, dueDate, priority, selectedColony, memo, reminderOn, onSuccess])
 
   const isFormValid = title.trim().length > 0 && dueDate.length > 0
 
