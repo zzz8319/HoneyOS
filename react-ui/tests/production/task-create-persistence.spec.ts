@@ -307,3 +307,36 @@ test('9: unauthenticated access goes to login', async ({ page }) => {
   expect(hasTaskCreate, 'Task create should not be shown without auth').toBe(false)
   expect(hasLogin, 'Login screen should be shown').toBe(true)
 })
+
+// ── 10. saveTask returns null → error banner, no navigation ──────────────────
+
+test('10: saveTask returning null shows error banner and does not navigate', async ({ page }) => {
+  await page.addInitScript(MOCK_SCRIPT)
+  // Override saveTask to return null (no ID assigned)
+  await page.addInitScript(`
+    (function() {
+      window.HoneyDB.saveTask = async function(_task) {
+        window.__testControl.getSaveTaskCalls(); // bump via original ref not needed, just count
+        return null;
+      };
+    })();
+  `)
+  await page.goto('?screen=task-create&tab=task', { waitUntil: 'networkidle' })
+  await page.waitForTimeout(600)
+  await expect(page.getByText('タスク作成')).toBeVisible({ timeout: 3000 })
+
+  await page.getByRole('textbox', { name: 'タイトル' }).fill('null戻りテスト')
+  await page.getByLabel('期限日を選択').fill('2026-11-25')
+  await page.getByRole('button', { name: 'タスクを作成' }).click()
+  await page.waitForTimeout(500)
+
+  // Should show error banner
+  const banner = page.locator('[role="alert"]').filter({ hasText: 'タスクを作成できませんでした' })
+  await expect(banner).toBeVisible()
+
+  // Should remain on task-create (no navigation)
+  await expect(page.getByText('タスク作成')).toBeVisible()
+
+  // Input retained
+  await expect(page.getByRole('textbox', { name: 'タイトル' })).toHaveValue('null戻りテスト')
+})

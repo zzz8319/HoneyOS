@@ -14,6 +14,7 @@ import {
 import type { TaskCreateViewState, TaskPriority, Colony } from './types'
 import { AI_CONTEXT, MANUAL_CONTEXT } from './mockData'
 import styles from './TaskCreateScreen.module.css'
+import { parseFarmId } from './taskCreateUtils'
 
 interface Props {
   viewState: TaskCreateViewState
@@ -365,10 +366,7 @@ export function TaskCreateScreen({ viewState, onBack, onSuccess }: Props) {
     setSaving(true)
     setSaveError(false)
 
-    const farmIdRaw = selectedColony?.apiaryId
-    const farmId = (farmIdRaw && farmIdRaw !== 'unknown')
-      ? (Number.isFinite(Number(farmIdRaw)) ? Number(farmIdRaw) : null)
-      : null
+    const farmId = parseFarmId(selectedColony?.apiaryId)
 
     const payload = {
       title: title.trim(),
@@ -388,10 +386,11 @@ export function TaskCreateScreen({ viewState, onBack, onSuccess }: Props) {
     }
 
     db.saveTask(payload)
-      .then(() => {
+      .then((id) => {
         if (!mountedRef.current) return
         setSaving(false)
         savingRef.current = false
+        if (!id) { setSaveError(true); return }
         onSuccess?.()
       })
       .catch(() => {

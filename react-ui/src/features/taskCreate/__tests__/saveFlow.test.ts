@@ -6,6 +6,7 @@
  * No DOM rendering, no Playwright — pure logic assertions.
  */
 import { describe, it, expect, vi } from 'vitest'
+import { parseFarmId } from '../taskCreateUtils'
 
 // ── Payload builder (mirrors handleSubmit logic) ─────────────────────────────
 
@@ -34,16 +35,12 @@ function buildPayload(
   memo: string,
   reminderEnabled: boolean,
 ): SavePayload {
-  const farmIdRaw = selectedColony?.apiaryId
-  const farmId = (farmIdRaw && farmIdRaw !== 'unknown')
-    ? (Number.isFinite(Number(farmIdRaw)) ? Number(farmIdRaw) : null)
-    : null
   return {
     title: title.trim(),
     dueDate,
     priority,
     colonyIds: selectedColony ? [selectedColony.id] : [],
-    farmId,
+    farmId: parseFarmId(selectedColony?.apiaryId),
     memo,
     reminderEnabled,
   }
@@ -219,5 +216,83 @@ describe('offline prevention', () => {
     const isSubmitting = false
     const disabled = isSubmitting || isOffline
     expect(disabled).toBe(false)
+  })
+})
+
+// ── parseFarmId ───────────────────────────────────────────────────────────────
+
+describe('parseFarmId', () => {
+  it('valid decimal integer string → number', () => {
+    expect(parseFarmId('10')).toBe(10)
+    expect(parseFarmId('1')).toBe(1)
+    expect(parseFarmId('9007199254740991')).toBe(Number.MAX_SAFE_INTEGER)
+  })
+
+  it('undefined → null', () => {
+    expect(parseFarmId(undefined)).toBeNull()
+  })
+
+  it('"unknown" → null', () => {
+    expect(parseFarmId('unknown')).toBeNull()
+  })
+
+  it('empty string → null', () => {
+    expect(parseFarmId('')).toBeNull()
+  })
+
+  it('float string → null (not a safe integer)', () => {
+    expect(parseFarmId('1.5')).toBeNull()
+    expect(parseFarmId('2.9')).toBeNull()
+  })
+
+  it('partial-parse string (e.g. "12abc") → null', () => {
+    // Number('12abc') = NaN, not a safe integer
+    expect(parseFarmId('12abc')).toBeNull()
+    expect(parseFarmId('f1')).toBeNull()
+  })
+
+  it('zero or negative → null', () => {
+    expect(parseFarmId('0')).toBeNull()
+    expect(parseFarmId('-1')).toBeNull()
+  })
+
+  it('beyond MAX_SAFE_INTEGER → null', () => {
+    expect(parseFarmId('9007199254740992')).toBeNull()
+  })
+})
+
+// ── saveTask null return value ────────────────────────────────────────────────
+
+describe('saveTask null return handling', () => {
+  it('null return treated as failure — onSuccess not called', async () => {
+    const saveTask = vi.fn().mockResolvedValue(null)
+    const onSuccess = vi.fn()
+    const id = await saveTask({})
+    if (id) onSuccess()
+    expect(onSuccess).not.toHaveBeenCalled()
+  })
+
+  it('undefined return treated as failure — onSuccess not called', async () => {
+    const saveTask = vi.fn().mockResolvedValue(undefined)
+    const onSuccess = vi.fn()
+    const id = await saveTask({})
+    if (id) onSuccess()
+    expect(onSuccess).not.toHaveBeenCalled()
+  })
+
+  it('empty string return treated as failure — onSuccess not called', async () => {
+    const saveTask = vi.fn().mockResolvedValue('')
+    const onSuccess = vi.fn()
+    const id = await saveTask({})
+    if (id) onSuccess()
+    expect(onSuccess).not.toHaveBeenCalled()
+  })
+
+  it('valid id string return → onSuccess called', async () => {
+    const saveTask = vi.fn().mockResolvedValue('task-123')
+    const onSuccess = vi.fn()
+    const id = await saveTask({})
+    if (id) onSuccess()
+    expect(onSuccess).toHaveBeenCalledTimes(1)
   })
 })
