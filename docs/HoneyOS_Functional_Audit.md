@@ -147,6 +147,109 @@ if (window.HoneyDB?.saveColony) {
 
 ---
 
+---
+
+## 残存課題の推奨修正順
+
+以下の順序で個別 PR を起票・修正することを推奨します。
+
+### 優先 1: InspectionStartScreen の MOCK_APIARIES 除去（#7）
+
+`MOCK_APIARIES` ハードコード定数を削除し、`loadFarms()` から取得した farms を養蜂場タブに表示する。
+- 影響: InspectionStartScreen のみ
+- リスク: 低（DB から farms を取得する既存パターンと同様）
+
+### 優先 2: InspectionStartScreen の日時・天気・気温を実データ化（#6）
+
+- `inspDate`: `new Date().toLocaleDateString('ja-JP', ...)` で当日日付を生成
+- `weather` / `temperature`: 現在は外部 API 未実装のため「未取得」表示に変更（固定 `28` の削除）
+- 影響: InspectionStartScreen のみ
+- リスク: 低（表示変更のみ、既存テスト影響は snapshot 更新要）
+
+### 優先 3: WorkListScreen のカレンダー月移動実装（#8 / #10）
+
+`WEEK_STRIP` ハードコードと月移動ボタン `onClick` なしを修正。
+- `selectedWeekStart` を state で管理し、ボタンで +/-7 日移動
+- 月ラベルを動的生成（`selectedWeekStart` ベース）
+- 影響: WorkListScreen のみ
+- リスク: 中（カレンダーロジック変更は snapshot 更新要）
+
+### 優先 4: WorkRecordScreen の下書き保存仕様決定・実装（#5）
+
+仕様書に下書き保存の定義がない。実装前に仕様確認が必要。
+- 選択肢: (a) localStorage に一時保存、(b) DB draft テーブル導入、(c) 機能削除
+- 影響: WorkRecordScreen + 場合により DB スキーマ
+- リスク: 高（スキーマ変更を伴う場合はマイグレーション要 → 事前報告）
+
+---
+
+## タスク登録後一覧表示フロー調査メモ
+
+調査日: 2026-10-19
+確認方法: コード確認（モック確認）/ 実 Supabase 未確認
+
+### フロー確認結果
+
+```
+TaskCreateScreen.handleSubmit
+  ↓ 検証: title.trim() && dueDate の両方が必要
+  ↓ savingRef.current チェック（二重送信防止）
+  → window.HoneyDB.saveTask(payload)
+     payload: { title, dueDate, priority, colonyIds: string[], farmId: number|null, memo, reminderEnabled }
+  ↓ 戻り値: string (task ID) | null
+  ↓ null の場合: setSaveError(true) で終了（onSuccess 非呼び出し）
+  ↓ 有効 ID の場合:
+  → onSuccess()
+     App.tsx L570: onSuccess={() => setScreen('work')}
+  → WorkListScreen マウント（setScreen('work') でマウント）
+  ↓ useEffect（deps: [viewState]）が loadTasks() を実行
+  → window.HoneyDB.loadTasks()
+     supabase_client.js L362: SELECT * FROM tasks ORDER BY due_date ASC
+     戻り値: camelCase オブジェクト配列（isCompleted, dueDate, ...）
+  → mapTask(raw) で WorkTask 型に変換
+     isCompleted: Boolean(raw.isCompleted ?? raw.is_completed ?? ...)
+     status: toTaskStatus(due, completed)
+  → setDbTasks(mapped)
+```
+
+### 除外されうる条件（新規タスクが一覧に表示されない原因候補）
+
+| 条件 | 詳細 | 実際の動作 |
+|---|---|---|
+| viewState が 'loading'/'error'/'offline-no-cache' | useEffect が早期 return | viewState='normal' なら実行される |
+| window.HoneyDB.loadTasks 未定義 | useEffect が return | 通常は定義済み |
+| dueDate が未来すぎる | toTaskStatus → 'upcoming' → weekTasks に分類 | 「今週」タブでは表示されないが「全て」では表示 |
+| dueDate なし | toTaskStatus → 'upcoming' | 上記と同様 |
+| isCompleted=true | toTaskStatus → 'completed' → completedTasks に分類 | 完了フィルター時のみ表示 |
+
+### ペイロードとスキーマの整合
+
+| フィールド | payload キー | tasks 列 | saveTask でのマッピング | 整合 |
+|---|---|---|---|---|
+| タイトル | `title` | `title text NOT NULL` | `title: task.title` | ✅ |
+| 期限日 | `dueDate` | `due_date text` | `due_date: task.dueDate` | ✅ |
+| 優先度 | `priority` | `priority text` | `priority: task.priority` | ✅ |
+| 蜂群ID配列 | `colonyIds` | `colony_ids text[]` | `colony_ids: task.colonyIds` | ✅ |
+| 養蜂場ID | `farmId` | `farm_id bigint` | `farm_id: task.farmId` | ✅ |
+| メモ | `memo` | `memo text` | `memo: task.memo` | ✅ |
+| リマインダー | `reminderEnabled` | `reminder_enabled boolean` | `reminder_enabled: task.reminderEnabled` | ✅ |
+
+### 結論
+
+コード上ではフロー全体が正しく接続されています。
+
+- `handleSubmit` は `id` が truthy な場合のみ `onSuccess()` を呼ぶ ✅（#1 の修正済み）
+- `onSuccess` → `setScreen('work')` → WorkListScreen マウント ✅
+- `useEffect` で `loadTasks()` 実行 ✅
+- `mapTask` は `isCompleted` を camelCase で正しく読む ✅（#1 の修正済み）
+- ペイロードと tasks スキーマ全列が一致 ✅
+
+**モック確認済み / 実 Supabase 未確認**
+
+実 Supabase 環境で確認するまでは「実装済み・実環境未確認」の扱いとします。
+
+---
+
 ## 環境確認事項
 
 - mock 検証：`window.HoneyDB` インターフェースとの整合確認のみ
