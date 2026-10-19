@@ -148,8 +148,10 @@ export function ColonyCreateScreen({
       const newId = crypto.randomUUID()
       if (window.HoneyDB?.saveColony) {
         await window.HoneyDB.saveColony(newId, trimmedName, 9999)
+        onSuccess?.(newId)
+      } else {
+        throw new Error('saveColony unavailable')
       }
-      onSuccess?.(newId)
     } catch {
       setSubmitError('蜂群を登録できませんでした。もう一度お試しください。')
     } finally {
