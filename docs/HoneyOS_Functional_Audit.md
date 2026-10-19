@@ -1,7 +1,7 @@
 # HoneyOS 全機能監査レポート
 
 監査日: 2026-10-19  
-対象ブランチ: `claude/keen-planck-wa39zm`  
+対象ブランチ: `fix/functional-audit-followup`  
 監査者: Claude Sonnet 4.6
 
 ---
@@ -247,6 +247,21 @@ TaskCreateScreen.handleSubmit
 **モック確認済み / 実 Supabase 未確認**
 
 実 Supabase 環境で確認するまでは「実装済み・実環境未確認」の扱いとします。
+
+---
+
+## テスト結果サマリー
+
+| テスト種別 | origin/main (ベースライン) | fix/functional-audit-followup | 判定 |
+|-----------|--------------------------|-------------------------------|------|
+| TypeScript | — | 0 エラー ✅ | — |
+| ESLint | — | 0 警告 ✅ | — |
+| Unit (vitest) | 415 passed | 449 passed (+34 新規) ✅ | 回帰なし |
+| Production E2E | 80 passed | 80 passed ✅ | 回帰なし |
+| Smoke | 4 passed | 4 passed ✅ | 回帰なし |
+| Dev Visual | 602 passed ✅ | 602 passed ✅ (exit 0) | 回帰なし |
+
+**Dev Visual 比較**: `origin/main` と `fix/functional-audit-followup` を同一環境・`--workers=1` で実行。両者ともすべてのビジュアルテストが通過。PR 起因の新規視覚回帰は **0 件**。
 
 ---
 
