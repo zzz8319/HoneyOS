@@ -1,6 +1,6 @@
 # HoneyOS 全機能監査レポート
 
-監査日: 2026-10-19  
+監査日: 2026-10-24  
 対象ブランチ: `fix/functional-audit-followup`  
 監査者: Claude Sonnet 4.6
 
@@ -29,8 +29,18 @@
 | 9 | MEDIUM | WorkListScreen | バグ | `DeadlineTag` の相対ラベル（「期限切れ1日」「3日後」等）がハードコード表示 | 未修正 |
 | 10 | MEDIUM | WorkListScreen | バグ | 月移動ボタンに `onClick` ハンドラなし | 未修正 |
 | 11 | LOW | WorkListScreen | バグ | フィルターチップに `onChange` ハンドラなし（UI 描画のみ） | 未修正 |
-| 12 | LOW | ApiaryCreateScreen | 要確認 | `saveFarm` をオブジェクト引数で呼び出すが、`supabase_client.js` の実装確認要（API 不一致の可能性） | 未確認 |
-| 13 | INFO | 全画面 | 欠落 | タスク・作業記録・蜂群・養蜂場の削除操作が React UI に未実装（`supabase_client.js` には定義あり） | 未修正 |
+| 12 | **CRITICAL** | ApiaryCreateScreen | バグ | `saveFarm` をオブジェクト引数で呼び出しているが `supabase_client.js` の実装は位置引数 `(name, id, opts)`。かつ INSERT 後に ID を返していないため `result.id` が常に `undefined` → 作成後の画面遷移が壊れる | **修正済み** |
+| 13 | **HIGH** | WorkListScreen | バグ | `mapTask` で `completed_at` 文字列（日時）を boolean 判定に使用 → 未完了タスクを完了扱いにする可能性 | **修正済み** |
+| 14 | INFO | 全画面 | 欠落 | タスク・作業記録・蜂群・養蜂場の削除操作が React UI に未実装（`supabase_client.js` には定義あり） | 未修正 |
+| 15 | MEDIUM | AiDiagnosisScreen | バグ | データ全体が `MOCK_DIAGNOSIS_DATA` ハードコード — AI 診断結果が実 DB から取得されない | 未修正 |
+| 16 | MEDIUM | AiAnalysisScreen | バグ | `MOCK_INSPECTION_SUMMARY` / `MOCK_INSPECTION_DATA` ハードコード — AI 解析データが実 DB から取得されない | 未修正 |
+| 17 | MEDIUM | ApiaryMapScreen | バグ | 養蜂場リストが `MOCK_APIARIES`、蜜源情報が `MOCK_NECTAR_SOURCES` ハードコード — 実データ未使用 | 未修正 |
+| 18 | MEDIUM | CameraImagesScreen | バグ | 写真データが `MOCK_DATA` ハードコード — 実 DB から取得されない | 未修正 |
+| 19 | MEDIUM | RecommendedWorkScreen | バグ | 推奨作業データが `MOCK_RECOMMENDED_WORK_DATA` ハードコード | 未修正 |
+| 20 | MEDIUM | FrameViewerScreen | バグ | 内検記録データが `MOCK_RECORDS` ハードコード | 未修正 |
+| 21 | MEDIUM | InspectionCompleteScreen | バグ | `getMockData()` ハードコードを使用 | 未修正 |
+| 22 | LOW | ColonyDetailScreen | バグ | `alert('簡易指標β 算出方法の説明（未実装）')` / `alert('再試行（未実装）')` が残存 | 未修正 |
+| 23 | LOW | FrameViewerScreen | バグ | `alert('内検メモ（未実装）')` が残存 | 未修正 |
 
 ---
 
@@ -134,7 +144,7 @@ if (window.HoneyDB?.saveColony) {
 | TaskCreateScreen | ✅ saveTask | ✅ | ✅ | |
 | ColonyCreateScreen | ✅ saveColony | ✅ (修正後) | ✅ | #4 修正済み |
 | ColonyDetailScreen | ✅ loadColony系 | ✅ | ✅ | |
-| ApiaryCreateScreen | ⚠️ saveFarm API要確認 | ✅ | ✅ | #12 要確認 |
+| ApiaryCreateScreen | ✅ saveFarm（修正後） | ✅ | ✅ | #12 修正済み |
 | InspectionStartScreen | ✅ loadFarms/loadColonies | ⚠️ | △ | #6 #7 未修正 |
 | SettingsScreen | ✅ signOut/updateProfile等 | ✅ | ✅ | |
 | AccountDeleteScreen | ✅ reauthenticate/deleteAccount | ✅ | ✅ | |

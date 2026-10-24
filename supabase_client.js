@@ -119,8 +119,9 @@
       const { error } = await sb.from('farms').update(payload).eq('id', id).eq('user_id', session.user.id);
       if (error) throw error;
     } else {
-      const { error } = await sb.from('farms').insert({ user_id: session.user.id, ...payload });
+      const { data, error } = await sb.from('farms').insert({ user_id: session.user.id, ...payload }).select('id').single();
       if (error) throw error;
+      return data;
     }
   }
 

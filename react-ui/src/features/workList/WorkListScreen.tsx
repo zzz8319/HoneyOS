@@ -40,7 +40,7 @@ function mapTask(raw: Record<string, unknown>): WorkTask {
     dueDate: String(raw.due_date ?? raw.dueDate ?? ''),
     status: toTaskStatus(
       (raw.due_date ?? raw.dueDate) as string | undefined,
-      Boolean(raw.isCompleted ?? raw.is_completed ?? raw.completed_at ?? raw.completed),
+      Boolean(raw.isCompleted ?? raw.is_completed ?? raw.completed ?? false),
     ),
     iconType: (raw.icon_type ?? raw.iconType ?? 'inspection') as TaskIconType,
     completedAt: (raw.completedAt ?? raw.completed_at) ? String(raw.completedAt ?? raw.completed_at) : undefined,
