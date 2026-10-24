@@ -39,11 +39,11 @@ function mapTask(raw: Record<string, unknown>): WorkTask {
     note: raw.note ? String(raw.note) : undefined,
     dueDate: String(raw.due_date ?? raw.dueDate ?? ''),
     status: toTaskStatus(
-      raw.due_date as string | undefined,
-      Boolean(raw.completed_at ?? raw.completed),
+      (raw.due_date ?? raw.dueDate) as string | undefined,
+      Boolean(raw.isCompleted ?? raw.is_completed ?? raw.completed ?? false),
     ),
     iconType: (raw.icon_type ?? raw.iconType ?? 'inspection') as TaskIconType,
-    completedAt: raw.completed_at ? String(raw.completed_at) : undefined,
+    completedAt: (raw.completedAt ?? raw.completed_at) ? String(raw.completedAt ?? raw.completed_at) : undefined,
   }
 }
 
@@ -344,6 +344,7 @@ export function WorkListScreen({ viewState, onTabChange, onAddTask }: Props) {
     completedIds.has(t.id) ? { ...t, status: 'completed' as const } : t,
   )
 
+  const overdueCount = tasks.filter(t => t.status === 'overdue').length
   const isOverdueFilter = viewState === 'overdue-filtered'
   const isOffline = viewState === 'offline'
 
@@ -444,10 +445,10 @@ export function WorkListScreen({ viewState, onTabChange, onAddTask }: Props) {
       {/* Scrollable content */}
       <div className={styles.content}>
         {/* Overdue banner */}
-        {!isOverdueFilter && (
+        {!isOverdueFilter && overdueCount > 0 && (
           <div className={styles.overdueBanner}>
             <AlertTriangle size={16} className={styles.overdueIcon} />
-            <span className={styles.overdueText}>期限切れ 1件</span>
+            <span className={styles.overdueText}>期限切れ {overdueCount}件</span>
             <ChevronRight size={16} className={styles.overdueChevron} />
           </div>
         )}
