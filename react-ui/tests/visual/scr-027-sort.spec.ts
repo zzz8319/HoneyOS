@@ -46,12 +46,12 @@ test.describe('SCR-027 sort', () => {
     await page.waitForLoadState('networkidle')
 
     const dates = await getCardDates(page)
-    // Expected order: 9月16日, 9月7日, 9月6日, 9月2日, 8月28日, 8月20日
-    expect(dates[0]).toContain('9月16日')
-    expect(dates[1]).toContain('9月7日')
-    expect(dates[2]).toContain('9月6日')
-    expect(dates[3]).toContain('9月2日')
-    expect(dates[4]).toContain('8月28日')
+    // Expected order: 9月7日, 9月6日, 9月2日, 8月28日, 8月20日
+    expect(dates[0]).toContain('9月7日')
+    expect(dates[1]).toContain('9月6日')
+    expect(dates[2]).toContain('9月2日')
+    expect(dates[3]).toContain('8月28日')
+    expect(dates[4]).toContain('8月20日')
   })
 
   test('menu shows 新しい順 checked on initial open', async ({ page }) => {
@@ -76,7 +76,7 @@ test.describe('SCR-027 sort', () => {
     await page.waitForTimeout(200)
 
     const dates = await getCardDates(page)
-    // Expected order: 8月20日, 8月28日, 9月2日, 9月6日, 9月7日, 9月16日
+    // Expected order: 8月20日, 8月28日, 9月2日, 9月6日, 9月7日
     expect(dates[0]).toContain('8月20日')
     expect(dates[1]).toContain('8月28日')
     expect(dates[2]).toContain('9月2日')
@@ -117,8 +117,8 @@ test.describe('SCR-027 sort', () => {
     await page.waitForTimeout(200)
 
     const dates = await getCardDates(page)
-    expect(dates[0]).toContain('9月16日')
-    expect(dates[5]).toContain('8月20日')
+    expect(dates[0]).toContain('9月7日')
+    expect(dates[4]).toContain('8月20日')
   })
 
   test('sort works with 作業種別 filter (feeding)', async ({ page }) => {

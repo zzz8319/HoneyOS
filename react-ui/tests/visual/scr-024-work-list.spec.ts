@@ -25,8 +25,8 @@ window.HoneyDB.loadTasks = async () => [
   { id: 'task-3', title: 'B-01 給餌',           colony_name: 'B-01', due_date: '2026-09-19', icon_type: 'feeding' },
   { id: 'task-4', title: 'A-02 分蜂兆候を確認', colony_name: 'A-02', due_date: '2026-09-20', icon_type: 'sprout' },
   { id: 'task-5', title: '器具を消毒',           apiary_name: '宮田養蜂場', due_date: '2026-09-22', icon_type: 'tool' },
-  { id: 'task-6', title: 'A-01 採蜜',           colony_name: 'A-01', due_date: '2026-09-10', icon_type: 'inspection', completed_at: '2026-09-10T10:00:00' },
-  { id: 'task-7', title: 'B-02 給餌',           colony_name: 'B-02', due_date: '2026-09-11', icon_type: 'feeding',    completed_at: '2026-09-11T10:00:00' },
+  { id: 'task-6', title: 'A-01 採蜜',           colony_name: 'A-01', due_date: '2026-09-10', icon_type: 'inspection', completed_at: '2026-09-10T10:00:00', is_completed: true },
+  { id: 'task-7', title: 'B-02 給餌',           colony_name: 'B-02', due_date: '2026-09-11', icon_type: 'feeding',    completed_at: '2026-09-11T10:00:00', is_completed: true },
 ];
 `
 
