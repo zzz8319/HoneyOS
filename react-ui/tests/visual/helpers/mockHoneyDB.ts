@@ -1,10 +1,10 @@
 /**
  * Shared window.HoneyDB mock injection for Playwright visual tests.
  *
- * All data-loading screens call loadFarms / loadColonies / loadInspRecords
- * and sometimes loadWorkRecords / loadTasks.  This helper injects a complete
- * mock via page.addInitScript() so that screens render the "normal" state
- * with fixture data instead of falling through to the error state.
+ * All 8 data-loading screens call loadFarms / loadColonies / loadInspRecords
+ * and sometimes loadWorkRecords.  This helper injects a complete mock via
+ * page.addInitScript() so that screens render the "normal" state with fixture
+ * data instead of falling through to the error state when HoneyDB is absent.
  */
 import type { Page } from '@playwright/test'
 
@@ -27,71 +27,59 @@ const MOCK_COLONIES = [
   { id: 'c1', name: 'C-01', farmId: 'f2' },
 ]
 
-/**
- * Raw inspection records.
- * Values chosen so strength = round(bee*0.6 + brood*0.4) for comparisons:
- * a01→79, b01→70, a05→65, a03→35 (refDate 2026-09-08)
+/** Raw inspection records in HoneyDB format – 2 per colony for delta
+ *  bee/brood values chosen so strength = round(bee*0.6 + brood*0.4) matches
+ *  the comparison-screen spec: a1→79, b1→70, a5→65, a3→35 (refDate 2026-09-08)
+ *  and a1→73, b1→63 (refDate 2026-08-31).
  */
 const MOCK_INSP_RECORDS = [
-  // a1: latest 2026-09-05 strength≈79, prev 2026-08-27 strength≈73
+  // a1: latest 2026-09-05 strength=79 (bee=79,brood=79), prev 2026-08-27 strength=73
   { id: 'ir1',  colony: 'a1', date: '2026-09-05', frames: [{ bee: 79, brood: 79, honey: 15 }] },
   { id: 'ir2',  colony: 'a1', date: '2026-08-27', frames: [{ bee: 73, brood: 73, honey: 18 }] },
-  // a2
+  // a2: any reasonable values
   { id: 'ir3',  colony: 'a2', date: '2026-09-06', frames: [{ bee: 60, brood: 60, honey: 20 }] },
   { id: 'ir4',  colony: 'a2', date: '2026-08-31', frames: [{ bee: 55, brood: 55, honey: 22 }] },
-  // a3: strength≈35
+  // a3: 2026-09-05 strength=35 (for comparison refDate 2026-09-08), 2026-08-28 strength=42 (tooltip test)
   { id: 'ir5',  colony: 'a3', date: '2026-09-05', frames: [{ bee: 35, brood: 35, honey: 10 }] },
   { id: 'ir6',  colony: 'a3', date: '2026-08-28', frames: [{ bee: 42, brood: 42, honey: 12 }] },
-  // a4
+  // a4: any reasonable values
   { id: 'ir7',  colony: 'a4', date: '2026-09-04', frames: [{ bee: 50, brood: 50, honey: 15 }] },
   { id: 'ir8',  colony: 'a4', date: '2026-08-29', frames: [{ bee: 45, brood: 45, honey: 12 }] },
-  // a5: latest 2026-08-23 (oldest → ranks first in recommended sort)
+  // a5: latest 2026-08-23 strength=65, prev 2026-08-10 strength=55
   { id: 'ir9',  colony: 'a5', date: '2026-08-23', frames: [{ bee: 65, brood: 65, honey: 10 }] },
   { id: 'ir10', colony: 'a5', date: '2026-08-10', frames: [{ bee: 55, brood: 55, honey: 12 }] },
-  // b1: latest 2026-09-03
+  // b1: latest 2026-09-03 strength=70, prev 2026-08-22 strength=63
   { id: 'ir11', colony: 'b1', date: '2026-09-03', frames: [{ bee: 70, brood: 70, honey: 20 }] },
   { id: 'ir12', colony: 'b1', date: '2026-08-22', frames: [{ bee: 63, brood: 63, honey: 18 }] },
-  // b2
+  // b2: any reasonable values
   { id: 'ir13', colony: 'b2', date: '2026-09-01', frames: [{ bee: 58, brood: 58, honey: 25 }] },
   { id: 'ir14', colony: 'b2', date: '2026-08-26', frames: [{ bee: 52, brood: 52, honey: 28 }] },
-  // c1
+  // c1: any reasonable values
   { id: 'ir15', colony: 'c1', date: '2026-08-31', frames: [{ bee: 55, brood: 55, honey: 18 }] },
   { id: 'ir16', colony: 'c1', date: '2026-08-25', frames: [{ bee: 50, brood: 50, honey: 20 }] },
 ]
 
-/**
- * Raw work records.
- * wr6 is a harvest in the current week (Sun 2026-09-13 – Sat 2026-09-19 in
- * UTC browser clock when Date is fixed to 2026-09-20T00:00:00+09:00 = 2026-09-19T15:00Z)
- * so buildWeeklyStats shows non-zero current-week harvest in SCR-006.
- */
+/** Raw work records in HoneyDB format */
 const MOCK_WORK_RECORDS = [
-  { id: 'wr1', type: 'harvest',   colony: 'a1', colonyIds: ['a1', 'a2'], date: '2026-09-07', time: '14:20', yieldKg: 5.2, harvestMethod: '遠心分離' },
-  { id: 'wr2', type: 'feeding',   colony: 'b1', colonyIds: ['b1'],      date: '2026-09-06', time: '10:30', memo: '群勢回復のため給餌。', feedType: '砂糖水', feedAmount: 1.0 },
+  { id: 'wr1', type: 'harvest',   colony: 'a1', colonyIds: ['a1', 'a2'], date: '2026-09-07', time: '14:20', yieldKg: 12.4, harvestMethod: '遠心分離' },
+  { id: 'wr2', type: 'feeding',   colony: 'b1', colonyIds: ['b1'],       date: '2026-09-06', time: '10:30', memo: '群勢回復のため給餌。', feedType: '砂糖水', feedAmount: 1.0 },
   { id: 'wr3', type: 'treatment', colony: 'a3', colonyIds: ['a3', 'a4'], date: '2026-09-02', time: '09:15', medicationName: 'アピバール', nextTreatmentDate: '2026-09-16' },
-  { id: 'wr4', type: 'swarming',  colony: 'a5', colonyIds: ['a5'],      date: '2026-08-28', time: '11:20' },
+  { id: 'wr4', type: 'swarming',  colony: 'a5', colonyIds: ['a5'],       date: '2026-08-28', time: '11:20' },
   { id: 'wr5', type: 'wintering', colony: '',   colonyIds: [],           date: '2026-08-20', time: '16:40' },
-  { id: 'wr6', type: 'harvest',   colony: 'a1', colonyIds: ['a1', 'a2'], date: '2026-09-16', time: '09:00', yieldKg: 12.4, harvestMethod: '遠心分離' },
 ]
 
 /**
  * Tasks for WorkListScreen (SCR-024).
  * Fixed date = 2026-09-20T00:00:00+09:00 = 2026-09-19T15:00:00Z (UTC).
- * In a UTC browser: today = 2026-09-19, so:
- *   overdue  = due_date < 2026-09-19
- *   today    = due_date = 2026-09-19
- *   tomorrow = due_date = 2026-09-20
- *   upcoming = due_date > 2026-09-20
  */
 const MOCK_TASKS = [
-  { id: 'task-1', title: 'A-05 内検',       colony_name: 'A-05', due_date: '2026-09-15', icon_type: 'inspection' },
-  { id: 'task-2', title: 'A-03 治療確認',   colony_name: 'A-03', due_date: '2026-09-17', icon_type: 'treatment', note: 'アピバール2回目' },
-  { id: 'task-3', title: 'B-01 給餌確認',   colony_name: 'B-01', due_date: '2026-09-19', icon_type: 'feeding' },
-  { id: 'task-4', title: 'A-02 採蜜準備',   colony_name: 'A-02', due_date: '2026-09-22', icon_type: 'harvest' },
-  { id: 'task-5', title: '器具消毒',         colony_name: '',     due_date: '2026-09-25', icon_type: 'other' },
-  { id: 'task-6', title: 'A-01 定期内検',   colony_name: 'A-01', due_date: '2026-09-10', icon_type: 'inspection', completed_at: '2026-09-10T10:00:00' },
+  { id: 'task-1', title: 'A-05 内検',     colony_name: 'A-05', due_date: '2026-09-15', icon_type: 'inspection' },
+  { id: 'task-2', title: 'A-03 治療確認', colony_name: 'A-03', due_date: '2026-09-17', icon_type: 'treatment', note: 'アピバール2回目' },
+  { id: 'task-3', title: 'B-01 給餌確認', colony_name: 'B-01', due_date: '2026-09-19', icon_type: 'feeding' },
+  { id: 'task-4', title: 'A-02 採蜜準備', colony_name: 'A-02', due_date: '2026-09-22', icon_type: 'harvest' },
+  { id: 'task-5', title: '器具消毒',       colony_name: '',     due_date: '2026-09-25', icon_type: 'other' },
+  { id: 'task-6', title: 'A-01 定期内検', colony_name: 'A-01', due_date: '2026-09-10', icon_type: 'inspection', completed_at: '2026-09-10T10:00:00' },
 ]
-
 
 /**
  * Inject a complete window.HoneyDB mock that all data-loading screens can use.

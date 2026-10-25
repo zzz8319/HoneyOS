@@ -130,9 +130,9 @@ test('SCR-011 inspection start — sort order verification', async ({ page }) =>
   await sortSelect.selectOption('oldest')
   await expect(page.locator('[data-colony-id]').first()).toHaveAttribute('data-colony-id', 'a5')
 
-  // 最終内検が新しい順: A-02(2026-09-06)が先頭
+  // 最終内検が新しい順: A-01(2026-09-05)が先頭（4蜂群フィクスチャでは最新）
   await sortSelect.selectOption('newest')
-  await expect(page.locator('[data-colony-id]').first()).toHaveAttribute('data-colony-id', 'a2')
+  await expect(page.locator('[data-colony-id]').first()).toHaveAttribute('data-colony-id', 'a1')
 
   // おすすめ順に戻す: A-05が先頭
   await sortSelect.selectOption('recommended')
