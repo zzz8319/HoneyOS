@@ -103,7 +103,7 @@ export interface HoneyDBClient {
 
   // 養蜂場
   loadFarms(): Promise<unknown[]>
-  saveFarm(name: string, id?: string | null | undefined, opts?: { latitude?: number | null; longitude?: number | null }): Promise<void>
+  saveFarm(name: string, id?: string | null | undefined, opts?: { latitude?: number | null; longitude?: number | null }): Promise<{ id: number } | null | undefined>
   archiveFarm(id: string): Promise<void>
   deleteFarm(id: string): Promise<void>
   searchAddress?(query: string): Promise<Array<{ address: string; lat: number; lng: number }>>
