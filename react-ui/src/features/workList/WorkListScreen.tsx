@@ -16,36 +16,9 @@ import {
 } from 'lucide-react'
 import { BottomNav } from '../../components'
 import type { TabId } from '../../components'
-import type { WorkListViewState, WorkTask, TaskIconType, TaskStatus } from './types'
+import type { WorkListViewState, WorkTask, TaskIconType } from './types'
+import { mapTask } from './taskMapper'
 import styles from './WorkListScreen.module.css'
-
-function toTaskStatus(due: string | undefined, completed: boolean): TaskStatus {
-  if (completed) return 'completed'
-  if (!due) return 'upcoming'
-  const today = new Date(); today.setHours(0, 0, 0, 0)
-  const d = new Date(due); d.setHours(0, 0, 0, 0)
-  const diff = Math.round((d.getTime() - today.getTime()) / 86400000)
-  if (diff < 0) return 'overdue'
-  if (diff === 0) return 'today'
-  if (diff === 1) return 'tomorrow'
-  return 'upcoming'
-}
-
-function mapTask(raw: Record<string, unknown>): WorkTask {
-  return {
-    id: String(raw.id ?? ''),
-    title: String(raw.title ?? raw.name ?? ''),
-    tag: String(raw.colony_name ?? raw.apiary_name ?? raw.tag ?? ''),
-    note: raw.note ? String(raw.note) : undefined,
-    dueDate: String(raw.due_date ?? raw.dueDate ?? ''),
-    status: toTaskStatus(
-      (raw.due_date ?? raw.dueDate) as string | undefined,
-      Boolean(raw.isCompleted ?? raw.is_completed ?? raw.completed ?? false),
-    ),
-    iconType: (raw.icon_type ?? raw.iconType ?? 'inspection') as TaskIconType,
-    completedAt: (raw.completedAt ?? raw.completed_at) ? String(raw.completedAt ?? raw.completed_at) : undefined,
-  }
-}
 
 interface Props {
   viewState: WorkListViewState

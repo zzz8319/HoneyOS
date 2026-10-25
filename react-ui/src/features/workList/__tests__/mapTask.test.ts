@@ -1,113 +1,106 @@
 /**
- * Unit tests for WorkListScreen mapTask logic and overdueCount banner.
- * Mirrors exactly what WorkListScreen.tsx does for mapTask / toTaskStatus.
+ * Unit tests for mapTask and toTaskStatus — imports the PRODUCTION functions from taskMapper.ts.
+ *
+ * These tests exercise the exact same code that WorkListScreen uses at runtime.
+ * No local copy of mapTask is maintained here; a discrepancy between this file
+ * and WorkListScreen.tsx will cause a compilation error (missing export), not a
+ * silent false-positive.
+ *
+ * Completion state spec (documented in docs/HoneyOS_Functional_Audit.md):
+ *   - Boolean fields only: isCompleted > is_completed > completed > false
+ *   - completed_at is a completion TIMESTAMP; it MUST NOT be used as a boolean flag.
  */
 import { describe, it, expect } from 'vitest'
+import { mapTask, toTaskStatus } from '../taskMapper'
 
-// ── toTaskStatus (mirrors WorkListScreen.tsx) ─────────────────────────────────
+// ── toTaskStatus ──────────────────────────────────────────────────────────────
 
-type TaskStatus = 'overdue' | 'today' | 'tomorrow' | 'upcoming' | 'completed'
+describe('toTaskStatus', () => {
+  it('completed=true → always "completed" regardless of due date', () => {
+    expect(toTaskStatus('2020-01-01', true)).toBe('completed')
+    expect(toTaskStatus(undefined, true)).toBe('completed')
+  })
 
-function toTaskStatus(due: string | undefined, completed: boolean): TaskStatus {
-  if (completed) return 'completed'
-  if (!due) return 'upcoming'
-  const today = new Date(); today.setHours(0, 0, 0, 0)
-  const d = new Date(due); d.setHours(0, 0, 0, 0)
-  const diff = Math.round((d.getTime() - today.getTime()) / 86400000)
-  if (diff < 0) return 'overdue'
-  if (diff === 0) return 'today'
-  if (diff === 1) return 'tomorrow'
-  return 'upcoming'
-}
+  it('no due date + not completed → "upcoming"', () => {
+    expect(toTaskStatus(undefined, false)).toBe('upcoming')
+    expect(toTaskStatus('', false)).toBe('upcoming')
+  })
 
-// ── mapTask (mirrors WorkListScreen.tsx) ──────────────────────────────────────
-
-interface WorkTask {
-  id: string
-  title: string
-  dueDate: string
-  status: TaskStatus
-  isCompleted: boolean
-}
-
-function mapTask(raw: Record<string, unknown>): WorkTask {
-  // Priority: isCompleted > is_completed > completed > false
-  // completed_at is excluded — date strings are truthy and must NOT be used as boolean
-  const completed = Boolean(raw.isCompleted ?? raw.is_completed ?? raw.completed ?? false)
-  return {
-    id: String(raw.id ?? ''),
-    title: String(raw.title ?? raw.name ?? ''),
-    dueDate: String(raw.due_date ?? raw.dueDate ?? ''),
-    status: toTaskStatus(
-      (raw.due_date ?? raw.dueDate) as string | undefined,
-      completed,
-    ),
-    isCompleted: completed,
-  }
-}
+  it('invalid date → not "overdue" (NaN diff)', () => {
+    const s = toTaskStatus('invalid-date', false)
+    expect(s).not.toBe('overdue')
+  })
+})
 
 // ── mapTask isCompleted ───────────────────────────────────────────────────────
 
-describe('mapTask isCompleted', () => {
+describe('mapTask isCompleted — production function from taskMapper.ts', () => {
   it('isCompleted=true (camelCase from loadTasks) → status completed', () => {
     const t = mapTask({ id: '1', title: 'test', dueDate: '2026-11-01', isCompleted: true })
     expect(t.status).toBe('completed')
-    expect(t.isCompleted).toBe(true)
+    // WorkTask has no isCompleted field; status is the source of truth
+  })
+
+  it('isCompleted=false → not completed', () => {
+    const t = mapTask({ id: '1', title: 'test', dueDate: '2099-12-31', isCompleted: false })
+    expect(t.status).not.toBe('completed')
   })
 
   it('is_completed=true (snake_case) → status completed', () => {
     const t = mapTask({ id: '1', title: 'test', due_date: '2026-11-01', is_completed: true })
     expect(t.status).toBe('completed')
-    expect(t.isCompleted).toBe(true)
-  })
-
-  it('completed_at only → NOT completed (date string must not be used as boolean)', () => {
-    // completed_at is a datetime string which is truthy — must NOT be used as boolean.
-    // Only explicit boolean fields (isCompleted / is_completed / completed) determine completion.
-    const t = mapTask({ id: '1', title: 'test', due_date: '2099-11-01', completed_at: '2026-10-18T00:00:00Z' })
-    expect(t.isCompleted).toBe(false)
-    expect(t.status).not.toBe('completed')
-  })
-
-  it('completed_at null → NOT completed', () => {
-    const t = mapTask({ id: '1', title: 'test', due_date: '2099-11-01', completed_at: null })
-    expect(t.isCompleted).toBe(false)
-  })
-
-  it('isCompleted=false → not completed (false is not null/undefined so ?? short-circuits)', () => {
-    const t = mapTask({ id: '1', title: 'test', dueDate: '2099-12-31', isCompleted: false })
-    expect(t.isCompleted).toBe(false)
-    expect(t.status).not.toBe('completed')
   })
 
   it('is_completed=false → not completed', () => {
     const t = mapTask({ id: '1', title: 'test', dueDate: '2099-12-31', is_completed: false })
-    expect(t.isCompleted).toBe(false)
     expect(t.status).not.toBe('completed')
   })
 
-  it('completed=true → status completed', () => {
-    const t = mapTask({ id: '1', title: 'test', due_date: '2099-11-01', completed: true })
-    expect(t.isCompleted).toBe(true)
-    expect(t.status).toBe('completed')
+  it('completedAt (camelCase) only → NOT completed (date string must not be used as boolean)', () => {
+    const t = mapTask({ id: '1', title: 'test', due_date: '2099-11-01', completedAt: '2026-10-18T00:00:00Z' })
+    expect(t.status).not.toBe('completed')
+    // completedAt is stored as metadata but does not drive completion state
+    expect(t.completedAt).toBe('2026-10-18T00:00:00Z')
+  })
+
+  it('completed_at (snake_case) only → NOT completed', () => {
+    const t = mapTask({ id: '1', title: 'test', due_date: '2099-11-01', completed_at: '2026-10-18T00:00:00Z' })
+    expect(t.status).not.toBe('completed')
+    expect(t.completedAt).toBe('2026-10-18T00:00:00Z')
+  })
+
+  it('boolean false + completed_at present → not completed (boolean wins)', () => {
+    // boolean field present and false → false, completed_at is ignored
+    const t = mapTask({ id: '1', title: 'test', due_date: '2099-11-01', isCompleted: false, completed_at: '2026-10-18T00:00:00Z' })
+    expect(t.status).not.toBe('completed')
   })
 
   it('isCompleted=true wins over completed_at (boolean takes priority)', () => {
     const t = mapTask({ id: '1', title: 'test', due_date: '2099-11-01', isCompleted: true, completed_at: '2026-01-01T00:00:00Z' })
-    expect(t.isCompleted).toBe(true)
+    expect(t.status).toBe('completed')
+  })
+
+  it('completed=true → status completed', () => {
+    const t = mapTask({ id: '1', title: 'test', due_date: '2099-11-01', completed: true })
     expect(t.status).toBe('completed')
   })
 
   it('all undefined → false (default)', () => {
     const t = mapTask({ id: '1', title: 'test', due_date: '2020-01-01' })
-    expect(t.isCompleted).toBe(false)
+    expect(t.status).not.toBe('completed')
+  })
+
+  it('return value has boolean-typed status, never a raw truthy', () => {
+    const t = mapTask({ id: '1', title: 'test', completed_at: '2026-01-01T00:00:00Z' })
+    // status must be one of the TaskStatus union literals
+    const validStatuses = ['overdue', 'today', 'tomorrow', 'upcoming', 'completed']
+    expect(validStatuses).toContain(t.status)
+    expect(t.status).not.toBe('completed') // completed_at alone doesn't make it completed
   })
 
   it('DB completed task reloaded → still shows as completed', () => {
-    // Simulate a round-trip: saveTask → loadTasks returns isCompleted=true
     const fromDB = { id: 'task-42', title: '給餌確認', dueDate: '2026-10-01', isCompleted: true }
     const t = mapTask(fromDB)
-    expect(t.isCompleted).toBe(true)
     expect(t.status).toBe('completed')
   })
 })
@@ -129,11 +122,10 @@ describe('mapTask overdue exclusion', () => {
 
   it('無効な日付文字列は overdue に含まれない (NaN diff)', () => {
     const t = mapTask({ id: '1', title: 'bad-date', due_date: 'invalid-date', isCompleted: false })
-    // new Date('invalid-date').getTime() = NaN; diff = NaN; NaN < 0 is false → not overdue
     expect(t.status).not.toBe('overdue')
   })
 
-  it('今日が期限のタスクは overdue に含まれない (today)', () => {
+  it('今日が期限のタスクは overdue に含まれない', () => {
     const today = new Date()
     const yyyy = today.getFullYear()
     const mm = String(today.getMonth() + 1).padStart(2, '0')
@@ -147,8 +139,8 @@ describe('mapTask overdue exclusion', () => {
 // ── overdueCount banner ───────────────────────────────────────────────────────
 
 describe('overdueCount banner', () => {
-  function countOverdue(tasks: WorkTask[]): number {
-    return tasks.filter(t => t.status === 'overdue').length
+  function countOverdue(raws: Record<string, unknown>[]): number {
+    return raws.map(mapTask).filter(t => t.status === 'overdue').length
   }
 
   function bannerText(count: number): string | null {
@@ -157,29 +149,23 @@ describe('overdueCount banner', () => {
   }
 
   it('0件 → バナーなし (null)', () => {
-    const tasks = [mapTask({ id: '1', title: 'test', dueDate: '2099-12-31', isCompleted: false })]
-    expect(bannerText(countOverdue(tasks))).toBeNull()
+    expect(bannerText(countOverdue([{ id: '1', title: 'test', dueDate: '2099-12-31', isCompleted: false }]))).toBeNull()
   })
 
   it('1件 → 「期限切れ 1件」', () => {
-    const tasks = [mapTask({ id: '1', title: 'test', due_date: '2020-01-01', isCompleted: false })]
-    expect(bannerText(countOverdue(tasks))).toBe('期限切れ 1件')
+    expect(bannerText(countOverdue([{ id: '1', title: 'test', due_date: '2020-01-01', isCompleted: false }]))).toBe('期限切れ 1件')
   })
 
   it('複数件 → 「期限切れ N件」', () => {
-    const tasks = [
-      mapTask({ id: '1', title: 'a', due_date: '2020-01-01', isCompleted: false }),
-      mapTask({ id: '2', title: 'b', due_date: '2020-02-01', isCompleted: false }),
-      mapTask({ id: '3', title: 'c', due_date: '2020-03-01', isCompleted: false }),
+    const raws = [
+      { id: '1', title: 'a', due_date: '2020-01-01', isCompleted: false },
+      { id: '2', title: 'b', due_date: '2020-02-01', isCompleted: false },
+      { id: '3', title: 'c', due_date: '2020-03-01', isCompleted: false },
     ]
-    expect(bannerText(countOverdue(tasks))).toBe('期限切れ 3件')
+    expect(bannerText(countOverdue(raws))).toBe('期限切れ 3件')
   })
 
   it('完了済みは期限超過に含まれない', () => {
-    const tasks = [
-      mapTask({ id: '1', title: 'done', due_date: '2020-01-01', isCompleted: true }),
-    ]
-    expect(countOverdue(tasks)).toBe(0)
-    expect(bannerText(countOverdue(tasks))).toBeNull()
+    expect(countOverdue([{ id: '1', title: 'done', due_date: '2020-01-01', isCompleted: true }])).toBe(0)
   })
 })
