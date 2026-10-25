@@ -30,7 +30,7 @@
 
 | 管理ID | 深刻度 | 画面 | 問題 | 期待動作 | 現在の動作 | 優先度 | 修正状況 | 今回PRに含む | 確認方法 | 実Supabase確認 | 関連PR |
 |--------|--------|------|------|----------|-----------|--------|----------|------------|----------|---------------|--------|
-| F-001 | CRITICAL | WorkListScreen | `mapTask()` が `loadTasks()` の camelCase `isCompleted` を読まず、`completed_at` 文字列（truthy）で完了判定 → DB 完了済みタスクが再読込後に未完了表示 | `isCompleted: true` ならば完了表示を維持 | 再読込後に完了済みタスクが未完了として表示される | P0 | **修正済み** | ✅ | Unit Test (mapTask.test.ts) | 実環境未確認 | PR #102 |
+| F-001 | CRITICAL | WorkListScreen | `mapTask()` が `loadTasks()` の camelCase `isCompleted` を参照せず、完了済みタスクが再読込後に未完了として表示される（`isCompleted` フィールドを無視することが原因。`completed_at` 誤用は別問題 F-013 として管理） | `isCompleted: true` ならば完了表示を維持 | 再読込後に完了済みタスクが未完了として表示される | P0 | **修正済み** | ✅ | Unit Test (mapTask.test.ts) | 実環境未確認 | PR #102 |
 | F-002 | HIGH | WorkListScreen | 期限超過バナーが常に「期限切れ 1件」とハードコード表示 | 実際の期限超過タスク件数を表示。0件なら非表示 | 常に「1件」と表示（実際の件数に関係なく）| P1 | **修正済み** | ✅ | Production E2E (WL-4/WL-5) | 実環境未確認 | PR #102 |
 | F-003 | HIGH | WorkRecordScreen | 蜂群未選択または `saveWorkRecord` 未定義でも `onSuccess()` を呼び出し → 何も保存せず成功遷移 | 保存失敗時はエラー表示、成功遷移しない | 未選択・未定義でも成功遷移する | P1 | **修正済み** | ✅ | Production E2E (WL-7) + Unit Test (saveGuard.test.ts) | 実環境未確認 | PR #102 |
 | F-004 | HIGH | ColonyCreateScreen | `saveColony` が未定義の場合でも `onSuccess(newId)` を呼び出し → 存在しない蜂群 ID で詳細画面へ遷移 | `saveColony` 未定義時は throw してエラー表示 | 未定義でも成功遷移する | P1 | **修正済み** | ✅ | Unit Test (saveColonyGuard.test.ts) | 実環境未確認 | PR #102 |
@@ -42,7 +42,7 @@
 | F-010 | MEDIUM | WorkListScreen | 月移動ボタンに `onClick` ハンドラなし | タップで前後月に移動 | 何も起きない | P2 | 未修正 | ❌ | 目視確認 | 実環境未確認 | — |
 | F-011 | LOW | WorkListScreen | フィルターチップに `onChange` ハンドラなし（UI 描画のみ） | タップでフィルター切り替え | 何も起きない | P3 | 未修正 | ❌ | 目視確認 | 実環境未確認 | — |
 | F-012 | CRITICAL | ApiaryCreateScreen | `saveFarm` をオブジェクト引数で呼び出していたが、`supabase_client.js` の実装は位置引数 `(name, id, opts)`。INSERT 後に ID を返していなかった → 作成後の画面遷移で ID が常に 0 | 正しい引数で呼び出し、有効な ID を取得して遷移 | 引数ミスで保存失敗 or ID=0 で成功遷移 | P0 | **修正済み** | ✅ | Unit Test (apiaryCreateGuard.test.ts) | 実環境未確認 | PR #102 |
-| F-013 | HIGH | WorkListScreen | `mapTask` で `completed_at` 文字列（日時）を boolean 判定に使用 → 完了日時があれば未完了タスクも完了扱い | boolean フィールド（`isCompleted` / `is_completed` / `completed`）のみで判定 | `completed_at` が存在すると完了扱いになる | P0 | **修正済み** | ✅ | Unit Test (mapTask.test.ts) | 実環境未確認 | PR #102 |
+| F-013 | CRITICAL | WorkListScreen | `mapTask` で `completed_at`（完了日時）文字列を boolean 完了判定に使用 → 日時文字列は truthy なため `completed_at` が存在するだけで未完了タスクが完了扱いになる（`isCompleted` を参照しない F-001 とは独立した問題） | boolean フィールド（`isCompleted` / `is_completed` / `completed`）のみで完了判定し、`completed_at` は完了日時として別途保持 | `completed_at` が存在すると完了状態のbooleanに関係なく完了扱いになる | P0 | **修正済み** | ✅ | Unit Test (mapTask.test.ts) | 実環境未確認 | PR #102 |
 | F-014 | INFO | 全画面 | タスク・作業記録・蜂群・養蜂場の削除操作が React UI に未実装（`supabase_client.js` には定義あり） | 削除ボタンから DB 削除を実行 | 削除機能なし | P3 | 未修正 | ❌ | コード確認 | 実環境未確認 | — |
 | F-015 | MEDIUM | AiDiagnosisScreen | データ全体が `MOCK_DIAGNOSIS_DATA` ハードコード — AI 診断結果が実 DB から取得されない | 実 DB データを使用 | ハードコードのデモデータが表示される | P2 | 未修正 | ❌ | 目視確認 | 実環境未確認 | — |
 | F-016 | MEDIUM | AiAnalysisScreen | `MOCK_INSPECTION_SUMMARY` / `MOCK_INSPECTION_DATA` ハードコード | 実 DB データを使用 | ハードコードのデモデータが表示される | P2 | 未修正 | ❌ | 目視確認 | 実環境未確認 | — |
@@ -120,7 +120,22 @@ saveFarm(name: string, id?: string | null | undefined, opts?: { latitude?: numbe
 - INSERT 後に `.select('id').single()` で作成された行の id を取得 → RLS が INSERT を許可すれば SELECT も同一トランザクションで取得可能
 - 二重登録防止: `ApiaryCreateScreen` に `isActuallySubmitting` ガード（`submitting` state）あり
 - `data` が null の場合: `if (!result?.id) throw new Error('saveFarm returned no id')` でエラー
-- `farms.id` の型: Supabase が bigint として返す → JavaScript では number として扱われる
+
+#### farms テーブル RLS 確認状況
+
+| 確認箇所 | 状況 |
+|---------|------|
+| リポジトリ上の migration ファイル | `CREATE POLICY "users see own farms" ON public.farms FOR SELECT USING (auth.uid() = user_id)` が存在 → コード・migration 設計上は INSERT 後の SELECT が許可される設計 |
+| remote Supabase での実際の適用 | 同一の SELECT ポリシーが適用されているか、INSERT→SELECT で ID が返るかは**実環境未確認** |
+
+#### farms.id 型注意事項
+
+- DB の `farms.id` は PostgreSQL `bigint`（64ビット整数）
+- 現在の TypeScript 契約は `{ id: number }`（JavaScript number = IEEE 754 倍精度浮動小数点）
+- 通常の採番範囲（数万〜数百万行程度）では精度問題は発生しない
+- `Number.MAX_SAFE_INTEGER`（2^53 − 1 ≈ 9.007 × 10^15）を超える ID では精度が失われる可能性がある
+- 現在のアプリ規模では直ちに問題にならないが、長期的には `string` 正規化も選択肢
+- 実際に Supabase から返却される型（`number` か `string` か）は実環境未確認
 
 ---
 
@@ -161,20 +176,41 @@ Boolean(raw.isCompleted ?? raw.is_completed ?? raw.completed ?? false)
 
 ## 修正内容詳細
 
-### F-001 / F-013 mapTask isCompleted バグ（WorkListScreen）
+### F-001 mapTask が isCompleted（camelCase）を無視（WorkListScreen）
 
-**修正前（旧）:**
+**原因:** `loadTasks()` の戻り値は camelCase（`isCompleted`）だが、修正前の `mapTask` は `isCompleted` を参照していなかった。
+
+**修正前:**
 ```typescript
 Boolean(raw.completed_at ?? raw.completed)
-// → completed_at が日時文字列の場合、truthy になり完了扱い（F-013 の原因）
-// → isCompleted（camelCase）を参照していない（F-001 の原因）
+// → isCompleted（camelCase）を完全に無視 ← F-001 の根本原因
 ```
 
-**修正後（現在のコード）:**
+**修正後:**
 ```typescript
 Boolean(raw.isCompleted ?? raw.is_completed ?? raw.completed ?? false)
-// → isCompleted（camelCase）を最優先で参照（F-001 修正）
-// → completed_at は除外（F-013 修正）
+// → isCompleted を最優先で参照
+```
+
+### F-013 completed_at 文字列を boolean 完了判定に使用（WorkListScreen）
+
+**原因:** `completed_at` は完了日時を表す文字列（例: `'2026-09-10T10:00:00'`）。文字列は truthy なため、`completed_at` が存在するだけで完了扱いになっていた。これは F-001（`isCompleted` 未参照）とは独立した問題。
+
+**重複なしの根拠:**
+- F-001 = `isCompleted` というフィールドを参照しないというフィールド参照ミス
+- F-013 = `completed_at` という型違いの値を boolean 代わりに使うという型誤用
+- 修正後コードで両方を同時に修正しているが、発生条件・影響・発見時期が異なるため別件として計上
+
+**修正前:**
+```typescript
+Boolean(raw.completed_at ?? raw.completed)
+// → completed_at が truthy 文字列の場合、is_completed=false でも完了扱い ← F-013 の根本原因
+```
+
+**修正後:**
+```typescript
+Boolean(raw.isCompleted ?? raw.is_completed ?? raw.completed ?? false)
+// → completed_at を boolean 判定から除外（完了日時として completedAt に別途保持）
 ```
 
 ### F-002 期限超過バナー動的カウント（WorkListScreen）
