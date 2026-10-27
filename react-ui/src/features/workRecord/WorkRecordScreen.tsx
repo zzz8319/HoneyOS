@@ -1026,7 +1026,11 @@ export function WorkRecordScreen({ viewState, onBack, onSuccess }: WorkRecordScr
                   return
                 }
               }
-              onSuccess()
+              if (!selectedColony) {
+                setSaveError('蜂群を選択してください。')
+              } else {
+                setSaveError('保存機能が利用できません。アプリを再読み込みしてください。')
+              }
             }}
           >
             {isSaving ? <><Spinner /><span>保存中…</span></> : '作業記録を保存'}

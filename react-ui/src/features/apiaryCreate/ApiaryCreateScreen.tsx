@@ -232,9 +232,10 @@ export function ApiaryCreateScreen({ viewState = 'normal', onBack, onSuccess }: 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const saveFn = (window.HoneyDB as any)?.saveFarm
       if (typeof saveFn === 'function') {
-        const result = await saveFn.call(window.HoneyDB, {
-          name: name.trim(), address: location!.address, lat: location!.lat, lng: location!.lng,
-        }) as { id: number }
+        const result = await saveFn.call(window.HoneyDB, name.trim(), undefined, {
+          latitude: location!.lat, longitude: location!.lng,
+        }) as { id: number } | null | undefined
+        if (!result?.id) throw new Error('saveFarm returned no id')
         onSuccess?.({ id: result.id, name: name.trim(), address: location!.address, lat: location!.lat, lng: location!.lng })
       } else {
         throw new Error('window.HoneyDB.saveFarm is not implemented')
