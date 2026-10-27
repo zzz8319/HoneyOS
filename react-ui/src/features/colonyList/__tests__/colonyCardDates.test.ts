@@ -1,25 +1,5 @@
 import { describe, it, expect } from 'vitest'
-
-// Fix 3: NaN inspection date guard
-// ColonyCard の relativeDate / shortDate を直接テストするためにロジックを複製
-function relativeDate(dateStr: string | null | undefined): string {
-  if (!dateStr) return '未実施'
-  const d = new Date(dateStr)
-  if (isNaN(d.getTime())) return '未取得'
-  const diff = Math.floor((Date.now() - d.getTime()) / 86400000)
-  if (isNaN(diff)) return '未取得'
-  if (diff === 0) return '今日'
-  if (diff === 1) return '昨日'
-  if (diff < 0) return '未来'
-  return `${diff}日前`
-}
-
-function shortDate(dateStr: string | null | undefined): string {
-  if (!dateStr) return ''
-  const d = new Date(dateStr)
-  if (isNaN(d.getTime())) return ''
-  return `${d.getMonth() + 1}/${d.getDate()}`
-}
+import { relativeDate, shortDate } from '../../../lib/dateUtils'
 
 describe('relativeDate', () => {
   it('valid ISO date returns N日前 (not NaN)', () => {

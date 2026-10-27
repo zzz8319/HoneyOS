@@ -1,27 +1,5 @@
 import { describe, it, expect } from 'vitest'
-
-// Fix 2: JSON string as apiary name guard
-// safeApiaryName ロジックを複製してテスト
-function safeApiaryName(raw: unknown): string {
-  if (raw === null || raw === undefined) return '（名称不明）'
-  if (typeof raw === 'object') {
-    const obj = raw as Record<string, unknown>
-    if (typeof obj.name === 'string' && obj.name) return obj.name
-    return '（名称不明）'
-  }
-  const str = String(raw)
-  if (str.startsWith('{') || str.startsWith('[')) {
-    try {
-      const parsed = JSON.parse(str) as unknown
-      if (parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed)) {
-        const p = parsed as Record<string, unknown>
-        if (typeof p.name === 'string' && p.name) return p.name
-        return '（名称不明）'
-      }
-    } catch { /* 不正JSON: 元文字列をそのまま使う */ }
-  }
-  return str || '（名称不明）'
-}
+import { safeApiaryName } from '../../../lib/farmName'
 
 describe('safeApiaryName', () => {
   it('normal string returns as-is', () => {

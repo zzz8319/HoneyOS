@@ -2,30 +2,12 @@ import { ChevronRight } from 'lucide-react'
 import type { ColonyListItem, CompositionDelta } from './mockData'
 import { CompositionBar } from './CompositionBar'
 import { COMP_SEGMENTS } from './compositionConfig'
+import { relativeDate, shortDate } from '../../lib/dateUtils'
 import styles from './ColonyCard.module.css'
 
 interface ColonyCardProps {
   colony: ColonyListItem
   onClick?: (colonyId: string) => void
-}
-
-function relativeDate(dateStr: string | null | undefined): string {
-  if (!dateStr) return '未実施'
-  const d = new Date(dateStr)
-  if (isNaN(d.getTime())) return '未取得'
-  const diff = Math.floor((Date.now() - d.getTime()) / 86400000)
-  if (isNaN(diff)) return '未取得'
-  if (diff === 0) return '今日'
-  if (diff === 1) return '昨日'
-  if (diff < 0) return '未来'
-  return `${diff}日前`
-}
-
-function shortDate(dateStr: string | null | undefined): string {
-  if (!dateStr) return ''
-  const d = new Date(dateStr)
-  if (isNaN(d.getTime())) return ''
-  return `${d.getMonth() + 1}/${d.getDate()}`
 }
 
 // デルタ絶対値上位2件を「注目項目」として返す（空間は除外）

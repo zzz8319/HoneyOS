@@ -118,3 +118,77 @@ describe('Fix 1: apiary auto-selection', () => {
     expect(captured).toBeNull()
   })
 })
+
+// Section 2A: reloadAndSelect race condition fix
+describe('reloadAndSelect: select only if id found in loaded list', () => {
+  it('id found in loaded list → selects and consumes', async () => {
+    const loadedApiaries = [
+      { id: '42', name: 'テスト養蜂場' },
+      { id: '99', name: '別の養蜂場' },
+    ]
+    const fetchApiaries = () => Promise.resolve(loadedApiaries)
+
+    let selectedId = ''
+    let consumed = false
+    const setSelectedApiaryId = (id: string) => { selectedId = id }
+    const onNewApiaryConsumed = () => { consumed = true }
+
+    const id = '42'
+    const loaded = await fetchApiaries()
+    const found = loaded.some(a => a.id === id)
+    if (found) {
+      setSelectedApiaryId(id)
+      onNewApiaryConsumed()
+    } else if (loaded.length > 0) {
+      onNewApiaryConsumed()
+    }
+
+    expect(selectedId).toBe('42')
+    expect(consumed).toBe(true)
+  })
+
+  it('id NOT found but list has items → consumes without selecting', async () => {
+    const loadedApiaries = [{ id: '99', name: '別の養蜂場' }]
+    const fetchApiaries = () => Promise.resolve(loadedApiaries)
+
+    let selectedId = ''
+    let consumed = false
+    const setSelectedApiaryId = (id: string) => { selectedId = id }
+    const onNewApiaryConsumed = () => { consumed = true }
+
+    const id = '42'
+    const loaded = await fetchApiaries()
+    const found = loaded.some(a => a.id === id)
+    if (found) {
+      setSelectedApiaryId(id)
+      onNewApiaryConsumed()
+    } else if (loaded.length > 0) {
+      onNewApiaryConsumed()
+    }
+
+    expect(selectedId).toBe('')
+    expect(consumed).toBe(true)
+  })
+
+  it('loadFarms returns empty (error) → neither selects nor consumes', async () => {
+    const fetchApiaries = () => Promise.resolve([] as { id: string; name: string }[])
+
+    let selectedId = ''
+    let consumed = false
+    const setSelectedApiaryId = (id: string) => { selectedId = id }
+    const onNewApiaryConsumed = () => { consumed = true }
+
+    const id = '42'
+    const loaded = await fetchApiaries()
+    const found = loaded.some(a => a.id === id)
+    if (found) {
+      setSelectedApiaryId(id)
+      onNewApiaryConsumed()
+    } else if (loaded.length > 0) {
+      onNewApiaryConsumed()
+    }
+
+    expect(selectedId).toBe('')
+    expect(consumed).toBe(false)
+  })
+})

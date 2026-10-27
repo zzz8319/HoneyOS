@@ -11,30 +11,8 @@ import {
 import { PrimaryButton } from '../../components'
 import { HiveStackIcon } from '../../components/icons'
 import type { ColonyCreateViewState, Apiary } from './types'
+import { safeApiaryName } from '../../lib/farmName'
 import styles from './ColonyCreateScreen.module.css'
-
-function safeApiaryName(raw: unknown): string {
-  if (raw === null || raw === undefined) return '（名称不明）'
-  if (typeof raw === 'object') {
-    // object が来た場合は name プロパティを試みる
-    const obj = raw as Record<string, unknown>
-    if (typeof obj.name === 'string' && obj.name) return obj.name
-    return '（名称不明）'
-  }
-  const str = String(raw)
-  // JSON 文字列かどうか試みる
-  if (str.startsWith('{') || str.startsWith('[')) {
-    try {
-      const parsed = JSON.parse(str) as unknown
-      if (parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed)) {
-        const p = parsed as Record<string, unknown>
-        if (typeof p.name === 'string' && p.name) return p.name
-        return '（名称不明）'
-      }
-    } catch { /* 不正JSON: 元文字列をそのまま使う */ }
-  }
-  return str || '（名称不明）'
-}
 
 interface Props {
   viewState?: ColonyCreateViewState
@@ -90,20 +68,24 @@ export function ColonyCreateScreen({
   const isNoApiary = viewState === 'no-apiary'
   const isApiaryLoadError = viewState === 'apiary-load-error'
 
-  async function fetchApiaries() {
+  async function fetchApiaries(): Promise<Apiary[]> {
     setApiaryLoading(true)
     setApiaryLoadError(false)
     try {
       if (typeof window !== 'undefined' && window.HoneyDB?.loadFarms) {
         const farms = await window.HoneyDB.loadFarms() as Array<{ id: string; name: unknown }>
-        setApiaries(farms.map(f => ({ id: String(f.id), name: safeApiaryName(f.name) })))
+        const loaded = farms.map(f => ({ id: String(f.id), name: safeApiaryName(f.name) }))
+        setApiaries(loaded)
+        return loaded
       } else {
         setApiaries([])
         if (isApiaryLoadError) setApiaryLoadError(true)
+        return []
       }
     } catch {
       setApiaryLoadError(true)
       setApiaries([])
+      return []
     } finally {
       setApiaryLoading(false)
     }
@@ -139,9 +121,17 @@ export function ColonyCreateScreen({
     if (!newApiaryId) return
     const id = newApiaryId
     async function reloadAndSelect() {
-      await fetchApiaries()
-      setSelectedApiaryId(id)
-      onNewApiaryConsumed?.()
+      const loaded = await fetchApiaries()
+      // loadFarms が成功し、かつ新規IDがリストに存在する場合のみ選択
+      const found = loaded.some(a => a.id === id)
+      if (found) {
+        setSelectedApiaryId(id)
+        onNewApiaryConsumed?.()
+      } else if (loaded.length > 0) {
+        // リストは取得できたが新規IDが見つからない場合も消費（無限ループ防止）
+        onNewApiaryConsumed?.()
+      }
+      // loaded.length === 0 はエラーケース：apiaryLoadError が立つのでユーザーが再試行
     }
     reloadAndSelect()
     // eslint-disable-next-line react-hooks/exhaustive-deps
