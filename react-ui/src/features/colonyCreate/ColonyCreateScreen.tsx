@@ -13,11 +13,38 @@ import { HiveStackIcon } from '../../components/icons'
 import type { ColonyCreateViewState, Apiary } from './types'
 import styles from './ColonyCreateScreen.module.css'
 
+function safeApiaryName(raw: unknown): string {
+  if (raw === null || raw === undefined) return '（名称不明）'
+  if (typeof raw === 'object') {
+    // object が来た場合は name プロパティを試みる
+    const obj = raw as Record<string, unknown>
+    if (typeof obj.name === 'string' && obj.name) return obj.name
+    return '（名称不明）'
+  }
+  const str = String(raw)
+  // JSON 文字列かどうか試みる
+  if (str.startsWith('{') || str.startsWith('[')) {
+    try {
+      const parsed = JSON.parse(str) as unknown
+      if (parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed)) {
+        const p = parsed as Record<string, unknown>
+        if (typeof p.name === 'string' && p.name) return p.name
+        return '（名称不明）'
+      }
+    } catch { /* 不正JSON: 元文字列をそのまま使う */ }
+  }
+  return str || '（名称不明）'
+}
+
 interface Props {
   viewState?: ColonyCreateViewState
   onBack: () => void
   onSuccess?: (colonyId: string) => void
   onAddApiary?: () => void
+  /** SCR-033から戻った後に自動選択すべき養蜂場ID（string化済み）*/
+  newApiaryId?: string | null
+  /** newApiaryId消費後に呼び出す：親でnewApiaryIdをクリアする */
+  onNewApiaryConsumed?: () => void
 }
 
 export function ColonyCreateScreen({
@@ -25,6 +52,8 @@ export function ColonyCreateScreen({
   onBack,
   onSuccess,
   onAddApiary,
+  newApiaryId,
+  onNewApiaryConsumed,
 }: Props) {
   const nameId = useId()
   const apiaryId = useId()
@@ -66,8 +95,8 @@ export function ColonyCreateScreen({
     setApiaryLoadError(false)
     try {
       if (typeof window !== 'undefined' && window.HoneyDB?.loadFarms) {
-        const farms = await window.HoneyDB.loadFarms() as Array<{ id: string; name: string }>
-        setApiaries(farms.map(f => ({ id: String(f.id), name: f.name })))
+        const farms = await window.HoneyDB.loadFarms() as Array<{ id: string; name: unknown }>
+        setApiaries(farms.map(f => ({ id: String(f.id), name: safeApiaryName(f.name) })))
       } else {
         setApiaries([])
         if (isApiaryLoadError) setApiaryLoadError(true)
@@ -104,6 +133,19 @@ export function ColonyCreateScreen({
     return () => { cancelled = true }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [viewState])
+
+  // SCR-033から戻った後に新規養蜂場を自動選択する
+  useEffect(() => {
+    if (!newApiaryId) return
+    const id = newApiaryId
+    async function reloadAndSelect() {
+      await fetchApiaries()
+      setSelectedApiaryId(id)
+      onNewApiaryConsumed?.()
+    }
+    reloadAndSelect()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [newApiaryId])
 
 
   const trimmedName = colonyName.trim()

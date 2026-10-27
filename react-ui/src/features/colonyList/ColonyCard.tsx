@@ -9,15 +9,22 @@ interface ColonyCardProps {
   onClick?: (colonyId: string) => void
 }
 
-function relativeDate(dateStr: string): string {
-  const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 86400000)
+function relativeDate(dateStr: string | null | undefined): string {
+  if (!dateStr) return '未実施'
+  const d = new Date(dateStr)
+  if (isNaN(d.getTime())) return '未取得'
+  const diff = Math.floor((Date.now() - d.getTime()) / 86400000)
+  if (isNaN(diff)) return '未取得'
   if (diff === 0) return '今日'
   if (diff === 1) return '昨日'
+  if (diff < 0) return '未来'
   return `${diff}日前`
 }
 
-function shortDate(dateStr: string): string {
+function shortDate(dateStr: string | null | undefined): string {
+  if (!dateStr) return ''
   const d = new Date(dateStr)
+  if (isNaN(d.getTime())) return ''
   return `${d.getMonth() + 1}/${d.getDate()}`
 }
 
@@ -38,8 +45,8 @@ const STATUS_LABEL: Record<string, string> = {
 export function ColonyCard({ colony, onClick }: ColonyCardProps) {
   const { id, name, status, lastInspectedAt, composition, compositionDelta } = colony
   const notable = topDeltas(compositionDelta)
-  const rel = relativeDate(lastInspectedAt)
-  const abs = shortDate(lastInspectedAt)
+  const rel = relativeDate(lastInspectedAt as string | null | undefined)
+  const abs = shortDate(lastInspectedAt as string | null | undefined)
 
   return (
     <button
@@ -59,7 +66,7 @@ export function ColonyCard({ colony, onClick }: ColonyCardProps) {
       <div className={styles.row2}>
         <span className={styles.inspLabel}>最終内検</span>
         <span className={styles.inspRel}>{rel}</span>
-        <span className={styles.inspAbs}>{abs}</span>
+        {abs && <span className={styles.inspAbs}>{abs}</span>}
       </div>
 
       {/* 行3: 積み上げバー */}
