@@ -114,6 +114,7 @@ export default function App() {
   const [completedInspData, setCompletedInspData] = useState<InspectionCompleteData | null>(null)
   const [addStageRecord, setAddStageRecord] = useState<InspectionRecord | null>(null)
   const [previousScreen, setPreviousScreen] = useState<Screen>('home')
+  const [newApiaryId, setNewApiaryId] = useState<string | null>(null)
   const [authState, setAuthState] = useState<AuthState>(() =>
     resolveInitialAuthState(import.meta.env.DEV),
   )
@@ -515,7 +516,10 @@ export default function App() {
         <ApiaryCreateScreen
           viewState={apiaryCreateState}
           onBack={() => setScreen(previousScreen)}
-          onSuccess={() => {
+          onSuccess={(apiary) => {
+            if (previousScreen === 'colony-create' && apiary.id) {
+              setNewApiaryId(String(apiary.id))
+            }
             setScreen(previousScreen)
           }}
         />
@@ -525,6 +529,8 @@ export default function App() {
           onBack={() => setScreen(previousScreen)}
           onSuccess={(id) => { setSelectedColonyId(id); setScreen('colony-detail') }}
           onAddApiary={() => navigateTo('apiary-create')}
+          newApiaryId={newApiaryId}
+          onNewApiaryConsumed={() => setNewApiaryId(null)}
         />
       ) : screen === 'colony-comparison' ? (
         <ColonyComparisonScreen

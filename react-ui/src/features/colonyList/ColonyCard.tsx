@@ -2,23 +2,12 @@ import { ChevronRight } from 'lucide-react'
 import type { ColonyListItem, CompositionDelta } from './mockData'
 import { CompositionBar } from './CompositionBar'
 import { COMP_SEGMENTS } from './compositionConfig'
+import { relativeDate, shortDate } from '../../lib/dateUtils'
 import styles from './ColonyCard.module.css'
 
 interface ColonyCardProps {
   colony: ColonyListItem
   onClick?: (colonyId: string) => void
-}
-
-function relativeDate(dateStr: string): string {
-  const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 86400000)
-  if (diff === 0) return '今日'
-  if (diff === 1) return '昨日'
-  return `${diff}日前`
-}
-
-function shortDate(dateStr: string): string {
-  const d = new Date(dateStr)
-  return `${d.getMonth() + 1}/${d.getDate()}`
 }
 
 // デルタ絶対値上位2件を「注目項目」として返す（空間は除外）
@@ -38,8 +27,8 @@ const STATUS_LABEL: Record<string, string> = {
 export function ColonyCard({ colony, onClick }: ColonyCardProps) {
   const { id, name, status, lastInspectedAt, composition, compositionDelta } = colony
   const notable = topDeltas(compositionDelta)
-  const rel = relativeDate(lastInspectedAt)
-  const abs = shortDate(lastInspectedAt)
+  const rel = relativeDate(lastInspectedAt as string | null | undefined)
+  const abs = shortDate(lastInspectedAt as string | null | undefined)
 
   return (
     <button
@@ -59,7 +48,7 @@ export function ColonyCard({ colony, onClick }: ColonyCardProps) {
       <div className={styles.row2}>
         <span className={styles.inspLabel}>最終内検</span>
         <span className={styles.inspRel}>{rel}</span>
-        <span className={styles.inspAbs}>{abs}</span>
+        {abs && <span className={styles.inspAbs}>{abs}</span>}
       </div>
 
       {/* 行3: 積み上げバー */}

@@ -11,6 +11,7 @@ import {
 import { PrimaryButton } from '../../components'
 import { HiveStackIcon } from '../../components/icons'
 import type { ColonyCreateViewState, Apiary } from './types'
+import { safeApiaryName } from '../../lib/farmName'
 import styles from './ColonyCreateScreen.module.css'
 
 interface Props {
@@ -18,6 +19,10 @@ interface Props {
   onBack: () => void
   onSuccess?: (colonyId: string) => void
   onAddApiary?: () => void
+  /** SCR-033から戻った後に自動選択すべき養蜂場ID（string化済み）*/
+  newApiaryId?: string | null
+  /** newApiaryId消費後に呼び出す：親でnewApiaryIdをクリアする */
+  onNewApiaryConsumed?: () => void
 }
 
 export function ColonyCreateScreen({
@@ -25,6 +30,8 @@ export function ColonyCreateScreen({
   onBack,
   onSuccess,
   onAddApiary,
+  newApiaryId,
+  onNewApiaryConsumed,
 }: Props) {
   const nameId = useId()
   const apiaryId = useId()
@@ -50,6 +57,7 @@ export function ColonyCreateScreen({
       : '',
   )
   const [submitting, setSubmitting] = useState(false)
+  const [autoSelectError, setAutoSelectError] = useState(false)
 
   const nameRef = useRef<HTMLInputElement>(null)
   const apiarySelectRef = useRef<HTMLSelectElement>(null)
@@ -61,20 +69,24 @@ export function ColonyCreateScreen({
   const isNoApiary = viewState === 'no-apiary'
   const isApiaryLoadError = viewState === 'apiary-load-error'
 
-  async function fetchApiaries() {
+  async function fetchApiaries(): Promise<Apiary[]> {
     setApiaryLoading(true)
     setApiaryLoadError(false)
     try {
       if (typeof window !== 'undefined' && window.HoneyDB?.loadFarms) {
-        const farms = await window.HoneyDB.loadFarms() as Array<{ id: string; name: string }>
-        setApiaries(farms.map(f => ({ id: String(f.id), name: f.name })))
+        const farms = await window.HoneyDB.loadFarms() as Array<{ id: string; name: unknown }>
+        const loaded = farms.map(f => ({ id: String(f.id), name: safeApiaryName(f.name) }))
+        setApiaries(loaded)
+        return loaded
       } else {
         setApiaries([])
         if (isApiaryLoadError) setApiaryLoadError(true)
+        return []
       }
     } catch {
       setApiaryLoadError(true)
       setApiaries([])
+      return []
     } finally {
       setApiaryLoading(false)
     }
@@ -104,6 +116,46 @@ export function ColonyCreateScreen({
     return () => { cancelled = true }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [viewState])
+
+  // SCR-033から戻った後に新規養蜂場を自動選択する
+  useEffect(() => {
+    if (!newApiaryId) return
+    let cancelled = false
+    const id = newApiaryId
+    async function reloadAndSelect() {
+      if (!cancelled) setAutoSelectError(false)
+      // 1回目の取得
+      const loaded1 = await fetchApiaries()
+      if (cancelled) return
+      if (loaded1.length === 0) {
+        // loadFarms失敗: apiaryLoadError が立つ、IDを消費しない（再試行可能）
+        return
+      }
+      if (loaded1.some(a => a.id === id)) {
+        setSelectedApiaryId(id)
+        onNewApiaryConsumed?.()
+        return
+      }
+      // 1回目で未発見: 1回だけ再取得
+      const loaded2 = await fetchApiaries()
+      if (cancelled) return
+      if (loaded2.length === 0) {
+        // 2回目もloadFarms失敗: IDを消費しない
+        return
+      }
+      if (loaded2.some(a => a.id === id)) {
+        setSelectedApiaryId(id)
+        onNewApiaryConsumed?.()
+      } else {
+        // 2回取得してもID未発見: エラー表示 + 消費（無限ループ防止）
+        setAutoSelectError(true)
+        onNewApiaryConsumed?.()
+      }
+    }
+    reloadAndSelect()
+    return () => { cancelled = true }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [newApiaryId])
 
 
   const trimmedName = colonyName.trim()
@@ -316,6 +368,31 @@ export function ColonyCreateScreen({
                   className={styles.selectChevron}
                   aria-hidden
                 />
+              </div>
+            )}
+            {autoSelectError && (
+              <div className={styles.apiaryNotice} role="alert" style={{ marginTop: 8 }}>
+                <AlertCircle
+                  size={15}
+                  style={{ flexShrink: 0, color: '#D97706', marginTop: 1 }}
+                  aria-hidden
+                />
+                <div>
+                  <p className={styles.apiaryNoticeText}>
+                    登録した養蜂場を一覧で確認できませんでした。再読み込みしてください。
+                  </p>
+                  <button
+                    type="button"
+                    className={styles.retryBtn}
+                    onClick={() => {
+                      setAutoSelectError(false)
+                      void fetchApiaries()
+                    }}
+                  >
+                    <RefreshCw size={13} aria-hidden />
+                    再試行
+                  </button>
+                </div>
               </div>
             )}
             {apiaryError && (
