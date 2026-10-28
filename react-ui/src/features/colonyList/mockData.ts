@@ -1,7 +1,7 @@
 // SCR-008 蜂群一覧用ダミーデータ
 // 実データは将来 window.HoneyDB 経由で取得する
 
-export type ColonyStatus = 'good' | 'warn' | 'danger'
+export type ColonyStatus = 'good' | 'warn' | 'danger' | 'unknown'
 
 export interface Composition {
   bee: number    // 蜂 (%)

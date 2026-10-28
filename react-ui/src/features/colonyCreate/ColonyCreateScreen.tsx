@@ -199,7 +199,7 @@ export function ColonyCreateScreen({
     try {
       const newId = crypto.randomUUID()
       if (window.HoneyDB?.saveColony) {
-        await window.HoneyDB.saveColony(newId, trimmedName, 9999)
+        await window.HoneyDB.saveColony(newId, trimmedName, 9999, { farmId: selectedApiaryId || undefined })
         onSuccess?.(newId)
       } else {
         throw new Error('saveColony unavailable')

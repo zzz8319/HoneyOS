@@ -45,7 +45,8 @@ function calcComposition(frames: RawFrame[]): Composition {
   return { bee, brood, honey, empty: Math.max(0, 100 - bee - brood - honey) }
 }
 
-function colonyStatus(comp: Composition): ColonyStatus {
+function colonyStatus(comp: Composition, hasInspection: boolean): ColonyStatus {
+  if (!hasInspection) return 'unknown'
   if (comp.bee < 25 || comp.brood < 10) return 'danger'
   if (comp.bee < 35 || comp.brood < 18) return 'warn'
   return 'good'
@@ -100,7 +101,7 @@ export function buildColonyListData(
       name: colony.name,
       apiaryId: farmId,
       apiaryName: farmName,
-      status: colonyStatus(composition),
+      status: colonyStatus(composition, recs.length > 0),
       lastInspectedAt: latest?.date ?? '',
       composition,
       compositionDelta,
