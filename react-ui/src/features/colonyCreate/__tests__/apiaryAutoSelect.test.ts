@@ -119,76 +119,123 @@ describe('Fix 1: apiary auto-selection', () => {
   })
 })
 
-// Section 2A: reloadAndSelect race condition fix
-describe('reloadAndSelect: select only if id found in loaded list', () => {
-  it('id found in loaded list → selects and consumes', async () => {
-    const loadedApiaries = [
-      { id: '42', name: 'テスト養蜂場' },
-      { id: '99', name: '別の養蜂場' },
-    ]
-    const fetchApiaries = () => Promise.resolve(loadedApiaries)
+// Section 2A: reloadAndSelect — 2回取得ロジック
+// ColonyCreateScreen.tsx の useEffect[newApiaryId] を純粋関数として抽出してテスト
+type Farm = { id: string; name: string }
 
-    let selectedId = ''
-    let consumed = false
-    const setSelectedApiaryId = (id: string) => { selectedId = id }
-    const onNewApiaryConsumed = () => { consumed = true }
+async function reloadAndSelect(
+  id: string,
+  fetchApiaries: () => Promise<Farm[]>,
+  setSelectedApiaryId: (id: string) => void,
+  onNewApiaryConsumed: () => void,
+  setAutoSelectError: (v: boolean) => void,
+): Promise<void> {
+  const loaded1 = await fetchApiaries()
+  if (loaded1.length === 0) return
+  if (loaded1.some(a => a.id === id)) {
+    setSelectedApiaryId(id)
+    onNewApiaryConsumed()
+    return
+  }
+  const loaded2 = await fetchApiaries()
+  if (loaded2.length === 0) return
+  if (loaded2.some(a => a.id === id)) {
+    setSelectedApiaryId(id)
+    onNewApiaryConsumed()
+  } else {
+    setAutoSelectError(true)
+    onNewApiaryConsumed()
+  }
+}
 
-    const id = '42'
-    const loaded = await fetchApiaries()
-    const found = loaded.some(a => a.id === id)
-    if (found) {
-      setSelectedApiaryId(id)
-      onNewApiaryConsumed()
-    } else if (loaded.length > 0) {
-      onNewApiaryConsumed()
-    }
-
+describe('reloadAndSelect: 2回取得ロジック', () => {
+  it('1回目でID発見 → 選択 + 消費', async () => {
+    const farms: Farm[] = [{ id: '42', name: 'テスト' }, { id: '99', name: '別' }]
+    const fetch = () => Promise.resolve(farms)
+    let selectedId = ''; let consumed = false; let err = false
+    await reloadAndSelect('42', fetch,
+      id => { selectedId = id }, () => { consumed = true }, () => { err = true })
     expect(selectedId).toBe('42')
     expect(consumed).toBe(true)
+    expect(err).toBe(false)
   })
 
-  it('id NOT found but list has items → consumes without selecting', async () => {
-    const loadedApiaries = [{ id: '99', name: '別の養蜂場' }]
-    const fetchApiaries = () => Promise.resolve(loadedApiaries)
-
+  it('数値ID 42 を String("42") で比較して一致', async () => {
+    // farms.id は bigint → String化済み前提。String("42") === "42"
+    const farms: Farm[] = [{ id: String(42), name: 'テスト' }]
+    const fetch = () => Promise.resolve(farms)
     let selectedId = ''
-    let consumed = false
-    const setSelectedApiaryId = (id: string) => { selectedId = id }
-    const onNewApiaryConsumed = () => { consumed = true }
-
-    const id = '42'
-    const loaded = await fetchApiaries()
-    const found = loaded.some(a => a.id === id)
-    if (found) {
-      setSelectedApiaryId(id)
-      onNewApiaryConsumed()
-    } else if (loaded.length > 0) {
-      onNewApiaryConsumed()
-    }
-
-    expect(selectedId).toBe('')
-    expect(consumed).toBe(true)
+    await reloadAndSelect('42', fetch,
+      id => { selectedId = id }, () => {}, () => {})
+    expect(selectedId).toBe('42')
   })
 
-  it('loadFarms returns empty (error) → neither selects nor consumes', async () => {
-    const fetchApiaries = () => Promise.resolve([] as { id: string; name: string }[])
-
-    let selectedId = ''
-    let consumed = false
-    const setSelectedApiaryId = (id: string) => { selectedId = id }
-    const onNewApiaryConsumed = () => { consumed = true }
-
-    const id = '42'
-    const loaded = await fetchApiaries()
-    const found = loaded.some(a => a.id === id)
-    if (found) {
-      setSelectedApiaryId(id)
-      onNewApiaryConsumed()
-    } else if (loaded.length > 0) {
-      onNewApiaryConsumed()
-    }
-
+  it('loadFarms失敗（空リスト）→ 選択しない・消費しない', async () => {
+    const fetch = () => Promise.resolve([] as Farm[])
+    let selectedId = ''; let consumed = false
+    await reloadAndSelect('42', fetch,
+      id => { selectedId = id }, () => { consumed = true }, () => {})
     expect(selectedId).toBe('')
     expect(consumed).toBe(false)
+  })
+
+  it('1回目失敗・2回目失敗 → 消費しない', async () => {
+    const fetch = () => Promise.resolve([] as Farm[])
+    let consumed = false
+    await reloadAndSelect('42', fetch,
+      () => {}, () => { consumed = true }, () => {})
+    expect(consumed).toBe(false)
+  })
+
+  it('1回目未発見・2回目で発見 → 選択 + 消費', async () => {
+    let callCount = 0
+    const fetch = () => {
+      callCount++
+      if (callCount === 1) return Promise.resolve([{ id: '99', name: '別' }])
+      return Promise.resolve([{ id: '99', name: '別' }, { id: '42', name: 'テスト' }])
+    }
+    let selectedId = ''; let consumed = false; let err = false
+    await reloadAndSelect('42', fetch,
+      id => { selectedId = id }, () => { consumed = true }, () => { err = true })
+    expect(selectedId).toBe('42')
+    expect(consumed).toBe(true)
+    expect(err).toBe(false)
+  })
+
+  it('1回目未発見・2回目でも未発見 → autoSelectError + 消費（無限ループ防止）', async () => {
+    const farms: Farm[] = [{ id: '99', name: '別' }]
+    const fetch = () => Promise.resolve(farms)
+    let selectedId = ''; let consumed = false; let err = false
+    await reloadAndSelect('42', fetch,
+      id => { selectedId = id }, () => { consumed = true }, () => { err = true })
+    expect(selectedId).toBe('')   // 選択されない
+    expect(consumed).toBe(true)   // 無限ループ防止で消費
+    expect(err).toBe(true)        // エラー表示
+  })
+
+  it('ID未発見で成功扱いにしない（autoSelectError=true）', async () => {
+    const farms: Farm[] = [{ id: '10', name: 'A' }, { id: '20', name: 'B' }]
+    const fetch = () => Promise.resolve(farms)
+    let autoErr = false
+    await reloadAndSelect('42', fetch, () => {}, () => {}, v => { autoErr = v })
+    expect(autoErr).toBe(true)
+  })
+
+  it('onNewApiaryConsumedが重複呼び出しされない（1回目成功）', async () => {
+    const farms: Farm[] = [{ id: '42', name: 'テスト' }]
+    const fetch = () => Promise.resolve(farms)
+    let callCount = 0
+    await reloadAndSelect('42', fetch,
+      () => {}, () => { callCount++ }, () => {})
+    expect(callCount).toBe(1)
+  })
+
+  it('onNewApiaryConsumedが重複呼び出しされない（2回目でエラー）', async () => {
+    const farms: Farm[] = [{ id: '99', name: '別' }]
+    const fetch = () => Promise.resolve(farms)
+    let callCount = 0
+    await reloadAndSelect('42', fetch,
+      () => {}, () => { callCount++ }, () => {})
+    expect(callCount).toBe(1)
   })
 })

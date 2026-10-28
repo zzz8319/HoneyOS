@@ -57,6 +57,7 @@ export function ColonyCreateScreen({
       : '',
   )
   const [submitting, setSubmitting] = useState(false)
+  const [autoSelectError, setAutoSelectError] = useState(false)
 
   const nameRef = useRef<HTMLInputElement>(null)
   const apiarySelectRef = useRef<HTMLSelectElement>(null)
@@ -122,18 +123,34 @@ export function ColonyCreateScreen({
     let cancelled = false
     const id = newApiaryId
     async function reloadAndSelect() {
-      const loaded = await fetchApiaries()
+      if (!cancelled) setAutoSelectError(false)
+      // 1回目の取得
+      const loaded1 = await fetchApiaries()
       if (cancelled) return
-      // loadFarms が成功し、かつ新規IDがリストに存在する場合のみ選択
-      const found = loaded.some(a => a.id === id)
-      if (found) {
+      if (loaded1.length === 0) {
+        // loadFarms失敗: apiaryLoadError が立つ、IDを消費しない（再試行可能）
+        return
+      }
+      if (loaded1.some(a => a.id === id)) {
         setSelectedApiaryId(id)
         onNewApiaryConsumed?.()
-      } else if (loaded.length > 0) {
-        // リストは取得できたが新規IDが見つからない場合も消費（無限ループ防止）
+        return
+      }
+      // 1回目で未発見: 1回だけ再取得
+      const loaded2 = await fetchApiaries()
+      if (cancelled) return
+      if (loaded2.length === 0) {
+        // 2回目もloadFarms失敗: IDを消費しない
+        return
+      }
+      if (loaded2.some(a => a.id === id)) {
+        setSelectedApiaryId(id)
+        onNewApiaryConsumed?.()
+      } else {
+        // 2回取得してもID未発見: エラー表示 + 消費（無限ループ防止）
+        setAutoSelectError(true)
         onNewApiaryConsumed?.()
       }
-      // loaded.length === 0 はエラーケース：apiaryLoadError が立つのでユーザーが再試行
     }
     reloadAndSelect()
     return () => { cancelled = true }
@@ -351,6 +368,31 @@ export function ColonyCreateScreen({
                   className={styles.selectChevron}
                   aria-hidden
                 />
+              </div>
+            )}
+            {autoSelectError && (
+              <div className={styles.apiaryNotice} role="alert" style={{ marginTop: 8 }}>
+                <AlertCircle
+                  size={15}
+                  style={{ flexShrink: 0, color: '#D97706', marginTop: 1 }}
+                  aria-hidden
+                />
+                <div>
+                  <p className={styles.apiaryNoticeText}>
+                    登録した養蜂場を一覧で確認できませんでした。再読み込みしてください。
+                  </p>
+                  <button
+                    type="button"
+                    className={styles.retryBtn}
+                    onClick={() => {
+                      setAutoSelectError(false)
+                      void fetchApiaries()
+                    }}
+                  >
+                    <RefreshCw size={13} aria-hidden />
+                    再試行
+                  </button>
+                </div>
               </div>
             )}
             {apiaryError && (

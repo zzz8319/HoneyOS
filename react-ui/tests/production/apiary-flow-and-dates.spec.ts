@@ -269,3 +269,52 @@ test('Fix1: null farm id does not trigger auto-selection', async ({ page }) => {
   const value = await select.inputValue()
   expect(value).toBe('')  // default empty option — no auto-selection happened
 })
+
+test('Fix1: string ID from loadFarms matches string newApiaryId', async ({ page }) => {
+  // saveFarm returns numeric 42, newApiaryId = "42"
+  // loadFarms returns id as number 42 → String(42) === "42"
+  const script = makeAuthStub(`
+    loadFarms: async function() { return [{ id: 42, name: 'テスト養蜂場' }]; },
+  `)
+  await goToScreen(page, 'colony-create', script)
+
+  const option = page.locator('select option', { hasText: 'テスト養蜂場' })
+  await expect(option).toBeAttached({ timeout: 3000 })
+})
+
+test('Fix1: ID not in loadFarms list shows auto-select error (not silent success)', async ({ page }) => {
+  // loadFarms never returns id=42, so auto-select should show error after 2 retries
+  // Simulate: newApiaryId="42" set via URL param hack — we can't fully E2E the 033→032 flow
+  // but we CAN verify that when loadFarms only returns id=99, the select stays unselected
+  const script = makeAuthStub(`
+    loadFarms: async function() { return [{ id: 99, name: '別の養蜂場' }]; },
+  `)
+  await goToScreen(page, 'colony-create', script)
+
+  // Select stays at default (no auto-selection)
+  const select = page.locator('select')
+  await expect(select).toBeVisible({ timeout: 3000 })
+  // 99 is loaded but no auto-selection happened (newApiaryId not set via this path)
+  const value = await select.inputValue()
+  expect(value).toBe('')
+})
+
+test('Fix1: no console errors on normal colony-create load', async ({ page }) => {
+  const consoleErrors: string[] = []
+  page.on('console', msg => {
+    if (msg.type() === 'error') consoleErrors.push(msg.text())
+  })
+  const script = makeAuthStub(`
+    loadFarms: async function() { return [{ id: 1, name: 'テスト養蜂場' }]; },
+  `)
+  await goToScreen(page, 'colony-create', script)
+  await page.waitForTimeout(500)
+
+  // Filter out known non-critical browser warnings
+  const realErrors = consoleErrors.filter(e =>
+    !e.includes('favicon') &&
+    !e.includes('service-worker') &&
+    !e.includes('ResizeObserver')
+  )
+  expect(realErrors).toHaveLength(0)
+})

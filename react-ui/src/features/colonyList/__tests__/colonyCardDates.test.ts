@@ -79,3 +79,33 @@ describe('no NaN in output (regression)', () => {
     })
   }
 })
+
+describe('future date spec (未来日の仕様)', () => {
+  it('future date returns "未来" not "-N日前"', () => {
+    const future = new Date(Date.now() + 5 * 86400000).toISOString()
+    const result = relativeDate(future)
+    expect(result).toBe('未来')
+    expect(result).not.toMatch(/-\d+日前/)
+  })
+
+  it('far future date still returns "未来"', () => {
+    const future = new Date(Date.now() + 365 * 86400000).toISOString()
+    expect(relativeDate(future)).toBe('未来')
+  })
+})
+
+describe('JST date boundary (YYYY-MM-DD format)', () => {
+  it('YYYY-MM-DD 7 days ago returns "7日前" (not NaN)', () => {
+    const d = new Date(Date.now() - 7 * 86400000)
+    const str = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`
+    const result = relativeDate(str)
+    expect(result).not.toContain('NaN')
+    expect(result).toMatch(/\d+日前|今日|昨日/)
+  })
+
+  it('shortDate with YYYY-MM-DD format returns M/D (not NaN)', () => {
+    const result = shortDate('2024-01-15')
+    expect(result).not.toContain('NaN')
+    expect(result).toMatch(/^\d+\/\d+$/)
+  })
+})
