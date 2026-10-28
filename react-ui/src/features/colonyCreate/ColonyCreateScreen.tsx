@@ -119,9 +119,11 @@ export function ColonyCreateScreen({
   // SCR-033から戻った後に新規養蜂場を自動選択する
   useEffect(() => {
     if (!newApiaryId) return
+    let cancelled = false
     const id = newApiaryId
     async function reloadAndSelect() {
       const loaded = await fetchApiaries()
+      if (cancelled) return
       // loadFarms が成功し、かつ新規IDがリストに存在する場合のみ選択
       const found = loaded.some(a => a.id === id)
       if (found) {
@@ -134,6 +136,7 @@ export function ColonyCreateScreen({
       // loaded.length === 0 はエラーケース：apiaryLoadError が立つのでユーザーが再試行
     }
     reloadAndSelect()
+    return () => { cancelled = true }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [newApiaryId])
 
