@@ -95,7 +95,10 @@ test('P1-B: saveColony 4th arg contains farmId when apiary is selected', async (
   await page.waitForTimeout(800)
 
   // Check saveColony was called with farmId
-  const calls = await page.evaluate(() => (window as unknown as Record<string, unknown>).__getSaveColonyCalls?.())
+  const calls = await page.evaluate(() => {
+    const w = window as unknown as { __getSaveColonyCalls?: () => unknown[] }
+    return w.__getSaveColonyCalls?.() ?? []
+  })
   expect(Array.isArray(calls)).toBe(true)
   expect(calls.length).toBeGreaterThan(0)
 
@@ -118,7 +121,10 @@ test('P1-B: saveColony opts.farmId is a string (not null) for selected apiary', 
   await submitBtn.click()
   await page.waitForTimeout(800)
 
-  const calls = await page.evaluate(() => (window as unknown as Record<string, unknown>).__getSaveColonyCalls?.())
+  const calls = await page.evaluate(() => {
+    const w = window as unknown as { __getSaveColonyCalls?: () => unknown[] }
+    return w.__getSaveColonyCalls?.() ?? []
+  })
   const lastCall = (calls as { opts?: { farmId?: unknown } }[])[0]
   // farmId must be a non-null string, not null or undefined
   expect(typeof lastCall?.opts?.farmId).toBe('string')
@@ -212,6 +218,31 @@ test('P1-C: colony with valid inspection and low bee count shows 危険', async 
   // Badge text 危険 should be visible
   const dangerBadge = page.locator('span').filter({ hasText: /^危険$/ })
   await expect(dangerBadge.first()).toBeVisible()
+})
+
+test('P1-C: inspection exists but frames=[] shows 未評価 (not 危険)', async ({ page }) => {
+  const colony = { id: 'c3', name: 'frames空群', farmId: 1, sort_order: 0 }
+  const inspWithNoFrames = { id: 'r1', colony: 'c3', date: '2026-10-01', frames: [] }
+  await page.addInitScript(makeColonyListStub([colony], [inspWithNoFrames]))
+  await page.goto('?tab=farms&state=normal', { waitUntil: 'networkidle' })
+  await page.waitForTimeout(800)
+
+  await expect(page.locator('text=未評価').first()).toBeVisible()
+  const dangerBadge = page.locator('span').filter({ hasText: /^危険$/ })
+  await expect(dangerBadge).toHaveCount(0)
+})
+
+test('P1-C: inspection exists but all frames have invalid values shows 未評価', async ({ page }) => {
+  const colony = { id: 'c4', name: '無効値群', farmId: 1, sort_order: 0 }
+  // frames with all-zero sums get filtered → no usable frames → unknown
+  const inspWithInvalidFrames = { id: 'r1', colony: 'c4', date: '2026-10-01', frames: [{ bee: 0, brood: 0, honey: 0 }] }
+  await page.addInitScript(makeColonyListStub([colony], [inspWithInvalidFrames]))
+  await page.goto('?tab=farms&state=normal', { waitUntil: 'networkidle' })
+  await page.waitForTimeout(800)
+
+  await expect(page.locator('text=未評価').first()).toBeVisible()
+  const dangerBadge = page.locator('span').filter({ hasText: /^危険$/ })
+  await expect(dangerBadge).toHaveCount(0)
 })
 
 test('P1-C: no console errors on colony list with uninspected colonies', async ({ page }) => {

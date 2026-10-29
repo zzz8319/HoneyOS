@@ -30,9 +30,24 @@ interface RawInspRecord {
   [key: string]: unknown
 }
 
-function calcComposition(frames: RawFrame[]): Composition {
-  const filled = frames.filter(f => f && (f.bee + f.brood + f.honey) > 0)
-  if (!filled.length) return { bee: 0, brood: 0, honey: 0, empty: 100 }
+const EMPTY_COMPOSITION: Composition = { bee: 0, brood: 0, honey: 0, empty: 100 }
+
+/**
+ * フレーム配列から構成比を計算する。
+ * 有効な数値データ（typeof===number・有限・非負・合計>0）を持つフレームが
+ * 1件もない場合は null を返す（"未測定" / null / 文字列 を "実測ゼロ" と区別する）。
+ */
+export function calcComposition(frames: RawFrame[]): Composition | null {
+  const filled = frames.filter(f => {
+    if (f == null || typeof f !== 'object') return false
+    const { bee, brood, honey } = f
+    // null・undefined・文字列・NaN・Infinity・負数を除外
+    if (typeof bee !== 'number' || typeof brood !== 'number' || typeof honey !== 'number') return false
+    if (!Number.isFinite(bee) || !Number.isFinite(brood) || !Number.isFinite(honey)) return false
+    if (bee < 0 || brood < 0 || honey < 0) return false
+    return (bee + brood + honey) > 0
+  })
+  if (!filled.length) return null
   const sum = filled.reduce((acc, f) => ({
     bee: acc.bee + f.bee,
     brood: acc.brood + f.brood,
@@ -45,8 +60,13 @@ function calcComposition(frames: RawFrame[]): Composition {
   return { bee, brood, honey, empty: Math.max(0, 100 - bee - brood - honey) }
 }
 
-function colonyStatus(comp: Composition, hasInspection: boolean): ColonyStatus {
-  if (!hasInspection) return 'unknown'
+/**
+ * 構成比からステータスを判定する。
+ * comp=null は内検なし・フレームなし・有効値なし のいずれかを示し、
+ * すべて 'unknown' を返す（"未取得"と"実測危険"を区別する）。
+ */
+export function colonyStatus(comp: Composition | null): ColonyStatus {
+  if (comp === null) return 'unknown'
   if (comp.bee < 25 || comp.brood < 10) return 'danger'
   if (comp.bee < 35 || comp.brood < 18) return 'warn'
   return 'good'
@@ -87,8 +107,13 @@ export function buildColonyListData(
 
     const latestFrames: RawFrame[] = latest?.frames ?? []
     const prevFrames: RawFrame[] = prev?.frames ?? []
-    const composition = calcComposition(latestFrames)
-    const prevComp = calcComposition(prevFrames)
+    // null = "内検なし" または "有効フレームなし" のいずれか
+    const rawComp = calcComposition(latestFrames)
+    const prevRawComp = calcComposition(prevFrames)
+    // 内検記録自体がなければ statusComp=null（unknown扱い）
+    const statusComp = recs.length > 0 ? rawComp : null
+    const composition: Composition = rawComp ?? EMPTY_COMPOSITION
+    const prevComp: Composition = prevRawComp ?? EMPTY_COMPOSITION
     const compositionDelta: CompositionDelta = {
       bee:   composition.bee   - prevComp.bee,
       brood: composition.brood - prevComp.brood,
@@ -101,7 +126,7 @@ export function buildColonyListData(
       name: colony.name,
       apiaryId: farmId,
       apiaryName: farmName,
-      status: colonyStatus(composition, recs.length > 0),
+      status: colonyStatus(statusComp),
       lastInspectedAt: latest?.date ?? '',
       composition,
       compositionDelta,
