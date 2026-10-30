@@ -45,6 +45,30 @@ describe('calcComposition', () => {
     expect(comp!.bee).toBe(0)
   })
 
+  // 部分フィールド欠損: danger誤検知の回帰防止
+  it('honeyのみ有効・bee/brood欠損(undefined) → null（部分フィールドは無効）', () => {
+    expect(calcComposition([{ honey: 30 } as unknown as { bee: number; brood: number; honey: number }])).toBeNull()
+  })
+
+  it('beeのみ有効・brood欠損(undefined) → null', () => {
+    expect(calcComposition([{ bee: 30 } as unknown as { bee: number; brood: number; honey: number }])).toBeNull()
+  })
+
+  it('broodのみ有効・bee欠損(undefined) → null', () => {
+    expect(calcComposition([{ brood: 20 } as unknown as { bee: number; brood: number; honey: number }])).toBeNull()
+  })
+
+  it('bee/brood有効・honey欠損(undefined) → null', () => {
+    expect(calcComposition([{ bee: 30, brood: 20 } as unknown as { bee: number; brood: number; honey: number }])).toBeNull()
+  })
+
+  it('bee=0, brood=0, honey>0 → 非null → danger（実測ゼロはdanger）', () => {
+    const comp = calcComposition([{ bee: 0, brood: 0, honey: 40 }])
+    expect(comp).not.toBeNull()
+    // bee<25 → danger
+    expect(colonyStatus(comp)).toBe('danger')
+  })
+
   it('frames=[{bee:40, brood:25, honey:15}] → 正常な構成比', () => {
     const comp = calcComposition([{ bee: 40, brood: 25, honey: 15 }])
     expect(comp).not.toBeNull()

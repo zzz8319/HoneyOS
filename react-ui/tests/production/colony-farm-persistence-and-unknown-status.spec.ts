@@ -245,6 +245,38 @@ test('P1-C: inspection exists but all frames have invalid values shows 未評価
   await expect(dangerBadge).toHaveCount(0)
 })
 
+// ─── P1-B regression: 養蜂場未選択では saveColony を呼ばない ────────────────
+
+test('P1-B regression: 養蜂場未選択で登録ボタン押下 → saveColony呼ばれない・エラー表示', async ({ page }) => {
+  await goToScreen(page, 'colony-create')
+
+  await page.waitForSelector('select', { timeout: 5000 })
+
+  // 蜂群名のみ入力、養蜂場は未選択のまま
+  const nameInput = page.locator('input[type="text"]').first()
+  await nameInput.fill('未選択テスト群')
+
+  // 養蜂場を選択しない（デフォルト空値のまま）
+
+  const submitBtn = page.locator('button[type="submit"], button:has-text("蜂群を登録")').first()
+  await submitBtn.click()
+  await page.waitForTimeout(600)
+
+  // saveColony は呼ばれていないこと
+  const calls = await page.evaluate(() => {
+    const w = window as unknown as { __getSaveColonyCalls?: () => unknown[] }
+    return w.__getSaveColonyCalls?.() ?? []
+  })
+  expect(calls.length).toBe(0)
+
+  // 成功遷移していないこと（colony-create 画面に留まる）
+  const url = page.url()
+  expect(url).toContain('colony-create')
+
+  // 養蜂場必須エラーが表示されていること
+  await expect(page.locator('text=所属養蜂場を選択してください').first()).toBeVisible()
+})
+
 test('P1-C: no console errors on colony list with uninspected colonies', async ({ page }) => {
   const consoleErrors: string[] = []
   page.on('console', msg => {
