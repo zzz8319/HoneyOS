@@ -21,7 +21,8 @@
 /* ステータス別枠線 */
 .card.good   { border-color: var(--color-border); }
 .card.warn   { border-color: var(--color-warn); }
-.card.danger { border-color: var(--color-danger); }
+.card.danger   { border-color: var(--color-danger); }
+.card.unknown  { border-color: var(--color-border); }
 
 /* 行1: 蜂群名 + バッジ */
 .row1 {
@@ -50,7 +51,8 @@
 
 .badge_good   { background: var(--color-ok-soft);    color: var(--color-ok); }
 .badge_warn   { background: var(--color-warn-soft);  color: var(--color-warn); }
-.badge_danger { background: var(--color-danger-soft); color: var(--color-danger); }
+.badge_danger   { background: var(--color-danger-soft); color: var(--color-danger); }
+.badge_unknown  { background: var(--color-bg-secondary, #f3f4f6); color: var(--color-text-secondary, #6b7280); }
 
 /* 行2: 最終内検 */
 .row2 {

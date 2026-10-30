@@ -21,7 +21,7 @@ function topDeltas(delta: CompositionDelta): { label: string; value: number; col
 }
 
 const STATUS_LABEL: Record<string, string> = {
-  good: '良好', warn: '注意', danger: '危険',
+  good: '良好', warn: '注意', danger: '危険', unknown: '未評価',
 }
 
 export function ColonyCard({ colony, onClick }: ColonyCardProps) {

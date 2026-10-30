@@ -25,7 +25,7 @@ interface Props {
 }
 
 const STATUS_STYLE: Record<string, string> = {
-  good: 'badge_good', warn: 'badge_warn', danger: 'badge_danger',
+  good: 'badge_good', warn: 'badge_warn', danger: 'badge_danger', unknown: 'badge_unknown',
 }
 
 function shortDateLabel(dateStr: string) {
