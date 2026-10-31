@@ -9,6 +9,9 @@
  * Steps:  npm run build && vite preview (started by webServer below)
  */
 import { defineConfig, devices } from '@playwright/test'
+import { resolveLaunchOptions } from './tests/chromiumLaunchOptions'
+
+const launchOptions = resolveLaunchOptions()
 
 export default defineConfig({
   testDir: './tests/production',
@@ -18,9 +21,7 @@ export default defineConfig({
       use: {
         ...devices['Pixel 5'],
         viewport: { width: 390, height: 844 },
-        launchOptions: {
-          executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome',
-        },
+        ...(launchOptions ? { launchOptions } : {}),
       },
     },
   ],
