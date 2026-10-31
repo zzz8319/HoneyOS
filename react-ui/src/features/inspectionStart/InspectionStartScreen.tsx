@@ -4,9 +4,11 @@ import {
   Search, SlidersHorizontal,
 } from 'lucide-react'
 import {
-  APIARIES, SORT_OPTIONS, sortColonies,
+  SORT_OPTIONS, sortColonies,
   type SelectableColony, type SortMode,
 } from './mockData'
+import { nowJstDateLabel } from '../../lib/dateUtils'
+import { safeApiaryName } from '../../lib/farmName'
 import styles from './InspectionStartScreen.module.css'
 
 export type InspectionStartViewState =
@@ -23,7 +25,7 @@ interface Props {
     statusLabel: string
     inspDate: string
     weather: string
-    temperature: number
+    temperature: number | null
     previousMode?: 'frame' | 'ratio'
   }) => void
 }
@@ -197,6 +199,8 @@ export function InspectionStartScreen({
   const [searchQuery, setSearchQuery]   = useState('')
   const [sortMode, setSortMode]         = useState<SortMode>('recommended')
   const [dbColonies, setDbColonies] = useState<SelectableColony[] | null>(null)
+  type FarmTab = { key: string; label: string }
+  const [farmTabs, setFarmTabs] = useState<FarmTab[]>([{ key: 'all', label: 'すべて' }])
 
   useEffect(() => {
     if (isLoading || isError || isEmpty) return
@@ -209,7 +213,8 @@ export function InspectionStartScreen({
         type RawFarm = Record<string, unknown>
         type RawColony = Record<string, unknown>
         type RawInsp = Record<string, unknown>
-        const farmMap = new Map((farms as RawFarm[]).map(f => [String(f.id), String(f.name)]))
+        const rawFarms = farms as RawFarm[]
+        const farmMap = new Map(rawFarms.map(f => [String(f.id), safeApiaryName(f.name)]))
         const lastInspMap = new Map<string, RawInsp>()
         for (const r of (inspRecords as RawInsp[])) {
           const cid = String(r.colony)
@@ -221,8 +226,8 @@ export function InspectionStartScreen({
           const id = String(c.id)
           const name = String(c.name)
           const farmId = c.farmId != null ? String(c.farmId) : null
-          const farmName = farmId ? (farmMap.get(farmId) ?? '不明') : '不明'
-          const farmKey = farmId ?? 'unknown'
+          const farmName = farmId ? (farmMap.get(farmId) ?? '不明') : '養蜂場なし'
+          const farmKey = farmId ?? '__unassigned__'
           const lastInsp = lastInspMap.get(id)
           let daysAgo: number | null = null
           if (lastInsp?.date) {
@@ -267,6 +272,14 @@ export function InspectionStartScreen({
           } satisfies SelectableColony
         })
         setDbColonies(mapped)
+        // Build tab list: すべて → farms from DB → 養蜂場なし (if unassigned colonies exist)
+        const hasUnassigned = (colonies as RawColony[]).some(c => c.farmId == null)
+        const tabs: FarmTab[] = [
+          { key: 'all', label: 'すべて' },
+          ...rawFarms.map(f => ({ key: String(f.id), label: safeApiaryName(f.name) })),
+          ...(hasUnassigned ? [{ key: '__unassigned__', label: '養蜂場なし' }] : []),
+        ]
+        setFarmTabs(tabs)
       })
       .catch(() => { if (!cancelled) setDbColonies([]) })
     return () => { cancelled = true }
@@ -274,9 +287,8 @@ export function InspectionStartScreen({
 
   const colonies = useMemo(() => dbColonies ?? [], [dbColonies])
 
-  const inspDate    = '2026年9月8日（火）'
-  const weather     = '晴れ'
-  const temperature = 28
+  const inspDate = nowJstDateLabel()
+  const weather  = '未取得'
 
   const filtered = useMemo(() => {
     let list = sortColonies(colonies, sortMode)
@@ -295,7 +307,7 @@ export function InspectionStartScreen({
 
   const handleStart = () => {
     if (!selectedColony) return
-    onStart?.({ colonyId: selectedColony.id, colonyLabel: selectedColony.colonyId, apiaryName: selectedColony.apiaryName, statusLabel: selectedColony.statusLabel, inspDate, weather, temperature, previousMode: selectedColony.previousInspectionMode })
+    onStart?.({ colonyId: selectedColony.id, colonyLabel: selectedColony.colonyId, apiaryName: selectedColony.apiaryName, statusLabel: selectedColony.statusLabel, inspDate, weather, temperature: null, previousMode: selectedColony.previousInspectionMode })
   }
 
   const showList = !isLoading && !isError && !isEmpty
@@ -327,7 +339,7 @@ export function InspectionStartScreen({
 
         {/* 養蜂場タブ */}
         <div className={styles.apiaryTabs} role="tablist">
-          {APIARIES.map(a => (
+          {farmTabs.map(a => (
             <button
               key={a.key}
               role="tab"
@@ -441,7 +453,7 @@ export function InspectionStartScreen({
             <button className={styles.prepRow}>
               <Sun size={18} className={styles.prepIcon} aria-hidden />
               <span className={styles.prepKey}>天気</span>
-              <span className={styles.prepVal}>{weather} {temperature}℃（自動取得）</span>
+              <span className={styles.prepVal}>{weather} —</span>
               <ChevronRight size={16} className={styles.prepChevron} aria-hidden />
             </button>
           </div>

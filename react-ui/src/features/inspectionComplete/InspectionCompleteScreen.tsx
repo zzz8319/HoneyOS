@@ -378,7 +378,7 @@ export function InspectionCompleteScreen({
               <SunIcon />
             </div>
             <span className={styles.summaryLabel}>{data.weather}</span>
-            <span className={styles.summaryValue}>{data.tempCelsius}℃</span>
+            <span className={styles.summaryValue}>{data.tempCelsius != null ? `${data.tempCelsius}℃` : '—'}</span>
           </div>
         </div>
       </div>

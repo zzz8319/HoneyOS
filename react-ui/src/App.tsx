@@ -110,7 +110,7 @@ export default function App() {
   )
   const [previousInspectionMode, setPreviousInspectionMode] = useState<'frame' | 'ratio' | undefined>(undefined)
   const [inspectionSession, setInspectionSession] = useState<InspectionSession | null>(null)
-  const [inspectionTemperature, setInspectionTemperature] = useState<number>(0)
+  const [inspectionTemperature, setInspectionTemperature] = useState<number | null>(null)
   const [completedInspData, setCompletedInspData] = useState<InspectionCompleteData | null>(null)
   const [addStageRecord, setAddStageRecord] = useState<InspectionRecord | null>(null)
   const [previousScreen, setPreviousScreen] = useState<Screen>('home')

@@ -20,3 +20,37 @@ export function shortDate(dateStr: string | null | undefined): string {
   if (isNaN(d.getTime())) return ''
   return `${d.getMonth() + 1}/${d.getDate()}`
 }
+
+/**
+ * Date を Asia/Tokyo 基準の「YYYY年M月D日（曜）」形式に変換する。
+ * 無効な Date（NaN）は空文字を返す。
+ */
+export function formatJstDate(date: Date): string {
+  if (isNaN(date.getTime())) return ''
+  const parts = new Intl.DateTimeFormat('ja-JP', {
+    timeZone: 'Asia/Tokyo',
+    year: 'numeric', month: 'numeric', day: 'numeric', weekday: 'short',
+  }).formatToParts(date)
+  const get = (type: string) => parts.find(p => p.type === type)?.value ?? ''
+  const year = get('year')
+  const month = get('month')
+  const day = get('day')
+  const weekday = get('weekday')
+  if (!year || !month || !day) return ''
+  return `${year}年${month}月${day}日（${weekday}）`
+}
+
+/**
+ * 現在時刻を Asia/Tokyo 基準の「YYYY年M月D日（曜）」文字列で返す。
+ * 長時間開きっぱなしの画面でも、呼び出し時点の日付を返す。
+ */
+export function nowJstDateLabel(): string {
+  return formatJstDate(new Date())
+}
+
+/**
+ * 現在時刻の UTC ISO 文字列を返す（DB 保存用）。
+ */
+export function nowUtcIso(): string {
+  return new Date().toISOString()
+}

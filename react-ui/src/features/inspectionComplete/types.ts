@@ -44,7 +44,7 @@ export interface InspectionCompleteData {
   apiaryName: string          // "宮田養蜂場"
   inspDate: string            // "2026年9月8日（火）"
   weather: string             // "晴れ"
-  tempCelsius: number         // 28
+  tempCelsius: number | null  // null = 未取得
   queenStatus: 'laying' | 'unconfirmed' | 'concern'
   estimatedBeeCount: number   // 18500
   strengthScore: number       // 0–100

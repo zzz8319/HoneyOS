@@ -11,7 +11,7 @@ import { defineConfig, devices } from '@playwright/test'
 // In the pre-installed local container, Chromium lives at a fixed path.
 // On GitHub Actions (and anywhere else), omit executablePath and let
 // Playwright find the browser it installed via `playwright install chromium`.
-const PREINSTALLED = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome'
+const PREINSTALLED = '/opt/pw-browsers/chromium-1243/chrome-linux64/chrome'
 const { existsSync } = await import('node:fs')
 const executablePath = existsSync(PREINSTALLED) ? PREINSTALLED : undefined
 

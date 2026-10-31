@@ -93,7 +93,7 @@ const RECOVERY_SCRIPT_SIGN_OUT_FAIL = RECOVERY_SCRIPT.replace(
   'signOut: async function() { _signOutCalled = true; return { error: { message: \'Network error\' } }; },',
 )
 
-test.use({ launchOptions: { executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' } })
+test.use({ launchOptions: { executablePath: '/opt/pw-browsers/chromium-1243/chrome-linux64/chrome' } })
 
 // ── A. Email send success ─────────────────────────────────────────────────────
 
