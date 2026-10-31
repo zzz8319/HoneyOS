@@ -6,6 +6,10 @@
  * __triggerAuthEvent / __getResetPasswordCalls / __getUpdatePasswordCalls / __wasSignOutCalled.
  */
 import { test, expect } from '@playwright/test'
+import { resolveLaunchOptions } from '../chromiumLaunchOptions'
+
+const launchOptions = resolveLaunchOptions()
+if (launchOptions) test.use({ launchOptions })
 
 const RECOVERY_SCRIPT = `
 (function() {
@@ -93,7 +97,7 @@ const RECOVERY_SCRIPT_SIGN_OUT_FAIL = RECOVERY_SCRIPT.replace(
   'signOut: async function() { _signOutCalled = true; return { error: { message: \'Network error\' } }; },',
 )
 
-test.use({ launchOptions: { executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' } })
+// launchOptions resolved at top of file via PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH
 
 // ── A. Email send success ─────────────────────────────────────────────────────
 

@@ -7,13 +7,9 @@
  * Run via: npm run test:smoke
  */
 import { defineConfig, devices } from '@playwright/test'
+import { resolveLaunchOptions } from './tests/chromiumLaunchOptions'
 
-// In the pre-installed local container, Chromium lives at a fixed path.
-// On GitHub Actions (and anywhere else), omit executablePath and let
-// Playwright find the browser it installed via `playwright install chromium`.
-const PREINSTALLED = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome'
-const { existsSync } = await import('node:fs')
-const executablePath = existsSync(PREINSTALLED) ? PREINSTALLED : undefined
+const launchOptions = resolveLaunchOptions()
 
 export default defineConfig({
   testDir: './tests/smoke',
@@ -23,7 +19,7 @@ export default defineConfig({
       use: {
         ...devices['Pixel 5'],
         viewport: { width: 390, height: 844 },
-        ...(executablePath ? { launchOptions: { executablePath } } : {}),
+        ...(launchOptions ? { launchOptions } : {}),
       },
     },
   ],
