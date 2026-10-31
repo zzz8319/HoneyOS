@@ -19,7 +19,7 @@ export default defineConfig({
         ...devices['Pixel 5'],
         viewport: { width: 390, height: 844 },
         launchOptions: {
-          executablePath: '/opt/pw-browsers/chromium-1243/chrome-linux64/chrome',
+          executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome',
         },
       },
     },
